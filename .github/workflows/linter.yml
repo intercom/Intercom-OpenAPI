@@ -1,0 +1,22 @@
+---
+name: Lint OpenAPI Descriptions
+
+on:
+  - push
+
+jobs:
+  build:
+    name: Lint OpenAPI Descriptions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Yaml Lint
+        uses: karancode/yamllint-github-action@master
+        with:
+          yamllint_file_or_dir: 'descriptions/**/*.yaml'
+          yamllint_strict: false
+          yamllint_config_filepath: '.yamllint-config.yml'
+          yamllint_comment: true
