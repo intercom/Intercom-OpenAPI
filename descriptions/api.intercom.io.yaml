@@ -1,0 +1,1813 @@
+---
+openapi: 3.0.1
+info:
+  title: Intercom API
+  version: Unstable
+  description: The intercom API reference.
+  contact:
+    name: Intercom Developer Hub
+    url: https://developers.intercom.com
+paths:
+  "/conversations":
+    get:
+      summary: List all conversations
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          default: 20
+          maximum: 150
+        required: false
+        description: How many results per page
+      - name: starting_after
+        in: query
+        required: false
+        description: String used to get the next page of conversations.
+        schema:
+          type: string
+      tags:
+      - Conversation
+      operationId: listConversations
+      description: |
+        You can fetch a list of all conversations.
+
+        You can optionally request the result page size and the cursor to start after to fetch the result
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              example:
+                type: conversation.list
+                pages:
+                  type: pages
+                  next: 
+                  page: 1
+                  per_page: 20
+                  total_pages: 0
+                total_count: 0
+                conversations: []
+              schema:
+                "$ref": "#/components/schemas/conversation_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: 9849c0b4-5516-4e34-b03c-172faa243f35
+                errors:
+                - code: unauthorized
+                  message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: 4b09df48-c2cc-4914-aeaf-e506fb2f5a44
+                errors:
+                - code: api_plan_restricted
+                  message: Active subscription needed.
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Creates a conversation
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Conversation
+      operationId: createConversation
+      description: "You can create a conversation that has been initiated by a contact
+        (ie. user or lead).\nThe conversation can be an in-app message only.\n\n>
+        \U0001F4D8 Sending for visitors\n>\n> You can also send a message from a visitor
+        by specifying their `user_id` or `id` value in the `from` field, along with
+        a `type` field value of `contact`.\n> This visitor will be automatically converted
+        to a contact with a lead role once the conversation is created.\n\nThis will
+        return the Message model that has been created.\n\n"
+      responses:
+        '200':
+          description: conversation created
+          content:
+            application/json:
+              example:
+                type: user_message
+                id: '403918114'
+                created_at: 1671102883
+                body: Hello there
+                message_type: inapp
+                conversation_id: '68'
+              schema:
+                "$ref": "#/components/schemas/message"
+        '404':
+          description: Contact Not Found
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: 56a68df6-0cb7-4bd1-96d1-1b198dc58d48
+                errors:
+                - code: not_found
+                  message: User Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: 8403d0c3-a155-4935-8849-c2340a738fde
+                errors:
+                - code: unauthorized
+                  message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: 9371b452-c113-48b4-8229-f2ddfddd3f78
+                errors:
+                - code: api_plan_restricted
+                  message: Active subscription needed.
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_conversation_request"
+  "/conversations/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: The id of the conversation to target
+      schema:
+        type: integer
+    get:
+      summary: Retrieve a conversation
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Conversation
+      operationId: retrieveConversation
+      description: "\nYou can fetch the details of a single conversation.\n\nThis
+        will return a single Conversation model with all its conversation parts.\n\n>
+        \U0001F6A7 Hard limit of 500 parts\n> \n> The maximum number of conversation
+        parts that can be returned via the API is 500. If you have more than that
+        we will return the 500 most recent conversation parts.\n\n"
+      responses:
+        '200':
+          description: conversation found
+          content:
+            application/json:
+              example:
+                type: conversation
+                id: '69'
+                created_at: 1671102888
+                updated_at: 1671102888
+                waiting_since: 
+                snoozed_until: 
+                source:
+                  type: conversation
+                  id: '403918115'
+                  delivered_as: admin_initiated
+                  subject: ''
+                  body: "<p>foo</p>"
+                  author:
+                    type: admin
+                    id: '750111923'
+                    name: Ciaran8 Lee
+                    email: admin8@email.com
+                  attachments: []
+                  url: 
+                  redacted: false
+                contacts:
+                  type: contact.list
+                  contacts:
+                  - type: contact
+                    id: 639b01a7634ac6668130134e
+                first_contact_reply: 
+                admin_assignee_id: 
+                team_assignee_id: 
+                open: false
+                state: closed
+                read: false
+                tags:
+                  type: tag.list
+                  tags: []
+                priority: not_priority
+                sla_applied: 
+                statistics: 
+                conversation_rating: 
+                teammates: 
+                title: 
+                custom_attributes: {}
+                topics: {}
+                conversation_parts:
+                  type: conversation_part.list
+                  conversation_parts: []
+                  total_count: 0
+              schema:
+                "$ref": "#/components/schemas/conversation"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: f216c7c6-97ac-452b-a2df-217602599690
+                errors:
+                - code: not_found
+                  message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: 54da7a19-52a6-491d-b188-440601bc465c
+                errors:
+                - code: unauthorized
+                  message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: df4c4703-6ce6-4c67-90be-70512cec26b4
+                errors:
+                - code: api_plan_restricted
+                  message: Active subscription needed.
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/news/news_items":
+    get:
+      summary: List all news items
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - News
+      operationId: listNewsItems
+      description: You can fetch a list of all news items
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              example:
+                type: list
+                pages:
+                  page: 1
+                  per_page: 10
+                  total_pages: 1
+                  type: pages
+                data:
+                - id: '127'
+                  type: news-item
+                  workspace_id: this_is_an_id23_that_should_be_at_least_4
+                  title: We have news
+                  body: "<p>Hello there,</p>"
+                  sender_id: 750111930
+                  state: draft
+                  labels: []
+                  cover_image_url: 
+                  reactions:
+                  - 
+                  - 
+                  - 
+                  - 
+                  deliver_silently: false
+                  created_at: 1671102891
+                  updated_at: 1671102891
+                  newsfeed_assignments: []
+                - id: '128'
+                  type: news-item
+                  workspace_id: this_is_an_id23_that_should_be_at_least_4
+                  title: We have news
+                  body: "<p>Hello there,</p>"
+                  sender_id: 750111932
+                  state: draft
+                  labels: []
+                  cover_image_url: 
+                  reactions:
+                  - 
+                  - 
+                  - 
+                  - 
+                  deliver_silently: false
+                  created_at: 1671102891
+                  updated_at: 1671102891
+                  newsfeed_assignments: []
+                total_count: 2
+              schema:
+                "$ref": "#/components/schemas/paginated_response"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: 8b074d82-17dc-45b1-a341-8968a96adbfd
+                errors:
+                - code: unauthorized
+                  message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create a news item
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - News
+      operationId: createNewsItem
+      description: You can create a news item
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              example:
+                id: '131'
+                type: news-item
+                workspace_id: this_is_an_id27_that_should_be_at_least_4
+                title: Halloween is here!
+                body: "<p>New costumes in store for this spooky season</p>"
+                sender_id: 750111939
+                state: live
+                labels:
+                - New
+                - Product
+                - Update
+                cover_image_url: 
+                reactions:
+                - "\U0001F606"
+                - "\U0001F605"
+                deliver_silently: true
+                created_at: 1671102894
+                updated_at: 1671102894
+                newsfeed_assignments:
+                - newsfeed_id: 174
+                  published_at: 1664638214
+              schema:
+                "$ref": "#/components/schemas/news_item"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: 9a428410-696b-48ba-bb97-fb8dd758e9a9
+                errors:
+                - code: unauthorized
+                  message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/news_item_request"
+  "/news/news_items/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: The unique identifier for the news item which is given by Intercom.
+      schema:
+        type: integer
+    get:
+      summary: Retrieve a news item
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - News
+      operationId: retrieveNewsItem
+      description: You can fetch the details of a single news item.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              example:
+                id: '132'
+                type: news-item
+                workspace_id: this_is_an_id31_that_should_be_at_least_4
+                title: We have news
+                body: "<p>Hello there,</p>"
+                sender_id: 750111942
+                state: live
+                labels: []
+                cover_image_url: 
+                reactions:
+                - 
+                - 
+                - 
+                - 
+                deliver_silently: false
+                created_at: 1671102896
+                updated_at: 1671102896
+                newsfeed_assignments:
+                - newsfeed_id: 176
+                  published_at: 1671102896
+              schema:
+                "$ref": "#/components/schemas/news_item"
+        '404':
+          description: News Item Not Found
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: 37a8ecc6-7a37-40df-948a-188fb284de92
+                errors:
+                - code: not_found
+                  message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: c89766c3-3109-4ad0-8459-2387402d3d05
+                errors:
+                - code: unauthorized
+                  message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update a news item
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - News
+      operationId: updateNewsItem
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              example:
+                id: '135'
+                type: news-item
+                workspace_id: this_is_an_id37_that_should_be_at_least_4
+                title: Christmas is here!
+                body: "<p>New gifts in store for the jolly season</p>"
+                sender_id: 750111950
+                state: live
+                labels: []
+                cover_image_url: 
+                reactions:
+                - "\U0001F61D"
+                - "\U0001F602"
+                deliver_silently: false
+                created_at: 1671102899
+                updated_at: 1671102899
+                newsfeed_assignments: []
+              schema:
+                "$ref": "#/components/schemas/news_item"
+        '404':
+          description: News Item Not Found
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: dc6d3aff-d900-48ad-8bab-f3a59fe84b1e
+                errors:
+                - code: not_found
+                  message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: 1d1f39b4-b2ee-4ed5-9ce8-13fa624fa023
+                errors:
+                - code: unauthorized
+                  message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/news_item_request"
+    delete:
+      summary: Delete a news item
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - News
+      operationId: deleteNewsItem
+      description: You can delete a single news item.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              example:
+                id: '138'
+                object: news-item
+                deleted: true
+              schema:
+                "$ref": "#/components/schemas/deleted_object"
+        '404':
+          description: News Item Not Found
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: b622e86f-e935-4b01-9a02-9b77735d5326
+                errors:
+                - code: not_found
+                  message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: 6b5339e6-bd25-4ab1-ab56-6d81caebd30d
+                errors:
+                - code: unauthorized
+                  message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/news/newsfeeds/{id}/items":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: The unique identifier for the news feed item which is given by
+        Intercom.
+      schema:
+        type: string
+    get:
+      summary: List all live newsfeed items
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - News
+      operationId: listLiveNewsfeedItems
+      description: You can fetch a list of all news items that are live on a given
+        newsfeed
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              example:
+                type: list
+                pages:
+                  page: 1
+                  per_page: 20
+                  total_pages: 0
+                  type: pages
+                data: []
+                total_count: 0
+              schema:
+                "$ref": "#/components/schemas/paginated_response"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: d85a2d35-ac17-40be-8f52-908dde736c06
+                errors:
+                - code: unauthorized
+                  message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/news/newsfeeds":
+    get:
+      summary: List all newsfeeds
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - News
+      operationId: listNewsfeeds
+      description: You can fetch a list of all newsfeeds
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              example:
+                type: list
+                pages:
+                  page: 1
+                  per_page: 10
+                  total_pages: 1
+                  type: pages
+                data:
+                - id: '189'
+                  type: newsfeed
+                  name: Visitor Feed
+                  created_at: 1671102906
+                  updated_at: 1671102906
+                - id: '190'
+                  type: newsfeed
+                  name: Visitor Feed
+                  created_at: 1671102906
+                  updated_at: 1671102906
+                total_count: 2
+              schema:
+                "$ref": "#/components/schemas/paginated_response"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: d9ad0a53-b8e3-4053-a704-cf942f113f0b
+                errors:
+                - code: unauthorized
+                  message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/news/newsfeeds/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: The unique identifier for the news feed item which is given by
+        Intercom.
+      schema:
+        type: string
+    get:
+      summary: Retrieve a newsfeed
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - News
+      operationId: retrieveNewsfeed
+      description: You can fetch the details of a single newsfeed
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              example:
+                id: '193'
+                type: newsfeed
+                name: Visitor Feed
+                created_at: 1671102907
+                updated_at: 1671102907
+              schema:
+                "$ref": "#/components/schemas/newsfeed"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                type: error.list
+                request_id: f07e9ff2-8f31-460e-8b9b-1fe536a6d0c0
+                errors:
+                - code: unauthorized
+                  message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+components:
+  schemas:
+    intercom_version:
+      description: The Intercom API version, for example.</br>By default the version
+        set in the app package.
+      type: string
+      example: Unstable
+      default: '2.7'
+      enum:
+      - '1.0'
+      - '1.1'
+      - '1.2'
+      - '1.3'
+      - '1.4'
+      - '2.0'
+      - '2.1'
+      - '2.2'
+      - '2.3'
+      - '2.4'
+      - '2.5'
+      - '2.6'
+      - '2.7'
+      - Unstable
+    create_conversation_request:
+      description: Conversations are how you can communicate with users in Intercom.
+        They are created when a contact replies to an outbound message, or when one
+        admin directly sends a message to a single contact.
+      type: object
+      title: Create Conversation Request Payload
+      properties:
+        from:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - lead
+              - user
+              - contact
+              description: The role associated to the contact - user or lead.
+              example: user
+            id:
+              type: string
+              description: The identifier for the contact which is given by Intercom.
+              format: uuid
+              minLength: 24
+              maxLength: 24
+              example: 536e564f316c83104c000020
+          required:
+          - type
+          - id
+        body:
+          type: string
+          description: The content of the message. HTML is not supported.
+          example: Hello
+      required:
+      - from
+      - body
+    news_item_request:
+      description: A News Item is a content type in Intercom enabling you to announce
+        product updates, company news, promotions, events and more with your customers.
+      type: object
+      title: Create News Item Request
+      properties:
+        title:
+          type: string
+          description: The title of the news item.
+          example: Halloween is here!
+        body:
+          type: string
+          description: The news item body, which may contain HTML.
+          example: "<p>New costumes in store for this spooky season</p>"
+        sender_id:
+          type: integer
+          description: The id of the sender of the news item. Must be a teammate on
+            the workspace.
+        state:
+          type: string
+          description: News items will not be visible to your users in the assigned
+            newsfeeds until they are set live.
+          enum:
+          - draft
+          - live
+        deliver_silently:
+          type: boolean
+          description: When set to `true`, the news item will appear in the messenger
+            newsfeed without showing a notification badge.
+          example: true
+        labels:
+          type: array
+          description: Label names displayed to users to categorize the news item.
+          items:
+            type: string
+          example:
+          - Product
+          - Update
+          - New
+        reactions:
+          type: array
+          description: Ordered list of emoji reactions to the news item. When empty,
+            reactions are disabled.
+          items:
+            type: string
+            nullable: true
+          example:
+          - "\U0001F606"
+          - "\U0001F605"
+        newsfeed_assignments:
+          type: array
+          description: A list of newsfeed_assignments to assign to the specified newsfeed.
+          items:
+            "$ref": "#/components/schemas/newsfeed_assignment"
+      required:
+      - title
+      - sender_id
+    admin:
+      title: Admin
+      type: object
+      description: Admins are the teammate accounts that have access to a workspace
+      nullable: true
+      properties:
+        type:
+          type: string
+          description: ''
+          default: admin
+          example: admin
+        id:
+          type: string
+          description: The id representing the admin.
+          example: '1295'
+        name:
+          type: string
+          description: The name of the admin.
+          example: Hoban Washburne
+        email:
+          type: string
+          description: The email of the admin.
+          example: wash@serenity.io
+        job_title:
+          type: string
+          description: The job title of the admin.
+          example: Philosopher
+        away_mode_enabled:
+          type: boolean
+          description: Identifies if this admin is currently set in away mode.
+          example: false
+        away_mode_reassign:
+          type: boolean
+          description: Identifies if this admin is set to automatically reassign new
+            conversations to the apps default inbox.
+          example: false
+        has_inbox_seat:
+          type: boolean
+          description: Identifies if this admin has a paid inbox seat to restrict/allow
+            features that require them.
+          example: true
+        team_ids:
+          type: array
+          description: This is a list of teams ids that this admin is part of
+          example:
+          - 814865
+          items:
+            type: integer
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+          description: Image for the associated team or teammate
+    conversation_contacts:
+      title: Contacts
+      type: object
+      description: The list of contacts (users or leads) involved in this conversation.
+        This will only contain one customer unless more were added via the group conversation
+        feature.
+      properties:
+        type:
+          type: string
+          description: ''
+          enum:
+          - contact.list
+        contacts:
+          type: array
+          description: The list of contacts (users or leads) involved in this conversation.
+            This will only contain one customer unless more were added via the group
+            conversation feature.
+          items:
+            "$ref": "#/components/schemas/reference"
+    conversation_first_contact_reply:
+      title: First contact reply
+      type: object
+      nullable: true
+      description: An object containing information on the first users message. For
+        a contact initiated message this will represent the users original message.
+      properties:
+        created_at:
+          type: integer
+          format: date-time
+          description: ''
+          example: 1663597223
+        type:
+          type: string
+          description: ''
+          example: conversation
+        url:
+          type: string
+          description: ''
+          example: ''
+    conversation_part_attachment:
+      title: Conversation part attachment
+      type: object
+      description: The file attached to a conversation part
+      properties:
+        type:
+          type: string
+          description: ''
+          example: ''
+        name:
+          type: string
+          description: ''
+          example: ''
+        url:
+          type: string
+          description: ''
+          example: ''
+        content_type:
+          type: string
+          description: ''
+          example: ''
+        filesize:
+          type: integer
+          description: ''
+          example: 100
+        width:
+          type: integer
+          description: ''
+          example: 100
+        height:
+          type: integer
+          description: ''
+          example: 100
+    conversation_part_author:
+      title: Conversation part author
+      type: object
+      description: The object who initiated the conversation, which can be a Contact,
+        Admin or Team. Bots and campaigns send messages on behalf of Admins or Teams.
+        For Twitter, this will be blank.
+      properties:
+        type:
+          type: string
+          description: The type of the author
+          example: admin
+        id:
+          type: string
+          description: The id of the author
+          example: '274'
+        name:
+          type: string
+          description: The name of the author
+          example: Operator
+        email:
+          type: string
+          format: email
+          description: The email of the author
+          example: operator+abcd1234@intercom.io
+    conversation_part:
+      title: Conversation Part
+      type: object
+      description: A Conversation Part represents a message in the conversation.
+      properties:
+        type:
+          type: string
+          description: Always conversation_part
+          example: conversation_part
+        id:
+          type: string
+          description: The id representing the conversation part.
+          example: '3'
+        part_type:
+          type: string
+          description: The type of conversation part.
+          example: comment
+        body:
+          type: string
+          description: The message body, which may contain HTML. For Twitter, this
+            will show a generic message regarding why the body is obscured.
+          example: "<p>Okay!</p>"
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the conversation part was created.
+          example: 1663597223
+        updated_at:
+          type: integer
+          format: date-time
+          description: The last time the conversation part was updated.
+          example: 1663597260
+        notified_at:
+          type: integer
+          format: date-time
+          description: The time the user was notified with the conversation part.
+          example: 1663597260
+        assigned_to:
+          type: string
+          format: date-time
+          description: The id of the admin that was assigned the conversation by this
+            conversation_part (null if there has been no change in assignment.)
+          example: a1b2c3
+        author:
+          "$ref": "#/components/schemas/conversation_part_author"
+        attachments:
+          title: Conversation part attachments
+          type: array
+          description: A list of attachments for the part.
+          items:
+            "$ref": "#/components/schemas/conversation_part_attachment"
+        external_id:
+          type: string
+          description: The external id of the conversation part
+          example: abcd1234
+        redacted:
+          type: boolean
+          description: Whether or not the conversation part has been redacted.
+          example: false
+    conversation_parts:
+      title: Conversation Parts
+      type: object
+      description: A list of Conversation Part objects for each part message in the
+        conversation. This is only returned when Retrieving a Conversation, and ignored
+        when Listing all Conversations. There is a limit of 500 parts.
+      properties:
+        type:
+          type: string
+          description: ''
+          enum:
+          - conversation_part.list
+        conversation_parts:
+          title: Conversation Parts
+          type: array
+          description: A list of Conversation Part objects for each part message in
+            the conversation. This is only returned when Retrieving a Conversation,
+            and ignored when Listing all Conversations. There is a limit of 500 parts.
+          items:
+            "$ref": "#/components/schemas/conversation_part"
+        total_count:
+          type: integer
+          description: ''
+          example: 2
+    conversation_rating:
+      title: Conversation Rating
+      type: object
+      nullable: true
+      description: The Conversation Rating object which contains information on the
+        rating and/or remark added by a Contact and the Admin assigned to the conversation.
+      properties:
+        rating:
+          type: integer
+          description: ''
+          example: 0
+        remark:
+          type: string
+          description: ''
+          example: ''
+        created_at:
+          type: integer
+          format: date-time
+          description: ''
+          example: 12345678
+        contact:
+          "$ref": "#/components/schemas/reference"
+        teammate:
+          "$ref": "#/components/schemas/reference"
+    conversation_source:
+      title: Conversation source
+      type: object
+      description: The Conversation Part that originated this conversation, which
+        can be Contact, Admin, Campaign, Automated or Operator initiated.
+      properties:
+        type:
+          type: string
+          description: This includes conversation, push, facebook, twitter and email.
+          example: conversation
+        id:
+          type: string
+          description: The id representing the message.
+          example: '3'
+        delivered_as:
+          type: string
+          description: The conversation's initiation type. Possible values are customer_initiated,
+            campaigns_initiated (legacy campaigns), operator_initiated (Custom bot),
+            automated (Series and other outbounds with dynamic audience message) and
+            admin_initiated (fixed audience message, ticket initiated by an admin,
+            group email).
+          example: operator_initiated
+        subject:
+          type: string
+          description: Optional. The message subject. For Twitter, this will show
+            a generic message regarding why the subject is obscured.
+          example: ''
+        body:
+          type: string
+          description: The message body, which may contain HTML. For Twitter, this
+            will show a generic message regarding why the body is obscured.
+          example: "<p>Hey there!</p>"
+        author:
+          "$ref": "#/components/schemas/conversation_part_author"
+        attachments:
+          type: array
+          description: A list of attachments for the part.
+        url:
+          type: string
+          nullable: true
+          description: The URL where the conversation was started. For Twitter, Email,
+            and Bots, this will be blank.
+          example: 
+        redacted:
+          type: boolean
+          description: Whether or not the source message has been redacted. Only applicable
+            for contact initiated messages.
+          example: false
+    conversation_statistics:
+      title: Conversation statistics
+      type: object
+      nullable: true
+      description: A Statistics object containing all information required for reporting,
+        with timestamps and calculated metrics.
+      properties:
+        type:
+          type: string
+          description: ''
+          example: conversation_statistics
+        time_to_assignment:
+          type: integer
+          description: Duration until last assignment before first admin reply. In
+            seconds.
+          example: 2310
+        time_to_admin_reply:
+          type: integer
+          description: Duration until first admin reply. Subtracts out of business
+            hours. In seconds.
+          example: 2310
+        time_to_first_close:
+          type: integer
+          description: Duration until conversation was closed first time. Subtracts
+            out of business hours. In seconds.
+          example: 2310
+        time_to_last_close:
+          type: integer
+          description: Duration until conversation was closed last time. Subtracts
+            out of business hours. In seconds.
+          example: 2310
+        median_time_to_reply:
+          type: integer
+          description: Median based on all admin replies after a contact reply. Subtracts
+            out of business hours. In seconds.
+          example: 2310
+        first_contact_reply_at:
+          type: integer
+          format: date-time
+          description: Time of first text conversation part from a contact.
+          example: 1663597233
+        first_assignment_at:
+          type: integer
+          format: date-time
+          description: Time of first assignment after first_contact_reply_at.
+          example: 1663597233
+        first_admin_reply_at:
+          type: integer
+          format: date-time
+          description: Time of first admin reply after first_contact_reply_at.
+          example: 1663597233
+        first_close_at:
+          type: integer
+          format: date-time
+          description: Time of first close after first_contact_reply_at.
+          example: 1663597233
+        last_assignment_at:
+          type: integer
+          format: date-time
+          description: Time of last assignment after first_contact_reply_at.
+          example: 1663597233
+        last_assignment_admin_reply_at:
+          type: integer
+          format: date-time
+          description: Time of first admin reply since most recent assignment.
+          example: 1663597233
+        last_contact_reply_at:
+          type: integer
+          format: date-time
+          description: Time of the last conversation part from a contact.
+          example: 1663597233
+        last_admin_reply_at:
+          type: integer
+          format: date-time
+          description: Time of the last conversation part from an admin.
+          example: 1663597233
+        last_close_at:
+          type: integer
+          format: date-time
+          description: Time of the last conversation close.
+          example: 1663597233
+        last_closed_by_id:
+          type: string
+          description: The last admin who closed the conversation. Returns a reference
+            to an Admin object.
+          example: c3po
+        count_reopens:
+          type: integer
+          description: Number of reopens after first_contact_reply_at.
+          example: 1
+        count_assignments:
+          type: integer
+          description: Number of assignments after first_contact_reply_at.
+          example: 1
+        count_conversation_parts:
+          type: integer
+          description: Total number of conversation parts.
+          example: 1
+    conversation_teammates:
+      title: Conversation teammates
+      type: object
+      nullable: true
+      description: The list of teammates who participated in the conversation (wrote
+        at least one conversation part).
+      properties:
+        type:
+          type: string
+          description: ''
+          example: admin.list
+        teammates:
+          type: array
+          description: The list of teammates who participated in the conversation
+            (wrote at least one conversation part).
+          items:
+            "$ref": "#/components/schemas/reference"
+    conversation_list:
+      title: Conversation List
+      type: object
+      description: Conversations are how you can communicate with users in Intercom.
+        They are created when a contact replies to an outbound message, or when one
+        admin directly sends a message to a single contact.
+      properties:
+        type:
+          type: string
+          description: Always conversation.list
+          enum:
+          - conversation.list
+        conversations:
+          type: array
+          description: The list of conversation objects
+          items:
+            "$ref": "#/components/schemas/conversation"
+        total_count:
+          type: integer
+          description: A count of the total number of objects.
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
+    conversation:
+      title: Conversation
+      type: object
+      description: Conversations are how you can communicate with users in Intercom.
+        They are created when a contact replies to an outbound message, or when one
+        admin directly sends a message to a single contact.
+      properties:
+        type:
+          type: string
+          description: Always conversation.
+          example: conversation
+        id:
+          type: string
+          description: The id representing the conversation.
+          example: '1295'
+        title:
+          type: string
+          nullable: true
+          description: The title given to the conversation.
+          example: Conversation Title
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the conversation was created.
+          example: 1663597223
+        updated_at:
+          type: integer
+          format: date-time
+          description: The last time the conversation was updated.
+          example: 1663597260
+        waiting_since:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The last time a Contact responded to an Admin. In other words,
+            the time a customer started waiting for a response. Set to null if last
+            reply is from an Admin.
+          example: 1663597260
+        snoozed_until:
+          type: integer
+          format: date-time
+          nullable: true
+          description: If set this is the time in the future when this conversation
+            will be marked as open. i.e. it will be in a snoozed state until this
+            time. i.e. it will be in a snoozed state until this time.
+          example: 1663597260
+        open:
+          type: boolean
+          description: Indicates whether a conversation is open (true) or closed (false).
+          example: true
+        state:
+          type: string
+          enum:
+          - open
+          - closed
+          - snoozed
+          description: Can be set to "open", "closed" or "snoozed".
+          example: open
+        read:
+          type: boolean
+          description: Indicates whether a conversation has been read.
+          example: true
+        priority:
+          type: string
+          enum:
+          - priority
+          - not_priority
+          description: If marked as priority, it will return priority or else not_priority.
+          example: priority
+        admin_assignee_id:
+          type: integer
+          nullable: true
+          description: The id of the admin assigned to the conversation. If it's not
+            assigned to an admin it will return null.
+          example: 0
+        team_assignee_id:
+          type: string
+          nullable: true
+          description: The id of the team assigned to the conversation. If it's not
+            assigned to a team it will return null.
+          example: ''
+        tags:
+          "$ref": "#/components/schemas/tags"
+        conversation_rating:
+          "$ref": "#/components/schemas/conversation_rating"
+        source:
+          "$ref": "#/components/schemas/conversation_source"
+        contacts:
+          "$ref": "#/components/schemas/conversation_contacts"
+        teammates:
+          "$ref": "#/components/schemas/conversation_teammates"
+        custom_attributes:
+          type: object
+          description: An object containing the different custom attributes associated
+            to the conversation as key-value pairs.
+          additionalProperties:
+            type: string
+        first_contact_reply:
+          "$ref": "#/components/schemas/conversation_first_contact_reply"
+        sla_applied:
+          "$ref": "#/components/schemas/sla_applied"
+        statistics:
+          "$ref": "#/components/schemas/conversation_statistics"
+        conversation_parts:
+          "$ref": "#/components/schemas/conversation_parts"
+        ticket:
+          "$ref": "#/components/schemas/ticket"
+    error:
+      type: object
+      title: Error
+      description: The API will return an Error List for a failed request, which will
+        contain one or more Error objects.
+      properties:
+        type:
+          type: string
+          description: The type is error.list
+          example: error.list
+        request_id:
+          type: string
+          nullable: true
+          format: uuid
+          description: ''
+          example: f93ecfa8-d08a-4325-8694-89aeb89c8f85
+        errors:
+          type: array
+          description: An array of one or more error objects
+          items:
+            properties:
+              code:
+                type: string
+                description: A string indicating the kind of error, used to further
+                  qualify the HTTP response code
+                example: unauthorized
+              message:
+                type: string
+                nullable: true
+                description: Optional. Human readable description of the error
+                example: Access Token Invalid
+              field:
+                type: string
+                nullable: true
+                description: Optional. Used to identify a particular field or query
+                  parameter that was in error.
+                example: email
+            required:
+            - code
+      required:
+      - type
+      - errors
+    message:
+      type: object
+      title: Message
+      description: Message are how you reach out to contacts in Intercom. They are
+        created when an admin sends an outbound message to a contact.
+      properties:
+        type:
+          type: string
+          description: The type of the message
+          example: user_message
+        id:
+          type: string
+          description: The id representing the message.
+          example: '1488971108'
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the conversation was created.
+          example: 1667560812
+        subject:
+          type: string
+          description: 'The subject of the message. Only present if message_type:
+            email.'
+          example: Greetings
+        body:
+          type: string
+          description: The message body, which may contain HTML.
+          example: Hello
+        message_type:
+          type: string
+          enum:
+          - email
+          - inapp
+          - facebook
+          - twitter
+          description: The type of message that was sent. Can be email, inapp, facebook
+            or twitter.
+          example: inapp
+        conversation_id:
+          type: string
+          description: The associated conversation_id
+          example: '64619700005570'
+      required:
+      - type
+      - id
+      - created_at
+      - body
+      - message_type
+    reference:
+      title: Reference
+      type: object
+      description: reference to another object
+      properties:
+        type:
+          type: string
+          description: ''
+          example: contact
+        id:
+          type: string
+          description: ''
+          example: 1a2b3c
+    sla_applied:
+      title: Applied SLA
+      type: object
+      nullable: true
+      description: The SLA Applied object contains the details for which SLA has been
+        applied to this conversation.
+      properties:
+        type:
+          type: string
+          description: object type
+          example: conversation_sla_summary
+        sla_name:
+          type: string
+          description: The name of the SLA as given by the teammate when it was created.
+          example: ''
+        sla_status:
+          type: string
+          enum:
+          - hit
+          - missed
+          - cancelled
+          - active
+          description: One of "hit", "missed", "cancelled", or "active".
+          example: hit
+    tag:
+      title: Tag
+      type: object
+      description: A tag allows you to label your contacts, companies, and conversations
+        and list them using that tag.
+      properties:
+        type:
+          type: string
+          description: value is "tag"
+          example: tag
+        id:
+          type: string
+          description: The id of the tag
+          example: '123456'
+        name:
+          type: string
+          description: The name of the tag
+          example: ''
+        applied_at:
+          type: integer
+          format: date-time
+          description: The time when the tag was applied to the object
+          example: 1663597223
+        applied_by:
+          type: string
+          description: The id of the admin who applied the tag
+          example: '750111329'
+    tags:
+      title: Tags
+      type: object
+      description: A list of tags objects associated with the conversation.
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - tag.list
+        tags:
+          type: array
+          description: A list of tags objects associated with the conversation.
+          items:
+            "$ref": "#/components/schemas/tag"
+    ticket:
+      title: Ticket
+      type: object
+      description: Conversations are how you can communicate with users in Intercom.
+        They are created when a contact replies to an outbound message, or when one
+        admin directly sends a message to a single contact.
+      nullable: true
+      properties:
+        type:
+          type: string
+          description: ''
+          enum:
+          - ticket
+          default: ticket
+          example: ticket
+        id:
+          type: string
+          description: The id representing the conversation.
+          example: '1295'
+        url:
+          type: string
+          format: url
+          description: ''
+        custom_attributes:
+          type: object
+          description: An object containing the different custom attributes associated
+            to the conversation as key-value pairs.
+          additionalProperties:
+            type: string
+        state:
+          type: string
+          description: ''
+          enum:
+          - submitted
+          - in_progress
+          - waiting_on_customer
+          - resolved
+          example: submitted
+        ticket_type:
+          type: string
+          description: The type of the ticket
+          example: ''
+        ticket_type_description:
+          type: string
+          description: ''
+        ticket_type_emoji:
+          type: string
+          description: ''
+          default: "\U0001F48E"
+          example: "\U0001F48E"
+    news_item:
+      title: News Item
+      type: object
+      description: A News Item is a content type in Intercom enabling you to announce
+        product updates, company news, promotions, events and more with your customers.
+      properties:
+        type:
+          type: string
+          description: The type of object.
+          enum:
+          - news-item
+        id:
+          type: string
+          description: The unique identifier for the news item which is given by Intercom.
+        workspace_id:
+          type: string
+          description: The id of the workspace which the news item belongs to.
+        title:
+          type: string
+          description: The title of the news item.
+        body:
+          type: string
+          description: The news item body, which may contain HTML.
+        sender_id:
+          type: integer
+          description: The id of the sender of the news item. Must be a teammate on
+            the workspace.
+        state:
+          type: string
+          description: News items will not be visible to your users in the assigned
+            newsfeeds until they are set live.
+          enum:
+          - draft
+          - live
+        newsfeed_assignments:
+          type: array
+          description: A list of newsfeed_assignments to assign to the specified newsfeed.
+          items:
+            "$ref": "#/components/schemas/newsfeed_assignment"
+        labels:
+          type: array
+          description: Label names displayed to users to categorize the news item.
+          items:
+            type: string
+        cover_image_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL of the image used as cover. Must have .jpg or .png extension.
+        reactions:
+          type: array
+          description: Ordered list of emoji reactions to the news item. When empty,
+            reactions are disabled.
+          items:
+            type: string
+            nullable: true
+        deliver_silently:
+          type: boolean
+          description: When set to true, the news item will appear in the messenger
+            newsfeed without showing a notification badge.
+        created_at:
+          type: integer
+          format: timestamp
+          description: Timestamp for when the news item was created.
+        updated_at:
+          type: integer
+          format: timestamp
+          description: Timestamp for when the news item was last updated.
+    newsfeed:
+      title: Newsfeed
+      type: object
+      description: |
+        A newsfeed is a collection of news items, targeted to a specific audience.
+
+        Newsfeeds currently cannot be edited through the API, please refer to [this article](https://www.intercom.com/help/en/articles/6362267-getting-started-with-news) to set up your newsfeeds in Intercom.
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the newsfeed which is given by Intercom.
+        type:
+          type: string
+          description: The type of object.
+          enum:
+          - newsfeed
+        name:
+          type: string
+          description: The name of the newsfeed. This name will never be visible to
+            your users.
+        created_at:
+          type: integer
+          format: timestamp
+          description: Timestamp for when the newsfeed was created.
+        updated_at:
+          type: integer
+          format: timestamp
+          description: Timestamp for when the newsfeed was last updated.
+    newsfeed_assignment:
+      title: Newsfeed Assignment
+      type: object
+      description: Assigns a news item to a newsfeed.
+      properties:
+        newsfeed_id:
+          type: integer
+          description: The unique identifier for the newsfeed which is given by Intercom.
+            Publish dates cannot be in the future, to schedule news items use the
+            dedicated feature in app (see this article).
+        published_at:
+          type: integer
+          format: timestamp
+          description: Publish date of the news item on the newsfeed, use this field
+            if you want to set a publish date in the past (e.g. when importing existing
+            news items). On write, this field will be ignored if the news item state
+            is "draft".
+    paginated_response:
+      title: Paginated Response
+      type: object
+      description: Paginated Response
+      properties:
+        type:
+          type: string
+          description: The type of object
+          enum:
+          - list
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
+        total_count:
+          type: integer
+          description: A count of the total number of objects.
+        data:
+          type: array
+          description: An array of Objects
+          items:
+            oneOf:
+            - "$ref": "#/components/schemas/news_item"
+            - "$ref": "#/components/schemas/newsfeed"
+    cursor_pages:
+      title: Cusor based Pages
+      type: object
+      description: |
+        Cursor-based pagination is a technique used in the Intercom API to navigate through large amounts of data.
+        A "cursor" or pointer is used to keep track of the current position in the result set, allowing the API to return the data in small chunks or "pages" as needed.
+      properties:
+        type:
+          type: string
+          example: pages
+          enum:
+          - pages
+        page:
+          type: integer
+          example: 1
+        next:
+          type: object
+          nullable: true
+          properties:
+            page:
+              type: integer
+              example: 2
+            starting_after:
+              type: string
+              example: 1HaSB+xrOyyMXAkS/c1RteCL7BzOzTvYjmjakgTergIH31eoe2v4/sbLsJWP\nIncfQLD3ouPkZlCwJ86F\n
+        per_page:
+          type: integer
+          example: 2
+        total_pages:
+          type: integer
+          example: 13
+    deleted_object:
+      title: Deleted Object
+      type: object
+      description: Response returned when an object is deleted
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the news item which you provided
+            in the URL.
+        object:
+          type: string
+          description: The type of object which was deleted - news-item.
+          enum:
+          - news-item
+        deleted:
+          type: boolean
+          description: Whether the news item was deleted successfully or not.
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+servers:
+- url: https://api.intercom.io
+  description: The production API server
+- url: https://api.eu.intercom.io
+  description: The european API server
+- url: https://api.au.intercom.io
+  description: The australian API server
+security:
+- bearerAuth: []
+tags:
+- name: Conversation
+  description: Everything about your Conversations
+  externalDocs:
+    description: What is a conversation?
+    url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
+- name: Admin
+  description: Everything about your Admins
+- name: News
+  description: Everything about your News
+  externalDocs:
+    description: News explained
+    url: https://www.intercom.com/help/en/articles/6362251-news-explained
