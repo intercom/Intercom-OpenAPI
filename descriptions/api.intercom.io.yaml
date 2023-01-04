@@ -573,6 +573,70 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/teams":
+    get:
+      summary: List all teams
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Team
+      operationId: listTeams
+      description: This will return a list of team objects for the App.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/team"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/teams/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: The unique identifier of a given team.
+      schema:
+        type: string
+    get:
+      summary: Retrieve a team
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Team
+      operationId: retrieveTeam
+      description: You can fetch the details of a single team, containing an array
+        of admins that belong to this team.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/team"
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
 components:
   schemas:
     intercom_version:
@@ -1202,7 +1266,7 @@ components:
           nullable: true
           description: The URL where the conversation was started. For Twitter, Email,
             and Bots, this will be blank.
-          example: 
+          example:
         redacted:
           type: boolean
           description: Whether or not the source message has been redacted. Only applicable
@@ -1835,6 +1899,45 @@ components:
         deleted:
           type: boolean
           description: Whether the news item was deleted successfully or not.
+    team:
+      title: Team
+      type: object
+      description: Teams are groups of admins in Intercom.
+      properties:
+        type:
+          type: string
+          description: value is "team"
+          example: team
+        id:
+          type: string
+          description: The id of the team
+          example: '814865'
+        name:
+          type: string
+          description: The name of the team
+          example: Example Team
+        admin_ids:
+          type: array
+          description: The list of admin id`s that are a part of the team.
+          example:
+          - 493881
+          items:
+            type: integer
+    teams:
+      title: Teams
+      type: object
+      description: This will return a list of team objects for the App.
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - team.list
+        teams:
+          type: array
+          description: A list of team objects
+          items:
+            "$ref": "#/components/schemas/team"
   securitySchemes:
     bearerAuth:
       type: http
@@ -1861,3 +1964,5 @@ tags:
   externalDocs:
     description: News explained
     url: https://www.intercom.com/help/en/articles/6362251-news-explained
+- name: Team
+  description: Everything about your Teams
