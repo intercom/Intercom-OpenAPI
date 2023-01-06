@@ -27,7 +27,7 @@ paths:
         as it poses a potential impersonation security risk.\n\n"
       responses:
         '200':
-          description: successful
+          description: Successful response
           content:
             application/json:
               schema:
@@ -52,13 +52,13 @@ paths:
       description: You can set an Admin as away for the Inbox.
       responses:
         '200':
-          description: successful
+          description: Successful response
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/admin"
         '404':
-          description: Admin Not Found
+          description: Admin not found
           content:
             application/json:
               schema:
@@ -119,11 +119,11 @@ paths:
       description: You can get a log of activities by all admins in an app.
       responses:
         '200':
-          description: successful
+          description: Successful response
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/paginated_response"
+                "$ref": "#/components/schemas/activity_log_list"
         '401':
           description: Unauthorized
           content:
@@ -144,11 +144,11 @@ paths:
       description: You can fetch a list of admins for a given workspace.
       responses:
         '200':
-          description: successful
+          description: Successful response
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/admin"
+                "$ref": "#/components/schemas/admin_list"
         '401':
           description: Unauthorized
           content:
@@ -173,7 +173,7 @@ paths:
       tags:
       - Admin
       operationId: retrieveAdmin
-      description: You can fetch the details of a single admin.
+      description: You can retrieve the details of a single admin.
       responses:
         '200':
           description: Admin found
@@ -193,6 +193,88 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/contacts/{id}/notes":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: The unique identifier of a contact.
+      schema:
+        type: integer
+    get:
+      summary: List all notes
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Note
+      operationId: listNotes
+      description: You can fetch a list of notes that are associated to a contact.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/note_list"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create a note
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of a given contact.
+        schema:
+          type: integer
+      tags:
+      - Note
+      operationId: createNote
+      description: You can add a note to a single contact.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/note"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - body
+              properties:
+                body:
+                  type: string
+                  description: The text of the note.
+                  example: New note
+                contact_id:
+                  type: string
+                  description: The unique identifier of a given contact.
+                  example: '123'
+                admin_id:
+                  type: string
+                  description: The unique identifier of a given admin.
+                  example: '123'
   "/conversations":
     get:
       summary: List all conversations
@@ -573,6 +655,193 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/notes/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: The unique identifier of a given note
+      schema:
+        type: integer
+    get:
+      summary: Retrieve a note
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Note
+      operationId: retrieveNote
+      description: You can fetch the details of a single note.
+      responses:
+        '200':
+          description: Note found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/note"
+        '404':
+          description: Note not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/tags":
+    get:
+      summary: List all tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Tags
+      operationId: listTags
+      description: "You can fetch a list of all tags for a given workspace.\n\n"
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/tag_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create Tags, Update tags, Tag and Untag Companies
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Tags
+      operationId: createTag
+      description: |
+        You can use this endpoint to perform the following operations:
+
+          **1. Create a new tag:** You can create a new tag by passing in the tag name as specified in "Create or Update Tag Request Payload" described below.
+
+          **2. Update an existing tag:** You can update an existing tag by passing the id of the tag as specified in "Create or Update Tag Request Payload" described below.
+
+          **3. Tag Companies:** You can tag single company or a list of companies. You can tag a company by passing in the tag name and the company details as specified in "Tag Company Request Payload" described below. Also, if the tag doesn't exist then a new one will be created automatically.
+
+          **4. Untag Companies:** You can untag a single company or a list of companies. You can untag a company by passing in the tag id and the company details as specified in "Untag Company Request Payload" described below.
+
+        Each operation will return a tag object.
+      responses:
+        '200':
+          description: Action successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Company not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - "$ref": "#/components/schemas/create_or_update_tag_request"
+              - "$ref": "#/components/schemas/tag_company_request"
+              - "$ref": "#/components/schemas/untag_company_request"
+  "/tags/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: The unique identifier of a given tag
+      required: true
+      schema:
+        type: string
+    get:
+      summary: Find a specific tag
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Tags
+      operationId: findTag
+      description: |
+        You can fetch the details of tags that are on the workspace by their id.
+        This will return a tag object.
+      responses:
+        '200':
+          description: Tag found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '404':
+          description: Tag not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete tag
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Tags
+      operationId: deleteTag
+      description: 'You can delete the details of tags that are on the workspace by
+        passing in the id.
+
+'
+      responses:
+        '200':
+          description: Successful
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/teams":
     get:
       summary: List all teams
@@ -591,7 +860,7 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/team"
+                "$ref": "#/components/schemas/team_list"
         '401':
           description: Unauthorized
           content:
@@ -640,7 +909,7 @@ paths:
 components:
   schemas:
     intercom_version:
-      description: The Intercom API version, for example.</br>By default the version
+      description: Intercom API version.</br>By default, it's equal to the version
         set in the app package.
       type: string
       example: Unstable
@@ -755,7 +1024,7 @@ components:
     activity_log:
       title: Activity Log
       type: object
-      description: Activities done by Admins
+      description: Activities performed by admins.
       nullable: true
       properties:
         id:
@@ -764,13 +1033,12 @@ components:
           example: '6'
         performed_by:
           type: object
-          description: An Admin object of the admin who performed the activity.
+          description: An object representing the admin who performed the activity.
           properties:
             type:
               type: string
-              description: ''
-              default: admin
-              example: admin
+              description: String representing the object's type. Always has the value
+                `admin`.
             id:
               type: string
               description: The id representing the admin.
@@ -862,18 +1130,33 @@ components:
           - welcome_message_change
         activity_description:
           type: string
-          description: A sentence or two describing the activity
+          description: A sentence or two describing the activity.
+    activity_log_list:
+      title: Paginated Response
+      type: object
+      description: A paginated list of activity logs.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `activity_log.list`.
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
+        activity_logs:
+          type: array
+          description: An array of activity logs
+          items:
+            "$ref": "#/components/schemas/activity_log"
     admin:
       title: Admin
       type: object
-      description: Admins are the teammate accounts that have access to a workspace
+      description: Admins are teammate accounts that have access to a workspace.
       nullable: true
       properties:
         type:
           type: string
-          description: ''
-          default: admin
-          example: admin
+          description: String representing the object's type. Always has the value
+            `admin`.
         id:
           type: string
           description: The id representing the admin.
@@ -906,7 +1189,7 @@ components:
           example: true
         team_ids:
           type: array
-          description: This is a list of teams ids that this admin is part of
+          description: This object represents the avatar associated with the admin.
           example:
           - 814865
           items:
@@ -916,6 +1199,20 @@ components:
           format: uri
           nullable: true
           description: Image for the associated team or teammate
+    admin_list:
+      title: Admins
+      type: object
+      description: A list of admins associated with a given workspace.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `admin.list`.
+        admins:
+          type: array
+          description: A list of admins associated with a given workspace.
+          items:
+            "$ref": "#/components/schemas/admin"
     admin_with_app:
       title: Admin
       type: object
@@ -924,9 +1221,8 @@ components:
       properties:
         type:
           type: string
-          description: ''
-          default: admin
-          example: admin
+          description: String representing the object's type. Always has the value
+            `admin`.
         id:
           type: string
           description: The id representing the admin.
@@ -959,7 +1255,8 @@ components:
           example: true
         team_ids:
           type: array
-          description: This is a list of teams ids that this admin is part of.
+          description: This is a list of ids of the teams that this admin is part
+            of.
           example:
           - 814865
           items:
@@ -976,7 +1273,7 @@ components:
               type: string
               format: uri
               nullable: true
-              description: Image for the associated team or teammate.
+              description: This object represents the avatar associated with the admin.
         email_verified:
           type: boolean
           description: Identifies if this admin's email is verified.
@@ -1266,7 +1563,7 @@ components:
           nullable: true
           description: The URL where the conversation was started. For Twitter, Email,
             and Bots, this will be blank.
-          example:
+          example: 
         redacted:
           type: boolean
           description: Whether or not the source message has been redacted. Only applicable
@@ -1523,7 +1820,7 @@ components:
               message:
                 type: string
                 nullable: true
-                description: Optional. Human readable description of the error
+                description: Optional. Human readable description of the error.
                 example: Access Token Invalid
               field:
                 type: string
@@ -1638,20 +1935,12 @@ components:
         name:
           type: string
           description: The name of the tag
-          example: ''
-        applied_at:
-          type: integer
-          format: date-time
-          description: The time when the tag was applied to the object
-          example: 1663597223
-        applied_by:
-          type: string
-          description: The id of the admin who applied the tag
-          example: '750111329'
+          example: test
     tags:
       title: Tags
       type: object
-      description: A list of tags objects associated with the conversation.
+      description: A list of tags objects associated with a conversation, a company
+        or contact.
       properties:
         type:
           type: string
@@ -1661,6 +1950,21 @@ components:
         tags:
           type: array
           description: A list of tags objects associated with the conversation.
+          items:
+            "$ref": "#/components/schemas/tag"
+    tag_list:
+      title: Tags
+      type: object
+      description: A list of tags objects in the workspace.
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - list
+        data:
+          type: array
+          description: A list of tags objects associated with the workspace .
           items:
             "$ref": "#/components/schemas/tag"
     ticket:
@@ -1826,6 +2130,62 @@ components:
             if you want to set a publish date in the past (e.g. when importing existing
             news items). On write, this field will be ignored if the news item state
             is "draft".
+    note:
+      title: Note
+      type: object
+      description: Notes allow you to annotate and comment on your contacts.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `note`.
+        id:
+          type: string
+          description: The id of the note.
+          example: '17495962'
+        created_at:
+          type: integer
+          format: timestamp
+          description: The time the note was created.
+        contact:
+          type: object
+          description: Represents the contact that the note was created about.
+          nullable: true
+          properties:
+            type:
+              type: string
+              description: String representing the object's type. Always has the value
+                `contact`.
+            id:
+              type: string
+              description: The id of the contact.
+              example: 214656d0c743eafcfde7f248
+        author:
+          "$ref": "#/components/schemas/admin"
+          description: Optional. Represents the Admin that created the note.
+        body:
+          type: string
+          description: The body text of the note.
+          example: "<p>Text for the note.</p>"
+    note_list:
+      title: Paginated Response
+      type: object
+      description: A paginated list of notes associated with a contact.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `list`.
+        data:
+          type: array
+          description: An array of notes.
+          items:
+            "$ref": "#/components/schemas/note"
+        total_count:
+          type: integer
+          description: A count of the total number of notes.
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
     paginated_response:
       title: Paginated Response
       type: object
@@ -1837,7 +2197,6 @@ components:
           enum:
           - list
           - conversation.list
-          - activity_log.list
         pages:
           "$ref": "#/components/schemas/cursor_pages"
         total_count:
@@ -1850,9 +2209,8 @@ components:
             anyOf:
             - "$ref": "#/components/schemas/news_item"
             - "$ref": "#/components/schemas/newsfeed"
-            - "$ref": "#/components/schemas/activity_log"
     cursor_pages:
-      title: Cusor based Pages
+      title: Cursor based pages
       type: object
       description: |
         Cursor-based pagination is a technique used in the Intercom API to navigate through large amounts of data.
@@ -1906,7 +2264,7 @@ components:
       properties:
         type:
           type: string
-          description: value is "team"
+          description: Value is always "team"
           example: team
         id:
           type: string
@@ -1918,13 +2276,13 @@ components:
           example: Example Team
         admin_ids:
           type: array
-          description: The list of admin id`s that are a part of the team.
+          description: The list of admin IDs that are a part of the team.
           example:
           - 493881
           items:
             type: integer
-    teams:
-      title: Teams
+    team_list:
+      title: Team List
       type: object
       description: This will return a list of team objects for the App.
       properties:
@@ -1938,6 +2296,78 @@ components:
           description: A list of team objects
           items:
             "$ref": "#/components/schemas/team"
+    tag_company_request:
+      description: You can tag a single company or a list of companies.
+      type: object
+      title: Tag Company Request Payload
+      properties:
+        name:
+          type: string
+          description: The name of the tag, which will be created if not found.
+          example: Independent
+        companies:
+          type: array
+          items:
+            properties:
+              id:
+                type: string
+                description: The Intercom defined id representing the company.
+                example: 531ee472cce572a6ec000006
+              company_id:
+                type: string
+                description: The company id you have defined for the company.
+                example: '6'
+          description: The id or company_id of the company can be passed as input
+            parameters.
+      required:
+      - name
+      - companies
+    create_or_update_tag_request:
+      description: You can create or update an existing tag.
+      type: object
+      title: Create or Update Tag Request Payload
+      properties:
+        name:
+          type: string
+          description: The name of the tag, which will be created if not found, or
+            the new name for the tag if this is an update request. Names are case
+            insensitive.
+          example: Independent
+        id:
+          type: string
+          description: The id of tag to updates.
+      required:
+      - name
+    untag_company_request:
+      description: You can tag a single company or a list of companies.
+      type: object
+      title: Untag Company Request Payload
+      properties:
+        name:
+          type: string
+          description: The name of the tag which will be untagged from the company
+          example: Independent
+        companies:
+          type: array
+          items:
+            properties:
+              id:
+                type: string
+                description: The Intercom defined id representing the company.
+                example: 531ee472cce572a6ec000006
+              company_id:
+                type: string
+                description: The company id you have defined for the company.
+                example: '6'
+              untag:
+                type: boolean
+                description: Always set to true
+                example: 'true'
+          description: The id or company_id of the company can be passed as input
+            parameters.
+      required:
+      - name
+      - companies
   securitySchemes:
     bearerAuth:
       type: http
@@ -1957,6 +2387,8 @@ tags:
   externalDocs:
     description: What is a conversation?
     url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
+- name: tags
+  description: Everything about tags
 - name: Admin
   description: Everything about your Admins
 - name: News
@@ -1964,5 +2396,7 @@ tags:
   externalDocs:
     description: News explained
     url: https://www.intercom.com/help/en/articles/6362251-news-explained
+- name: Note
+  description: Everything about your Notes
 - name: Team
   description: Everything about your Teams
