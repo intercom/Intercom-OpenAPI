@@ -976,6 +976,186 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/visitors":
+    put:
+      summary: Update a visitor
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Visitor
+      operationId: updateVisitor
+      description: |+
+        Sending a PUT request to `/visitors` will result in an update of an existing Visitor.
+
+        **Option 1.** You can update a visitor by passing in the `user_id` of the visitor in the Request body.
+
+        **Option 2.** You can update a visitor by passing in the `id` of the visitor in the Request body.
+
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/visitor"
+        '404':
+          description: visitor Not Found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_visitor_request"
+    get:
+      summary: Retrieve a visitor with User ID
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: user_id
+        in: query
+        description: The user_id of the Visitor you want to retrieve.
+        required: true
+        schema:
+          type: string
+      tags:
+      - Visitor
+      operationId: retrieveVisitorWithUserId
+      description: You can fetch the details of a single visitor.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/visitor"
+        '404':
+          description: Visitor not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/visitors/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: Id provided by Intercom.
+      schema:
+        type: string
+    get:
+      summary: Retrieve a visitor with ID
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Visitor
+      operationId: retrieveVisitor
+      description: You can fetch the details of a single visitor.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/visitor"
+        '404':
+          description: Visitor not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete a visitor
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Visitor
+      operationId: deleteVisitor
+      description: You can delete a single visitor.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/visitor_deleted_object"
+        '404':
+          description: Visitor Not Found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/visitors/convert":
+    post:
+      summary: Convert a visitor
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Visitor
+      operationId: convertVisitor
+      description: "You can merge a Visitor to a Contact of role type `lead` or `user`.\n\n>
+        \U0001F4D8 What happens upon a visitor being converted?\n>\n> If the User
+        exists, then the Visitor will be merged into it, the Visitor deleted and the
+        User returned. If the User does not exist, the Visitor will be converted to
+        a User, with the User identifiers replacing it's Visitor identifiers.\n"
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/contact"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/convert_visitor_request"
 components:
   schemas:
     intercom_version:
@@ -1633,7 +1813,7 @@ components:
           nullable: true
           description: The URL where the conversation was started. For Twitter, Email,
             and Bots, this will be blank.
-          example: 
+          example:
         redacted:
           type: boolean
           description: Whether or not the source message has been redacted. Only applicable
@@ -2425,6 +2605,446 @@ components:
           description: A list of team objects
           items:
             "$ref": "#/components/schemas/team"
+    visitor:
+      title: Visitor
+      type: object
+      description: Visitors are useful for representing anonymous people that have
+        not yet been identified. They usually represent website visitors. Visitors
+        are not visible in Intercom platform. The Visitors resource provides methods
+        to fetch, update, convert and delete.
+      nullable: true
+      properties:
+        type:
+          type: string
+          description: Value is 'visitor'
+          default: visitor
+          example: visitor
+        id:
+          type: string
+          description: The Intercom defined id representing the Visitor.
+          example: 530370b477ad7120001d
+        user_id:
+          type: string
+          description: Automatically generated identifier for the Visitor.
+          example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+        anonymous:
+          type: boolean
+          description: Identifies if this visitor is anonymous.
+          example: false
+        email:
+          type: string
+          format: email
+          description: The email of the visitor.
+          example: jane.doe@example.com
+        phone:
+          type: string
+          nullable: true
+          description: The phone number of the visitor.
+          example: 555-555-5555
+        name:
+          type: string
+          nullable: true
+          description: The name of the visitor.
+          example: Jane Doe
+        pseudonym:
+          type: string
+          nullable: true
+          description: The pseudonym of the visitor.
+          example: Red Duck from Dublin
+        avatar:
+          type: object
+          properties:
+            type:
+              type: string
+              description: ''
+              default: avatar
+              example: avatar
+            image_url:
+              type: string
+              format: uri
+              nullable: true
+              description: This object represents the avatar associated with the visitor.
+        app_id:
+          type: string
+          description: The id of the app the visitor is associated with.
+          example: hfi1bx4l
+        companies:
+          type: object
+          properties:
+            type:
+              type: string
+              description: The type of the object
+              enum:
+              - company.list
+            companies:
+              type: array
+              items:
+                "$ref": "#/components/schemas/company"
+        location_data:
+          type: object
+          properties:
+            type:
+              type: string
+              description: ''
+              default: location_data
+              example: location_data
+            city_name:
+              type: string
+              description: The city name of the visitor.
+              example: Dublin
+            continent_code:
+              type: string
+              description: The continent code of the visitor.
+              example: EU
+            country_code:
+              type: string
+              description: The country code of the visitor.
+              example: IRL
+            country_name:
+              type: string
+              description: The country name of the visitor.
+              example: Ireland
+            postal_code:
+              type: string
+              description: The postal code of the visitor.
+              example: D02 N960
+            region_name:
+              type: string
+              description: The region name of the visitor.
+              example: Leinster
+            timezone:
+              type: string
+              description: The timezone of the visitor.
+              example: Europe/Dublin
+        las_request_at:
+          type: integer
+          description: The time the Lead last recorded making a request.
+          example: 1663597260
+        created_at:
+          type: integer
+          description: The time the Visitor was added to Intercom.
+          example: 1663597223
+        remote_created_at:
+          type: integer
+          description: The time the Visitor was added to Intercom.
+          example: 1663597223
+        signed_up_at:
+          type: integer
+          description: The time the Visitor signed up for your product.
+          example: 1663597223
+        updated_at:
+          type: integer
+          description: The last time the Visitor was updated.
+          example: 1663597260
+        session_count:
+          type: integer
+          description: The number of sessions the Visitor has had.
+          example: 1
+        social_profiles:
+          type: object
+          properties:
+            type:
+              type: string
+              description: The type of the object
+              enum:
+              - social_profile.list
+            social_profiles:
+              type: array
+              items:
+                type: string
+        owner_id:
+          type: string
+          nullable: true
+          description: The id of the admin that owns the Visitor.
+          example: '5169261'
+        unsubscribed_from_emails:
+          type: boolean
+          description: Whether the Visitor is unsubscribed from emails.
+          example: false
+        marked_email_as_spam:
+          type: boolean
+          description: Identifies if this visitor has marked an email as spam.
+          example: false
+        has_hard_bounced:
+          type: boolean
+          description: Identifies if this visitor has had a hard bounce.
+          example: false
+        tags:
+          type: object
+          properties:
+            type:
+              type: string
+              description: The type of the object
+              enum:
+              - tag.list
+            tags:
+              type: array
+              items:
+                properties:
+                  type:
+                    type: string
+                    description: The type of the object
+                    enum:
+                    - tag
+                  id:
+                    type: string
+                    description: The id of the tag.
+                    example: '8482'
+                  name:
+                    type: string
+                    description: The name of the tag.
+                    example: tag_name
+        segments:
+          type: object
+          properties:
+            type:
+              type: string
+              description: The type of the object
+              enum:
+              - segment.list
+            segments:
+              type: array
+              items:
+                type: string
+        custom_attributes:
+          type: object
+          description: The custom attributes you have set on the Visitor.
+          additionalProperties:
+            type: string
+        referrer:
+          type: string
+          nullable: true
+          description: The referer of the visitor.
+          example: https://www.google.com/
+        utm_campaign:
+          type: string
+          nullable: true
+          description: The utm_campaign of the visitor.
+          example: intercom-link
+        utm_content:
+          type: string
+          nullable: true
+          description: The utm_content of the visitor.
+          example: banner
+        utm_medium:
+          type: string
+          nullable: true
+          description: The utm_medium of the visitor.
+          example: email
+        utm_source:
+          type: string
+          nullable: true
+          description: The utm_source of the visitor.
+          example: Intercom
+        utm_term:
+          type: string
+          nullable: true
+          description: The utm_term of the visitor.
+          example: messenger
+        do_not_track:
+          type: boolean
+          nullable: true
+          description: Identifies if this visitor has do not track enabled.
+          example: false
+    visitor_deleted_object:
+      title: Visitor Deleted Object
+      type: object
+      description: Response returned when an object is deleted
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the visitor which is given by Intercom.
+        type:
+          type: string
+          description: The type of object which was deleted
+          enum:
+          - visitor
+        user_id:
+          type: string
+          description: Automatically generated identifier for the Visitor.
+    company:
+      title: Company
+      type: object
+      description: Companies allow you to represent organizations using your product.
+        Each company will have its own description and be associated with contacts.
+        You can fetch, create, update and list companies.
+      properties:
+        type:
+          type: string
+          description: Value is always "company"
+          example: company
+        id:
+          type: string
+          description: The Intercom defined id representing the company.
+          example: 531ee472cce572a6ec000006
+        name:
+          type: string
+          description: The name of the team
+          example: Blue Sun
+        plan:
+          type: object
+          properties:
+            type:
+              type: string
+              description: Value is always "plan"
+              example: plan
+            id:
+              type: string
+              description: The id of the plan
+              example: '269315'
+            name:
+              type: string
+              description: The name of the plan
+              example: Pro
+        company_id:
+          type: string
+          description: The company id you have defined for the company.
+          example: '6'
+        remote_created_at:
+          type: integer
+          description: The time the company was created by you.
+          example: 1663597223
+        created_at:
+          type: integer
+          description: The time the company was added in Intercom.
+          example: 1663597223
+        updated_at:
+          type: integer
+          description: The last time the company was updated.
+          example: 1663597223
+        size:
+          type: integer
+          description: The number of employees in the company.
+          example: 100
+        website:
+          type: string
+          description: The URL for the company website.
+          example: https://www.intercom.com
+        industry:
+          type: string
+          description: The industry that the company operates in.
+          example: Software
+        monthly_spend:
+          type: integer
+          description: How much revenue the company generates for your business.
+          example: 100
+        session_count:
+          type: integer
+          description: How many sessions the company has recorded.
+          example: 100
+        user_count:
+          type: integer
+          description: The number of users in the company.
+          example: 100
+        custom_attributes:
+          type: object
+          description: The custom attributes you have set on the company.
+          additionalProperties:
+            type: string
+    contact:
+      title: Contact
+      type: object
+      description: ''
+      nullable: true
+      properties:
+        type:
+          type: string
+          description: ''
+        id:
+          type: string
+          description: ''
+    update_visitor_request:
+      description: Update an existing visitor.
+      type: object
+      title: Update Visitor Request Payload
+      properties:
+        id:
+          type: string
+          description: A unique identified for the visitor which is given by Intercom.
+          example: 8a88a590-e
+        user_id:
+          type: string
+          description: A unique identified for the visitor which is given by you.
+          example: '123'
+        name:
+          type: string
+          description: The visitor's name.
+          example: Christian Bale
+        custom_attributes:
+          type: object
+          description: The custom attributes which are set for the visitor.
+          additionalProperties:
+            type: string
+          example:
+            paid_subscriber: true
+            monthly_spend: 155.5
+            team_mates: 9
+      anyOf:
+      - required:
+        - id
+      - required:
+        - user_id
+    convert_visitor_request:
+      description: You can merge a Visitor to a Contact of role type lead or user.
+      type: object
+      title: Convert Visitor Request Payload
+      properties:
+        type:
+          type: string
+          description: Represents the role of the Contact model. Accepts `lead` or
+            `user`.
+          example: user
+        user:
+          type: object
+          description: The unique identifiers retained after converting or merging.
+          properties:
+            id:
+              type: string
+              description: The unique identifier for the contact which is given by
+                Intercom.
+              example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+            user_id:
+              type: string
+              description: A unique identifier for the contact which is given to Intercom,
+                which will be represented as external_id.
+              example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+            email:
+              type: string
+              description: The contact's email, retained by default if one is present.
+              example: winstonsmith@truth.org
+          anyOf:
+          - required:
+            - id
+          - required:
+            - user_id
+        visitor:
+          type: object
+          description: The unique identifiers to convert a single Visitor.
+          properties:
+            id:
+              type: string
+              description: The unique identifier for the contact which is given by
+                Intercom.
+              example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+            user_id:
+              type: string
+              description: A unique identifier for the contact which is given to Intercom.
+              example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+            email:
+              type: string
+              description: The visitor's email.
+              example: winstonsmith@truth.org
+          anyOf:
+          - required:
+            - id
+          - required:
+            - user_id
+          - required:
+            - email
+      required:
+      - type
+      - user
+      - visitor
     tag_company_request:
       description: You can tag a single company or a list of companies.
       type: object
@@ -2531,3 +3151,5 @@ tags:
   description: Everything about tags
 - name: Team
   description: Everything about your Teams
+- name: Visitor
+  description: Everything about your Visitors
