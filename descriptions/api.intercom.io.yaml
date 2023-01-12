@@ -693,6 +693,76 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/segments":
+    parameters:
+    - name: include_count
+      in: query
+      required: false
+      description: It includes the count of contacts that belong to each segment.
+      schema:
+        type: boolean
+    get:
+      summary: List all segments
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Segments
+      operationId: listSegments
+      description: You can fetch a list of all segments.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/segment_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/segments/{id}":
+    parameters:
+    - name: id
+      in: path
+      required: true
+      description: The unique identified of a given segment.
+      schema:
+        type: string
+    get:
+      summary: Retrieve a segment
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Segments
+      operationId: retrieveSegment
+      description: You can fetch the details of a single segment.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/segment"
+        '404':
+          description: Segment not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/tags":
     get:
       summary: List all tags
@@ -2257,6 +2327,65 @@ components:
         deleted:
           type: boolean
           description: Whether the news item was deleted successfully or not.
+    segment:
+      title: Segment
+      type: object
+      description: A segment is a group of your contacts defined by the rules that
+        you set.
+      properties:
+        type:
+          type: string
+          description: The type of object.
+          enum:
+          - segment
+        id:
+          type: string
+          description: The unique identifier representing the segment.
+          example: 56203d253cba154d39010062
+        name:
+          type: string
+          description: The name of the segment.
+          example: Active
+        created_at:
+          type: integer
+          description: The time the segment was created.
+          example: 1394621988
+        updated_at:
+          type: integer
+          description: The time the segment was updated.
+          example: 1394622004
+        person_type:
+          type: string
+          description: 'Type of the contact: contact (lead) or user.'
+          enum:
+          - contact
+          - user
+        count:
+          type: integer
+          description: The number of items in the user segment. It's returned when
+            `include_count=true` is included in the request.
+          example: 3
+          nullable: true
+    segment_list:
+      title: Segment List
+      type: object
+      description: This will return a list of Segment Objects. The result may also
+        have a pages object if the response is paginated.
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - segment.list
+        segments:
+          type: array
+          description: A list of Segment objects
+          items:
+            "$ref": "#/components/schemas/segment"
+        pages:
+          type: object
+          description: A pagination object, which may be empty, indicating no further
+            pages to fetch.
     team:
       title: Team
       type: object
@@ -2387,8 +2516,6 @@ tags:
   externalDocs:
     description: What is a conversation?
     url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
-- name: tags
-  description: Everything about tags
 - name: Admin
   description: Everything about your Admins
 - name: News
@@ -2398,5 +2525,9 @@ tags:
     url: https://www.intercom.com/help/en/articles/6362251-news-explained
 - name: Note
   description: Everything about your Notes
+- name: Segment
+  description: Everything about your Segments
+- name: tags
+  description: Everything about tags
 - name: Team
   description: Everything about your Teams
