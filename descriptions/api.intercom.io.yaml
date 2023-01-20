@@ -732,6 +732,280 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/contacts/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: id
+      required: true
+      schema:
+        type: string
+    put:
+      summary: Update a contact
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contact
+      operationId: UpdateContact
+      description: You can update an existing contact (ie. user or lead).
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/contact"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+    get:
+      summary: Get a contact
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contact
+      operationId: ShowContact
+      description: You can fetch the details of a single contact.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/contact"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete a contact
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contact
+      operationId: DeleteContact
+      description: You can delete a single contact.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/contact"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/contacts/merge":
+    post:
+      summary: Merge a lead and a user
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contact
+      operationId: MergeContact
+      description: You can merge a contact with a `role` of `lead` into a contact
+        with a `role` of `user`.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/contact"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/merge_contacts_request"
+  "/contacts/search":
+    post:
+      summary: Search contacts
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contact
+      operationId: SearchContacts
+      description: "You can search for multiple contacts by the value of their attributes
+        in order to fetch exactly who you want.\n\nTo search for contacts, you need
+        to send a POST request to `https://api.intercom.io/contacts/search`. This
+        will accept a query object in the body which will define your filters in order
+        to search for contacts.\n\n> \U0001F6A7 Why is there a delay when creating
+        contacts and searching for them?\n>\n> If a contact has recently been created,
+        there is a possibility that it will not yet be available when searching. This
+        means that it may not appear in the response. This delay can take a few minutes.
+        If you need to be instantly notified then you could use webhooks instead,
+        which you'd currently have to iterate on to see if they match your search
+        filters.\n\n> \U0001F6A7 Nesting & Limitations\n>\n> You can nest these filters
+        in order to get even more granular insights that pinpoint exactly what you
+        need. Example: (1 OR 2) AND (3 OR 4).\n> There are some limitations to the
+        amount of multiple's there can be:\n> * There's a limit of max 2 nested filters\n>
+        * There's a limit of max 15 filters for each AND or OR group\n\n> \U0001F6A7
+        Searching for Timestamp Fields\n\n> All timestamp fields (created_at, updated_at
+        etc.) are indexed as Dates for Contact Search queries; Datetime queries are
+        not currently supported. This means you can only query for timestamp fields
+        by day - not hour, minute or second.\n> For example, if you search for all
+        Contacts with a created_at value greater (>) than 1577869200 (the UNIX timestamp
+        for January 1st, 2020 9:00 AM), that will be interpreted as 1577836800 (January
+        1st, 2020 12:00 AM). The search results will then include Contacts created
+        from January 2nd, 2020 12:00 AM onwards.\n> If you'd like to get contacts
+        created on January 1st, 2020 you should search with a created_at value equal
+        (=) to 1577836800 (January 1st, 2020 12:00 AM).\n> This behaviour applies
+        only to timestamps used in search queries. The search results will still contain
+        the full UNIX timestamp and be sorted accordingly.\n\n"
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/contact"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/search_request"
+  "/contacts":
+    get:
+      summary: List all contacts
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contact
+      operationId: ListContacts
+      description: You can fetch a list of all contacts.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/contact"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create contact
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contact
+      operationId: CreateContact
+      description: You can create a new contact (ie. user or lead).
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/contact"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - "$ref": "#/components/schemas/create_contact_request"
+  "/contacts/{id}/archive":
+    parameters:
+    - name: id
+      in: path
+      description: id
+      required: true
+      schema:
+        type: string
+    post:
+      summary: Archive contact
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contact
+      operationId: ArchiveContact
+      description: You can archive a single contact.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/contact"
+  "/contacts/{id}/unarchive":
+    parameters:
+    - name: id
+      in: path
+      description: id
+      required: true
+      schema:
+        type: string
+    post:
+      summary: Unarchive contact
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contact
+      operationId: UnarchiveContact
+      description: You can unarchive a single contact.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/contact"
   "/conversations/{conversation_id}/tags":
     post:
       summary: Add tag to a conversation
@@ -1682,10 +1956,8 @@ paths:
       tags:
       - Tags
       operationId: deleteTag
-      description: 'You can delete the details of tags that are on the workspace by
-        passing in the id.
-
-'
+      description: "You can delete the details of tags that are on the workspace by
+        passing in the id.\n\n"
       responses:
         '200':
           description: Successful
@@ -1968,84 +2240,19 @@ components:
       - '2.6'
       - '2.7'
       - Unstable
-    update_article_request:
-      description: You can Update an Article
+    search_request:
+      description: Search using Intercoms Search APIs.
       type: object
-      title: Update Article Request Payload
-      nullable: true
+      title: Search data
       properties:
-        title:
-          type: string
-          description: The title of the article.For multilingual articles, this will
-            be the title of the default language's content.
-          example: Thanks for everything
-        description:
-          type: string
-          description: The description of the article. For multilingual articles,
-            this will be the description of the default language's content.
-          example: Description of the Article
-        body:
-          type: string
-          description: The content of the article. For multilingual articles, this
-            will be the body of the default language's content.
-          example: "<p>This is the body in html</p>"
-        author_id:
-          type: integer
-          description: The id of the author of the article. For multilingual articles,
-            this will be the id of the author of the default language's content. Must
-            be a teammate on the help center's workspace.
-          example: 1295
-        state:
-          type: string
-          description: Whether the article will be `published` or will be a `draft`.
-            Defaults to draft. For multilingual articles, this will be the state of
-            the default language's content.
-          enum:
-          - published
-          - draft
-          example: draft
-        parent_id:
-          type: integer
-          description: The id of the article's parent collection or section. An article
-            without this field stands alone.
-          example: 18
-        parent_type:
-          type: string
-          description: The type of parent, which can either be a `collection` or `section`.
-          example: collection
-        translated_content:
-          "$ref": "#/components/schemas/article_translated_content"
-    update_visitor_request:
-      description: Update an existing visitor.
-      type: object
-      title: Update Visitor Request Payload
-      properties:
-        id:
-          type: string
-          description: A unique identified for the visitor which is given by Intercom.
-          example: 8a88a590-e
-        user_id:
-          type: string
-          description: A unique identified for the visitor which is given by you.
-          example: '123'
-        name:
-          type: string
-          description: The visitor's name.
-          example: Christian Bale
-        custom_attributes:
-          type: object
-          description: The custom attributes which are set for the visitor.
-          additionalProperties:
-            type: string
-          example:
-            paid_subscriber: true
-            monthly_spend: 155.5
-            team_mates: 9
-      anyOf:
-      - required:
-        - id
-      - required:
-        - user_id
+        query:
+          oneOf:
+          - "$ref": "#/components/schemas/single_filter_search_request"
+            title: Single filter search request
+          - "$ref": "#/components/schemas/multiple_filter_search_request"
+            title: multiple filter search request
+      required:
+      - query
     convert_visitor_request:
       description: You can merge a Visitor to a Contact of role type lead or user.
       type: object
@@ -2157,6 +2364,76 @@ components:
       required:
       - title
       - author_id
+    create_contact_request:
+      description: Conversations are how you can communicate with users in Intercom.
+        They are created when a contact replies to an outbound message, or when one
+        admin directly sends a message to a single contact.
+      type: object
+      title: Create Conversation Request Payload
+      properties:
+        role:
+          type: string
+          description: The role of the contact.
+        external_id:
+          type: string
+          description: A unique identifier for the contact which is given to Intercom
+        email:
+          type: string
+          description: The contacts email
+          example: jdoe@example.com
+        phone:
+          type: string
+          nullable: true
+          description: The contacts phone
+          example: "+353871234567"
+        name:
+          type: string
+          nullable: true
+          description: The contacts name
+          example: John Doe
+        avatar:
+          type: string
+          nullable: true
+          description: An image URL containing the avatar of a contact
+          example: https://www.example.com/avatar_image.jpg
+        signed_up_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The time specified for when a contact signed up
+          example: 1571672154
+        last_seen_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The time when the contact was last seen (either where the Intercom
+            Messenger was installed or when specified manually)
+          example: 1571672154
+        owner_id:
+          type: integer
+          nullable: true
+          description: The id of an admin that has been assigned account ownership
+            of the contact
+          example: 123
+        unsubscribed_from_emails:
+          type: boolean
+          nullable: true
+          description: Whether the contact is unsubscribed from emails
+          example: true
+        custom_attributes:
+          type: object
+          nullable: true
+          description: The custom attributes which are set for the contact
+      anyOf:
+      - required:
+        - email
+        title: Create contact with email
+      - required:
+        - external_id
+        title: Create contact with external_id
+      - required:
+        - role
+        title: Create contact with role
     create_conversation_request:
       description: Conversations are how you can communicate with users in Intercom.
         They are created when a contact replies to an outbound message, or when one
@@ -2300,6 +2577,43 @@ components:
           description: The id of tag to updates.
       required:
       - name
+    merge_contacts_request:
+      description: Merge contact data.
+      type: object
+      title: Merge contact data
+      properties:
+        from:
+          type: string
+          description: The unique identifier for the contact to merge away from. Must
+            be a lead.
+          example: 5d70dd30de4efd54f42fd526
+        into:
+          type: string
+          description: The unique identifier for the contact to merge into. Must be
+            a user.
+          example: 5ba682d23d7cf92bef87bfd4
+    multiple_filter_search_request:
+      type: object
+      properties:
+        operator:
+          type: string
+          enum:
+          - AND
+          - OR
+          description: An operator to allow boolean inspection between multiple fields.
+          example: AND
+        value:
+          oneOf:
+          - type: array
+            description: Add mutiple filters.
+            title: multiple filter search request
+            items:
+              "$ref": "#/components/schemas/multiple_filter_search_request"
+          - type: array
+            description: Add a single filter field.
+            title: single filter search request
+            items:
+              "$ref": "#/components/schemas/single_filter_search_request"
     news_item_request:
       description: A News Item is a content type in Intercom enabling you to announce
         product updates, company news, promotions, events and more with your customers.
@@ -2357,6 +2671,32 @@ components:
       required:
       - title
       - sender_id
+    single_filter_search_request:
+      type: object
+      properties:
+        field:
+          type: string
+          description: The Intercom defined id representing the company.
+          example: custom_attributes.social_network
+        operator:
+          type: string
+          enum:
+          - "="
+          - "!="
+          - IN
+          - NIN
+          - "<"
+          - ">"
+          - "~"
+          - "!~"
+          - "^"
+          - "$"
+          description: The Intercom defined id representing the company.
+          example: "="
+        value:
+          type: string
+          description: The Intercom defined id representing the company.
+          example: facebook
     tag_company_request:
       description: You can tag a single company or a list of companies.
       type: object
@@ -2433,534 +2773,84 @@ components:
       required:
       - name
       - companies
-    note:
-      title: Note
+    update_article_request:
+      description: You can Update an Article
       type: object
-      description: Notes allow you to annotate and comment on your contacts.
+      title: Update Article Request Payload
+      nullable: true
       properties:
-        type:
+        title:
           type: string
-          description: String representing the object's type. Always has the value
-            `note`.
-        id:
+          description: The title of the article.For multilingual articles, this will
+            be the title of the default language's content.
+          example: Thanks for everything
+        description:
           type: string
-          description: The id of the note.
-          example: '17495962'
-        created_at:
-          type: integer
-          format: timestamp
-          description: The time the note was created.
-        contact:
-          type: object
-          description: Represents the contact that the note was created about.
-          nullable: true
-          properties:
-            type:
-              type: string
-              description: String representing the object's type. Always has the value
-                `contact`.
-            id:
-              type: string
-              description: The id of the contact.
-              example: 214656d0c743eafcfde7f248
-        author:
-          "$ref": "#/components/schemas/admin"
-          description: Optional. Represents the Admin that created the note.
+          description: The description of the article. For multilingual articles,
+            this will be the description of the default language's content.
+          example: Description of the Article
         body:
           type: string
-          description: The body text of the note.
-          example: "<p>Text for the note.</p>"
-    activity_log:
-      title: Activity Log
-      type: object
-      description: Activities performed by admins.
-      nullable: true
-      properties:
-        id:
-          type: string
-          description: The id representing the activity.
-          example: '6'
-        performed_by:
-          type: object
-          description: An object representing the admin who performed the activity.
-          properties:
-            type:
-              type: string
-              description: String representing the object's type. Always has the value
-                `admin`.
-            id:
-              type: string
-              description: The id representing the admin.
-              example: '1295'
-            email:
-              type: string
-              description: The email of the admin.
-              example: john@example.com
-            ip:
-              type: string
-              description: The IP address of the admin.
-              example: 198.51.100.255
-        metadata:
-          type: object
-        created_at:
+          description: The content of the article. For multilingual articles, this
+            will be the body of the default language's content.
+          example: "<p>This is the body in html</p>"
+        author_id:
           type: integer
-          format: date-time
-          description: ''
-          example: 1671028894
-        activity_type:
+          description: The id of the author of the article. For multilingual articles,
+            this will be the id of the author of the default language's content. Must
+            be a teammate on the help center's workspace.
+          example: 1295
+        state:
           type: string
+          description: Whether the article will be `published` or will be a `draft`.
+            Defaults to draft. For multilingual articles, this will be the state of
+            the default language's content.
           enum:
-          - admin_assignment_limit_change
-          - admin_away_mode_change
-          - admin_deletion
-          - admin_deprovisioned
-          - admin_impersonation_end
-          - admin_impersonation_start
-          - admin_invite_change
-          - admin_invite_creation
-          - admin_invite_deletion
-          - admin_login_failure
-          - admin_login_success
-          - admin_logout
-          - admin_password_reset_request
-          - admin_password_reset_success
-          - admin_permission_change
-          - admin_provisioned
-          - admin_two_factor_auth_change
-          - admin_unauthorized_sign_in_method
-          - app_admin_join
-          - app_authentication_method_change
-          - app_data_deletion
-          - app_data_export
-          - app_google_sso_domain_change
-          - app_identity_verification_change
-          - app_name_change
-          - app_outbound_address_change
-          - app_package_installation
-          - app_package_token_regeneration
-          - app_package_uninstallation
-          - app_team_creation
-          - app_team_deletion
-          - app_team_membership_modification
-          - app_timezone_change
-          - app_webhook_creation
-          - app_webhook_deletion
-          - articles_in_messenger_enabled_change
-          - bulk_delete
-          - bulk_export
-          - campaign_deletion
-          - campaign_state_change
-          - conversation_part_deletion
-          - conversation_topic_change
-          - conversation_topic_creation
-          - conversation_topic_deletion
-          - help_center_settings_change
-          - inbound_conversations_change
-          - inbox_access_change
-          - message_deletion
-          - message_state_change
-          - messenger_look_and_feel_change
-          - messenger_search_required_change
-          - messenger_spaces_change
-          - office_hours_change
-          - role_change
-          - role_creation
-          - role_deletion
-          - ruleset_activation_title_preview
-          - ruleset_creation
-          - ruleset_deletion
-          - search_browse_enabled_change
-          - search_browse_required_change
-          - seat_change
-          - seat_revoke
-          - security_settings_change
-          - temporary_expectation_change
-          - upfront_email_collection_change
-          - welcome_message_change
-        activity_description:
+          - published
+          - draft
+          example: draft
+        parent_id:
+          type: integer
+          description: The id of the article's parent collection or section. An article
+            without this field stands alone.
+          example: 18
+        parent_type:
           type: string
-          description: A sentence or two describing the activity.
-    activity_log_list:
-      title: Paginated Response
+          description: The type of parent, which can either be a `collection` or `section`.
+          example: collection
+        translated_content:
+          "$ref": "#/components/schemas/article_translated_content"
+    update_visitor_request:
+      description: Update an existing visitor.
       type: object
-      description: A paginated list of activity logs.
+      title: Update Visitor Request Payload
       properties:
-        type:
-          type: string
-          description: String representing the object's type. Always has the value
-            `activity_log.list`.
-        pages:
-          "$ref": "#/components/schemas/cursor_pages"
-        activity_logs:
-          type: array
-          description: An array of activity logs
-          items:
-            "$ref": "#/components/schemas/activity_log"
-    admin_list:
-      title: Admins
-      type: object
-      description: A list of admins associated with a given workspace.
-      properties:
-        type:
-          type: string
-          description: String representing the object's type. Always has the value
-            `admin.list`.
-        admins:
-          type: array
-          description: A list of admins associated with a given workspace.
-          items:
-            "$ref": "#/components/schemas/admin"
-    admin_with_app:
-      title: Admin
-      type: object
-      description: Admins are the teammate accounts that have access to a workspace
-      nullable: true
-      properties:
-        type:
-          type: string
-          description: String representing the object's type. Always has the value
-            `admin`.
         id:
           type: string
-          description: The id representing the admin.
-          example: '1295'
+          description: A unique identified for the visitor which is given by Intercom.
+          example: 8a88a590-e
+        user_id:
+          type: string
+          description: A unique identified for the visitor which is given by you.
+          example: '123'
         name:
           type: string
-          description: The name of the admin.
-          example: Hoban Washburne
-        email:
-          type: string
-          description: The email of the admin.
-          example: wash@serenity.io
-        job_title:
-          type: string
-          description: The job title of the admin.
-          example: Philosopher
-        away_mode_enabled:
-          type: boolean
-          description: Identifies if this admin is currently set in away mode.
-          example: false
-        away_mode_reassign:
-          type: boolean
-          description: Identifies if this admin is set to automatically reassign new
-            conversations to the apps default inbox.
-          example: false
-        has_inbox_seat:
-          type: boolean
-          description: Identifies if this admin has a paid inbox seat to restrict/allow
-            features that require them.
-          example: true
-        team_ids:
-          type: array
-          description: This is a list of ids of the teams that this admin is part
-            of.
+          description: The visitor's name.
+          example: Christian Bale
+        custom_attributes:
+          type: object
+          description: The custom attributes which are set for the visitor.
+          additionalProperties:
+            type: string
           example:
-          - 814865
-          items:
-            type: integer
-        avatar:
-          type: object
-          properties:
-            type:
-              type: string
-              description: ''
-              default: avatar
-              example: avatar
-            image_url:
-              type: string
-              format: uri
-              nullable: true
-              description: This object represents the avatar associated with the admin.
-        email_verified:
-          type: boolean
-          description: Identifies if this admin's email is verified.
-          nullable: true
-          example: true
-        app:
-          "$ref": "#/components/schemas/app"
-          nullable: true
-          description: App that the admin belongs to.
-    article_list:
-      title: Articles
-      type: object
-      description: This will return a list of articles for the App.
-      properties:
-        type:
-          type: string
-          description: The type of the object - `list`.
-          enum:
-          - list
-        pages:
-          "$ref": "#/components/schemas/cursor_pages"
-        total_count:
-          type: integer
-          description: A count of the total number of articles.
-        data:
-          type: array
-          description: An array of Article objects
-          items:
-            "$ref": "#/components/schemas/article"
-    article_statistics:
-      title: Article Statistics
-      type: object
-      description: The statistics of an article.
-      nullable: true
-      properties:
-        type:
-          type: string
-          description: The type of object - `article_statistics`.
-          enum:
-          - article_statistics
-          default: article_statistics
-          example: article_statistics
-        views:
-          type: integer
-          description: The number of total views the article has received.
-          example: 10
-        conversions:
-          type: integer
-          description: The number of conversations started from the article.
-          example: 0
-        reactions:
-          type: integer
-          description: The number of total reactions the article has received.
-          example: 10
-        happy_reaction_precentage:
-          type: integer
-          description: The percentage of happy reactions the article has received
-            against other types of reaction.
-          example: 40
-        netural_reaction_precentage:
-          type: integer
-          description: The percentage of neutral reactions the article has received
-            against other types of reaction.
-          example: 40
-        sad_reaction_precentage:
-          type: integer
-          description: The percentage of sad reactions the article has received against
-            other types of reaction.
-          example: 20
-    article_translated_content:
-      title: Article Translated Content
-      type: object
-      description: The Translated Content of an Article. The keys are the locale codes
-        and the values are the translated content of the article.
-      nullable: true
-      properties:
-        type:
-          type: string
-          description: The type of object - article_translated_content.
-          enum:
-          -
-          - article_translated_content
-          example: article_translated_content
-        ar:
-          description: The content of the article in Arabic
-          "$ref": "#/components/schemas/article_content"
-        bg:
-          description: The content of the article in Bulgarian
-          "$ref": "#/components/schemas/article_content"
-        bs:
-          description: The content of the article in Bosnian
-          "$ref": "#/components/schemas/article_content"
-        ca:
-          description: The content of the article in Catalan
-          "$ref": "#/components/schemas/article_content"
-        cs:
-          description: The content of the article in Czech
-          "$ref": "#/components/schemas/article_content"
-        da:
-          description: The content of the article in Danish
-          "$ref": "#/components/schemas/article_content"
-        de:
-          description: The content of the article in German
-          "$ref": "#/components/schemas/article_content"
-        el:
-          description: The content of the article in Greek
-          "$ref": "#/components/schemas/article_content"
-        en:
-          description: The content of the article in English
-          "$ref": "#/components/schemas/article_content"
-        es:
-          description: The content of the article in Spanish
-          "$ref": "#/components/schemas/article_content"
-        et:
-          description: The content of the article in Estonian
-          "$ref": "#/components/schemas/article_content"
-        fi:
-          description: The content of the article in Finnish
-          "$ref": "#/components/schemas/article_content"
-        fr:
-          description: The content of the article in French
-          "$ref": "#/components/schemas/article_content"
-        he:
-          description: The content of the article in Hebrew
-          "$ref": "#/components/schemas/article_content"
-        hr:
-          description: The content of the article in Croatian
-          "$ref": "#/components/schemas/article_content"
-        hu:
-          description: The content of the article in Hungarian
-          "$ref": "#/components/schemas/article_content"
-        id:
-          description: The content of the article in Indonesian
-          "$ref": "#/components/schemas/article_content"
-        it:
-          description: The content of the article in Italian
-          "$ref": "#/components/schemas/article_content"
-        ja:
-          description: The content of the article in Japanese
-          "$ref": "#/components/schemas/article_content"
-        ko:
-          description: The content of the article in Korean
-          "$ref": "#/components/schemas/article_content"
-        lt:
-          description: The content of the article in Lithuanian
-          "$ref": "#/components/schemas/article_content"
-        lv:
-          description: The content of the article in Latvian
-          "$ref": "#/components/schemas/article_content"
-        mn:
-          description: The content of the article in Mongolian
-          "$ref": "#/components/schemas/article_content"
-        nb:
-          description: The content of the article in Norwegian
-          "$ref": "#/components/schemas/article_content"
-        nl:
-          description: The content of the article in Dutch
-          "$ref": "#/components/schemas/article_content"
-        pl:
-          description: The content of the article in Polish
-          "$ref": "#/components/schemas/article_content"
-        pt:
-          description: The content of the article in Portuguese (Portugal)
-          "$ref": "#/components/schemas/article_content"
-        ro:
-          description: The content of the article in Romanian
-          "$ref": "#/components/schemas/article_content"
-        ru:
-          description: The content of the article in Russian
-          "$ref": "#/components/schemas/article_content"
-        sl:
-          description: The content of the article in Slovenian
-          "$ref": "#/components/schemas/article_content"
-        sr:
-          description: The content of the article in Serbian
-          "$ref": "#/components/schemas/article_content"
-        sv:
-          description: The content of the article in Swedish
-          "$ref": "#/components/schemas/article_content"
-        tr:
-          description: The content of the article in Turkish
-          "$ref": "#/components/schemas/article_content"
-        vi:
-          description: The content of the article in Vietnamese
-          "$ref": "#/components/schemas/article_content"
-        pt-BR:
-          description: The content of the article in Portuguese (Brazil)
-          "$ref": "#/components/schemas/article_content"
-        zh-CN:
-          description: The content of the article in Chinese (China)
-          "$ref": "#/components/schemas/article_content"
-        zh-TW:
-          description: The content of the article in Chinese (Taiwan)
-          "$ref": "#/components/schemas/article_content"
-    conversation_contacts:
-      title: Contacts
-      type: object
-      description: The list of contacts (users or leads) involved in this conversation.
-        This will only contain one customer unless more were added via the group conversation
-        feature.
-      properties:
-        type:
-          type: string
-          description: ''
-          enum:
-          - contact.list
-        contacts:
-          type: array
-          description: The list of contacts (users or leads) involved in this conversation.
-            This will only contain one customer unless more were added via the group
-            conversation feature.
-          items:
-            "$ref": "#/components/schemas/reference"
-    conversation_first_contact_reply:
-      title: First contact reply
-      type: object
-      nullable: true
-      description: An object containing information on the first users message. For
-        a contact initiated message this will represent the users original message.
-      properties:
-        created_at:
-          type: integer
-          format: date-time
-          description: ''
-          example: 1663597223
-        type:
-          type: string
-          description: ''
-          example: conversation
-        url:
-          type: string
-          description: ''
-          example: ''
-    conversation_part_attachment:
-      title: Conversation part attachment
-      type: object
-      description: The file attached to a conversation part
-      properties:
-        type:
-          type: string
-          description: ''
-          example: ''
-        name:
-          type: string
-          description: ''
-          example: ''
-        url:
-          type: string
-          description: ''
-          example: ''
-        content_type:
-          type: string
-          description: ''
-          example: ''
-        filesize:
-          type: integer
-          description: ''
-          example: 100
-        width:
-          type: integer
-          description: ''
-          example: 100
-        height:
-          type: integer
-          description: ''
-          example: 100
-    conversation_part_author:
-      title: Conversation part author
-      type: object
-      description: The object who initiated the conversation, which can be a Contact,
-        Admin or Team. Bots and campaigns send messages on behalf of Admins or Teams.
-        For Twitter, this will be blank.
-      properties:
-        type:
-          type: string
-          description: The type of the author
-          example: admin
-        id:
-          type: string
-          description: The id of the author
-          example: '274'
-        name:
-          type: string
-          description: The name of the author
-          example: Operator
-        email:
-          type: string
-          format: email
-          description: The email of the author
-          example: operator+abcd1234@intercom.io
+            paid_subscriber: true
+            monthly_spend: 155.5
+            team_mates: 9
+      anyOf:
+      - required:
+        - id
+      - required:
+        - user_id
     conversation_source:
       title: Conversation source
       type: object
@@ -3107,6 +2997,121 @@ components:
           type: integer
           description: Total number of conversation parts.
           example: 1
+    conversation_first_contact_reply:
+      title: First contact reply
+      type: object
+      nullable: true
+      description: An object containing information on the first users message. For
+        a contact initiated message this will represent the users original message.
+      properties:
+        created_at:
+          type: integer
+          format: date-time
+          description: ''
+          example: 1663597223
+        type:
+          type: string
+          description: ''
+          example: conversation
+        url:
+          type: string
+          description: ''
+          example: ''
+    conversation_part_attachment:
+      title: Conversation part attachment
+      type: object
+      description: The file attached to a conversation part
+      properties:
+        type:
+          type: string
+          description: ''
+          example: ''
+        name:
+          type: string
+          description: ''
+          example: ''
+        url:
+          type: string
+          description: ''
+          example: ''
+        content_type:
+          type: string
+          description: ''
+          example: ''
+        filesize:
+          type: integer
+          description: ''
+          example: 100
+        width:
+          type: integer
+          description: ''
+          example: 100
+        height:
+          type: integer
+          description: ''
+          example: 100
+    paginated_response:
+      title: Paginated Response
+      type: object
+      description: Paginated Response
+      properties:
+        type:
+          type: string
+          description: The type of object
+          enum:
+          - list
+          - conversation.list
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
+        total_count:
+          type: integer
+          description: A count of the total number of objects.
+        data:
+          type: array
+          description: An array of Objects
+          items:
+            anyOf:
+            - "$ref": "#/components/schemas/news_item"
+            - "$ref": "#/components/schemas/newsfeed"
+    segment_list:
+      title: Segment List
+      type: object
+      description: This will return a list of Segment Objects. The result may also
+        have a pages object if the response is paginated.
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - segment.list
+        segments:
+          type: array
+          description: A list of Segment objects
+          items:
+            "$ref": "#/components/schemas/segment"
+        pages:
+          type: object
+          description: A pagination object, which may be empty, indicating no further
+            pages to fetch.
+    note_list:
+      title: Paginated Response
+      type: object
+      description: A paginated list of notes associated with a contact.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `list`.
+        data:
+          type: array
+          description: An array of notes.
+          items:
+            "$ref": "#/components/schemas/note"
+        total_count:
+          type: integer
+          description: A count of the total number of notes.
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
     conversation_tag:
       title: Tag
       type: object
@@ -3151,240 +3156,116 @@ components:
             (wrote at least one conversation part).
           items:
             "$ref": "#/components/schemas/reference"
-    cursor_pages:
-      title: Cursor based pages
+    note:
+      title: Note
       type: object
-      description: |
-        Cursor-based pagination is a technique used in the Intercom API to navigate through large amounts of data.
-        A "cursor" or pointer is used to keep track of the current position in the result set, allowing the API to return the data in small chunks or "pages" as needed.
-      properties:
-        type:
-          type: string
-          example: pages
-          enum:
-          - pages
-        page:
-          type: integer
-          example: 1
-        next:
-          type: object
-          nullable: true
-          properties:
-            page:
-              type: integer
-              example: 2
-            starting_after:
-              type: string
-              example: 1HaSB+xrOyyMXAkS/c1RteCL7BzOzTvYjmjakgTergIH31eoe2v4/sbLsJWP\nIncfQLD3ouPkZlCwJ86F\n
-        per_page:
-          type: integer
-          example: 2
-        total_pages:
-          type: integer
-          example: 13
-    data_event:
-      title: Data Event
-      type: object
-      description: Data events are used to notify Intercom of changes to your data.
-      properties:
-        type:
-          type: string
-          description: The type of the object
-          enum:
-          - event
-        event_name:
-          type: string
-          description: The name of the event that occurred. This is presented to your
-            App's admins when filtering and creating segments - a good event name
-            is typically a past tense 'verb-noun' combination, to improve readability,
-            for example `updated-plan`.
-          example: invited-friend
-        created_at:
-          type: integer
-          format: date-time
-          description: The time the event occurred as a UTC Unix timestamp
-          example: 1671028894
-        user_id:
-          type: string
-          description: Your identifier for the user.
-          example: '314159'
-        id:
-          type: string
-          description: Your identifier for a lead or a user.
-          example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
-        intercom_user_id:
-          type: string
-          description: The Intercom identifier for the user.
-          example: 63a0979a5eeebeaf28dd56ba
-        email:
-          type: string
-          description: An email address for your user. An email should only be used
-            where your application uses email to uniquely identify users.
-          example: frodo.baggins@example.com
-        metadata:
-          type: object
-          description: Optional metadata about the event.
-          additionalProperties:
-            type: string
-          example:
-            invite_code: ADDAFRIEND
-      required:
-      - event_name
-      - created_at
-    data_event_list:
-      title: Data Event List
-      type: object
-      description: This will return a list of data events for the App.
-      properties:
-        type:
-          type: string
-          description: The type of the object
-          enum:
-          - event.list
-        events:
-          type: array
-          description: A list of data events
-          items:
-            "$ref": "#/components/schemas/data_event"
-        pages:
-          type: object
-          description: Pagination
-          properties:
-            next:
-              type: string
-              example: https://api.intercom.io/events?per_page=2&before=1389913941064&intercom_user_id=63a0979a5eeebeaf28dd56ba&type=user"
-            since:
-              type: string
-              example: https://api.intercom.io/events?intercom_user_id=63a0979a5eeebeaf28dd56ba&type=user&since=1389913941065
-    data_event_summary:
-      title: Data Event Summary
-      type: object
-      description: This will return a summary of data events for the App.
-      properties:
-        type:
-          type: string
-          description: The type of the object
-          enum:
-          - event.summary
-        email:
-          type: string
-          description: The email address of the user
-        intercom_user_id:
-          type: string
-          description: The Intercom user ID of the user
-        user_id:
-          type: string
-          description: The user ID of the user
-        events:
-          type: array
-          description: A summary of data events
-          items:
-            "$ref": "#/components/schemas/data_event_summary_item"
-    data_event_summary_item:
-      title: Data Event Summary Item
-      type: object
-      description: This will return a summary of a data event for the App.
-      nullable: true
-      properties:
-        name:
-          type: string
-          description: The name of the event
-          example: placed-order
-        first:
-          type: string
-          description: The first time the event was sent
-          example: '2014-01-16T23:12:21.000+00:00'
-        last:
-          type: string
-          description: The last time the event was sent
-          example: '2014-01-16T23:12:21.000+00:00 '
-        count:
-          type: integer
-          description: The number of times the event was sent
-          example: 1
-        description:
-          type: string
-          description: The description of the event
-          example: A user placed an order
-    deleted_article_object:
-      title: Deleted Article Object
-      type: object
-      description: Response returned when an object is deleted
-      properties:
-        id:
-          type: string
-          description: The unique identifier for the article which you provided in
-            the URL.
-        object:
-          type: string
-          description: The type of object which was deleted. - article
-          enum:
-          - article
-        deleted:
-          type: boolean
-          description: Whether the article was deleted successfully or not.
-    note_list:
-      title: Paginated Response
-      type: object
-      description: A paginated list of notes associated with a contact.
+      description: Notes allow you to annotate and comment on your contacts.
       properties:
         type:
           type: string
           description: String representing the object's type. Always has the value
-            `list`.
-        data:
-          type: array
-          description: An array of notes.
-          items:
-            "$ref": "#/components/schemas/note"
-        total_count:
+            `note`.
+        id:
+          type: string
+          description: The id of the note.
+          example: '17495962'
+        created_at:
           type: integer
-          description: A count of the total number of notes.
-        pages:
-          "$ref": "#/components/schemas/cursor_pages"
-    paginated_response:
-      title: Paginated Response
+          format: timestamp
+          description: The time the note was created.
+        contact:
+          type: object
+          description: Represents the contact that the note was created about.
+          nullable: true
+          properties:
+            type:
+              type: string
+              description: String representing the object's type. Always has the value
+                `contact`.
+            id:
+              type: string
+              description: The id of the contact.
+              example: 214656d0c743eafcfde7f248
+        author:
+          "$ref": "#/components/schemas/admin"
+          description: Optional. Represents the Admin that created the note.
+        body:
+          type: string
+          description: The body text of the note.
+          example: "<p>Text for the note.</p>"
+    segment:
+      title: Segment
       type: object
-      description: Paginated Response
+      description: A segment is a group of your contacts defined by the rules that
+        you set.
       properties:
         type:
           type: string
-          description: The type of object
+          description: The type of object.
           enum:
-          - list
-          - conversation.list
-        pages:
-          "$ref": "#/components/schemas/cursor_pages"
-        total_count:
+          - segment
+        id:
+          type: string
+          description: The unique identifier representing the segment.
+          example: 56203d253cba154d39010062
+        name:
+          type: string
+          description: The name of the segment.
+          example: Active
+        created_at:
           type: integer
-          description: A count of the total number of objects.
-        data:
-          type: array
-          description: An array of Objects
-          items:
-            anyOf:
-            - "$ref": "#/components/schemas/news_item"
-            - "$ref": "#/components/schemas/newsfeed"
-    segment_list:
-      title: Segment List
+          description: The time the segment was created.
+          example: 1394621988
+        updated_at:
+          type: integer
+          description: The time the segment was updated.
+          example: 1394622004
+        person_type:
+          type: string
+          description: 'Type of the contact: contact (lead) or user.'
+          enum:
+          - contact
+          - user
+        count:
+          type: integer
+          description: The number of items in the user segment. It's returned when
+            `include_count=true` is included in the request.
+          example: 3
+          nullable: true
+    subscription_type_list:
+      title: Subscription Types
       type: object
-      description: This will return a list of Segment Objects. The result may also
-        have a pages object if the response is paginated.
+      description: A list of subscription type objects.
       properties:
         type:
           type: string
           description: The type of the object
           enum:
-          - segment.list
-        segments:
+          - list
+        data:
           type: array
-          description: A list of Segment objects
+          description: A list of subscription type objects associated with the workspace
+            .
           items:
-            "$ref": "#/components/schemas/segment"
-        pages:
-          type: object
-          description: A pagination object, which may be empty, indicating no further
-            pages to fetch.
+            "$ref": "#/components/schemas/subscription_type"
+    tag:
+      title: Tag
+      type: object
+      description: A tag allows you to label your contacts, companies, and conversations
+        and list them using that tag.
+      properties:
+        type:
+          type: string
+          description: value is "tag"
+          example: tag
+        id:
+          type: string
+          description: The id of the tag
+          example: '123456'
+        name:
+          type: string
+          description: The name of the tag
+          example: test
     sla_applied:
       title: Applied SLA
       type: object
@@ -3409,22 +3290,25 @@ components:
           - active
           description: One of "hit", "missed", "cancelled", or "active".
           example: hit
-    subscription_type_list:
-      title: Subscription Types
+    social_profile:
+      title: Social Profile
       type: object
-      description: A list of subscription type objects.
+      description: A Social Profile allows you to label your contacts, companies,
+        and conversations and list them using that Social Profile.
       properties:
         type:
           type: string
-          description: The type of the object
-          enum:
-          - list
-        data:
-          type: array
-          description: A list of subscription type objects associated with the workspace
-            .
-          items:
-            "$ref": "#/components/schemas/subscription_type"
+          description: value is "social_profile"
+          example: social_profile
+        name:
+          type: string
+          description: The name of the Social media profile
+          example: Facebook
+        url:
+          type: string
+          format: uri
+          description: The name of the Social media profile
+          example: http://twitter.com/th1sland
     team_list:
       title: Team List
       type: object
@@ -3440,6 +3324,87 @@ components:
           description: A list of team objects
           items:
             "$ref": "#/components/schemas/team"
+    ticket:
+      title: Ticket
+      type: object
+      description: Conversations are how you can communicate with users in Intercom.
+        They are created when a contact replies to an outbound message, or when one
+        admin directly sends a message to a single contact.
+      nullable: true
+      properties:
+        type:
+          type: string
+          description: ''
+          enum:
+          - ticket
+          default: ticket
+          example: ticket
+        id:
+          type: string
+          description: The id representing the conversation.
+          example: '1295'
+        url:
+          type: string
+          format: url
+          description: ''
+        custom_attributes:
+          type: object
+          description: An object containing the different custom attributes associated
+            to the conversation as key-value pairs.
+          additionalProperties:
+            type: string
+        state:
+          type: string
+          description: ''
+          enum:
+          - submitted
+          - in_progress
+          - waiting_on_customer
+          - resolved
+          example: submitted
+        ticket_type:
+          type: string
+          description: The type of the ticket
+          example: ''
+        ticket_type_description:
+          type: string
+          description: ''
+        ticket_type_emoji:
+          type: string
+          description: ''
+          default: "\U0001F48E"
+          example: "\U0001F48E"
+    visitor_deleted_object:
+      title: Visitor Deleted Object
+      type: object
+      description: Response returned when an object is deleted
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the visitor which is given by Intercom.
+        type:
+          type: string
+          description: The type of object which was deleted
+          enum:
+          - visitor
+        user_id:
+          type: string
+          description: Automatically generated identifier for the Visitor.
+    tags:
+      title: Tags
+      type: object
+      description: A list of tags objects associated with a conversation
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - tag.list
+        tags:
+          type: array
+          description: A list of tags objects associated with the conversation.
+          items:
+            "$ref": "#/components/schemas/conversation_tag"
     newsfeed_assignment:
       title: Newsfeed Assignment
       type: object
@@ -3457,6 +3422,247 @@ components:
             if you want to set a publish date in the past (e.g. when importing existing
             news items). On write, this field will be ignored if the news item state
             is "draft".
+    visitor:
+      title: Visitor
+      type: object
+      description: Visitors are useful for representing anonymous people that have
+        not yet been identified. They usually represent website visitors. Visitors
+        are not visible in Intercom platform. The Visitors resource provides methods
+        to fetch, update, convert and delete.
+      nullable: true
+      properties:
+        type:
+          type: string
+          description: Value is 'visitor'
+          default: visitor
+          example: visitor
+        id:
+          type: string
+          description: The Intercom defined id representing the Visitor.
+          example: 530370b477ad7120001d
+        user_id:
+          type: string
+          description: Automatically generated identifier for the Visitor.
+          example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+        anonymous:
+          type: boolean
+          description: Identifies if this visitor is anonymous.
+          example: false
+        email:
+          type: string
+          format: email
+          description: The email of the visitor.
+          example: jane.doe@example.com
+        phone:
+          type: string
+          nullable: true
+          description: The phone number of the visitor.
+          example: 555-555-5555
+        name:
+          type: string
+          nullable: true
+          description: The name of the visitor.
+          example: Jane Doe
+        pseudonym:
+          type: string
+          nullable: true
+          description: The pseudonym of the visitor.
+          example: Red Duck from Dublin
+        avatar:
+          type: object
+          properties:
+            type:
+              type: string
+              description: ''
+              default: avatar
+              example: avatar
+            image_url:
+              type: string
+              format: uri
+              nullable: true
+              description: This object represents the avatar associated with the visitor.
+        app_id:
+          type: string
+          description: The id of the app the visitor is associated with.
+          example: hfi1bx4l
+        companies:
+          type: object
+          properties:
+            type:
+              type: string
+              description: The type of the object
+              enum:
+              - company.list
+            companies:
+              type: array
+              items:
+                "$ref": "#/components/schemas/company"
+        location_data:
+          type: object
+          properties:
+            type:
+              type: string
+              description: ''
+              default: location_data
+              example: location_data
+            city_name:
+              type: string
+              description: The city name of the visitor.
+              example: Dublin
+            continent_code:
+              type: string
+              description: The continent code of the visitor.
+              example: EU
+            country_code:
+              type: string
+              description: The country code of the visitor.
+              example: IRL
+            country_name:
+              type: string
+              description: The country name of the visitor.
+              example: Ireland
+            postal_code:
+              type: string
+              description: The postal code of the visitor.
+              example: D02 N960
+            region_name:
+              type: string
+              description: The region name of the visitor.
+              example: Leinster
+            timezone:
+              type: string
+              description: The timezone of the visitor.
+              example: Europe/Dublin
+        las_request_at:
+          type: integer
+          description: The time the Lead last recorded making a request.
+          example: 1663597260
+        created_at:
+          type: integer
+          description: The time the Visitor was added to Intercom.
+          example: 1663597223
+        remote_created_at:
+          type: integer
+          description: The time the Visitor was added to Intercom.
+          example: 1663597223
+        signed_up_at:
+          type: integer
+          description: The time the Visitor signed up for your product.
+          example: 1663597223
+        updated_at:
+          type: integer
+          description: The last time the Visitor was updated.
+          example: 1663597260
+        session_count:
+          type: integer
+          description: The number of sessions the Visitor has had.
+          example: 1
+        social_profiles:
+          type: object
+          properties:
+            type:
+              type: string
+              description: The type of the object
+              enum:
+              - social_profile.list
+            social_profiles:
+              type: array
+              items:
+                type: string
+        owner_id:
+          type: string
+          nullable: true
+          description: The id of the admin that owns the Visitor.
+          example: '5169261'
+        unsubscribed_from_emails:
+          type: boolean
+          description: Whether the Visitor is unsubscribed from emails.
+          example: false
+        marked_email_as_spam:
+          type: boolean
+          description: Identifies if this visitor has marked an email as spam.
+          example: false
+        has_hard_bounced:
+          type: boolean
+          description: Identifies if this visitor has had a hard bounce.
+          example: false
+        tags:
+          type: object
+          properties:
+            type:
+              type: string
+              description: The type of the object
+              enum:
+              - tag.list
+            tags:
+              type: array
+              items:
+                properties:
+                  type:
+                    type: string
+                    description: The type of the object
+                    enum:
+                    - tag
+                  id:
+                    type: string
+                    description: The id of the tag.
+                    example: '8482'
+                  name:
+                    type: string
+                    description: The name of the tag.
+                    example: tag_name
+        segments:
+          type: object
+          properties:
+            type:
+              type: string
+              description: The type of the object
+              enum:
+              - segment.list
+            segments:
+              type: array
+              items:
+                type: string
+        custom_attributes:
+          type: object
+          description: The custom attributes you have set on the Visitor.
+          additionalProperties:
+            type: string
+        referrer:
+          type: string
+          nullable: true
+          description: The referer of the visitor.
+          example: https://www.google.com/
+        utm_campaign:
+          type: string
+          nullable: true
+          description: The utm_campaign of the visitor.
+          example: intercom-link
+        utm_content:
+          type: string
+          nullable: true
+          description: The utm_content of the visitor.
+          example: banner
+        utm_medium:
+          type: string
+          nullable: true
+          description: The utm_medium of the visitor.
+          example: email
+        utm_source:
+          type: string
+          nullable: true
+          description: The utm_source of the visitor.
+          example: Intercom
+        utm_term:
+          type: string
+          nullable: true
+          description: The utm_term of the visitor.
+          example: messenger
+        do_not_track:
+          type: boolean
+          nullable: true
+          description: Identifies if this visitor has do not track enabled.
+          example: false
     conversation_part:
       title: Conversation Part
       type: object
@@ -3516,72 +3722,6 @@ components:
           type: boolean
           description: Whether or not the conversation part has been redacted.
           example: false
-    visitor_deleted_object:
-      title: Visitor Deleted Object
-      type: object
-      description: Response returned when an object is deleted
-      properties:
-        id:
-          type: string
-          description: The unique identifier for the visitor which is given by Intercom.
-        type:
-          type: string
-          description: The type of object which was deleted
-          enum:
-          - visitor
-        user_id:
-          type: string
-          description: Automatically generated identifier for the Visitor.
-    ticket:
-      title: Ticket
-      type: object
-      description: Conversations are how you can communicate with users in Intercom.
-        They are created when a contact replies to an outbound message, or when one
-        admin directly sends a message to a single contact.
-      nullable: true
-      properties:
-        type:
-          type: string
-          description: ''
-          enum:
-          - ticket
-          default: ticket
-          example: ticket
-        id:
-          type: string
-          description: The id representing the conversation.
-          example: '1295'
-        url:
-          type: string
-          format: url
-          description: ''
-        custom_attributes:
-          type: object
-          description: An object containing the different custom attributes associated
-            to the conversation as key-value pairs.
-          additionalProperties:
-            type: string
-        state:
-          type: string
-          description: ''
-          enum:
-          - submitted
-          - in_progress
-          - waiting_on_customer
-          - resolved
-          example: submitted
-        ticket_type:
-          type: string
-          description: The type of the ticket
-          example: ''
-        ticket_type_description:
-          type: string
-          description: ''
-        ticket_type_emoji:
-          type: string
-          description: ''
-          default: "\U0001F48E"
-          example: "\U0001F48E"
     error:
       type: object
       title: Error
@@ -3744,45 +3884,6 @@ components:
           format: uri
           nullable: true
           description: Image for the associated team or teammate
-    segment:
-      title: Segment
-      type: object
-      description: A segment is a group of your contacts defined by the rules that
-        you set.
-      properties:
-        type:
-          type: string
-          description: The type of object.
-          enum:
-          - segment
-        id:
-          type: string
-          description: The unique identifier representing the segment.
-          example: 56203d253cba154d39010062
-        name:
-          type: string
-          description: The name of the segment.
-          example: Active
-        created_at:
-          type: integer
-          description: The time the segment was created.
-          example: 1394621988
-        updated_at:
-          type: integer
-          description: The time the segment was updated.
-          example: 1394622004
-        person_type:
-          type: string
-          description: 'Type of the contact: contact (lead) or user.'
-          enum:
-          - contact
-          - user
-        count:
-          type: integer
-          description: The number of items in the user segment. It's returned when
-            `include_count=true` is included in the request.
-          example: 3
-          nullable: true
     reference:
       title: Reference
       type: object
@@ -4248,6 +4349,256 @@ components:
           "$ref": "#/components/schemas/conversation_parts"
         ticket:
           "$ref": "#/components/schemas/ticket"
+    activity_log:
+      title: Activity Log
+      type: object
+      description: Activities performed by admins.
+      nullable: true
+      properties:
+        id:
+          type: string
+          description: The id representing the activity.
+          example: '6'
+        performed_by:
+          type: object
+          description: An object representing the admin who performed the activity.
+          properties:
+            type:
+              type: string
+              description: String representing the object's type. Always has the value
+                `admin`.
+            id:
+              type: string
+              description: The id representing the admin.
+              example: '1295'
+            email:
+              type: string
+              description: The email of the admin.
+              example: john@example.com
+            ip:
+              type: string
+              description: The IP address of the admin.
+              example: 198.51.100.255
+        metadata:
+          type: object
+        created_at:
+          type: integer
+          format: date-time
+          description: ''
+          example: 1671028894
+        activity_type:
+          type: string
+          enum:
+          - admin_assignment_limit_change
+          - admin_away_mode_change
+          - admin_deletion
+          - admin_deprovisioned
+          - admin_impersonation_end
+          - admin_impersonation_start
+          - admin_invite_change
+          - admin_invite_creation
+          - admin_invite_deletion
+          - admin_login_failure
+          - admin_login_success
+          - admin_logout
+          - admin_password_reset_request
+          - admin_password_reset_success
+          - admin_permission_change
+          - admin_provisioned
+          - admin_two_factor_auth_change
+          - admin_unauthorized_sign_in_method
+          - app_admin_join
+          - app_authentication_method_change
+          - app_data_deletion
+          - app_data_export
+          - app_google_sso_domain_change
+          - app_identity_verification_change
+          - app_name_change
+          - app_outbound_address_change
+          - app_package_installation
+          - app_package_token_regeneration
+          - app_package_uninstallation
+          - app_team_creation
+          - app_team_deletion
+          - app_team_membership_modification
+          - app_timezone_change
+          - app_webhook_creation
+          - app_webhook_deletion
+          - articles_in_messenger_enabled_change
+          - bulk_delete
+          - bulk_export
+          - campaign_deletion
+          - campaign_state_change
+          - conversation_part_deletion
+          - conversation_topic_change
+          - conversation_topic_creation
+          - conversation_topic_deletion
+          - help_center_settings_change
+          - inbound_conversations_change
+          - inbox_access_change
+          - message_deletion
+          - message_state_change
+          - messenger_look_and_feel_change
+          - messenger_search_required_change
+          - messenger_spaces_change
+          - office_hours_change
+          - role_change
+          - role_creation
+          - role_deletion
+          - ruleset_activation_title_preview
+          - ruleset_creation
+          - ruleset_deletion
+          - search_browse_enabled_change
+          - search_browse_required_change
+          - seat_change
+          - seat_revoke
+          - security_settings_change
+          - temporary_expectation_change
+          - upfront_email_collection_change
+          - welcome_message_change
+        activity_description:
+          type: string
+          description: A sentence or two describing the activity.
+    activity_log_list:
+      title: Paginated Response
+      type: object
+      description: A paginated list of activity logs.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `activity_log.list`.
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
+        activity_logs:
+          type: array
+          description: An array of activity logs
+          items:
+            "$ref": "#/components/schemas/activity_log"
+    addressable_list:
+      title: Addressable List
+      type: object
+      nullable: false
+      description: A list used to access other resources from a parent model.
+      properties:
+        type:
+          type: string
+          format: uri
+          description: The addressable object type
+          example: note
+        id:
+          type: string
+          description: The id of the addressable object
+          example: '123'
+        url:
+          type: string
+          format: uri
+          description: Url to get more company resources for this contact
+          example: "/contacts/5ba682d23d7cf92bef87bfd4/notes"
+    admin_list:
+      title: Admins
+      type: object
+      description: A list of admins associated with a given workspace.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `admin.list`.
+        admins:
+          type: array
+          description: A list of admins associated with a given workspace.
+          items:
+            "$ref": "#/components/schemas/admin"
+    admin_with_app:
+      title: Admin
+      type: object
+      description: Admins are the teammate accounts that have access to a workspace
+      nullable: true
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `admin`.
+        id:
+          type: string
+          description: The id representing the admin.
+          example: '1295'
+        name:
+          type: string
+          description: The name of the admin.
+          example: Hoban Washburne
+        email:
+          type: string
+          description: The email of the admin.
+          example: wash@serenity.io
+        job_title:
+          type: string
+          description: The job title of the admin.
+          example: Philosopher
+        away_mode_enabled:
+          type: boolean
+          description: Identifies if this admin is currently set in away mode.
+          example: false
+        away_mode_reassign:
+          type: boolean
+          description: Identifies if this admin is set to automatically reassign new
+            conversations to the apps default inbox.
+          example: false
+        has_inbox_seat:
+          type: boolean
+          description: Identifies if this admin has a paid inbox seat to restrict/allow
+            features that require them.
+          example: true
+        team_ids:
+          type: array
+          description: This is a list of ids of the teams that this admin is part
+            of.
+          example:
+          - 814865
+          items:
+            type: integer
+        avatar:
+          type: object
+          properties:
+            type:
+              type: string
+              description: ''
+              default: avatar
+              example: avatar
+            image_url:
+              type: string
+              format: uri
+              nullable: true
+              description: This object represents the avatar associated with the admin.
+        email_verified:
+          type: boolean
+          description: Identifies if this admin's email is verified.
+          nullable: true
+          example: true
+        app:
+          "$ref": "#/components/schemas/app"
+          nullable: true
+          description: App that the admin belongs to.
+    article_list:
+      title: Articles
+      type: object
+      description: This will return a list of articles for the App.
+      properties:
+        type:
+          type: string
+          description: The type of the object - `list`.
+          enum:
+          - list
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
+        total_count:
+          type: integer
+          description: A count of the total number of articles.
+        data:
+          type: array
+          description: An array of Article objects
+          items:
+            "$ref": "#/components/schemas/article"
     app:
       title: App
       type: object
@@ -4283,21 +4634,6 @@ components:
           type: boolean
           description: Whether or not the app uses identity verification.
           example: false
-    tags:
-      title: Tags
-      type: object
-      description: A list of tags objects associated with a conversation
-      properties:
-        type:
-          type: string
-          description: The type of the object
-          enum:
-          - tag.list
-        tags:
-          type: array
-          description: A list of tags objects associated with the conversation.
-          items:
-            "$ref": "#/components/schemas/conversation_tag"
     conversation_rating:
       title: Conversation Rating
       type: object
@@ -4372,18 +4708,171 @@ components:
           type: string
           description: The URL of the article.
           example: http://intercom.test/help/en/articles/3-default-language
-    contact:
-      title: Contact
+    article_statistics:
+      title: Article Statistics
       type: object
-      description: ''
+      description: The statistics of an article.
       nullable: true
       properties:
         type:
           type: string
-          description: ''
-        id:
+          description: The type of object - `article_statistics`.
+          enum:
+          - article_statistics
+          default: article_statistics
+          example: article_statistics
+        views:
+          type: integer
+          description: The number of total views the article has received.
+          example: 10
+        conversions:
+          type: integer
+          description: The number of conversations started from the article.
+          example: 0
+        reactions:
+          type: integer
+          description: The number of total reactions the article has received.
+          example: 10
+        happy_reaction_precentage:
+          type: integer
+          description: The percentage of happy reactions the article has received
+            against other types of reaction.
+          example: 40
+        netural_reaction_precentage:
+          type: integer
+          description: The percentage of neutral reactions the article has received
+            against other types of reaction.
+          example: 40
+        sad_reaction_precentage:
+          type: integer
+          description: The percentage of sad reactions the article has received against
+            other types of reaction.
+          example: 20
+    article_translated_content:
+      title: Article Translated Content
+      type: object
+      description: The Translated Content of an Article. The keys are the locale codes
+        and the values are the translated content of the article.
+      nullable: true
+      properties:
+        type:
           type: string
-          description: ''
+          description: The type of object - article_translated_content.
+          enum:
+          -
+          - article_translated_content
+          example: article_translated_content
+        ar:
+          description: The content of the article in Arabic
+          "$ref": "#/components/schemas/article_content"
+        bg:
+          description: The content of the article in Bulgarian
+          "$ref": "#/components/schemas/article_content"
+        bs:
+          description: The content of the article in Bosnian
+          "$ref": "#/components/schemas/article_content"
+        ca:
+          description: The content of the article in Catalan
+          "$ref": "#/components/schemas/article_content"
+        cs:
+          description: The content of the article in Czech
+          "$ref": "#/components/schemas/article_content"
+        da:
+          description: The content of the article in Danish
+          "$ref": "#/components/schemas/article_content"
+        de:
+          description: The content of the article in German
+          "$ref": "#/components/schemas/article_content"
+        el:
+          description: The content of the article in Greek
+          "$ref": "#/components/schemas/article_content"
+        en:
+          description: The content of the article in English
+          "$ref": "#/components/schemas/article_content"
+        es:
+          description: The content of the article in Spanish
+          "$ref": "#/components/schemas/article_content"
+        et:
+          description: The content of the article in Estonian
+          "$ref": "#/components/schemas/article_content"
+        fi:
+          description: The content of the article in Finnish
+          "$ref": "#/components/schemas/article_content"
+        fr:
+          description: The content of the article in French
+          "$ref": "#/components/schemas/article_content"
+        he:
+          description: The content of the article in Hebrew
+          "$ref": "#/components/schemas/article_content"
+        hr:
+          description: The content of the article in Croatian
+          "$ref": "#/components/schemas/article_content"
+        hu:
+          description: The content of the article in Hungarian
+          "$ref": "#/components/schemas/article_content"
+        id:
+          description: The content of the article in Indonesian
+          "$ref": "#/components/schemas/article_content"
+        it:
+          description: The content of the article in Italian
+          "$ref": "#/components/schemas/article_content"
+        ja:
+          description: The content of the article in Japanese
+          "$ref": "#/components/schemas/article_content"
+        ko:
+          description: The content of the article in Korean
+          "$ref": "#/components/schemas/article_content"
+        lt:
+          description: The content of the article in Lithuanian
+          "$ref": "#/components/schemas/article_content"
+        lv:
+          description: The content of the article in Latvian
+          "$ref": "#/components/schemas/article_content"
+        mn:
+          description: The content of the article in Mongolian
+          "$ref": "#/components/schemas/article_content"
+        nb:
+          description: The content of the article in Norwegian
+          "$ref": "#/components/schemas/article_content"
+        nl:
+          description: The content of the article in Dutch
+          "$ref": "#/components/schemas/article_content"
+        pl:
+          description: The content of the article in Polish
+          "$ref": "#/components/schemas/article_content"
+        pt:
+          description: The content of the article in Portuguese (Portugal)
+          "$ref": "#/components/schemas/article_content"
+        ro:
+          description: The content of the article in Romanian
+          "$ref": "#/components/schemas/article_content"
+        ru:
+          description: The content of the article in Russian
+          "$ref": "#/components/schemas/article_content"
+        sl:
+          description: The content of the article in Slovenian
+          "$ref": "#/components/schemas/article_content"
+        sr:
+          description: The content of the article in Serbian
+          "$ref": "#/components/schemas/article_content"
+        sv:
+          description: The content of the article in Swedish
+          "$ref": "#/components/schemas/article_content"
+        tr:
+          description: The content of the article in Turkish
+          "$ref": "#/components/schemas/article_content"
+        vi:
+          description: The content of the article in Vietnamese
+          "$ref": "#/components/schemas/article_content"
+        pt-BR:
+          description: The content of the article in Portuguese (Brazil)
+          "$ref": "#/components/schemas/article_content"
+        zh-CN:
+          description: The content of the article in Chinese (China)
+          "$ref": "#/components/schemas/article_content"
+        zh-TW:
+          description: The content of the article in Chinese (Taiwan)
+          "$ref": "#/components/schemas/article_content"
     deleted_object:
       title: Deleted Object
       type: object
@@ -4429,265 +4918,558 @@ components:
           type: integer
           format: timestamp
           description: Timestamp for when the newsfeed was last updated.
-    tag:
-      title: Tag
+    contact_subscription_types:
+      title: Contact Subscription Types
       type: object
-      description: A tag allows you to label your contacts, companies, and conversations
-        and list them using that tag.
+      nullable: false
+      description: An object containing Subscription Types meta data about the SubscriptionTypes
+        that a contact has.
       properties:
-        type:
+        data:
+          type: array
+          description: This object represents the subscriptions attached to a contact.
+          items:
+            "$ref": "#/components/schemas/addressable_list"
+        url:
           type: string
-          description: value is "tag"
-          example: tag
-        id:
-          type: string
-          description: The id of the tag
-          example: '123456'
-        name:
-          type: string
-          description: The name of the tag
-          example: test
-    visitor:
-      title: Visitor
-      type: object
-      description: Visitors are useful for representing anonymous people that have
-        not yet been identified. They usually represent website visitors. Visitors
-        are not visible in Intercom platform. The Visitors resource provides methods
-        to fetch, update, convert and delete.
-      nullable: true
-      properties:
-        type:
-          type: string
-          description: Value is 'visitor'
-          default: visitor
-          example: visitor
-        id:
-          type: string
-          description: The Intercom defined id representing the Visitor.
-          example: 530370b477ad7120001d
-        user_id:
-          type: string
-          description: Automatically generated identifier for the Visitor.
-          example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
-        anonymous:
+          format: uri
+          description: Url to get more subscription type resources for this contact
+          example: "/contacts/5ba682d23d7cf92bef87bfd4/subscriptions"
+        total_count:
+          type: integer
+          description: Int representing the total number of subscription types attached
+            to this contact
+        has_more:
           type: boolean
-          description: Identifies if this visitor is anonymous.
-          example: false
+          description: Whether there's more Addressable Objects to be viewed. If true,
+            use the url to view all
+    contact:
+      title: Contact
+      type: object
+      description: Contact are the objects that represent your leads and users in
+        Intercom.
+      properties:
+        type:
+          type: string
+          description: The type of object.
+          example: contact
+        id:
+          type: string
+          description: The unique identifier for the contact which is given by Intercom.
+          example: 5ba682d23d7cf92bef87bfd4
+        workspace_id:
+          type: string
+          description: The id of the workspace which the contact belongs to.
+          example: ecahpwf5
+        role:
+          type: string
+          description: The role of the contact.
+          example: user
         email:
           type: string
-          format: email
-          description: The email of the visitor.
-          example: jane.doe@example.com
+          description: The contacts email.
+          example: joe@example.com
         phone:
           type: string
           nullable: true
-          description: The phone number of the visitor.
-          example: 555-555-5555
+          description: The contacts phone.
+          example: "+1123456789"
         name:
           type: string
           nullable: true
-          description: The name of the visitor.
-          example: Jane Doe
-        pseudonym:
+          description: The contacts name.
+          example: John Doe
+        owner_id:
+          type: integer
+          nullable: true
+          description: The id of an admin that has been assigned account ownership
+            of the contact.
+          example: 123
+        has_hard_bounced:
+          type: boolean
+          description: Whether the contact has had an email sent to them hard bounce.
+          example: true
+        marked_email_as_spam:
+          type: boolean
+          description: Whether the contact has marked an email sent to them as spam.
+          example: true
+        unsubscribed_from_emails:
+          type: boolean
+          description: Whether the contact is unsubscribed from emails.
+          example: true
+        created_at:
+          type: integer
+          format: date-time
+          description: "(UNIX timestamp) The time when the contact was created."
+          example: 1571672154
+        updated_at:
+          type: integer
+          format: date-time
+          description: "(UNIX timestamp) The time when the contact was last updated."
+          example: 1571672154
+        signed_up_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: "(UNIX timestamp) The time specified for when a contact signed
+            up."
+          example: 1571672154
+        last_seen_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: "(UNIX timestamp) The time when the contact was last seen (either
+            where the Intercom Messenger was installed or when specified manually)."
+          example: 1571672154
+        last_replied_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: "(UNIX timestamp) The time when the contact last messaged in."
+          example: 1571672154
+        last_contacted_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: "(UNIX timestamp) The time when the contact was last messaged."
+          example: 1571672154
+        last_email_opened_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: "(UNIX timestamp) The time when the contact last opened an
+            email."
+          example: 1571672154
+        last_email_clicked_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: "(UNIX timestamp) The time when the contact last clicked a
+            link in an email."
+          example: 1571672154
+        language_override:
           type: string
           nullable: true
-          description: The pseudonym of the visitor.
-          example: Red Duck from Dublin
+          description: A preferred language setting for the contact, used by the Intercom
+            Messenger even if their browser settings change.
+        browser:
+          type: string
+          nullable: true
+          description: The name of the browser which the contact is using.
+        browser_version:
+          type: string
+          nullable: true
+          description: The version of the browser which the contact is using.
+        browser_language:
+          type: string
+          nullable: true
+          description: The language set by the browser which the contact is using.
+        os:
+          type: string
+          nullable: true
+          description: The operating system which the contact is using.
+        android_app_name:
+          type: string
+          nullable: true
+          description: The name of the Android app which the contact is using.
+        android_app_version:
+          type: string
+          nullable: true
+          description: The version of the Android app which the contact is using.
+        android_device:
+          type: string
+          nullable: true
+          description: The Android device which the contact is using.
+        android_os_version:
+          type: string
+          nullable: true
+          description: The version of the Android OS which the contact is using.
+        android_sdk_version:
+          type: string
+          nullable: true
+          description: The version of the Android SDK which the contact is using.
+        android_last_seen_at:
+          type: integer
+          nullable: true
+          format: date-time
+          description: "(UNIX timestamp) The last time the contact used the Android
+            app."
+          example: 1571672154
+        ios_app_name:
+          type: string
+          nullable: true
+          description: The name of the iOS app which the contact is using.
+        ios_app_version:
+          type: string
+          nullable: true
+          description: The version of the iOS app which the contact is using.
+        ios_device:
+          type: string
+          nullable: true
+          description: The iOS device which the contact is using.
+        ios_os_version:
+          type: string
+          nullable: true
+          description: The version of iOS which the contact is using.
+        ios_sdk_version:
+          type: string
+          nullable: true
+          description: The version of the iOS SDK which the contact is using.
+        ios_last_seen_at:
+          type: integer
+          nullable: true
+          format: date-time
+          description: "(UNIX timestamp) The last time the contact used the iOS app."
+          example: 1571672154
+        custom_attributes:
+          type: object
+          description: The custom attributes which are set for the contact.
         avatar:
           type: object
+          nullable: true
           properties:
             type:
               type: string
-              description: ''
-              default: avatar
+              description: The type of object
               example: avatar
             image_url:
               type: string
               format: uri
               nullable: true
-              description: This object represents the avatar associated with the visitor.
-        app_id:
-          type: string
-          description: The id of the app the visitor is associated with.
-          example: hfi1bx4l
+              description: An image URL containing the avatar of a contact.
+              example: https://example.org/128Wash.jpg
+        tags:
+          "$ref": "#/components/schemas/contact_tags"
+        notes:
+          "$ref": "#/components/schemas/contact_notes"
         companies:
-          type: object
-          properties:
-            type:
-              type: string
-              description: The type of the object
-              enum:
-              - company.list
-            companies:
-              type: array
-              items:
-                "$ref": "#/components/schemas/company"
-        location_data:
-          type: object
-          properties:
-            type:
-              type: string
-              description: ''
-              default: location_data
-              example: location_data
-            city_name:
-              type: string
-              description: The city name of the visitor.
-              example: Dublin
-            continent_code:
-              type: string
-              description: The continent code of the visitor.
-              example: EU
-            country_code:
-              type: string
-              description: The country code of the visitor.
-              example: IRL
-            country_name:
-              type: string
-              description: The country name of the visitor.
-              example: Ireland
-            postal_code:
-              type: string
-              description: The postal code of the visitor.
-              example: D02 N960
-            region_name:
-              type: string
-              description: The region name of the visitor.
-              example: Leinster
-            timezone:
-              type: string
-              description: The timezone of the visitor.
-              example: Europe/Dublin
-        las_request_at:
+          "$ref": "#/components/schemas/contact_companies"
+        location:
+          "$ref": "#/components/schemas/contact_location"
+        social_profiles:
+          "$ref": "#/components/schemas/contact_social_profiles"
+    contact_location:
+      title: Contact Location
+      type: object
+      nullable: false
+      description: An object containing location meta data about a Intercom contact.
+      properties:
+        type:
+          type: string
+          nullable: true
+          description: Always location
+          example: location
+        country:
+          type: string
+          nullable: true
+          description: The country that the contact is located in
+          example: Ireland
+        region:
+          type: string
+          nullable: true
+          description: The overal region that the contact is located in
+          example: Dublin
+        city:
+          type: string
+          nullable: true
+          description: The city that the contact is located in
+          example: Dublin
+    contact_notes:
+      title: Contact notes
+      type: object
+      nullable: false
+      description: An object containing notes meta data about the notes that a contact
+        has.
+      properties:
+        data:
+          type: array
+          description: This object represents the notes attached to a contact.
+          items:
+            "$ref": "#/components/schemas/addressable_list"
+        url:
+          type: string
+          format: uri
+          description: Url to get more company resources for this contact
+          example: "/contacts/5ba682d23d7cf92bef87bfd4/notes"
+        total_count:
           type: integer
-          description: The time the Lead last recorded making a request.
-          example: 1663597260
+          description: Int representing the total number of companyies attached to
+            this contact
+        has_more:
+          type: boolean
+          description: Whether there's more Addressable Objects to be viewed. If true,
+            use the url to view all
+    conversation_contacts:
+      title: Contacts
+      type: object
+      description: The list of contacts (users or leads) involved in this conversation.
+        This will only contain one customer unless more were added via the group conversation
+        feature.
+      properties:
+        type:
+          type: string
+          description: ''
+          enum:
+          - contact.list
+        contacts:
+          type: array
+          description: The list of contacts (users or leads) involved in this conversation.
+            This will only contain one customer unless more were added via the group
+            conversation feature.
+          items:
+            "$ref": "#/components/schemas/reference"
+    contact_companies:
+      title: Contact companies
+      type: object
+      nullable: false
+      description: An object containing companies meta data about the companies that
+        a contact has.
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Url to get more company resources for this contact
+          example: "/contacts/5ba682d23d7cf92bef87bfd4/companies"
+        total_count:
+          type: integer
+          description: Int representing the total number of companyies attached to
+            this contact
+        has_more:
+          type: boolean
+          description: Whether there's more Addressable Objects to be viewed. If true,
+            use the url to view all
+    contact_tags:
+      title: Contact Tags
+      type: object
+      nullable: true
+      description: An object containing tags meta data about the tags that a contact
+        has.
+      properties:
+        data:
+          type: array
+          description: This object represents the tags attached to a contact.
+          items:
+            "$ref": "#/components/schemas/addressable_list"
+        url:
+          type: string
+          format: uri
+          description: url to get more tag resources for this contact
+          example: "/contacts/5ba682d23d7cf92bef87bfd4/tags"
+        total_count:
+          type: integer
+          description: Int representing the total number of tags attached to this
+            contact
+        has_more:
+          type: boolean
+          description: Whether there's more Addressable Objects to be viewed. If true,
+            use the url to view all
+    conversation_part_author:
+      title: Conversation part author
+      type: object
+      description: The object who initiated the conversation, which can be a Contact,
+        Admin or Team. Bots and campaigns send messages on behalf of Admins or Teams.
+        For Twitter, this will be blank.
+      properties:
+        type:
+          type: string
+          description: The type of the author
+          example: admin
+        id:
+          type: string
+          description: The id of the author
+          example: '274'
+        name:
+          type: string
+          description: The name of the author
+          example: Operator
+        email:
+          type: string
+          format: email
+          description: The email of the author
+          example: operator+abcd1234@intercom.io
+    contact_social_profiles:
+      title: Social Profile
+      type: object
+      nullable: false
+      description: An object containing social profiles that a contact has.
+      properties:
+        data:
+          type: array
+          description: A list of social profiles objects associated with the contact.
+          items:
+            "$ref": "#/components/schemas/social_profile"
+    cursor_pages:
+      title: Cursor based pages
+      type: object
+      description: |
+        Cursor-based pagination is a technique used in the Intercom API to navigate through large amounts of data.
+        A "cursor" or pointer is used to keep track of the current position in the result set, allowing the API to return the data in small chunks or "pages" as needed.
+      properties:
+        type:
+          type: string
+          example: pages
+          enum:
+          - pages
+        page:
+          type: integer
+          example: 1
+        next:
+          type: object
+          nullable: true
+          properties:
+            page:
+              type: integer
+              example: 2
+            starting_after:
+              type: string
+              example: 1HaSB+xrOyyMXAkS/c1RteCL7BzOzTvYjmjakgTergIH31eoe2v4/sbLsJWP\nIncfQLD3ouPkZlCwJ86F\n
+        per_page:
+          type: integer
+          example: 2
+        total_pages:
+          type: integer
+          example: 13
+    data_event:
+      title: Data Event
+      type: object
+      description: Data events are used to notify Intercom of changes to your data.
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - event
+        event_name:
+          type: string
+          description: The name of the event that occurred. This is presented to your
+            App's admins when filtering and creating segments - a good event name
+            is typically a past tense 'verb-noun' combination, to improve readability,
+            for example `updated-plan`.
+          example: invited-friend
         created_at:
           type: integer
-          description: The time the Visitor was added to Intercom.
-          example: 1663597223
-        remote_created_at:
-          type: integer
-          description: The time the Visitor was added to Intercom.
-          example: 1663597223
-        signed_up_at:
-          type: integer
-          description: The time the Visitor signed up for your product.
-          example: 1663597223
-        updated_at:
-          type: integer
-          description: The last time the Visitor was updated.
-          example: 1663597260
-        session_count:
-          type: integer
-          description: The number of sessions the Visitor has had.
-          example: 1
-        social_profiles:
-          type: object
-          properties:
-            type:
-              type: string
-              description: The type of the object
-              enum:
-              - social_profile.list
-            social_profiles:
-              type: array
-              items:
-                type: string
-        owner_id:
+          format: date-time
+          description: The time the event occurred as a UTC Unix timestamp
+          example: 1671028894
+        user_id:
           type: string
-          nullable: true
-          description: The id of the admin that owns the Visitor.
-          example: '5169261'
-        unsubscribed_from_emails:
-          type: boolean
-          description: Whether the Visitor is unsubscribed from emails.
-          example: false
-        marked_email_as_spam:
-          type: boolean
-          description: Identifies if this visitor has marked an email as spam.
-          example: false
-        has_hard_bounced:
-          type: boolean
-          description: Identifies if this visitor has had a hard bounce.
-          example: false
-        tags:
+          description: Your identifier for the user.
+          example: '314159'
+        id:
+          type: string
+          description: Your identifier for a lead or a user.
+          example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+        intercom_user_id:
+          type: string
+          description: The Intercom identifier for the user.
+          example: 63a0979a5eeebeaf28dd56ba
+        email:
+          type: string
+          description: An email address for your user. An email should only be used
+            where your application uses email to uniquely identify users.
+          example: frodo.baggins@example.com
+        metadata:
           type: object
-          properties:
-            type:
-              type: string
-              description: The type of the object
-              enum:
-              - tag.list
-            tags:
-              type: array
-              items:
-                properties:
-                  type:
-                    type: string
-                    description: The type of the object
-                    enum:
-                    - tag
-                  id:
-                    type: string
-                    description: The id of the tag.
-                    example: '8482'
-                  name:
-                    type: string
-                    description: The name of the tag.
-                    example: tag_name
-        segments:
-          type: object
-          properties:
-            type:
-              type: string
-              description: The type of the object
-              enum:
-              - segment.list
-            segments:
-              type: array
-              items:
-                type: string
-        custom_attributes:
-          type: object
-          description: The custom attributes you have set on the Visitor.
+          description: Optional metadata about the event.
           additionalProperties:
             type: string
-        referrer:
+          example:
+            invite_code: ADDAFRIEND
+      required:
+      - event_name
+      - created_at
+    data_event_list:
+      title: Data Event List
+      type: object
+      description: This will return a list of data events for the App.
+      properties:
+        type:
           type: string
-          nullable: true
-          description: The referer of the visitor.
-          example: https://www.google.com/
-        utm_campaign:
+          description: The type of the object
+          enum:
+          - event.list
+        events:
+          type: array
+          description: A list of data events
+          items:
+            "$ref": "#/components/schemas/data_event"
+        pages:
+          type: object
+          description: Pagination
+          properties:
+            next:
+              type: string
+              example: https://api.intercom.io/events?per_page=2&before=1389913941064&intercom_user_id=63a0979a5eeebeaf28dd56ba&type=user"
+            since:
+              type: string
+              example: https://api.intercom.io/events?intercom_user_id=63a0979a5eeebeaf28dd56ba&type=user&since=1389913941065
+    data_event_summary:
+      title: Data Event Summary
+      type: object
+      description: This will return a summary of data events for the App.
+      properties:
+        type:
           type: string
-          nullable: true
-          description: The utm_campaign of the visitor.
-          example: intercom-link
-        utm_content:
+          description: The type of the object
+          enum:
+          - event.summary
+        email:
           type: string
-          nullable: true
-          description: The utm_content of the visitor.
-          example: banner
-        utm_medium:
+          description: The email address of the user
+        intercom_user_id:
           type: string
-          nullable: true
-          description: The utm_medium of the visitor.
-          example: email
-        utm_source:
+          description: The Intercom user ID of the user
+        user_id:
           type: string
-          nullable: true
-          description: The utm_source of the visitor.
-          example: Intercom
-        utm_term:
+          description: The user ID of the user
+        events:
+          type: array
+          description: A summary of data events
+          items:
+            "$ref": "#/components/schemas/data_event_summary_item"
+    data_event_summary_item:
+      title: Data Event Summary Item
+      type: object
+      description: This will return a summary of a data event for the App.
+      nullable: true
+      properties:
+        name:
           type: string
-          nullable: true
-          description: The utm_term of the visitor.
-          example: messenger
-        do_not_track:
+          description: The name of the event
+          example: placed-order
+        first:
+          type: string
+          description: The first time the event was sent
+          example: '2014-01-16T23:12:21.000+00:00'
+        last:
+          type: string
+          description: The last time the event was sent
+          example: '2014-01-16T23:12:21.000+00:00 '
+        count:
+          type: integer
+          description: The number of times the event was sent
+          example: 1
+        description:
+          type: string
+          description: The description of the event
+          example: A user placed an order
+    deleted_article_object:
+      title: Deleted Article Object
+      type: object
+      description: Response returned when an object is deleted
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the article which you provided in
+            the URL.
+        object:
+          type: string
+          description: The type of object which was deleted. - article
+          enum:
+          - article
+        deleted:
           type: boolean
-          nullable: true
-          description: Identifies if this visitor has do not track enabled.
-          example: false
+          description: Whether the article was deleted successfully or not.
   securitySchemes:
     bearerAuth:
       type: http
@@ -4702,21 +5484,10 @@ servers:
 security:
 - bearerAuth: []
 tags:
-- name: tags
-  description: Everything about tags
-- name: Article
-  description: Everything about your Articles
-- name: Subscription Types
-  description: Everything about subscription types
-- name: Conversation
-  description: Everything about your Conversations
-  externalDocs:
-    description: What is a conversation?
-    url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
 - name: Team
   description: Everything about your Teams
-- name: Visitor
-  description: Everything about your Visitors
+- name: Subscription Types
+  description: Everything about subscription types
 - name: News
   description: Everything about your News
   externalDocs:
@@ -4724,9 +5495,22 @@ tags:
     url: https://www.intercom.com/help/en/articles/6362251-news-explained
 - name: Note
   description: Everything about your Notes
-- name: Data Events
-  description: Everything about your Data Events
 - name: Segment
   description: Everything about your Segments
 - name: Admin
   description: Everything about your Admins
+- name: Contact
+  description: Everything about your contacts
+- name: tags
+  description: Everything about tags
+- name: Article
+  description: Everything about your Articles
+- name: Visitor
+  description: Everything about your Visitors
+- name: Conversation
+  description: Everything about your Conversations
+  externalDocs:
+    description: What is a conversation?
+    url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
+- name: Data Events
+  description: Everything about your Data Events
