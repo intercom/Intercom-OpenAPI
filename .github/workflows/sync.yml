@@ -1,0 +1,20 @@
+name: Sync OpenAPI definition to ReadMe
+
+# Run the workflow for every push to the `main` branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v3
+
+      # Run GitHub Action to sync OpenAPI file
+      - name: GitHub Action
+        uses: readmeio/rdme@v8
+        with:
+          rdme: openapi descriptions/api.intercom.io.yaml --key=${{ secrets.README_API_KEY }} --id=${{ secrets.API_DEFINITION_ID }}
