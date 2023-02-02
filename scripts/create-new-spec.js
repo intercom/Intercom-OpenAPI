@@ -2,21 +2,24 @@ const sdk = require('api')('@developers/v2.0#kpjtacsldjbscf9');
 
 require('dotenv').config();
 
-module.exports = async function createNewSpec(apiKey, spec_file_name) {
-  await sdk.auth(apiKey);
-  return await sdk
+module.exports = async function createNewSpec(apiKey, spec_file,version_number) {
+  try{
+    await sdk.auth(apiKey);
+    let created_doc =  await sdk
     .uploadAPISpecification(
       {
-        spec: spec_file_name,
+        spec: spec_file,
       },
       {
         accept: 'application/json',
+        'x-readme-version': version_number
       },
-    )
-    .then(({ data }) => {
-      return data;
-    })
-    .catch(async (err) => {
-      throw new Error(err);
-    });
+    );
+    console.log("[INFO] Doc created ",created_doc);
+    return created_doc;
+  }
+  catch (err) {
+    console.log(err);
+    throw new Error(err);
+  }
 };
