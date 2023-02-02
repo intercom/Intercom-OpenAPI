@@ -1,0 +1,27 @@
+name: Deploy to readme
+on:
+  push:
+    # Sequence of patterns matched against refs/heads
+    branches:    
+      - sp/script_upload_file
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run: npm install
+      - name: Changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@v34.4.0
+      - run: API_REFERENCE_README_KEY = ${{ secrets.README_API_KEY }} node ./scripts/run-sync.js ${{ steps.changed-files.outputs.all_changed_files }}
+      - name: List all changed files
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
+          done
