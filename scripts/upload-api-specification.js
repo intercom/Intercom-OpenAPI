@@ -10,7 +10,8 @@ require('dotenv').config();
 module.exports = async function uploadAPISpecification(filePath) {
   
   // Skip non-markdown files
-  if (filePath.slice(-3) !== '.yaml') {
+  if (filePath.slice(-5) !== '.yaml') {
+    console.log('[INFO] skipping upload');
     return;
   }
   const [version_number, file_name] = filePath.split('descriptions/')[1].split('/');
