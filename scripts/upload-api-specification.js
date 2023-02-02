@@ -33,6 +33,11 @@ module.exports = async function uploadAPISpecification(filePath) {
     }
   });
 
+  console.log('file path', path.join(
+    filePath.split(file_name)[0],
+    "api.intercom.io.yaml"));
+    console.log('file path vairaible', filePath);
+    console.log('slice variable',filePath.split(file_name)[0]);
   //create a stream of the swagger file.
   const file = fs.createReadStream( path.join(
         filePath.split(file_name)[0],
