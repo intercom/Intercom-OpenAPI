@@ -8,6 +8,11 @@ const path = require("path");
 require('dotenv').config();
 
 module.exports = async function uploadAPISpecification(filePath) {
+  
+  // Skip non-markdown files
+  if (filePath.slice(-3) !== '.yaml') {
+    return;
+  }
   const [version_number, file_name] = filePath.split('descriptions/')[1].split('/');
   let version_detail;
 
