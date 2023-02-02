@@ -14,7 +14,6 @@ module.exports = async function getSpecMetadata(version_number, apiKey) {
       return api_spec;
   }
   catch (err) {
-    console.log(err);
     throw new Error(err);
   }
 };

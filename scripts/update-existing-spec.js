@@ -18,7 +18,6 @@ module.exports = async function updateExistingSpec(spec_key_id, apiKey, spec_fil
     return updated_doc;
   }
   catch (err) {
-    console.log(err);
     throw new Error(err);
   }
 };
