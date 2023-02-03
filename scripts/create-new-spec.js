@@ -8,7 +8,7 @@ module.exports = async function createNewSpec(apiKey, spec_file,version_number) 
     let created_doc =  await sdk
     .uploadAPISpecification(
       {
-        spec: spec_file,
+        spec: 'title',
       },
       {
         accept: 'application/json',
@@ -19,7 +19,6 @@ module.exports = async function createNewSpec(apiKey, spec_file,version_number) 
     return created_doc;
   }
   catch (err) {
-    console.log(err);
     throw new Error(err);
   }
 };
