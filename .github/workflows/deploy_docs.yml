@@ -21,10 +21,7 @@ jobs:
         uses: tj-actions/changed-files@v34.4.0
       - run: node ./scripts/run-sync.js ${{ steps.changed-files.outputs.all_changed_files }} ${{ secrets.README_API_KEY }}
       - name: List all changed files
-        if: success()
-          run: |
-            for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-              echo "$file was changed"
-            done
-        else:
-          exit 1
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
+          done
