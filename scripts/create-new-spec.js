@@ -19,6 +19,7 @@ module.exports = async function createNewSpec(apiKey, spec_file,version_number) 
     return created_doc;
   }
   catch (err) {
+    console.log(err);
     throw new Error(err);
   }
 };
