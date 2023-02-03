@@ -13,7 +13,7 @@ const github = require('@actions/github');
     }
   }
   catch(err){
-    core.setFailed(err);
+    core.setFailed("Action Failed. See logs for error.");
   }
 
 })();

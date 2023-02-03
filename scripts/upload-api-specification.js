@@ -21,11 +21,7 @@ module.exports = async function uploadAPISpecification(filePath) {
     //fetch existing specifications for the spec
     version_detail = await getSpecMetadata(version_number, API_KEYS["type"]);
   } catch (err) {
-    console.error(
-      `[ERROR] Tried to fetch specMetadata for version ${version_number} but failed. ${err}`,
-    );
     throw new Error(err);
-
   }
 
   let spec_key_id = null;
@@ -46,14 +42,12 @@ module.exports = async function uploadAPISpecification(filePath) {
     try {
       return await updateExistingSpec(spec_key_id, API_KEYS["type"], file);
     } catch (err) {
-      console.error(`[ERROR] Tried to update existing spec (${spec_key_id}). ${err}`);
       throw new Error(err);
     }
   } else{
     try {
       return await createNewSpec( API_KEYS["type"], file, version_number);
     } catch (err) {
-      console.error(`[ERROR] Error creating new spec. ${err}`);
       throw new Error(err);
     }
   }

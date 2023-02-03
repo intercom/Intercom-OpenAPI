@@ -14,6 +14,8 @@ module.exports = async function getSpecMetadata(version_number, apiKey) {
       return api_spec;
   }
   catch (err) {
-    throw new Error(err);
+    var message = await err.json();
+    console.error(" [ERROR] Tried to fetch specMetadata for version ${version_number} but failed.", message);
+    throw new Error(message);
   }
 };
