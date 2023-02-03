@@ -11,8 +11,7 @@ const github = require('@actions/github');
       const filepath = path.join(__dirname, '..', file);
       await uploadAPISpecification(filepath);
     }
-  }
-  catch(err){
+  } catch(err){
     core.setFailed("Action Failed. See logs for error.");
   }
 

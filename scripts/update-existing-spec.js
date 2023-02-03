@@ -16,8 +16,7 @@ module.exports = async function updateExistingSpec(spec_key_id, apiKey, spec_fil
     );
     console.log("[INFO] Doc updated ",updated_doc);
     return updated_doc;
-  }
-  catch (err) {
+  } catch (err) {
     var message = await err.json();
     console.error("[ERROR] Tried to update existing spec", spec_key_id, " The error is ",message); 
     throw new Error(message);

@@ -12,8 +12,7 @@ module.exports = async function getSpecMetadata(version_number, apiKey) {
         'x-readme-version': version_number,
       });
       return api_spec;
-  }
-  catch (err) {
+  } catch (err) {
     var message = await err.json();
     console.error(" [ERROR] Tried to fetch specMetadata for version ${version_number} but failed.", message);
     throw new Error(message);

@@ -9,16 +9,17 @@ require('dotenv').config();
 
 module.exports = async function uploadAPISpecification(filePath) {
   
-  // Skip non-markdown files
+  // Skip non-yaml files
   if (filePath.slice(-5) !== '.yaml') {
     console.log('[INFO] skipping upload');
     return;
   }
+  
   const [version_number, file_name] = filePath.split('descriptions/')[1].split('/');
   let version_detail;
-
+  
+  //fetch existing specifications for the currect version if any.
   try {
-    //fetch existing specifications for the spec
     version_detail = await getSpecMetadata(version_number, API_KEYS["type"]);
   } catch (err) {
     throw new Error(err);
@@ -30,21 +31,22 @@ module.exports = async function uploadAPISpecification(filePath) {
       spec_key_id = element.id;
     }
   });
-  //create a stream of the swagger file.
+
+  //create a stream of the file to be uploaded.  
   const file = fs.createReadStream( path.join(
         filePath.split(file_name)[0],
         "api.intercom.io.yaml"
     ),);
 
-  //If a doc is existing then update the existing version.
-  //If not, create a new document.
+  //If a version is found then update the same. If not, create a new version.
+
   if (spec_key_id) {
     try {
       return await updateExistingSpec(spec_key_id, API_KEYS["type"], file);
     } catch (err) {
       throw new Error(err);
     }
-  } else{
+  } else {
     try {
       return await createNewSpec( API_KEYS["type"], file, version_number);
     } catch (err) {

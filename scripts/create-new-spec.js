@@ -17,8 +17,7 @@ module.exports = async function createNewSpec(apiKey, spec_file,version_number) 
     );
     console.log("[INFO] Doc created ",created_doc);
     return created_doc;
-  }
-  catch (err) {
+  } catch (err) {
     var message = await err.json();
     console.error("[ERROR] Error creating new spec.",message); 
     throw new Error(message);
