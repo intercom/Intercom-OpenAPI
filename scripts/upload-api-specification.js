@@ -19,8 +19,8 @@ module.exports = async function uploadAPISpecification(filePath) {
   if(version_number == 'Unstable'){
     version_number = '0';
   }
-  
-  //get the api key from the environment variable.
+
+  //get the api key from the arguments passed to the script.
   let key = process.argv.slice(-1)[0];
 
   //fetch existing specifications for the currect version if any.
