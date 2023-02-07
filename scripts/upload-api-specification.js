@@ -1,26 +1,31 @@
-const API_KEYS = require('./API_KEYS');
 const getSpecMetadata = require('./get-spec-metadata');
 const updateExistingSpec = require('./update-existing-spec');
 const createNewSpec = require('./create-new-spec');
-const fs   = require('fs');
-const path = require("path");
-
-require('dotenv').config();
+const fs = require('fs');
+const yaml = require('js-yaml');
 
 module.exports = async function uploadAPISpecification(filePath) {
-  
   // Skip non-yaml files
   if (filePath.slice(-5) !== '.yaml') {
     console.log('[INFO] skipping upload');
     return;
   }
+
+  // Load the file
+  const doc = yaml.load(fs.readFileSync(filePath));
+  let version_number = doc.info.version;
+
+  // If the version is unstable, set it to 0
+  if(version_number == 'Unstable'){
+    version_number = '0';
+  }
   
-  const [version_number, file_name] = filePath.split('descriptions/')[1].split('/');
-  let version_detail;
-  
+  //get the api key from the environment variable.
+  let key = process.argv.slice(-1)[0];
+
   //fetch existing specifications for the currect version if any.
   try {
-    version_detail = await getSpecMetadata(version_number, API_KEYS["type"]);
+    version_detail = await getSpecMetadata(version_number, key);
   } catch (err) {
     throw new Error(err);
   }
@@ -32,23 +37,20 @@ module.exports = async function uploadAPISpecification(filePath) {
     }
   });
 
-  //create a stream of the file to be uploaded.  
-  const file = fs.createReadStream( path.join(
-        filePath.split(file_name)[0],
-        "api.intercom.io.yaml"
-    ),);
+  //create a stream of the file to be uploaded.
+  const file = fs.createReadStream(filePath);
 
   //If a version is found then update the same. If not, create a new version.
 
   if (spec_key_id) {
     try {
-      return await updateExistingSpec(spec_key_id, API_KEYS["type"], file);
+      return await updateExistingSpec(spec_key_id, key, file);
     } catch (err) {
       throw new Error(err);
     }
   } else {
     try {
-      return await createNewSpec( API_KEYS["type"], file, version_number);
+      return await createNewSpec(key, file, version_number);
     } catch (err) {
       throw new Error(err);
     }
