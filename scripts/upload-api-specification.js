@@ -11,19 +11,23 @@ module.exports = async function uploadAPISpecification(filePath) {
     return;
   }
 
+  //get the api key from the arguments passed to the script.
+  let key = process.argv.slice(-1)[0];
+
   // Load the file
+  try{
   const doc = yaml.load(fs.readFileSync(filePath));
   let version_number = doc.info.version;
-
+  
   console.log('[INFO] loading file ', filePath);
+  
   // If the version is unstable, set it to 0
   if(version_number == 'Unstable'){
     version_number = '0';
   }
 
-  //get the api key from the arguments passed to the script.
-  let key = process.argv.slice(-1)[0];
   console.log('[INFO] fetch existing specifications for the currect version if any.');
+  
   //fetch existing specifications for the currect version if any.
   try {
     version_detail = await getSpecMetadata(version_number, key);
@@ -59,4 +63,26 @@ module.exports = async function uploadAPISpecification(filePath) {
       throw new Error(err);
     }
   }
+  } catch (e) {
+    console.log('[INFO] trying to delete the openapi spec', e);
+    const [version, file] = filePath.split('descriptions/')[1].split('/');
+    console.log('[INFO] fetch existing specifications for the currect version if any.');
+  
+    //fetch existing specifications for the currect version if any.
+    try {
+      version_detail = await getSpecMetadata(version, key);
+    } catch (err) {
+      throw new Error(err);
+    }
+    let spec_key_id = null;
+    version_detail?.forEach((element) => {
+      if (element.title == 'Intercom API' && element.source == 'api' && element.type == 'oas') {
+        spec_key_id = element.id;
+      }
+    });
+    
+  }
+
+
+  
 };
