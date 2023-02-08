@@ -38,6 +38,7 @@ module.exports = async function uploadAPISpecification(filePath) {
     }
   });
 
+  console.log('[INFO] fetch existing specifications for the currect version if any.,' ,version_detail);
   //create a stream of the file to be uploaded.
   const file = fs.createReadStream(filePath);
 
