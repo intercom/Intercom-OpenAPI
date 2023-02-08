@@ -3,8 +3,10 @@ const updateExistingSpec = require('./update-existing-spec');
 const createNewSpec = require('./create-new-spec');
 const fs = require('fs');
 const yaml = require('js-yaml');
+const deleteSpec = require('./delete-spec');
 
 module.exports = async function uploadAPISpecification(filePath) {
+  
   // Skip non-yaml files
   if (filePath.slice(-5) !== '.yaml') {
     console.log('[INFO] skipping upload');
@@ -13,20 +15,22 @@ module.exports = async function uploadAPISpecification(filePath) {
 
   //get the api key from the arguments passed to the script.
   let key = process.argv.slice(-1)[0];
+  let version_number = null;
+  let delete_files = false;
 
   // Load the file
   try{
-  const doc = yaml.load(fs.readFileSync(filePath));
-  let version_number = doc.info.version;
-  
-  console.log('[INFO] loading file ', filePath);
-  
+    const doc = yaml.load(fs.readFileSync(filePath));
+    version_number = doc.info.version;
+  } catch (err) {
+    delete_files = true;
+    const [version, file] = filePath.split('descriptions/')[1].split('/');
+    version_number = version;  
+  }
   // If the version is unstable, set it to 0
   if(version_number == 'Unstable'){
     version_number = '0';
   }
-
-  console.log('[INFO] fetch existing specifications for the currect version if any.');
   
   //fetch existing specifications for the currect version if any.
   try {
@@ -42,7 +46,14 @@ module.exports = async function uploadAPISpecification(filePath) {
     }
   });
 
-  console.log('[INFO] fetch existing specifications for the currect version if any.,' ,version_detail);
+  if(delete_files && spec_key_id ){
+    try {
+      console.log('[INFO] trying to delete file for', spec_key_id);
+      return await deleteSpec(spec_key_id, key);
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
   //create a stream of the file to be uploaded.
   const file = fs.createReadStream(filePath);
 
@@ -63,26 +74,4 @@ module.exports = async function uploadAPISpecification(filePath) {
       throw new Error(err);
     }
   }
-  } catch (e) {
-    console.log('[INFO] trying to delete the openapi spec', e);
-    const [version, file] = filePath.split('descriptions/')[1].split('/');
-    console.log('[INFO] fetch existing specifications for the currect version if any.');
-  
-    //fetch existing specifications for the currect version if any.
-    try {
-      version_detail = await getSpecMetadata(version, key);
-    } catch (err) {
-      throw new Error(err);
-    }
-    let spec_key_id = null;
-    version_detail?.forEach((element) => {
-      if (element.title == 'Intercom API' && element.source == 'api' && element.type == 'oas') {
-        spec_key_id = element.id;
-      }
-    });
-    
-  }
-
-
-  
 };

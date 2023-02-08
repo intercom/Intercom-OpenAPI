@@ -3,7 +3,7 @@ const sdk = require('api')('@developers/v2.0#kpjtacsldjbscf9');
 module.exports = async function createNewSpec(apiKey, spec_file,version_number) {
   try{
     await sdk.auth(apiKey);
-    console.log('[INFO] inside createNewSpec function with version number ',version_number,' and file ',spec_file);
+    console.log('[INFO] inside createNewSpec function with version number ',version_number);
     let created_doc =  await sdk
     .uploadAPISpecification(
       {
@@ -17,8 +17,9 @@ module.exports = async function createNewSpec(apiKey, spec_file,version_number) 
     console.log("[INFO] Doc created ",created_doc);
     return created_doc;
   } catch (err) {
+    console.log(err);
     var message = await err.json();
-    console.error("[ERROR] Error creating new spec.",message); 
+    console.log("[ERROR] Error creating new spec",message); 
     throw new Error(message);
   }
 };
