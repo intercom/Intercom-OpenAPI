@@ -3,6 +3,7 @@ const sdk = require('api')('@developers/v2.0#kpjtacsldjbscf9');
 module.exports = async function createNewSpec(apiKey, spec_file,version_number) {
   try{
     await sdk.auth(apiKey);
+    console.log('[INFO] inside createNewSpec function with version number ',version_number,' and file ',spec_file);
     let created_doc =  await sdk
     .uploadAPISpecification(
       {
