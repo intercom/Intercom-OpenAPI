@@ -15,6 +15,7 @@ module.exports = async function uploadAPISpecification(filePath) {
   const doc = yaml.load(fs.readFileSync(filePath));
   let version_number = doc.info.version;
 
+  console.log('[INFO] loading file ', filePath);
   // If the version is unstable, set it to 0
   if(version_number == 'Unstable'){
     version_number = '0';
@@ -22,7 +23,7 @@ module.exports = async function uploadAPISpecification(filePath) {
 
   //get the api key from the arguments passed to the script.
   let key = process.argv.slice(-1)[0];
-
+  console.log('[INFO] fetch existing specifications for the currect version if any.');
   //fetch existing specifications for the currect version if any.
   try {
     version_detail = await getSpecMetadata(version_number, key);
@@ -44,12 +45,14 @@ module.exports = async function uploadAPISpecification(filePath) {
 
   if (spec_key_id) {
     try {
+      console.log('[INFO] trying to upload file. for', spec_key_id);
       return await updateExistingSpec(spec_key_id, key, file);
     } catch (err) {
       throw new Error(err);
     }
   } else {
     try {
+      console.log('[INFO] trying to create new file');
       return await createNewSpec(key, file, version_number);
     } catch (err) {
       throw new Error(err);
