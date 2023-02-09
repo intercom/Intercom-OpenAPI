@@ -47,6 +47,12 @@ module.exports = async function uploadAPISpecification(filePath) {
       throw new Error(err);
     }
   }
+
+  if(delete_files && !spec_key_id) {
+    console.log('[INFO] no file to delete');
+    return;
+  }
+  
   //create a stream of the file to be uploaded.
   const file = fs.createReadStream(filePath);
 
