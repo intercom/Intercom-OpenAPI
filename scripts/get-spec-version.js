@@ -12,7 +12,7 @@ module.exports = async function getSpecVersion(version_number, apiKey) {
     });
     let spec_key_id = null;
     api_spec?.forEach((element) => {
-      if (element.title == 'Intercom API' && element.source == 'api' && element.type == 'oas') {
+      if (element.title === 'Intercom API' && element.source === 'api' && element.type === 'oas') {
         spec_key_id = element.id;
       }
     });

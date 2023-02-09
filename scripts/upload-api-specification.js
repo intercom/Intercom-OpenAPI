@@ -30,7 +30,7 @@ module.exports = async function uploadAPISpecification(filePath) {
   if (version_number == 'Unstable') {
     version_number = '0';
   }
-  
+
   let spec_key_id = null;
   //fetch existing specifications for the currect version if any.
   try {
@@ -62,7 +62,7 @@ module.exports = async function uploadAPISpecification(filePath) {
   } else {
     try {
       console.log('[INFO] trying to create new file');
-      return await createNewSpec(key, file, version_number);
+      return await createNewSpec(key, file, version_number, filePath);
     } catch (err) {
       throw new Error(err);
     }
