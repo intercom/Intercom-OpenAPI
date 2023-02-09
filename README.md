@@ -1,6 +1,6 @@
 # Intercom's REST API OpenAPI Description
 
-This repository contains [OpenAPI](https://www.openapis.org/) descriptions for [Intercom's REST API](https://developers.intercom.com/intercom-api-reference/reference/welcome). It is currently evolving and does not yet cover the entire API.
+This repository contains [OpenAPI](https://www.openapis.org/) descriptions for [Intercom's REST API](https://developers.intercom.com/intercom-api-reference/reference/welcome). It covers API versions 2.7 and higher.
 
 ## What is OpenAPI?
 
