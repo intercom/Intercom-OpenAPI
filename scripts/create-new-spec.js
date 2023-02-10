@@ -25,9 +25,7 @@ module.exports = async function createNewSpec(apiKey, spec_file, version_number,
       try {
         spec_key_id = await getSpecVersion(version_number, apiKey);
         if (spec_key_id) {
-          //create a stream of the file to be uploaded.
-          const file = fs.createReadStream(filePath);
-          return await updateExistingSpec(spec_key_id, apiKey, file);
+          return await updateExistingSpec(spec_key_id, apiKey, filePath);
         }
       } catch (err) {
         var message = await err.json();

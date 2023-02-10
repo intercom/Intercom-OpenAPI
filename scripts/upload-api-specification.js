@@ -61,7 +61,7 @@ module.exports = async function uploadAPISpecification(filePath) {
   if (spec_key_id) {
     try {
       console.log('[INFO] trying to upload file for', spec_key_id);
-      return await updateExistingSpec(spec_key_id, key, file);
+      return await updateExistingSpec(spec_key_id, key, filePath);
     } catch (err) {
       throw new Error(err);
     }
