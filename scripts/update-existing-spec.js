@@ -1,23 +1,21 @@
 const sdk = require('api')('@developers/v2.0#kpjtacsldjbscf9');
 
-module.exports = async function updateExistingSpec(spec_key_id, apiKey, spec_file) {
+module.exports = async function updateExistingSpec(specId, apiKey, specFile) {
   try {
     await sdk.auth(apiKey);
-    let updated_doc = await sdk.updateAPISpecification(
+    await sdk.updateAPISpecification(
       {
-        spec: spec_file,
+        spec: specFile,
       },
       {
-        id: spec_key_id,
+        id: specId,
         accept: 'application/json',
       },
     );
-    console.log('[INFO] Doc updated ', updated_doc);
-    return updated_doc;
+    console.log(`[INFO] Updated API spec ${specId}`);
+    return;
   } catch (err) {
-    console.log(err);
-    var message = await err.json();
-    console.error('[ERROR] Tried to update existing spec', spec_key_id, ' The error is ', message);
-    throw new Error(message);
+    console.error(`[ERROR] Updating API spec ${specId} failed with error:`, err);
+    throw err;
   }
 };
