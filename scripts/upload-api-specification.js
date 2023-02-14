@@ -8,69 +8,72 @@ const deleteSpec = require('./delete-spec');
 module.exports = async function uploadAPISpecification(filePath) {
   // Skip non-yaml files
   if (filePath.slice(-5) !== '.yaml') {
-    console.log('[INFO] skipping upload');
+    console.log('[INFO] skipping non-yaml file', filePath);
     return;
   }
 
   //get the api key from the arguments passed to the script.
-  let key = process.argv.slice(-1)[0];
-  let version_number = null;
-  let delete_files = false;
+  let apiKey = process.argv.slice(-1)[0];
+  let versionNumber = null;
+  let deleteFile = false;
+  let specKeyId = null;
 
-  // Load the file
   try {
-    const doc = yaml.load(fs.readFileSync(filePath));
-    version_number = doc.info.version;
+    if (!fs.readFileSync(filePath)) {
+      deleteFile = true;
+    }
+    [versionNumber] = filePath.split('descriptions/')[1].split('/');
+    if (versionNumber == 'Unstable') {
+      // If the version is unstable, set it to 0
+      versionNumber = '0';
+    }
   } catch (err) {
-    delete_files = true;
-    const [version, file] = filePath.split('descriptions/')[1].split('/');
-    version_number = version;
-  }
-  // If the version is unstable, set it to 0
-  if (version_number == 'Unstable') {
-    version_number = '0';
+    console.error('[ERROR] ', err);
+    throw err;
   }
 
-  let spec_key_id = null;
   //fetch existing specifications for the currect version if any.
   try {
-    spec_key_id = await getSpecVersion(version_number, key);
+    specKeyId = await getSpecVersion(versionNumber, apiKey);
   } catch (err) {
-    throw new Error(err);
+    console.error("[ERROR] Couldn't fetch specification version");
+    throw err;
   }
 
-  if (delete_files && spec_key_id) {
+  if (deleteFile && specKeyId) {
     try {
-      console.log('[INFO] trying to delete file for', spec_key_id);
-      return await deleteSpec(spec_key_id, key);
+      console.log(`[INFO] trying to delete API spec ${specKeyId} on version ${versionNumber}`);
+      return await deleteSpec(specKeyId, apiKey);
     } catch (err) {
-      throw new Error(err);
+      throw err;
     }
   }
 
-  if(delete_files && !spec_key_id) {
+  if (deleteFile && !specKeyId) {
     console.log('[INFO] no file to delete');
     return;
   }
-  
-  //create a stream of the file to be uploaded.
-  const file = fs.createReadStream(filePath);
 
-  //If a version is found then update the same. If not, create a new version.
-
-  if (spec_key_id) {
-    try {
-      console.log('[INFO] trying to upload file for', spec_key_id);
-      return await updateExistingSpec(spec_key_id, key, file);
-    } catch (err) {
-      throw new Error(err);
+  try {
+    const specFile = fs.createReadStream(filePath);
+    //If a version is found then update the same. If not, create a new version.
+    if (specKeyId) {
+      try {
+        console.log(`[INFO] Updating API spec ${specKeyId} on version ${versionNumber}`);
+        return await updateExistingSpec(specKeyId, apiKey, specFile);
+      } catch (err) {
+        throw err;
+      }
+    } else {
+      try {
+        console.log(`[INFO] Creating API spec ${specKeyId} on version ${versionNumber}`);
+        return await createNewSpec(apiKey, versionNumber, specFile);
+      } catch (err) {
+        throw err;
+      }
     }
-  } else {
-    try {
-      console.log('[INFO] trying to create new file');
-      return await createNewSpec(key, file, version_number, filePath);
-    } catch (err) {
-      throw new Error(err);
-    }
+  } catch (err) {
+    console.error('[ERROR] Error occurred during API spec Create/Update ', err);
+    throw err;
   }
 };
