@@ -1,11 +1,12 @@
 const sdk = require('api')('@developers/v2.0#kpjtacsldjbscf9');
+const fs = require('fs');
 
-module.exports = async function updateExistingSpec(specId, apiKey, specFile) {
+module.exports = async function updateExistingSpec(specId, apiKey, filePath) {
   try {
     await updateExistingSpecWithRetry(
       specId,
       apiKey,
-      specFile,
+      filePath,
       () => {
         console.log('Retrying Update API spec...');
       },
@@ -18,12 +19,13 @@ module.exports = async function updateExistingSpec(specId, apiKey, specFile) {
   }
 };
 
-async function updateExistingSpecWithRetry(specId, apiKey, specFile, onRetry, maxRetries) {
+async function updateExistingSpecWithRetry(specId, apiKey, filePath, onRetry, maxRetries) {
   async function retryWithBackoff(retries) {
+    const specFile = fs.createReadStream(filePath);
     try {
       await waitFor(5000);
       await sdk.auth(apiKey);
-      return await sdk.updateAPISpecification(
+      await sdk.updateAPISpecification(
         {
           spec: specFile,
         },
@@ -32,7 +34,10 @@ async function updateExistingSpecWithRetry(specId, apiKey, specFile, onRetry, ma
           accept: 'application/json',
         },
       );
+      specFile.destroy();
+      return;
     } catch (err) {
+      specFile.destroy();
       if (retries < maxRetries) {
         onRetry();
         return retryWithBackoff(retries + 1);
