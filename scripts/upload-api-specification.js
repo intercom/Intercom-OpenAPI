@@ -2,7 +2,6 @@ const getSpecVersion = require('./get-spec-version');
 const updateExistingSpec = require('./update-existing-spec');
 const createNewSpec = require('./create-new-spec');
 const fs = require('fs');
-const yaml = require('js-yaml');
 const deleteSpec = require('./delete-spec');
 
 module.exports = async function uploadAPISpecification(filePath) {
@@ -37,7 +36,6 @@ module.exports = async function uploadAPISpecification(filePath) {
     specKeyId = await getSpecVersion(versionNumber, apiKey);
   } catch (err) {
     console.error("[ERROR] Couldn't fetch specification version");
-    throw err;
   }
 
   if (deleteFile && specKeyId) {
@@ -55,19 +53,18 @@ module.exports = async function uploadAPISpecification(filePath) {
   }
 
   try {
-    const specFile = fs.createReadStream(filePath);
     //If a version is found then update the same. If not, create a new version.
     if (specKeyId) {
       try {
         console.log(`[INFO] Updating API spec ${specKeyId} on version ${versionNumber}`);
-        return await updateExistingSpec(specKeyId, apiKey, specFile);
+        return await updateExistingSpec(specKeyId, apiKey, filePath);
       } catch (err) {
         throw err;
       }
     } else {
       try {
-        console.log(`[INFO] Creating API spec ${specKeyId} on version ${versionNumber}`);
-        return await createNewSpec(apiKey, specFile, versionNumber, filePath);
+        console.log(`[INFO] Creating API spec on version ${versionNumber}`);
+        return await createNewSpec(apiKey, versionNumber, filePath);
       } catch (err) {
         throw err;
       }
