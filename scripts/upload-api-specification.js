@@ -67,7 +67,7 @@ module.exports = async function uploadAPISpecification(filePath) {
     } else {
       try {
         console.log(`[INFO] Creating API spec ${specKeyId} on version ${versionNumber}`);
-        return await createNewSpec(apiKey, versionNumber, specFile);
+        return await createNewSpec(apiKey, specFile, versionNumber, filePath);
       } catch (err) {
         throw err;
       }
