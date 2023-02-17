@@ -23,7 +23,7 @@ async function updateExistingSpecWithRetry(specId, apiKey, filePath, onRetry, ma
   async function retryWithBackoff(retries) {
     const specFile = fs.createReadStream(filePath);
     try {
-      await waitFor(5000);
+      await waitFor(10000);
       await sdk.auth(apiKey);
       await sdk.updateAPISpecification(
         {
