@@ -3,7 +3,8 @@ const updateExistingSpec = require('./update-existing-spec');
 const sdk = require('api')('@developers/v2.0#kpjtacsldjbscf9');
 const fs = require('fs');
 
-module.exports = async function createNewSpec(apiKey, specFile, versionNumber, filePath) {
+module.exports = async function createNewSpec(apiKey, versionNumber, filePath) {
+  const specFile = fs.createReadStream(filePath);
   try {
     await sdk.auth(apiKey);
     let createdSpec = await sdk.uploadAPISpecification(
@@ -15,16 +16,18 @@ module.exports = async function createNewSpec(apiKey, specFile, versionNumber, f
         'x-readme-version': versionNumber,
       },
     );
+    specFile.destroy();
     console.log('[INFO] Created API spec', createdSpec.id);
     return createdSpec;
   } catch (err) {
+    specFile.destroy();
     console.error('[ERROR] Error creating API spec', err);
     if (err.status == 503) {
       console.log('[INFO] 503 error, trying again');
       try {
         specId = await getSpecVersion(versionNumber, apiKey);
-        const specFile = fs.createReadStream(filePath);
-        return await updateExistingSpec(specId, apiKey, specFile);
+        console.log(`[INFO] Updating API spec ${specId} on version ${versionNumber}`);
+        return await updateExistingSpec(specId, apiKey, filePath);
       } catch (err) {
         throw err;
       }
