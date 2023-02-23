@@ -30,7 +30,7 @@ async function getCollectionId(collectionName) {
   console.log(`[INFO] Checking if collection ${collectionName} exists`);
   try {
     const response = await axios.get(
-      `https://api.getpostman.com/collections?apikey=${API_KEYS.postman}`,
+      `https://api.getpostman.com/collections?workspace=${API_KEYS.pmWorkspaceId}&apikey=${API_KEYS.postman}`,
     );
     const collections = response.data.collections;
     for (const collection of collections) {
