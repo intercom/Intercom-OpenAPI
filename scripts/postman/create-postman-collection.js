@@ -7,7 +7,7 @@ module.exports = async function createPostmanCollection(collection, collectionNa
   try {
     console.log(`[INFO] Creating collection ${collectionName}`);
     await axios.post(
-      `https://api.getpostman.com/collections`,
+      `https://api.getpostman.com/collections?workspace=${API_KEYS.pmWorkspaceId}`,
       { collection },
       {
         headers: {

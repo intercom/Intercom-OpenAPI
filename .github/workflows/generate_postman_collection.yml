@@ -1,4 +1,4 @@
-name: Deploy postman collection after successful publish of readme
+name: Deploy postman collection
 on:
   push:
     # Sequence of patterns matched against refs/heads
@@ -19,6 +19,7 @@ jobs:
         run: |
           touch .env
           echo POSTMAN_API_KEY=${{  secrets.POSTMAN_API_KEY }} >> .env
+          echo POSTMAN_WORKSPACE_ID=${{  secrets.POSTMAN_WORKSPACE_ID }} >> .env
       - run: npm install
       - name: Changed Files
         id: changed-files
