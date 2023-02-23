@@ -1,9 +1,11 @@
+// Based on the Box implementation
+// https://github.com/box/box-postman
+
 const uuid = require('uuid');
 const { URL } = require('url');
 const { resolve } = require('path');
 const { uniq } = require('lodash');
 const Example = require('./example');
-
 const VERB_PRIORITY = ['GET', 'POST', 'PUT', 'DELETE'];
 
 const byName = (a, b) => {
