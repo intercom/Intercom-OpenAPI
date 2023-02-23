@@ -34,7 +34,7 @@ module.exports = class Collection {
 
   getInfo() {
     return {
-      name: `${this.openapi.info.title}`,
+      name: `${this.openapi.info.title} - ${this.openapi.info.version}`,
       description: this.openapi.info.description,
       version: `${this.openapi.info.version}`,
       contact: this.openapi.info.contact,
