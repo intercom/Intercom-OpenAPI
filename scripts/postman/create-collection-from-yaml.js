@@ -13,7 +13,7 @@ module.exports = async function createCollectionFromYaml(filePath) {
     let collection = await openapi.convert();
     dumpCollectionToFolder(fileName, collection);
   } catch (err) {
-    console.error(`[ERROR] Failed to convert ${collectionName} to collection. Error: ${err}`);
+    console.error(`[ERROR] Failed to convert ${filePath} to collection. Error: ${err}`);
     throw err;
   }
 };
