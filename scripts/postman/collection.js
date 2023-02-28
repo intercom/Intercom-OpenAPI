@@ -103,6 +103,11 @@ module.exports = class Collection {
       };
       this.folders.push(folder);
     });
+    // Creating a folder for endpoints without tags
+    this.folders.push({
+      name: 'Uncategorized',
+      item: [],
+    });
   }
 
   insertEndpoints() {
@@ -288,11 +293,16 @@ module.exports = class Collection {
    * Finds a folder instance for a given reference category ID
    */
   findFolder(endpoint) {
-    const currentTag = endpoint.tags[0];
-    // first find the folder name
-    const folderName = this.openapi.tags.filter((tag) => tag.name === currentTag)[0].name;
-    // return the first folder to match this name
-    return this.folders.filter((folder) => folder.name === folderName)[0].item;
+    try {
+      const currentTag = endpoint.tags[0];
+      // first find the folder name
+      const folderName = this.openapi.tags.filter((tag) => tag.name === currentTag)[0].name;
+      // return the first folder to match this name
+      return this.folders.filter((folder) => folder.name === folderName)[0].item;
+    } catch (e) {
+      console.error("Couldn't find folder for endpoint", e);
+      return 'Uncategorized';
+    }
   }
 
   pruneEmptyFolders() {
