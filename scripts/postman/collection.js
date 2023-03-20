@@ -301,7 +301,7 @@ module.exports = class Collection {
       return this.folders.filter((folder) => folder.name === folderName)[0].item;
     } catch (e) {
       console.error("Couldn't find folder for endpoint", e);
-      return 'Uncategorized';
+      return this.folders.filter((folder) => folder.name === 'Uncategorized')[0].item;
     }
   }
 
