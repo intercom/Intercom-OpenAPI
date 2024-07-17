@@ -1,0 +1,1155 @@
+paths: 
+  /me:
+    get:
+      x-fern-sdk-group-name:
+        - admins
+      x-fern-sdk-method-name: identify
+  /admins/{id}/away:
+    put:
+      x-fern-sdk-group-name:
+        - admins
+      x-fern-sdk-method-name: away
+  /admins/activity_logs:
+    get:
+      x-fern-sdk-group-name:
+        - admins
+      x-fern-sdk-method-name: listAllActivityLogs
+  /admins:
+    get:
+      x-fern-sdk-group-name:
+        - admins
+      x-fern-sdk-method-name: list
+  /admins/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - admins
+      x-fern-sdk-method-name: find
+  /articles:
+    get:
+      x-fern-sdk-group-name:
+        - articles
+      x-fern-sdk-method-name: list
+    post:
+      x-fern-sdk-group-name:
+        - articles
+      x-fern-sdk-method-name: create
+  /articles/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - articles
+      x-fern-sdk-method-name: find
+    put:
+      x-fern-sdk-group-name:
+        - articles
+      x-fern-sdk-method-name: update
+    delete:
+      x-fern-sdk-group-name:
+        - articles
+      x-fern-sdk-method-name: delete
+  /articles/search:
+    get:
+      x-fern-sdk-group-name:
+        - articles
+      x-fern-sdk-method-name: search
+  /help_center/collections:
+    get:
+      x-fern-sdk-group-name:
+        - helpCenter
+        - collections
+      x-fern-sdk-method-name: list
+    post:
+      x-fern-sdk-group-name:
+        - helpCenter
+        - collections
+      x-fern-sdk-method-name: create
+  /help_center/collections/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - helpCenter
+        - collections
+      x-fern-sdk-method-name: find
+    put:
+      x-fern-sdk-group-name:
+        - helpCenter
+        - collections
+      x-fern-sdk-method-name: update
+    delete:
+      x-fern-sdk-group-name:
+        - helpCenter
+        - collections
+      x-fern-sdk-method-name: delete
+  /help_center/help_centers/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - helpCenter
+      x-fern-sdk-method-name: find
+  /help_center/help_centers:
+    get:
+      x-fern-sdk-group-name:
+        - helpCenter
+      x-fern-sdk-method-name: list
+  /companies:
+    get:
+      x-fern-sdk-group-name:
+        - companies
+      x-fern-sdk-method-name: retrieve
+    post:
+      x-fern-sdk-group-name:
+        - companies
+      x-fern-sdk-method-name: create
+  /companies/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - companies
+      x-fern-sdk-method-name: find
+    put:
+      x-fern-sdk-group-name:
+        - companies
+      x-fern-sdk-method-name: update
+    delete:
+      x-fern-sdk-group-name:
+        - companies
+      x-fern-sdk-method-name: delete
+  /companies/{id}/contacts:
+    get:
+      x-fern-sdk-group-name:
+        - companies
+      x-fern-sdk-method-name: listAttachedContacts
+  /companies/{id}/segments:
+    get:
+      x-fern-sdk-group-name:
+        - companies
+      x-fern-sdk-method-name: listAttachedSegments
+  /companies/list:
+    post: 
+      x-fern-pagination: 
+        offset: $request.page
+        results: $response.data
+      x-fern-sdk-group-name:
+        - companies
+      x-fern-sdk-method-name: list
+  /companies/scroll:
+    get:
+      x-fern-pagination: 
+        cursor: $request.scroll_param
+        next_cursor: $response.scroll_param
+        results: $response.data
+      x-fern-sdk-group-name:
+        - companies
+      x-fern-sdk-method-name: scroll
+  /contacts/{id}/companies:
+    get:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: listAttachedCompanies
+    post:
+      x-fern-sdk-group-name:
+        - companies
+      x-fern-sdk-method-name: attachContact
+  /contacts/{contact_id}/companies/{id}:
+    delete:
+      x-fern-sdk-group-name:
+        - companies
+      x-fern-sdk-method-name: detachContact
+  /contacts/{id}/notes:
+    get:
+      x-fern-sdk-group-name:
+        - notes
+      x-fern-sdk-method-name: list
+    post:
+      x-fern-sdk-group-name:
+        - notes
+      x-fern-sdk-method-name: create
+  /contacts/{contact_id}/segments:
+    get:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: listAttachedSegments
+  /contacts/{contact_id}/subscriptions:
+    get:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: listAttachedEmailSubscriptions
+    post:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: attachToContact
+  /contacts/{contact_id}/subscriptions/{id}:
+    delete:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: detachFromContact
+  /contacts/{contact_id}/tags:
+    get:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: listAttachedTags
+    post:
+      x-fern-sdk-group-name:
+        - tags
+      x-fern-sdk-method-name: tagContact
+  /contacts/{contact_id}/tags/{id}:
+    delete:
+      x-fern-sdk-group-name:
+        - tags
+      x-fern-sdk-method-name: untagContact
+  /contacts/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: find
+    put:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: update
+    delete:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: delete
+  /contacts/merge:
+    post:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: mergeLeadInUser
+  /contacts/search:
+    post:
+      x-fern-pagination: 
+        cursor: $request.pagination.starting_after
+        next_cursor: $response.pages.next.starting_after
+        results: $response.data
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: search
+  /contacts:
+    get:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: list
+    post:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: create
+  /contacts/{id}/archive:
+    post:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: archive
+  /contacts/{id}/unarchive:
+    post:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: unarchive
+  /conversations/{conversation_id}/tags:
+    post:
+      x-fern-sdk-group-name:
+        - tags
+      x-fern-sdk-method-name: tagConversation
+  /conversations/{conversation_id}/tags/{id}:
+    delete:
+      x-fern-sdk-group-name:
+        - tags
+      x-fern-sdk-method-name: untagConversation
+  /conversations:
+    get:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: list
+    post:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: create
+  /conversations/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: find
+    put:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: update
+  /conversations/search:
+    post:
+      x-fern-pagination: 
+        cursor: $request.pagination.starting_after
+        next_cursor: $response.pages.next.starting_after
+        results: $response.conversations
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: search
+  /conversations/{id}/reply:
+    post:
+      requestBody:
+        content:
+          application/json:
+            examples:
+              user_last_conversation_reply:
+                summary: null
+              user_reply:
+                summary: null
+              admin_note_reply:
+                summary: null
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: reply
+  /conversations/{id}/parts:
+    post:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: manage
+  /conversations/{id}/run_assignment_rules:
+    post:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: assign
+  /conversations/{id}/customers:
+    post:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: attachContact
+  /conversations/{conversation_id}/customers/{contact_id}:
+    delete:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: detachContactAsAdmin
+  /conversations/redact:
+    post:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: redactConversationPart
+  /conversations/{id}/convert:
+    post:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: convertToTicket
+  /data_attributes:
+    get:
+      x-fern-sdk-group-name:
+        - dataAttributes
+      x-fern-sdk-method-name: list
+    post:
+      x-fern-sdk-group-name:
+        - dataAttributes
+      x-fern-sdk-method-name: create
+  /data_attributes/{id}:
+    put:
+      x-fern-sdk-group-name:
+        - dataAttributes
+      x-fern-sdk-method-name: update
+  /events:
+    get:
+      x-fern-sdk-group-name:
+        - events
+      x-fern-sdk-method-name: list
+    post:
+      x-fern-sdk-group-name:
+        - events
+      x-fern-sdk-method-name: create
+  /events/summaries:
+    post:
+      x-fern-sdk-group-name:
+        - events
+      x-fern-sdk-method-name: summaries
+  /export/content/data:
+    post:
+      x-fern-sdk-group-name:
+        - dataExport
+      x-fern-sdk-method-name: create
+  /export/content/data/{job_identifier}:
+    get:
+      x-fern-sdk-group-name:
+        - dataExport
+      x-fern-sdk-method-name: find
+  /export/cancel/{job_identifier}:
+    post:
+      x-fern-sdk-group-name:
+        - dataExport
+      x-fern-sdk-method-name: cancel
+  /download/content/data/{job_identifier}:
+    get:
+      x-fern-sdk-group-name:
+        - dataExport
+      x-fern-sdk-method-name: download
+  /messages:
+    post:
+      requestBody:
+        content:
+          application/json:
+            examples:
+              user_message_created:
+                summary: null
+              lead_message_created:
+                summary: null
+              admin_message_created:
+                summary: null
+      x-fern-sdk-group-name:
+        - messages
+      x-fern-sdk-method-name: create
+  /news/news_items:
+    get:
+      x-fern-sdk-group-name:
+        - news
+      x-fern-sdk-method-name: listItems
+    post:
+      x-fern-sdk-group-name:
+        - news
+      x-fern-sdk-method-name: createItem
+  /news/news_items/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - news
+      x-fern-sdk-method-name: findItem
+    put:
+      x-fern-sdk-group-name:
+        - news
+      x-fern-sdk-method-name: updateItem
+    delete:
+      x-fern-sdk-group-name:
+        - news
+      x-fern-sdk-method-name: deleteItem
+  /news/newsfeeds/{id}/items:
+    get:
+      x-fern-sdk-group-name:
+        - news
+      x-fern-sdk-method-name: listLiveItems
+  /news/newsfeeds:
+    get:
+      x-fern-sdk-group-name:
+        - news
+      x-fern-sdk-method-name: list
+  /news/newsfeeds/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - news
+      x-fern-sdk-method-name: find
+  /notes/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - notes
+      x-fern-sdk-method-name: find
+  /segments:
+    get:
+      x-fern-sdk-group-name:
+        - segments
+      x-fern-sdk-method-name: list
+  /segments/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - segments
+      x-fern-sdk-method-name: find
+  /subscription_types:
+    get:
+      x-fern-sdk-group-name:
+        - subscriptions
+      x-fern-sdk-method-name: listTypes
+  /phone_call_redirects:
+    post:
+      x-fern-sdk-group-name:
+        - phoneCallRedirect
+      x-fern-sdk-method-name: create
+  /tags:
+    get:
+      x-fern-sdk-group-name:
+        - tags
+      x-fern-sdk-method-name: list
+    post:
+      x-fern-sdk-group-name:
+        - tags
+      x-fern-sdk-method-name: create
+  /tags/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - tags
+      x-fern-sdk-method-name: find
+    delete:
+      x-fern-sdk-group-name:
+        - tags
+      x-fern-sdk-method-name: delete
+  /teams:
+    get:
+      x-fern-sdk-group-name:
+        - teams
+      x-fern-sdk-method-name: list
+  /teams/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - teams
+      x-fern-sdk-method-name: find
+  /ticket_types/{ticket_type_id}/attributes:
+    post:
+      x-fern-sdk-group-name:
+        - ticketTypeAttributes
+      x-fern-sdk-method-name: create
+  /ticket_types/{ticket_type_id}/attributes/{id}:
+    put:
+      x-fern-sdk-group-name:
+        - ticketTypeAttributes
+      x-fern-sdk-method-name: update
+  /ticket_types:
+    get:
+      x-fern-sdk-group-name:
+        - ticketTypes
+      x-fern-sdk-method-name: list
+    post:
+      x-fern-sdk-group-name:
+        - ticketTypes
+      x-fern-sdk-method-name: create
+  /ticket_types/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - ticketTypes
+      x-fern-sdk-method-name: get
+    put:
+      x-fern-sdk-group-name:
+        - ticketTypes
+      x-fern-sdk-method-name: update
+  /tickets/{id}/reply:
+    post:
+      requestBody:
+        content:
+          application/json:
+            examples:
+              admin_quick_reply_reply:
+                summary: null
+              user_reply:
+                summary: null
+              admin_note_reply:
+                summary: null
+      x-fern-sdk-group-name:
+        - tickets
+      x-fern-sdk-method-name: reply
+  /tickets/{ticket_id}/tags:
+    post:
+      x-fern-sdk-group-name:
+        - tags
+      x-fern-sdk-method-name: attach
+  /tickets/{ticket_id}/tags/{id}:
+    delete:
+      x-fern-sdk-group-name:
+        - tags
+      x-fern-sdk-method-name: detach
+  /tickets:
+    post:
+      x-fern-sdk-group-name:
+        - tickets
+      x-fern-sdk-method-name: create
+  /tickets/{id}:
+    get:
+      x-fern-sdk-group-name:
+        - tickets
+      x-fern-sdk-method-name: get
+    put:
+      x-fern-sdk-group-name:
+        - tickets
+      x-fern-sdk-method-name: update
+  /tickets/search:
+    post:
+      x-fern-pagination: 
+        cursor: $request.pagination.starting_after
+        next_cursor: $response.pages.next.starting_after
+        results: $response.tickets
+      x-fern-sdk-group-name:
+        - tickets
+      x-fern-sdk-method-name: search
+  /visitors:
+    get:
+      x-fern-sdk-group-name:
+        - visitors
+      x-fern-sdk-method-name: find
+    put:
+      x-fern-sdk-group-name:
+        - visitors
+      x-fern-sdk-method-name: update
+  /visitors/convert:
+    post:
+      x-fern-sdk-group-name:
+        - visitors
+      x-fern-sdk-method-name: mergeToContact
+components:
+  schemas:
+    intercom_version:
+      x-fern-ignore: true
+    single_filter_search_request:
+      properties:
+        operator:
+          x-fern-enum:
+            "=":
+              name: Equals
+            "!=":
+              name: NotEquals
+            IN:
+              name: In
+            NIN:
+              name: NotIn
+            "<":
+              name: LessThan
+            ">":
+              name: GreaterThan
+            "~":
+              name: Contains
+            "!~":
+              name: DoesNotContain
+            "^":
+              name: StartsWith
+            "$":
+              name: EndsWith
+    create_contact_request:
+      properties: null
+      anyOf:
+        - x-fern-type-name: CreateContactRequestWithEmail
+          title: Create contact with email
+          properties:
+            email:
+              type: string
+              description: The contacts email
+              example: jdoe@example.com
+            phone:
+              type: string
+              nullable: true
+              description: The contacts phone
+              example: "+353871234567"
+            name:
+              type: string
+              nullable: true
+              description: The contacts name
+              example: John Doe
+            avatar:
+              type: string
+              nullable: true
+              description: An image URL containing the avatar of a contact
+              example: https://www.example.com/avatar_image.jpg
+            signed_up_at:
+              type: integer
+              format: date-time
+              nullable: true
+              description: The time specified for when a contact signed up
+              example: 1571672154
+            last_seen_at:
+              type: integer
+              format: date-time
+              nullable: true
+              description: The time when the contact was last seen (either where the Intercom
+                Messenger was installed or when specified manually)
+              example: 1571672154
+            owner_id:
+              type: integer
+              nullable: true
+              description: The id of an admin that has been assigned account ownership
+                of the contact
+              example: 123
+            unsubscribed_from_emails:
+              type: boolean
+              nullable: true
+              description: Whether the contact is unsubscribed from emails
+              example: true
+            custom_attributes:
+              type: object
+              nullable: true
+              description: The custom attributes which are set for the contact
+          required:
+            - email
+        - x-fern-type-name: CreateContactRequestWithExternalId
+          title: Create contact with external_id
+          properties:
+            external_id:
+              type: string
+              description: A unique identifier for the contact which is given to Intercom
+            phone:
+              type: string
+              nullable: true
+              description: The contacts phone
+              example: "+353871234567"
+            name:
+              type: string
+              nullable: true
+              description: The contacts name
+              example: John Doe
+            avatar:
+              type: string
+              nullable: true
+              description: An image URL containing the avatar of a contact
+              example: https://www.example.com/avatar_image.jpg
+            signed_up_at:
+              type: integer
+              format: date-time
+              nullable: true
+              description: The time specified for when a contact signed up
+              example: 1571672154
+            last_seen_at:
+              type: integer
+              format: date-time
+              nullable: true
+              description: The time when the contact was last seen (either where the Intercom
+                Messenger was installed or when specified manually)
+              example: 1571672154
+            owner_id:
+              type: integer
+              nullable: true
+              description: The id of an admin that has been assigned account ownership
+                of the contact
+              example: 123
+            unsubscribed_from_emails:
+              type: boolean
+              nullable: true
+              description: Whether the contact is unsubscribed from emails
+              example: true
+            custom_attributes:
+              type: object
+              nullable: true
+              description: The custom attributes which are set for the contact
+          required:
+            - external_id
+        - x-fern-type-name: CreateContactRequestWithRole
+          title: Create contact with role
+          properties:
+            role:
+              type: string
+              description: The role of the contact.
+            phone:
+              type: string
+              nullable: true
+              description: The contacts phone
+              example: "+353871234567"
+            name:
+              type: string
+              nullable: true
+              description: The contacts name
+              example: John Doe
+            avatar:
+              type: string
+              nullable: true
+              description: An image URL containing the avatar of a contact
+              example: https://www.example.com/avatar_image.jpg
+            signed_up_at:
+              type: integer
+              format: date-time
+              nullable: true
+              description: The time specified for when a contact signed up
+              example: 1571672154
+            last_seen_at:
+              type: integer
+              format: date-time
+              nullable: true
+              description: The time when the contact was last seen (either where the Intercom
+                Messenger was installed or when specified manually)
+              example: 1571672154
+            owner_id:
+              type: integer
+              nullable: true
+              description: The id of an admin that has been assigned account ownership
+                of the contact
+              example: 123
+            unsubscribed_from_emails:
+              type: boolean
+              nullable: true
+              description: Whether the contact is unsubscribed from emails
+              example: true
+            custom_attributes:
+              type: object
+              nullable: true
+              description: The custom attributes which are set for the contact
+          required:
+            - role
+    create_data_event_request:
+      properties: null
+      anyOf:
+        - x-fern-type-name: CreateDataEventRequestWithId
+          title: id required
+          properties:
+            id:
+              type: string
+              description: The unique identifier for the contact (lead or user) which
+                is given by Intercom.
+              example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+            user_id: null
+            email: null
+            event_name:
+              type: string
+              description: The name of the event that occurred. This is presented to your
+                App's admins when filtering and creating segments - a good event name
+                is typically a past tense 'verb-noun' combination, to improve readability,
+                for example `updated-plan`.
+              example: invited-friend
+            created_at:
+              type: integer
+              format: date-time
+              description: The time the event occurred as a UTC Unix timestamp
+              example: 1671028894
+            metadata:
+              type: object
+              description: Optional metadata about the event.
+              additionalProperties:
+                type: string
+              example:
+                invite_code: ADDAFRIEND
+          required:
+            - event_name
+            - created_at
+            - id
+        - x-fern-type-name: CreateDataEventRequestWithUserId
+          title: user_id required
+          properties:
+            user_id:
+              type: string
+              description: Your identifier for the user.
+              example: '314159'
+            id: null
+            email: null
+            event_name:
+              type: string
+              description: The name of the event that occurred. This is presented to your
+                App's admins when filtering and creating segments - a good event name
+                is typically a past tense 'verb-noun' combination, to improve readability,
+                for example `updated-plan`.
+              example: invited-friend
+            created_at:
+              type: integer
+              format: date-time
+              description: The time the event occurred as a UTC Unix timestamp
+              example: 1671028894
+            metadata:
+              type: object
+              description: Optional metadata about the event.
+              additionalProperties:
+                type: string
+              example:
+                invite_code: ADDAFRIEND
+          required:
+            - event_name
+            - created_at
+            - user_id
+        - x-fern-type-name: CreateDataEventRequestWithEmail
+          title: email required
+          properties:
+            email:
+              type: string
+              description: An email address for your user. An email should only be used
+                where your application uses email to uniquely identify users.
+              example: frodo.baggins@example.com
+            user_id: null
+            id: null
+            event_name:
+              type: string
+              description: The name of the event that occurred. This is presented to your
+                App's admins when filtering and creating segments - a good event name
+                is typically a past tense 'verb-noun' combination, to improve readability,
+                for example `updated-plan`.
+              example: invited-friend
+            created_at:
+              type: integer
+              format: date-time
+              description: The time the event occurred as a UTC Unix timestamp
+              example: 1671028894
+            metadata:
+              type: object
+              description: Optional metadata about the event.
+              additionalProperties:
+                type: string
+              example:
+                invite_code: ADDAFRIEND
+          required:
+            - event_name
+            - created_at
+            - email
+    create_message_request:
+      properties: null
+      anyOf:
+        - x-fern-type-name: CreateMessageRequestWithEmail
+          title: 'message_type: `email`.'
+          properties:
+            message_type:
+              type: string
+              description: 'The kind of message being created.'
+              enum:
+              - email
+              example: email
+            subject:
+              type: string
+              description: The title of the email.
+              example: Thanks for everything
+            body:
+              type: string
+              description: The content of the message. HTML and plaintext are supported.
+              example: Hello there
+            template:
+              type: string
+              description: The style of the outgoing message. Possible values `plain`
+                or `personal`.
+              example: plain
+            from:
+              x-fern-type-name: CreateMessageRequestFrom
+              type: object
+              description: The sender of the message. If not provided, the default sender
+                will be used.
+              properties:
+                type:
+                  type: string
+                  description: Always `admin`.
+                  enum:
+                  - admin
+                  example: admin
+                id:
+                  type: integer
+                  description: The identifier for the admin which is given by Intercom.
+                  example: 394051
+              required:
+              - type
+              - id
+            to:
+              x-fern-type-name: CreateMessageRequestTo
+              type: object
+              description: The sender of the message. If not provided, the default sender
+                will be used.
+              properties:
+                type:
+                  x-fern-type-name: CreateMessageRequestType
+                  type: string
+                  description: The role associated to the contact - `user` or `lead`.
+                  enum:
+                  - user
+                  - lead
+                  example: user
+                id:
+                  type: string
+                  description: The identifier for the contact which is given by Intercom.
+                  example: 536e564f316c83104c000020
+              required:
+              - type
+              - id
+            created_at:
+              type: integer
+              description: The time the message was created. If not provided, the current
+                time will be used.
+              example: 1590000000
+            create_conversation_without_contact_reply:
+              type: boolean
+              description: Whether a conversation should be opened in the inbox for the
+                message without the contact replying. Defaults to false if not provided.
+              default: false
+              example: true
+          required:
+            - message_type
+            - subject
+            - body
+            - template
+            - from
+            - to
+        - x-fern-type-name: CreateMessageRequestWithInapp
+          title: 'message_type: `inapp`.'
+          properties:
+            message_type:
+              type: string
+              description: 'The kind of message being created.'
+              enum:
+              - inapp
+              example: inapp
+            subject:
+              type: string
+              description: The title of the email.
+              example: Thanks for everything
+            body:
+              type: string
+              description: The content of the message. HTML and plaintext are supported.
+              example: Hello there
+            template:
+              type: string
+              description: The style of the outgoing message. Possible values `plain`
+                or `personal`.
+              example: plain
+            from:
+              x-fern-type-name: CreateMessageRequestFrom
+              type: object
+              description: The sender of the message. If not provided, the default sender
+                will be used.
+              properties:
+                type:
+                  type: string
+                  description: Always `admin`.
+                  enum:
+                  - admin
+                  example: admin
+                id:
+                  type: integer
+                  description: The identifier for the admin which is given by Intercom.
+                  example: 394051
+              required:
+              - type
+              - id
+            to:
+              x-fern-type-name: CreateMessageRequestTo
+              type: object
+              description: The sender of the message. If not provided, the default sender
+                will be used.
+              properties:
+                type:
+                  x-fern-type-name: CreateMessageRequestType
+                  type: string
+                  description: The role associated to the contact - `user` or `lead`.
+                  enum:
+                  - user
+                  - lead
+                  example: user
+                id:
+                  type: string
+                  description: The identifier for the contact which is given by Intercom.
+                  example: 536e564f316c83104c000020
+              required:
+              - type
+              - id
+            created_at:
+              type: integer
+              description: The time the message was created. If not provided, the current
+                time will be used.
+              example: 1590000000
+            create_conversation_without_contact_reply:
+              type: boolean
+              description: Whether a conversation should be opened in the inbox for the
+                message without the contact replying. Defaults to false if not provided.
+              default: false
+              example: true
+          required:
+            - message_type
+            - body
+            - from
+            - to
+    convert_visitor_request:
+      properties:
+        user:
+          properties: null
+          anyOf:
+            - x-fern-type-name: UserWithId
+              properties:
+                id:
+                  type: string
+                  description: The unique identifier for the contact which is given by
+                    Intercom.
+                  example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+                user_id: null
+                email:
+                  type: string
+                  description: The contact's email, retained by default if one is present.
+                  example: winstonsmith@truth.org
+              required:
+                - id
+            - x-fern-type-name: UserWithUserId
+              properties:
+                id: null
+                user_id:
+                  type: string
+                  description: A unique identifier for the contact which is given to Intercom.
+                  example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+                email:
+                  type: string
+                  description: The contact's email, retained by default if one is present.
+                  example: winstonsmith@truth.org
+              required:
+                - user_id
+        visitor:
+          properties: null
+          anyOf:
+            - x-fern-type-name: VisitorWithId
+              properties:
+                id:
+                  type: string
+                  description: The unique identifier for the contact which is given by
+                    Intercom.
+                  example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+                user_id: null
+                email: null
+              required:
+                - id
+            - x-fern-type-name: VisitorWithUserId
+              properties:
+                id: null
+                user_id:
+                  type: string
+                  description: A unique identifier for the contact which is given to Intercom.
+                  example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+                email: null
+              required:
+                - user_id
+            - x-fern-type-name: VisitorWithEmail
+              properties:
+                id: null
+                user_id: null
+                email:
+                  type: string
+                  description: The visitor's email.
+                  example: winstonsmith@truth.org
+              required:
+                - email
+    update_visitor_request:
+      properties: null
+      anyOf:
+        - x-fern-type-name: UpdateVisitorRequestWithId
+          properties:
+            id:
+              type: string
+              description: A unique identified for the visitor which is given by Intercom.
+              example: 8a88a590-e
+            user_id: null
+            custom_attributes:
+              type: object
+              description: The custom attributes which are set for the visitor.
+              additionalProperties:
+                type: string
+              example:
+                paid_subscriber: true
+                monthly_spend: 155.5
+                team_mates: 9
+          required:
+            - id
+        - x-fern-type-name: UpdateVisitorRequestWithUserId
+          properties:
+            id: null
+            user_id:
+              type: string
+              description: A unique identified for the visitor which is given by you.
+              example: '123'
+            custom_attributes:
+              type: object
+              description: The custom attributes which are set for the visitor.
+              additionalProperties:
+                type: string
+              example:
+                paid_subscriber: true
+                monthly_spend: 155.5
+                team_mates: 9
+          required:
+            - user_id
+  securitySchemes:
+    bearerAuth:
+      x-fern-bearer:
+        env: INTERCOM_API_KEY
+
+x-fern-version:
+  header:
+    name: version
+    value: Intercom-Version
+  default: "2.11"
+  values:
+    - "1.0"
+    - "1.1"
+    - "1.2"
+    - "1.3"
+    - "1.4"
+    - "2.0"
+    - "2.1"
+    - "2.2"
+    - "2.3"
+    - "2.4"
+    - "2.5"
+    - "2.6"
+    - "2.7"
+    - "2.8"
+    - "2.9"
+    - "2.10"
+    - "2.11"
+    - "Unstable"
+
+servers:
+  - url: https://api.intercom.io/
+    x-fern-server-name: USProduction
+  - url: https://api.eu.intercom.io/
+    x-fern-server-name: EUProduction
+  - url: https://api.au.intercom.io/
+    x-fern-server-name: AUProduction

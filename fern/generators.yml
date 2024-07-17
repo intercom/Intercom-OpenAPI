@@ -1,0 +1,25 @@
+api:
+  path: ../descriptions/2.11/api.intercom.io.yaml
+  overrides: ./openapi-overrides.yml
+  settings:
+    use-title: false
+groups:
+  ts-sdk:
+    generators:
+      - name: fernapi/fern-typescript-node-sdk
+        version: 0.34.0
+        output:
+          location: npm
+          package-name: intercom-client
+          token: ${FERN_NPM_TOKEN}
+        github:
+          repository: intercom/intercom-node
+          mode: push
+          branch: 6.0.0-alpha
+        config:
+          namespaceExport: Intercom
+          allowCustomFetcher: true
+          skipResponseValidation: true
+          includeApiReference: true
+          noSerdeLayer: true
+        smart-casing: true
