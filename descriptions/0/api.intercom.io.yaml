@@ -12940,7 +12940,6 @@ components:
       x-tags:
         - Admins
       description: Admins are teammate accounts that have access to a workspace.
-      nullable: true
       properties:
         type:
           type: string
@@ -12979,19 +12978,31 @@ components:
           example: true
         team_ids:
           type: array
-          description: This object represents the avatar associated with the admin.
+          description: A list of the IDs for the teams this teammate belongs to.
           example:
             - 814865
           items:
             type: integer
         avatar:
-          type: string
-          format: uri
-          nullable: true
-          description: Image for the associated team or teammate
-          example: https://example.photos/200/300
+          type: object
+            image_url:
+              type: 
+              format: uri
+              nullable: true
+              description: Image for the associated team or teammate
+              example: https://example.photos/200/300
         team_priority_level:
           '$ref': '#/components/schemas/team_priority_level'
+      required:
+      - id
+      - name
+      - email
+      - away_mode_enabled
+      - away_mode_reassign
+      - has_inbox_seat
+      - avatar
+      - team_ids
+      - team_priority_level
     admin_list:
       title: Admins
       type: object
@@ -13326,11 +13337,111 @@ components:
         region:
           type: string
           description: The Intercom region the app is located in.
+          enum:
+            - US
+            - EU
+            - AU
           example: US
         timezone:
           type: string
           description: The timezone of the region where the app is located.
           example: America/Los_Angeles
+          enum:
+            - America/Los_Angeles
+            - American Samoa
+            - International Date Line West
+            - Midway Island
+            - Hawaii
+            - Alaska
+            - Pacific Time (US & Canada)
+            - Tijuana
+            - Arizona
+            - Mountain Time (US & Canada)
+            - Central America
+            - Central Time (US & Canada)
+            - Chihuahua
+            - Guadalajara
+            - Mexico City
+            - Monterrey
+            - Saskatchewan
+            - Bogota
+            - Eastern Time (US & Canada)
+            - Indiana (East)
+            - Lima
+            - Quito
+            - Atlantic Time (Canada)
+            - Caracas
+            - Georgetown
+            - La Paz
+            - Puerto Rico
+            - Santiago
+            - Newfoundland
+            - Brasilia
+            - Buenos Aires
+            - Montevideo
+            - Greenland
+            - Mid-Atlantic
+            - Azores
+            - Cape Verde Is.
+            - Edinburgh
+            - Lisbon
+            - London
+            - Monrovia
+            - UTC
+            - Amsterdam
+            - Belgrade
+            - Berlin
+            - Bern
+            - Bratislava
+            - Brussels
+            - Budapest
+            - Casablanca
+            - Copenhagen
+            - Dublin
+            - Ljubljana
+            - Madrid
+            - Paris
+            - Prague
+            - Rome
+            - Sarajevo
+            - Skopje
+            - Stockholm
+            - Vienna
+            - Warsaw
+            - West Central Africa
+            - Zagreb
+            - Zurich
+            - Athens
+            - Bucharest
+            - Cairo
+            - Harare
+            - Helsinki
+            - Jerusalem
+            - Kaliningrad
+            - Kyiv
+            - Pretoria
+            - Riga
+            - Sofia
+            - Tallinn
+            - Vilnius
+            - Baghdad
+            - Istanbul
+            - Kuwait
+            - Minsk
+            - Moscow
+            - Nairobi
+            - Riyadh
+            - St. Petersburg
+            - Volgograd
+            - Tehran
+            - Abu Dhabi
+            - Baku
+            - Muscat
+            - Samara
+            - Tbilisi
+            - Yerevan
+            - Kabul
+            - Almaty
         created_at:
           type: integer
           description: When the app was created.
@@ -13534,7 +13645,7 @@ components:
       x-tags:
         - Articles
       description: The highlighted results of an Article search. In the examples provided
-        my search query is always "my query".
+        the highlightedsearch query is always "my query".
       properties:
         article_id:
           type: string
@@ -13550,11 +13661,11 @@ components:
             properties:
               type:
                 type: string
-                description: The type of text - `highlight` or `plain`.
+                description: Whether the text is highlighted or plain.
                 enum:
                   - highlight
                   - plain
-                example: 'The highlight is '
+                example: 'highlight'
               text:
                 type: string
                 description: The text of the title.
@@ -15796,6 +15907,8 @@ components:
         - required:
             - role
           title: Create contact with role
+      required:
+        - name
     create_content_import_source_request:
       title: Create Content Import Source Payload
       type: object
@@ -16445,7 +16558,6 @@ components:
       description: |
         Cursor-based pagination is a technique used in the Intercom API to navigate through large amounts of data.
         A "cursor" or pointer is used to keep track of the current position in the result set, allowing the API to return the data in small chunks or "pages" as needed.
-      nullable: true
       properties:
         type:
           type: string
@@ -16467,6 +16579,11 @@ components:
           type: integer
           description: Total number of pages
           example: 13
+      required:
+        - type
+        - page
+        - per_page
+        - total_pages
     custom_attributes:
       title: Custom Attributes
       type: object
