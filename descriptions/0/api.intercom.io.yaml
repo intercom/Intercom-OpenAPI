@@ -12989,7 +12989,7 @@ components:
           format: uri
           nullable: true
           description: Image for the associated team or teammate
-          example: https://picsum.photos/200/300
+          example: https://example.photos/200/300
         team_priority_level:
           '$ref': '#/components/schemas/team_priority_level'
     admin_list:
@@ -19041,13 +19041,21 @@ components:
           example: Bug title.
         data_type:
           type: string
-          description: 'The type of the data attribute (allowed values: "string list
-            integer decimal boolean datetime files")'
-          example: string
+          description: The type of the data attribute
+          enum:
+            - string
+            - integer
+            - decimal
+            - boolean
+            - datetime
+            - files
         input_options:
           type: object
-          description: Input options for the attribute
-          example: 'multiline: true'
+          description: Multiline input option for the attribute
+          properties:
+            multiline:
+              type: boolean
+              example: true
         order:
           type: integer
           description: The order of the attribute against other attributes
@@ -19467,54 +19475,64 @@ components:
       title: Update Ticket Type Attribute Request Payload
       properties:
         name:
+          x-fern-type-name: AttributeName
           type: string
           description: The name of the ticket type attribute
           example: Bug Priority
         description:
+          x-fern-type-name: AttributeDescription
           type: string
           description: The description of the attribute presented to the teammate
             or contact
           example: Priority level of the bug
         required_to_create:
+          x-fern-type-name: Required
           type: boolean
           description: Whether the attribute is required to be filled in when teammates
             are creating the ticket in Inbox.
           default: false
           example: false
         required_to_create_for_contacts:
+          x-fern-type-name: RequiredForContacts
           type: boolean
           description: Whether the attribute is required to be filled in when contacts
             are creating the ticket in Messenger.
           default: false
           example: false
         visible_on_create:
+          x-fern-type-name: Visible
           type: boolean
           description: Whether the attribute is visible to teammates when creating
             a ticket in Inbox.
           default: true
           example: true
         visible_to_contacts:
+          x-fern-type-name: VisibleToContacts
           type: boolean
           description: Whether the attribute is visible to contacts when creating
             a ticket in Messenger.
           default: true
           example: true
         multiline:
+          x-fern-type-name: Multiline
           type: boolean
           description: Whether the attribute allows multiple lines of text (only applicable
             to string attributes)
           example: false
         list_items:
+          x-fern-type-name: ListItems
           type: string
           description: A comma delimited list of items for the attribute value (only
             applicable to list attributes)
           example: Low Priority,Medium Priority,High Priority
         allow_multiple_values:
+          x-fern-type-name: AllowMultipleValues
           type: boolean
           description: Whether the attribute allows multiple files to be attached
             to it (only applicable to file attributes)
           example: false
         archived:
+          x-fern-type-name: Archived
           type: boolean
           description: Whether the attribute should be archived and not shown during
             creation of the ticket (it will still be present on previously created
@@ -19529,14 +19547,17 @@ components:
       nullable: true
       properties:
         name:
+          x-fern-type-name: Name
           type: string
           description: The name of the ticket type.
           example: Bug
         description:
+          x-fern-type-name: Description
           type: string
           description: The description of the ticket type.
           example: A bug has been occured
         category:
+          x-fern-type-name: Category
           type: string
           description: Category of the Ticket Type.
           enum:
@@ -19545,15 +19566,18 @@ components:
             - Tracker
           example: Customer
         icon:
+          x-fern-type-name: Icon
           type: string
           description: The icon of the ticket type.
           example: "\U0001F41E"
           default: "\U0001F39F️"
         archived:
+          x-fern-type-name: Archived
           type: boolean
           description: The archived status of the ticket type.
           example: false
         is_internal:
+          x-fern-type-name: Internal
           type: boolean
           description: Whether the tickets associated with this ticket type are intended
             for internal use only or will be shared with customers. This is currently
@@ -19566,18 +19590,22 @@ components:
       title: Update Visitor Request Payload
       properties:
         id:
+          x-fern-type-name: Id
           type: string
           description: A unique identified for the visitor which is given by Intercom.
           example: 8a88a590-e
         user_id:
+          x-fern-type-name: UserId
           type: string
           description: A unique identified for the visitor which is given by you.
           example: '123'
         name:
+          x-fern-type-name: Name
           type: string
           description: The visitor's name.
           example: Christian Bale
         custom_attributes:
+          x-fern-type-name: CustomAttributes
           type: object
           description: The custom attributes which are set for the visitor.
           additionalProperties:
@@ -19601,43 +19629,52 @@ components:
       nullable: true
       properties:
         type:
+          x-fern-type-name: Type
           type: string
           description: Value is 'visitor'
           default: visitor
           example: visitor
         id:
+          x-fern-type-name: Id
           type: string
           description: The Intercom defined id representing the Visitor.
           example: 530370b477ad7120001d
         user_id:
+          x-fern-type-name: UserId
           type: string
           description: Automatically generated identifier for the Visitor.
           example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
         anonymous:
+          x-fern-type-name: Anonymous
           type: boolean
           description: Identifies if this visitor is anonymous.
           example: false
         email:
+          x-fern-type-name: Email
           type: string
           format: email
           description: The email of the visitor.
           example: jane.doe@example.com
         phone:
+          x-fern-type-name: Phone
           type: string
           nullable: true
           description: The phone number of the visitor.
           example: 555-555-5555
         name:
+          x-fern-type-name: Name
           type: string
           nullable: true
           description: The name of the visitor.
           example: Jane Doe
         pseudonym:
+          x-fern-type-name: Pseudonym
           type: string
           nullable: true
           description: The pseudonym of the visitor.
           example: Red Duck from Dublin
         avatar:
+          x-fern-type-name: Avatar
           type: object
           properties:
             type:
