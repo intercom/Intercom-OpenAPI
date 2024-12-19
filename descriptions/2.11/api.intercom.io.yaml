@@ -56,207 +56,6 @@ paths:
                     has_inbox_seat: true
               schema:
                 "$ref": "#/components/schemas/admin_with_app"
-  "/admins":
-    get:
-      summary: List all admins
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      tags:
-      - Admins
-      operationId: listAdmins
-      description: You can fetch a list of admins for a given workspace.
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              examples:
-                Successful response:
-                  value:
-                    type: admin.list
-                    admins:
-                    - type: admin
-                      email: admin7@email.com
-                      id: '991267397'
-                      name: Ciaran7 Lee
-                      away_mode_enabled: false
-                      away_mode_reassign: false
-                      has_inbox_seat: true
-                      team_ids: []
-              schema:
-                "$ref": "#/components/schemas/admin_list"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 4ba8121e-4a4a-4668-adb2-363c561f3c52
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-  "/admins/activity_logs":
-    get:
-      summary: List all activity logs
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: created_at_after
-        in: query
-        required: true
-        description: The start date that you request data for. It must be formatted
-          as a UNIX timestamp.
-        example: '1677253093'
-        schema:
-          type: string
-      - name: created_at_before
-        in: query
-        required: false
-        description: The end date that you request data for. It must be formatted
-          as a UNIX timestamp.
-        example: '1677861493'
-        schema:
-          type: string
-      tags:
-      - Admins
-      operationId: listActivityLogs
-      description: You can get a log of activities by all admins in an app.
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              examples:
-                Successful response:
-                  value:
-                    type: activity_log.list
-                    pages:
-                      type: pages
-                      next:
-                      page: 1
-                      per_page: 20
-                      total_pages: 1
-                    activity_logs:
-                    - id: ddee3a18-0032-4061-b9b9-26230c3dd5f7
-                      performed_by:
-                        type: admin
-                        id: '991267395'
-                        email: admin5@email.com
-                        ip: 127.0.0.1
-                      metadata:
-                        message:
-                          id: 123
-                          title: Initial message title
-                        before: Initial message title
-                        after: Eventual message title
-                      created_at: 1719492702
-                      activity_type: message_state_change
-                      activity_description: Ciaran5 Lee changed your Initial message
-                        title message from Initial message title to Eventual message
-                        title.
-                    - id: 5eec951b-db7a-4b5b-add5-95ffc90969b6
-                      performed_by:
-                        type: admin
-                        id: '991267395'
-                        email: admin5@email.com
-                        ip: 127.0.0.1
-                      metadata:
-                        before: before
-                        after: after
-                      created_at: 1719492702
-                      activity_type: app_name_change
-                      activity_description: Ciaran5 Lee changed your app name from
-                        before to after.
-              schema:
-                "$ref": "#/components/schemas/activity_log_list"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 06d9eefd-2b3a-48f7-938a-5a10383a4ebf
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-  "/admins/{admin_id}":
-    get:
-      summary: Retrieve an admin
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: admin_id
-        in: path
-        required: true
-        description: The unique identifier of a given admin
-        example: "123"
-        schema:
-          type: string
-      tags:
-      - Admins
-      operationId: retrieveAdmin
-      description: You can retrieve the details of a single admin.
-      responses:
-        '200':
-          description: Admin found
-          content:
-            application/json:
-              examples:
-                Admin found:
-                  value:
-                    type: admin
-                    id: '991267399'
-                    name: Ciaran9 Lee
-                    email: admin9@email.com
-                    away_mode_enabled: false
-                    away_mode_reassign: false
-                    has_inbox_seat: true
-                    team_ids: []
-              schema:
-                "$ref": "#/components/schemas/admin"
-        '404':
-          description: Admin not found
-          content:
-            application/json:
-              examples:
-                Admin not found:
-                  value:
-                    type: error.list
-                    request_id: 989bdb0b-1e8c-46cc-8953-9733dad40562
-                    errors:
-                    - code: admin_not_found
-                      message: Admin not found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 83978032-1473-4696-b755-b497d46a23cf
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
   "/admins/{admin_id}/away":
     put:
       summary: Set an admin to away
@@ -358,6 +157,207 @@ paths:
                 value:
                   away_mode_enabled: true
                   away_mode_reassign: true
+  "/admins/activity_logs":
+    get:
+      summary: List all activity logs
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: created_at_after
+        in: query
+        required: true
+        description: The start date that you request data for. It must be formatted
+          as a UNIX timestamp.
+        example: '1677253093'
+        schema:
+          type: string
+      - name: created_at_before
+        in: query
+        required: false
+        description: The end date that you request data for. It must be formatted
+          as a UNIX timestamp.
+        example: '1677861493'
+        schema:
+          type: string
+      tags:
+      - Admins
+      operationId: listActivityLogs
+      description: You can get a log of activities by all admins in an app.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: activity_log.list
+                    pages:
+                      type: pages
+                      next:
+                      page: 1
+                      per_page: 20
+                      total_pages: 1
+                    activity_logs:
+                    - id: ddee3a18-0032-4061-b9b9-26230c3dd5f7
+                      performed_by:
+                        type: admin
+                        id: '991267395'
+                        email: admin5@email.com
+                        ip: 127.0.0.1
+                      metadata:
+                        message:
+                          id: 123
+                          title: Initial message title
+                        before: Initial message title
+                        after: Eventual message title
+                      created_at: 1719492702
+                      activity_type: message_state_change
+                      activity_description: Ciaran5 Lee changed your Initial message
+                        title message from Initial message title to Eventual message
+                        title.
+                    - id: 5eec951b-db7a-4b5b-add5-95ffc90969b6
+                      performed_by:
+                        type: admin
+                        id: '991267395'
+                        email: admin5@email.com
+                        ip: 127.0.0.1
+                      metadata:
+                        before: before
+                        after: after
+                      created_at: 1719492702
+                      activity_type: app_name_change
+                      activity_description: Ciaran5 Lee changed your app name from
+                        before to after.
+              schema:
+                "$ref": "#/components/schemas/activity_log_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 06d9eefd-2b3a-48f7-938a-5a10383a4ebf
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/admins":
+    get:
+      summary: List all admins
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Admins
+      operationId: listAdmins
+      description: You can fetch a list of admins for a given workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: admin.list
+                    admins:
+                    - type: admin
+                      email: admin7@email.com
+                      id: '991267397'
+                      name: Ciaran7 Lee
+                      away_mode_enabled: false
+                      away_mode_reassign: false
+                      has_inbox_seat: true
+                      team_ids: []
+              schema:
+                "$ref": "#/components/schemas/admin_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 4ba8121e-4a4a-4668-adb2-363c561f3c52
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/admins/{admin_id}":
+    get:
+      summary: Retrieve an admin
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: admin_id
+        in: path
+        required: true
+        description: The unique identifier of a given admin
+        example: "123"
+        schema:
+          type: string
+      tags:
+      - Admins
+      operationId: retrieveAdmin
+      description: You can retrieve the details of a single admin.
+      responses:
+        '200':
+          description: Admin found
+          content:
+            application/json:
+              examples:
+                Admin found:
+                  value:
+                    type: admin
+                    id: '991267399'
+                    name: Ciaran9 Lee
+                    email: admin9@email.com
+                    away_mode_enabled: false
+                    away_mode_reassign: false
+                    has_inbox_seat: true
+                    team_ids: []
+              schema:
+                "$ref": "#/components/schemas/admin"
+        '404':
+          description: Admin not found
+          content:
+            application/json:
+              examples:
+                Admin not found:
+                  value:
+                    type: error.list
+                    request_id: 989bdb0b-1e8c-46cc-8953-9733dad40562
+                    errors:
+                    - code: admin_not_found
+                      message: Admin not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 83978032-1473-4696-b755-b497d46a23cf
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/articles":
     get:
       summary: List all articles
@@ -536,96 +536,6 @@ paths:
                   description: Description of the Article
                   body: Body of the Article
                   state: published
-  "/articles/search":
-    get:
-      summary: Search for articles
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: phrase
-        in: query
-        required: false
-        description: The phrase within your articles to search for.
-        example: Getting started
-        schema:
-          type: string
-      - name: state
-        in: query
-        required: false
-        description: The state of the Articles returned. One of `published`, `draft`
-          or `all`.
-        example: published
-        schema:
-          type: string
-      - name: help_center_id
-        in: query
-        required: false
-        description: The ID of the Help Center to search in.
-        example: 123
-        schema:
-          type: integer
-      - name: highlight
-        in: query
-        required: false
-        description: Return a highlighted version of the matching content within your
-          articles. Refer to the response schema for more details.
-        example: false
-        schema:
-          type: boolean
-      tags:
-      - Articles
-      operationId: searchArticles
-      description: You can search for articles by making a GET request to `https://api.intercom.io/articles/search`.
-      responses:
-        '200':
-          description: Search successful
-          content:
-            application/json:
-              examples:
-                Search successful:
-                  value:
-                    type: list
-                    total_count: 1
-                    data:
-                      articles:
-                      - id: '55'
-                        type: article
-                        workspace_id: this_is_an_id61_that_should_be_at_least_4
-                        parent_id:
-                        parent_type:
-                        parent_ids: []
-                        title: Title 1
-                        description: ''
-                        body: ''
-                        author_id: 991267431
-                        state: draft
-                        created_at: 1719492719
-                        updated_at: 1719492719
-                        url:
-                      highlights: []
-                    pages:
-                      type: pages
-                      page: 1
-                      total_pages: 1
-                      per_page: 10
-              schema:
-                "$ref": "#/components/schemas/search_articles_response"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 626c6766-ee1a-489d-b87a-230d9b980c7d
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
   "/articles/{article_id}":
     get:
       summary: Retrieve an article
@@ -855,6 +765,96 @@ paths:
                   value:
                     type: error.list
                     request_id: 85d43c53-f28f-4295-b937-9a43ea71d0c3
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/articles/search":
+    get:
+      summary: Search for articles
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: phrase
+        in: query
+        required: false
+        description: The phrase within your articles to search for.
+        example: Getting started
+        schema:
+          type: string
+      - name: state
+        in: query
+        required: false
+        description: The state of the Articles returned. One of `published`, `draft`
+          or `all`.
+        example: published
+        schema:
+          type: string
+      - name: help_center_id
+        in: query
+        required: false
+        description: The ID of the Help Center to search in.
+        example: 123
+        schema:
+          type: integer
+      - name: highlight
+        in: query
+        required: false
+        description: Return a highlighted version of the matching content within your
+          articles. Refer to the response schema for more details.
+        example: false
+        schema:
+          type: boolean
+      tags:
+      - Articles
+      operationId: searchArticles
+      description: You can search for articles by making a GET request to `https://api.intercom.io/articles/search`.
+      responses:
+        '200':
+          description: Search successful
+          content:
+            application/json:
+              examples:
+                Search successful:
+                  value:
+                    type: list
+                    total_count: 1
+                    data:
+                      articles:
+                      - id: '55'
+                        type: article
+                        workspace_id: this_is_an_id61_that_should_be_at_least_4
+                        parent_id:
+                        parent_type:
+                        parent_ids: []
+                        title: Title 1
+                        description: ''
+                        body: ''
+                        author_id: 991267431
+                        state: draft
+                        created_at: 1719492719
+                        updated_at: 1719492719
+                        url:
+                      highlights: []
+                    pages:
+                      type: pages
+                      page: 1
+                      total_pages: 1
+                      per_page: 10
+              schema:
+                "$ref": "#/components/schemas/search_articles_response"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 626c6766-ee1a-489d-b87a-230d9b980c7d
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
@@ -1228,58 +1228,6 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/help_center/help_centers":
-    get:
-      summary: List all Help Centers
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: page
-        in: query
-        required: false
-        description: The page of results to fetch. Defaults to first page
-        example: 1
-        schema:
-          type: integer
-      - name: per_page
-        in: query
-        required: false
-        description: How many results to display per page. Defaults to 15
-        example: 15
-        schema:
-          type: integer
-      tags:
-      - Help Center
-      operationId: listHelpCenters
-      description: You can list all Help Centers by making a GET request to `https://api.intercom.io/help_center/help_centers`.
-      responses:
-        '200':
-          description: Help Centers found
-          content:
-            application/json:
-              examples:
-                Help Centers found:
-                  value:
-                    type: list
-                    data: []
-              schema:
-                "$ref": "#/components/schemas/help_center_list"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: c96a4779-a06d-45bb-aa39-eb96c587c2c7
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
   "/help_center/help_centers/{help_center_id}":
     get:
       summary: Retrieve a Help Center
@@ -1340,6 +1288,58 @@ paths:
                   value:
                     type: error.list
                     request_id: 794a475b-0155-40b2-a288-ba0d48fdbd3f
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/help_center/help_centers":
+    get:
+      summary: List all Help Centers
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
+      tags:
+      - Help Center
+      operationId: listHelpCenters
+      description: You can list all Help Centers by making a GET request to `https://api.intercom.io/help_center/help_centers`.
+      responses:
+        '200':
+          description: Help Centers found
+          content:
+            application/json:
+              examples:
+                Help Centers found:
+                  value:
+                    type: list
+                    data: []
+              schema:
+                "$ref": "#/components/schemas/help_center_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: c96a4779-a06d-45bb-aa39-eb96c587c2c7
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
@@ -2100,619 +2100,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/contacts":
-    get:
-      summary: List all contacts
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: page
-        in: query
-        required: false
-        description: The page of results to fetch. Defaults to first page
-        example: 1
-        schema:
-          type: integer
-      - name: per_page
-        in: query
-        required: false
-        description: How many results to display per page. Defaults to 15
-        example: 15
-        schema:
-          type: integer
-      - name: starting_after
-        in: query
-        required: false
-        description: String used to get the next page of conversations.
-        schema:
-          type: string
-      tags:
-      - Contacts
-      operationId: ListContacts
-      description: |
-        You can fetch a list of all contacts (ie. users or leads) in your workspace.
-        {% admonition type="warning" name="Pagination" %}
-          You can use pagination to limit the number of results returned. The default is `50` results per page.
-          See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.
-        {% /admonition %}
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              examples:
-                successful:
-                  value:
-                    type: list
-                    data: []
-                    total_count: 0
-                    pages:
-                      type: pages
-                      page: 1
-                      per_page: 10
-                      total_pages: 0
-              schema:
-                "$ref": "#/components/schemas/contact_list"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: d5bac7ff-7961-4fe5-8aed-6f1b031b38af
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-    post:
-      summary: Create contact
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      tags:
-      - Contacts
-      operationId: CreateContact
-      description: You can create a new contact (ie. user or lead).
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              examples:
-                successful:
-                  value:
-                    type: contact
-                    id: 667d60b08a68186f43bafdbf
-                    workspace_id: this_is_an_id272_that_should_be_at_least_
-                    external_id:
-                    role: user
-                    email: joebloggs@intercom.io
-                    phone:
-                    name:
-                    avatar:
-                    owner_id:
-                    social_profiles:
-                      type: list
-                      data: []
-                    has_hard_bounced: false
-                    marked_email_as_spam: false
-                    unsubscribed_from_emails: false
-                    created_at: 1719492784
-                    updated_at: 1719492784
-                    signed_up_at:
-                    last_seen_at:
-                    last_replied_at:
-                    last_contacted_at:
-                    last_email_opened_at:
-                    last_email_clicked_at:
-                    language_override:
-                    browser:
-                    browser_version:
-                    browser_language:
-                    os:
-                    location:
-                      type: location
-                      country:
-                      region:
-                      city:
-                      country_code:
-                      continent_code:
-                    android_app_name:
-                    android_app_version:
-                    android_device:
-                    android_os_version:
-                    android_sdk_version:
-                    android_last_seen_at:
-                    ios_app_name:
-                    ios_app_version:
-                    ios_device:
-                    ios_os_version:
-                    ios_sdk_version:
-                    ios_last_seen_at:
-                    custom_attributes: {}
-                    tags:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60b08a68186f43bafdbf/tags"
-                      total_count: 0
-                      has_more: false
-                    notes:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60b08a68186f43bafdbf/notes"
-                      total_count: 0
-                      has_more: false
-                    companies:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60b08a68186f43bafdbf/companies"
-                      total_count: 0
-                      has_more: false
-                    opted_out_subscription_types:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60b08a68186f43bafdbf/subscriptions"
-                      total_count: 0
-                      has_more: false
-                    opted_in_subscription_types:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60b08a68186f43bafdbf/subscriptions"
-                      total_count: 0
-                      has_more: false
-                    utm_campaign:
-                    utm_content:
-                    utm_medium:
-                    utm_source:
-                    utm_term:
-                    referrer:
-              schema:
-                "$ref": "#/components/schemas/contact"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: c18ca0d4-ad2c-41e7-9a71-1df806f9c954
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              oneOf:
-              - "$ref": "#/components/schemas/create_contact_request"
-            examples:
-              successful:
-                summary: successful
-                value:
-                  email: joebloggs@intercom.io
-  "/contacts/{contact_id}":
-    put:
-      summary: Update a contact
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: contact_id
-        in: path
-        description: id
-        example: 63a07ddf05a32042dffac965
-        required: true
-        schema:
-          type: string
-      tags:
-      - Contacts
-      operationId: UpdateContact
-      description: You can update an existing contact (ie. user or lead).
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              examples:
-                successful:
-                  value:
-                    type: contact
-                    id: 667d60a88a68186f43bafdb8
-                    workspace_id: this_is_an_id248_that_should_be_at_least_
-                    external_id: '70'
-                    role: user
-                    email: joebloggs@intercom.io
-                    phone:
-                    name: joe bloggs
-                    avatar:
-                    owner_id:
-                    social_profiles:
-                      type: list
-                      data: []
-                    has_hard_bounced: false
-                    marked_email_as_spam: false
-                    unsubscribed_from_emails: false
-                    created_at: 1719492776
-                    updated_at: 1719492776
-                    signed_up_at: 1719492776
-                    last_seen_at:
-                    last_replied_at:
-                    last_contacted_at:
-                    last_email_opened_at:
-                    last_email_clicked_at:
-                    language_override:
-                    browser:
-                    browser_version:
-                    browser_language:
-                    os:
-                    location:
-                      type: location
-                      country:
-                      region:
-                      city:
-                      country_code:
-                      continent_code:
-                    android_app_name:
-                    android_app_version:
-                    android_device:
-                    android_os_version:
-                    android_sdk_version:
-                    android_last_seen_at:
-                    ios_app_name:
-                    ios_app_version:
-                    ios_device:
-                    ios_os_version:
-                    ios_sdk_version:
-                    ios_last_seen_at:
-                    custom_attributes: {}
-                    tags:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60a88a68186f43bafdb8/tags"
-                      total_count: 0
-                      has_more: false
-                    notes:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60a88a68186f43bafdb8/notes"
-                      total_count: 0
-                      has_more: false
-                    companies:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60a88a68186f43bafdb8/companies"
-                      total_count: 0
-                      has_more: false
-                    opted_out_subscription_types:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60a88a68186f43bafdb8/subscriptions"
-                      total_count: 0
-                      has_more: false
-                    opted_in_subscription_types:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60a88a68186f43bafdb8/subscriptions"
-                      total_count: 0
-                      has_more: false
-                    utm_campaign:
-                    utm_content:
-                    utm_medium:
-                    utm_source:
-                    utm_term:
-                    referrer:
-              schema:
-                "$ref": "#/components/schemas/contact"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: b1b88e2d-938c-4a26-b65d-26ff65a0af36
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              oneOf:
-              - "$ref": "#/components/schemas/update_contact_request"
-            examples:
-              successful:
-                summary: successful
-                value:
-                  email: joebloggs@intercom.io
-                  name: joe bloggs
-    get:
-      summary: Get a contact
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: contact_id
-        in: path
-        description: id
-        example: 63a07ddf05a32042dffac965
-        required: true
-        schema:
-          type: string
-      tags:
-      - Contacts
-      operationId: ShowContact
-      description: You can fetch the details of a single contact.
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              examples:
-                successful:
-                  value:
-                    type: contact
-                    id: 667d60a98a68186f43bafdb9
-                    workspace_id: this_is_an_id252_that_should_be_at_least_
-                    external_id: '70'
-                    role: user
-                    email: joe@bloggs.com
-                    phone:
-                    name: Joe Bloggs
-                    avatar:
-                    owner_id:
-                    social_profiles:
-                      type: list
-                      data: []
-                    has_hard_bounced: false
-                    marked_email_as_spam: false
-                    unsubscribed_from_emails: false
-                    created_at: 1719492777
-                    updated_at: 1719492777
-                    signed_up_at: 1719492777
-                    last_seen_at:
-                    last_replied_at:
-                    last_contacted_at:
-                    last_email_opened_at:
-                    last_email_clicked_at:
-                    language_override:
-                    browser:
-                    browser_version:
-                    browser_language:
-                    os:
-                    location:
-                      type: location
-                      country:
-                      region:
-                      city:
-                      country_code:
-                      continent_code:
-                    android_app_name:
-                    android_app_version:
-                    android_device:
-                    android_os_version:
-                    android_sdk_version:
-                    android_last_seen_at:
-                    ios_app_name:
-                    ios_app_version:
-                    ios_device:
-                    ios_os_version:
-                    ios_sdk_version:
-                    ios_last_seen_at:
-                    custom_attributes: {}
-                    tags:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60a98a68186f43bafdb9/tags"
-                      total_count: 0
-                      has_more: false
-                    notes:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60a98a68186f43bafdb9/notes"
-                      total_count: 0
-                      has_more: false
-                    companies:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60a98a68186f43bafdb9/companies"
-                      total_count: 0
-                      has_more: false
-                    opted_out_subscription_types:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60a98a68186f43bafdb9/subscriptions"
-                      total_count: 0
-                      has_more: false
-                    opted_in_subscription_types:
-                      type: list
-                      data: []
-                      url: "/contacts/667d60a98a68186f43bafdb9/subscriptions"
-                      total_count: 0
-                      has_more: false
-                    utm_campaign:
-                    utm_content:
-                    utm_medium:
-                    utm_source:
-                    utm_term:
-                    referrer:
-              schema:
-                "$ref": "#/components/schemas/contact"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: f70085f1-f655-43ee-9585-d2061b260fcd
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-    delete:
-      summary: Delete a contact
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: contact_id
-        in: path
-        description: id
-        required: true
-        schema:
-          type: string
-      tags:
-      - Contacts
-      operationId: DeleteContact
-      description: You can delete a single contact.
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              examples:
-                successful:
-                  value:
-                    id: 667d60aa8a68186f43bafdba
-                    external_id: '70'
-                    type: contact
-                    deleted: true
-              schema:
-                "$ref": "#/components/schemas/contact_deleted"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 0bce3945-d2ec-4b8e-a790-b16fd52d9f11
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
   "/contacts/{contact_id}/companies":
-    get:
-      summary: List attached companies for contact
-      parameters:
-      - name: contact_id
-        in: path
-        description: The unique identifier for the contact which is given by Intercom
-        example: 63a07ddf05a32042dffac965
-        required: true
-        schema:
-          type: string
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: page
-        in: query
-        required: false
-        description: The page of results to fetch. Defaults to first page
-        example: 1
-        schema:
-          type: integer
-      - name: per_page
-        in: query
-        required: false
-        description: How many results to display per page. Defaults to 15
-        example: 15
-        schema:
-          type: integer
-      tags:
-      - Contacts
-      - Companies
-      operationId: listCompaniesForAContact
-      description: You can fetch a list of companies that are associated to a contact.
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              examples:
-                successful:
-                  value:
-                    type: list
-                    data:
-                    - type: company
-                      company_id: '1'
-                      id: 667d60938a68186f43bafd91
-                      app_id: this_is_an_id182_that_should_be_at_least_
-                      name: company12
-                      remote_created_at: 1719492755
-                      created_at: 1719492755
-                      updated_at: 1719492755
-                      last_request_at: 1719319955
-                      monthly_spend: 0
-                      session_count: 0
-                      user_count: 1
-                      tags:
-                        type: tag.list
-                        tags: []
-                      segments:
-                        type: segment.list
-                        segments: []
-                      plan: {}
-                      custom_attributes: {}
-                    pages:
-                      type: pages
-                      next:
-                      page: 1
-                      per_page: 50
-                      total_pages: 1
-                    total_count: 1
-              schema:
-                "$ref": "#/components/schemas/contact_attached_companies"
-        '404':
-          description: Contact not found
-          content:
-            application/json:
-              examples:
-                Contact not found:
-                  value:
-                    type: error.list
-                    request_id: b9d7374d-1780-4668-bb62-0e1ff9cdab45
-                    errors:
-                    - code: not_found
-                      message: User Not Found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: d211ec8c-df9b-420c-86df-23c27ad54bc5
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
     post:
       summary: Attach a Contact to a Company
       parameters:
@@ -2827,6 +2215,106 @@ paths:
                 summary: Company Not Found
                 value:
                   id: '123'
+    get:
+      summary: List attached companies for contact
+      parameters:
+      - name: contact_id
+        in: path
+        description: The unique identifier for the contact which is given by Intercom
+        example: 63a07ddf05a32042dffac965
+        required: true
+        schema:
+          type: string
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
+      tags:
+      - Contacts
+      - Companies
+      operationId: listCompaniesForAContact
+      description: You can fetch a list of companies that are associated to a contact.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: company
+                      company_id: '1'
+                      id: 667d60938a68186f43bafd91
+                      app_id: this_is_an_id182_that_should_be_at_least_
+                      name: company12
+                      remote_created_at: 1719492755
+                      created_at: 1719492755
+                      updated_at: 1719492755
+                      last_request_at: 1719319955
+                      monthly_spend: 0
+                      session_count: 0
+                      user_count: 1
+                      tags:
+                        type: tag.list
+                        tags: []
+                      segments:
+                        type: segment.list
+                        segments: []
+                      plan: {}
+                      custom_attributes: {}
+                    pages:
+                      type: pages
+                      next:
+                      page: 1
+                      per_page: 50
+                      total_pages: 1
+                    total_count: 1
+              schema:
+                "$ref": "#/components/schemas/contact_attached_companies"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: b9d7374d-1780-4668-bb62-0e1ff9cdab45
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: d211ec8c-df9b-420c-86df-23c27ad54bc5
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/contacts/{contact_id}/companies/{company_id}":
     delete:
       summary: Detach a contact from a company
@@ -3728,9 +3216,9 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/contacts/{contact_id}/archive":
-    post:
-      summary: Archive contact
+  "/contacts/{contact_id}":
+    put:
+      summary: Update a contact
       parameters:
       - name: Intercom-Version
         in: header
@@ -3745,8 +3233,8 @@ paths:
           type: string
       tags:
       - Contacts
-      operationId: ArchiveContact
-      description: You can archive a single contact.
+      operationId: UpdateContact
+      description: You can update an existing contact (ie. user or lead).
       responses:
         '200':
           description: successful
@@ -3755,15 +3243,121 @@ paths:
               examples:
                 successful:
                   value:
-                    id: 667d60b18a68186f43bafdc0
-                    external_id: '70'
                     type: contact
-                    archived: true
+                    id: 667d60a88a68186f43bafdb8
+                    workspace_id: this_is_an_id248_that_should_be_at_least_
+                    external_id: '70'
+                    role: user
+                    email: joebloggs@intercom.io
+                    phone:
+                    name: joe bloggs
+                    avatar:
+                    owner_id:
+                    social_profiles:
+                      type: list
+                      data: []
+                    has_hard_bounced: false
+                    marked_email_as_spam: false
+                    unsubscribed_from_emails: false
+                    created_at: 1719492776
+                    updated_at: 1719492776
+                    signed_up_at: 1719492776
+                    last_seen_at:
+                    last_replied_at:
+                    last_contacted_at:
+                    last_email_opened_at:
+                    last_email_clicked_at:
+                    language_override:
+                    browser:
+                    browser_version:
+                    browser_language:
+                    os:
+                    location:
+                      type: location
+                      country:
+                      region:
+                      city:
+                      country_code:
+                      continent_code:
+                    android_app_name:
+                    android_app_version:
+                    android_device:
+                    android_os_version:
+                    android_sdk_version:
+                    android_last_seen_at:
+                    ios_app_name:
+                    ios_app_version:
+                    ios_device:
+                    ios_os_version:
+                    ios_sdk_version:
+                    ios_last_seen_at:
+                    custom_attributes: {}
+                    tags:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60a88a68186f43bafdb8/tags"
+                      total_count: 0
+                      has_more: false
+                    notes:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60a88a68186f43bafdb8/notes"
+                      total_count: 0
+                      has_more: false
+                    companies:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60a88a68186f43bafdb8/companies"
+                      total_count: 0
+                      has_more: false
+                    opted_out_subscription_types:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60a88a68186f43bafdb8/subscriptions"
+                      total_count: 0
+                      has_more: false
+                    opted_in_subscription_types:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60a88a68186f43bafdb8/subscriptions"
+                      total_count: 0
+                      has_more: false
+                    utm_campaign:
+                    utm_content:
+                    utm_medium:
+                    utm_source:
+                    utm_term:
+                    referrer:
               schema:
-                "$ref": "#/components/schemas/contact_archived"
-  "/contacts/{contact_id}/unarchive":
-    post:
-      summary: Unarchive contact
+                "$ref": "#/components/schemas/contact"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b1b88e2d-938c-4a26-b65d-26ff65a0af36
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - "$ref": "#/components/schemas/update_contact_request"
+            examples:
+              successful:
+                summary: successful
+                value:
+                  email: joebloggs@intercom.io
+                  name: joe bloggs
+    get:
+      summary: Get a contact
       parameters:
       - name: Intercom-Version
         in: header
@@ -3778,8 +3372,8 @@ paths:
           type: string
       tags:
       - Contacts
-      operationId: UnarchiveContact
-      description: You can unarchive a single contact.
+      operationId: ShowContact
+      description: You can fetch the details of a single contact.
       responses:
         '200':
           description: successful
@@ -3788,12 +3382,152 @@ paths:
               examples:
                 successful:
                   value:
-                    id: 667d60b28a68186f43bafdc1
+                    type: contact
+                    id: 667d60a98a68186f43bafdb9
+                    workspace_id: this_is_an_id252_that_should_be_at_least_
+                    external_id: '70'
+                    role: user
+                    email: joe@bloggs.com
+                    phone:
+                    name: Joe Bloggs
+                    avatar:
+                    owner_id:
+                    social_profiles:
+                      type: list
+                      data: []
+                    has_hard_bounced: false
+                    marked_email_as_spam: false
+                    unsubscribed_from_emails: false
+                    created_at: 1719492777
+                    updated_at: 1719492777
+                    signed_up_at: 1719492777
+                    last_seen_at:
+                    last_replied_at:
+                    last_contacted_at:
+                    last_email_opened_at:
+                    last_email_clicked_at:
+                    language_override:
+                    browser:
+                    browser_version:
+                    browser_language:
+                    os:
+                    location:
+                      type: location
+                      country:
+                      region:
+                      city:
+                      country_code:
+                      continent_code:
+                    android_app_name:
+                    android_app_version:
+                    android_device:
+                    android_os_version:
+                    android_sdk_version:
+                    android_last_seen_at:
+                    ios_app_name:
+                    ios_app_version:
+                    ios_device:
+                    ios_os_version:
+                    ios_sdk_version:
+                    ios_last_seen_at:
+                    custom_attributes: {}
+                    tags:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60a98a68186f43bafdb9/tags"
+                      total_count: 0
+                      has_more: false
+                    notes:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60a98a68186f43bafdb9/notes"
+                      total_count: 0
+                      has_more: false
+                    companies:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60a98a68186f43bafdb9/companies"
+                      total_count: 0
+                      has_more: false
+                    opted_out_subscription_types:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60a98a68186f43bafdb9/subscriptions"
+                      total_count: 0
+                      has_more: false
+                    opted_in_subscription_types:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60a98a68186f43bafdb9/subscriptions"
+                      total_count: 0
+                      has_more: false
+                    utm_campaign:
+                    utm_content:
+                    utm_medium:
+                    utm_source:
+                    utm_term:
+                    referrer:
+              schema:
+                "$ref": "#/components/schemas/contact"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: f70085f1-f655-43ee-9585-d2061b260fcd
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete a contact
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: contact_id
+        in: path
+        description: id
+        required: true
+        schema:
+          type: string
+      tags:
+      - Contacts
+      operationId: DeleteContact
+      description: You can delete a single contact.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    id: 667d60aa8a68186f43bafdba
                     external_id: '70'
                     type: contact
-                    archived: false
+                    deleted: true
               schema:
-                "$ref": "#/components/schemas/contact_unarchived"
+                "$ref": "#/components/schemas/contact_deleted"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 0bce3945-d2ec-4b8e-a790-b16fd52d9f11
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/contacts/merge":
     post:
       summary: Merge a lead and a user
@@ -4088,6 +3822,466 @@ paths:
                       value: '1306054154'
                   pagination:
                     per_page: 5
+  "/contacts":
+    get:
+      summary: List all contacts
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
+      - name: starting_after
+        in: query
+        required: false
+        description: String used to get the next page of conversations.
+        schema:
+          type: string
+      tags:
+      - Contacts
+      operationId: ListContacts
+      description: |
+        You can fetch a list of all contacts (ie. users or leads) in your workspace.
+        {% admonition type="warning" name="Pagination" %}
+          You can use pagination to limit the number of results returned. The default is `50` results per page.
+          See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.
+        {% /admonition %}
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data: []
+                    total_count: 0
+                    pages:
+                      type: pages
+                      page: 1
+                      per_page: 10
+                      total_pages: 0
+              schema:
+                "$ref": "#/components/schemas/contact_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: d5bac7ff-7961-4fe5-8aed-6f1b031b38af
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create contact
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contacts
+      operationId: CreateContact
+      description: You can create a new contact (ie. user or lead).
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: contact
+                    id: 667d60b08a68186f43bafdbf
+                    workspace_id: this_is_an_id272_that_should_be_at_least_
+                    external_id:
+                    role: user
+                    email: joebloggs@intercom.io
+                    phone:
+                    name:
+                    avatar:
+                    owner_id:
+                    social_profiles:
+                      type: list
+                      data: []
+                    has_hard_bounced: false
+                    marked_email_as_spam: false
+                    unsubscribed_from_emails: false
+                    created_at: 1719492784
+                    updated_at: 1719492784
+                    signed_up_at:
+                    last_seen_at:
+                    last_replied_at:
+                    last_contacted_at:
+                    last_email_opened_at:
+                    last_email_clicked_at:
+                    language_override:
+                    browser:
+                    browser_version:
+                    browser_language:
+                    os:
+                    location:
+                      type: location
+                      country:
+                      region:
+                      city:
+                      country_code:
+                      continent_code:
+                    android_app_name:
+                    android_app_version:
+                    android_device:
+                    android_os_version:
+                    android_sdk_version:
+                    android_last_seen_at:
+                    ios_app_name:
+                    ios_app_version:
+                    ios_device:
+                    ios_os_version:
+                    ios_sdk_version:
+                    ios_last_seen_at:
+                    custom_attributes: {}
+                    tags:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60b08a68186f43bafdbf/tags"
+                      total_count: 0
+                      has_more: false
+                    notes:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60b08a68186f43bafdbf/notes"
+                      total_count: 0
+                      has_more: false
+                    companies:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60b08a68186f43bafdbf/companies"
+                      total_count: 0
+                      has_more: false
+                    opted_out_subscription_types:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60b08a68186f43bafdbf/subscriptions"
+                      total_count: 0
+                      has_more: false
+                    opted_in_subscription_types:
+                      type: list
+                      data: []
+                      url: "/contacts/667d60b08a68186f43bafdbf/subscriptions"
+                      total_count: 0
+                      has_more: false
+                    utm_campaign:
+                    utm_content:
+                    utm_medium:
+                    utm_source:
+                    utm_term:
+                    referrer:
+              schema:
+                "$ref": "#/components/schemas/contact"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: c18ca0d4-ad2c-41e7-9a71-1df806f9c954
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - "$ref": "#/components/schemas/create_contact_request"
+            examples:
+              successful:
+                summary: successful
+                value:
+                  email: joebloggs@intercom.io
+  "/contacts/{contact_id}/archive":
+    post:
+      summary: Archive contact
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: contact_id
+        in: path
+        description: id
+        example: 63a07ddf05a32042dffac965
+        required: true
+        schema:
+          type: string
+      tags:
+      - Contacts
+      operationId: ArchiveContact
+      description: You can archive a single contact.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    id: 667d60b18a68186f43bafdc0
+                    external_id: '70'
+                    type: contact
+                    archived: true
+              schema:
+                "$ref": "#/components/schemas/contact_archived"
+  "/contacts/{contact_id}/unarchive":
+    post:
+      summary: Unarchive contact
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: contact_id
+        in: path
+        description: id
+        example: 63a07ddf05a32042dffac965
+        required: true
+        schema:
+          type: string
+      tags:
+      - Contacts
+      operationId: UnarchiveContact
+      description: You can unarchive a single contact.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    id: 667d60b28a68186f43bafdc1
+                    external_id: '70'
+                    type: contact
+                    archived: false
+              schema:
+                "$ref": "#/components/schemas/contact_unarchived"
+  "/conversations/{conversation_id}/tags":
+    post:
+      summary: Add tag to a conversation
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: conversation_id
+        in: path
+        description: conversation_id
+        example: '64619700005694'
+        required: true
+        schema:
+          type: string
+      tags:
+      - Tags
+      - Conversations
+      operationId: attachTagToConversation
+      description: You can tag a specific conversation. This will return a tag object
+        for the tag that was added to the conversation.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: tag
+                    id: '99'
+                    name: Manual tag
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              examples:
+                Conversation not found:
+                  value:
+                    type: error.list
+                    request_id: 840d35aa-2414-402a-b3c6-763a410e0d16
+                    errors:
+                    - code: not_found
+                      message: Conversation not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 95cacea0-4744-4de8-a2bf-da4419f75732
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - id
+              - admin_id
+              properties:
+                id:
+                  type: string
+                  description: The unique identifier for the tag which is given by
+                    Intercom
+                  example: '7522907'
+                admin_id:
+                  type: string
+                  description: The unique identifier for the admin which is given
+                    by Intercom.
+                  example: '780'
+            examples:
+              successful:
+                summary: successful
+                value:
+                  id: 99
+                  admin_id: 991267526
+              conversation_not_found:
+                summary: Conversation not found
+                value:
+                  id: 100
+                  admin_id: 991267528
+  "/conversations/{conversation_id}/tags/{tag_id}":
+    delete:
+      summary: Remove tag from a conversation
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: conversation_id
+        in: path
+        description: conversation_id
+        example: '64619700005694'
+        required: true
+        schema:
+          type: string
+      - name: tag_id
+        in: path
+        description: id
+        example: '7522907'
+        required: true
+        schema:
+          type: string
+      tags:
+      - Tags
+      - Conversations
+      operationId: detachTagFromConversation
+      description: You can remove tag from a specific conversation. This will return
+        a tag object for the tag that was removed from the conversation.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: tag
+                    id: '102'
+                    name: Manual tag
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '404':
+          description: Tag not found
+          content:
+            application/json:
+              examples:
+                Conversation not found:
+                  value:
+                    type: error.list
+                    request_id: f78f63ba-911d-47b8-a389-b33e3ccbe77e
+                    errors:
+                    - code: not_found
+                      message: Conversation not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 0d00d069-2cf1-496f-b887-a4db74ee320d
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: f083d6b1-e9d2-43b3-86df-67539007fc3e
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - admin_id
+              properties:
+                admin_id:
+                  type: string
+                  description: The unique identifier for the admin which is given
+                    by Intercom.
+                  example: '123'
+            examples:
+              successful:
+                summary: successful
+                value:
+                  admin_id: 991267530
+              conversation_not_found:
+                summary: Conversation not found
+                value:
+                  admin_id: 991267532
+              tag_not_found:
+                summary: Tag not found
+                value:
+                  admin_id: 991267533
   "/conversations":
     get:
       summary: List all conversations
@@ -4653,27 +4847,117 @@ paths:
                   custom_attributes:
                     issue_type: Billing
                     priority: High
-  "/conversations/{conversation_id}/tags":
+  "/conversations/search":
     post:
-      summary: Add tag to a conversation
+      summary: Search conversations
       parameters:
       - name: Intercom-Version
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: conversation_id
-        in: path
-        description: conversation_id
-        example: '64619700005694'
-        required: true
-        schema:
-          type: string
       tags:
-      - Tags
       - Conversations
-      operationId: attachTagToConversation
-      description: You can tag a specific conversation. This will return a tag object
-        for the tag that was added to the conversation.
+      operationId: searchConversations
+      description: |
+        You can search for multiple conversations by the value of their attributes in order to fetch exactly which ones you want.
+
+        To search for conversations, you need to send a `POST` request to `https://api.intercom.io/conversations/search`.
+
+        This will accept a query object in the body which will define your filters in order to search for conversations.
+        {% admonition type="warning" name="Optimizing search queries" %}
+          Search queries can be complex, so optimizing them can help the performance of your search.
+          Use the `AND` and `OR` operators to combine multiple filters to get the exact results you need and utilize
+          pagination to limit the number of results returned. The default is `20` results per page and maximum is `150`.
+          See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#example-search-conversations-request) for more details on how to use the `starting_after` param.
+        {% /admonition %}
+
+        ### Nesting & Limitations
+
+        You can nest these filters in order to get even more granular insights that pinpoint exactly what you need. Example: (1 OR 2) AND (3 OR 4).
+        There are some limitations to the amount of multiple's there can be:
+        - There's a limit of max 2 nested filters
+        - There's a limit of max 15 filters for each AND or OR group
+
+        ### Accepted Fields
+
+        Most keys listed as part of the The conversation model is searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `"foorbar"`).
+        The `source.body` field is unique as the search will not be performed against the entire value, but instead against every element of the value separately. For example, when searching for a conversation with a `"I need support"` body - the query should contain a `=` operator with the value `"support"` for such conversation to be returned. A query with a `=` operator and a `"need support"` value will not yield a result.
+
+        | Field                                     | Type                                                                                                                                                   |
+        | :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+        | id                                        | String                                                                                                                                                 |
+        | created_at                                | Date (UNIX timestamp)                                                                                                                                  |
+        | updated_at                                | Date (UNIX timestamp)                                                                                                                                  |
+        | source.type                               | String<br>Accepted fields are `conversation`, `email`, `facebook`, `instagram`, `phone_call`, `phone_switch`, `push`, `sms`, `twitter` and `whatsapp`. |
+        | source.id                                 | String                                                                                                                                                 |
+        | source.delivered_as                       | String                                                                                                                                                 |
+        | source.subject                            | String                                                                                                                                                 |
+        | source.body                               | String                                                                                                                                                 |
+        | source.author.id                          | String                                                                                                                                                 |
+        | source.author.type                        | String                                                                                                                                                 |
+        | source.author.name                        | String                                                                                                                                                 |
+        | source.author.email                       | String                                                                                                                                                 |
+        | source.url                                | String                                                                                                                                                 |
+        | contact_ids                               | String                                                                                                                                                 |
+        | teammate_ids                              | String                                                                                                                                                 |
+        | admin_assignee_id                         | String                                                                                                                                                 |
+        | team_assignee_id                          | String                                                                                                                                                 |
+        | channel_initiated                         | String                                                                                                                                                 |
+        | open                                      | Boolean                                                                                                                                                |
+        | read                                      | Boolean                                                                                                                                                |
+        | state                                     | String                                                                                                                                                 |
+        | waiting_since                             | Date (UNIX timestamp)                                                                                                                                  |
+        | snoozed_until                             | Date (UNIX timestamp)                                                                                                                                  |
+        | tag_ids                                   | String                                                                                                                                                 |
+        | priority                                  | String                                                                                                                                                 |
+        | statistics.time_to_assignment             | Integer                                                                                                                                                |
+        | statistics.time_to_admin_reply            | Integer                                                                                                                                                |
+        | statistics.time_to_first_close            | Integer                                                                                                                                                |
+        | statistics.time_to_last_close             | Integer                                                                                                                                                |
+        | statistics.median_time_to_reply           | Integer                                                                                                                                                |
+        | statistics.first_contact_reply_at         | Date (UNIX timestamp)                                                                                                                                  |
+        | statistics.first_assignment_at            | Date (UNIX timestamp)                                                                                                                                  |
+        | statistics.first_admin_reply_at           | Date (UNIX timestamp)                                                                                                                                  |
+        | statistics.first_close_at                 | Date (UNIX timestamp)                                                                                                                                  |
+        | statistics.last_assignment_at             | Date (UNIX timestamp)                                                                                                                                  |
+        | statistics.last_assignment_admin_reply_at | Date (UNIX timestamp)                                                                                                                                  |
+        | statistics.last_contact_reply_at          | Date (UNIX timestamp)                                                                                                                                  |
+        | statistics.last_admin_reply_at            | Date (UNIX timestamp)                                                                                                                                  |
+        | statistics.last_close_at                  | Date (UNIX timestamp)                                                                                                                                  |
+        | statistics.last_closed_by_id              | String                                                                                                                                                 |
+        | statistics.count_reopens                  | Integer                                                                                                                                                |
+        | statistics.count_assignments              | Integer                                                                                                                                                |
+        | statistics.count_conversation_parts       | Integer                                                                                                                                                |
+        | conversation_rating.requested_at          | Date (UNIX timestamp)                                                                                                                                  |
+        | conversation_rating.replied_at            | Date (UNIX timestamp)                                                                                                                                  |
+        | conversation_rating.score                 | Integer                                                                                                                                                |
+        | conversation_rating.remark                | String                                                                                                                                                 |
+        | conversation_rating.contact_id            | String                                                                                                                                                 |
+        | conversation_rating.admin_d               | String                                                                                                                                                 |
+        | ai_agent_participated                     | Boolean                                                                                                                                                |
+        | ai_agent.resolution_state                 | String                                                                                                                                                 |
+        | ai_agent.last_answer_type                 | String                                                                                                                                                 |
+        | ai_agent.rating                           | Integer                                                                                                                                                |
+        | ai_agent.rating_remark                    | String                                                                                                                                                 |
+        | ai_agent.source_type                      | String                                                                                                                                                 |
+        | ai_agent.source_title                     | String                                                                                                                                                 |
+
+        ### Accepted Operators
+
+        The table below shows the operators you can use to define how you want to search for the value.  The operator should be put in as a string (`"="`). The operator has to be compatible with the field's type  (eg. you cannot search with `>` for a given string value as it's only compatible for integer's and dates).
+
+        | Operator | Valid Types                    | Description                                                  |
+        | :------- | :----------------------------- | :----------------------------------------------------------- |
+        | =        | All                            | Equals                                                       |
+        | !=       | All                            | Doesn't Equal                                                |
+        | IN       | All                            | In  Shortcut for `OR` queries  Values most be in Array       |
+        | NIN      | All                            | Not In  Shortcut for `OR !` queries  Values must be in Array |
+        | >        | Integer  Date (UNIX Timestamp) | Greater (or equal) than                                      |
+        | <       | Integer  Date (UNIX Timestamp) | Lower (or equal) than                                        |
+        | ~        | String                         | Contains                                                     |
+        | !~       | String                         | Doesn't Contain                                              |
+        | ^        | String                         | Starts With                                                  |
+        | $        | String                         | Ends With                                                    |
       responses:
         '200':
           description: successful
@@ -4682,171 +4966,84 @@ paths:
               examples:
                 successful:
                   value:
-                    type: tag
-                    id: '99'
-                    name: Manual tag
+                    type: conversation.list
+                    pages:
+                      type: pages
+                      page: 1
+                      per_page: 5
+                      total_pages: 1
+                    total_count: 1
+                    conversations:
+                    - type: conversation
+                      id: '378'
+                      created_at: 1719492843
+                      updated_at: 1719492843
+                      waiting_since:
+                      snoozed_until:
+                      source:
+                        type: conversation
+                        id: '403918266'
+                        delivered_as: admin_initiated
+                        subject: ''
+                        body: "<p>this is the message body</p>"
+                        author:
+                          type: admin
+                          id: '991267591'
+                          name: Ciaran180 Lee
+                          email: admin180@email.com
+                        attachments: []
+                        url:
+                        redacted: false
+                      contacts:
+                        type: contact.list
+                        contacts:
+                        - type: contact
+                          id: 667d60ea8a68186f43bafdec
+                          external_id: '70'
+                      first_contact_reply:
+                      admin_assignee_id:
+                      team_assignee_id:
+                      open: false
+                      state: closed
+                      read: false
+                      tags:
+                        type: tag.list
+                        tags: []
+                      priority: not_priority
+                      sla_applied:
+                      statistics:
+                      conversation_rating:
+                      teammates:
+                      title:
+                      custom_attributes: {}
+                      topics: {}
+                      ticket:
+                      linked_objects:
+                        type: list
+                        data: []
+                        total_count: 0
+                        has_more: false
+                      ai_agent:
+                      ai_agent_participated: false
               schema:
-                "$ref": "#/components/schemas/tag"
-        '404':
-          description: Conversation not found
-          content:
-            application/json:
-              examples:
-                Conversation not found:
-                  value:
-                    type: error.list
-                    request_id: 840d35aa-2414-402a-b3c6-763a410e0d16
-                    errors:
-                    - code: not_found
-                      message: Conversation not found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 95cacea0-4744-4de8-a2bf-da4419f75732
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
+                "$ref": "#/components/schemas/paginated_conversation_response"
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              required:
-              - id
-              - admin_id
-              properties:
-                id:
-                  type: string
-                  description: The unique identifier for the tag which is given by
-                    Intercom
-                  example: '7522907'
-                admin_id:
-                  type: string
-                  description: The unique identifier for the admin which is given
-                    by Intercom.
-                  example: '780'
+              "$ref": "#/components/schemas/search_request"
             examples:
               successful:
                 summary: successful
                 value:
-                  id: 99
-                  admin_id: 991267526
-              conversation_not_found:
-                summary: Conversation not found
-                value:
-                  id: 100
-                  admin_id: 991267528
-  "/conversations/{conversation_id}/tags/{tag_id}":
-    delete:
-      summary: Remove tag from a conversation
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: conversation_id
-        in: path
-        description: conversation_id
-        example: '64619700005694'
-        required: true
-        schema:
-          type: string
-      - name: tag_id
-        in: path
-        description: id
-        example: '7522907'
-        required: true
-        schema:
-          type: string
-      tags:
-      - Tags
-      - Conversations
-      operationId: detachTagFromConversation
-      description: You can remove tag from a specific conversation. This will return
-        a tag object for the tag that was removed from the conversation.
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              examples:
-                successful:
-                  value:
-                    type: tag
-                    id: '102'
-                    name: Manual tag
-              schema:
-                "$ref": "#/components/schemas/tag"
-        '404':
-          description: Tag not found
-          content:
-            application/json:
-              examples:
-                Conversation not found:
-                  value:
-                    type: error.list
-                    request_id: f78f63ba-911d-47b8-a389-b33e3ccbe77e
-                    errors:
-                    - code: not_found
-                      message: Conversation not found
-                Tag not found:
-                  value:
-                    type: error.list
-                    request_id: 0d00d069-2cf1-496f-b887-a4db74ee320d
-                    errors:
-                    - code: tag_not_found
-                      message: Tag not found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: f083d6b1-e9d2-43b3-86df-67539007fc3e
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - admin_id
-              properties:
-                admin_id:
-                  type: string
-                  description: The unique identifier for the admin which is given
-                    by Intercom.
-                  example: '123'
-            examples:
-              successful:
-                summary: successful
-                value:
-                  admin_id: 991267530
-              conversation_not_found:
-                summary: Conversation not found
-                value:
-                  admin_id: 991267532
-              tag_not_found:
-                summary: Tag not found
-                value:
-                  admin_id: 991267533
+                  query:
+                    operator: AND
+                    value:
+                    - field: created_at
+                      operator: ">"
+                      value: '1306054154'
+                  pagination:
+                    per_page: 5
   "/conversations/{conversation_id}/reply":
     post:
       summary: Reply to a conversation
@@ -5986,134 +6183,6 @@ paths:
                   admin_id: 991267648
                   customer:
                     intercom_user_id: 667d61338a68186f43bafe2a
-  "/conversations/{conversation_id}/convert":
-    post:
-      summary: Convert a conversation to a ticket
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: conversation_id
-        in: path
-        required: true
-        description: The id of the conversation to target
-        example: "123"
-        schema:
-          type: string
-      tags:
-      - Conversations
-      description: You can convert a conversation to a ticket.
-      operationId: convertConversationToTicket
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              examples:
-                successful:
-                  value:
-                    type: ticket
-                    id: '474'
-                    ticket_id: '37'
-                    ticket_attributes: {}
-                    ticket_state: submitted
-                    ticket_type:
-                      type: ticket_type
-                      id: '79'
-                      name: my-ticket-type-1
-                      description: my ticket type description is awesome.
-                      icon: "\U0001F981"
-                      workspace_id: this_is_an_id404_that_should_be_at_least_
-                      archived: false
-                      created_at: 1719492947
-                      updated_at: 1719492947
-                      is_internal: false
-                      ticket_type_attributes:
-                        type: list
-                        data: []
-                      category: Customer
-                    contacts:
-                      type: contact.list
-                      contacts:
-                      - type: contact
-                        id: 667d61518a68186f43bafe45
-                        external_id: '70'
-                    admin_assignee_id: '0'
-                    team_assignee_id: '0'
-                    created_at: 1719492945
-                    updated_at: 1719492947
-                    ticket_parts:
-                      type: ticket_part.list
-                      ticket_parts:
-                      - type: ticket_part
-                        id: '117'
-                        part_type: comment
-                        body: "<p>Comment for message</p>"
-                        created_at: 1719492945
-                        updated_at: 1719492945
-                        author:
-                          id: 667d61518a68186f43bafe45
-                          type: user
-                          name: Joe Bloggs
-                          email: joe@bloggs.com
-                        attachments: []
-                        redacted: false
-                      - type: ticket_part
-                        id: '118'
-                        part_type: ticket_state_updated_by_admin
-                        ticket_state: submitted
-                        previous_ticket_state: submitted
-                        created_at: 1719492947
-                        updated_at: 1719492947
-                        author:
-                          id: '991267667'
-                          type: bot
-                          name: Operator
-                          email: operator+this_is_an_id404_that_should_be_at_least_@intercom.io
-                        attachments: []
-                        redacted: false
-                      total_count: 2
-                    open: true
-                    linked_objects:
-                      type: list
-                      data: []
-                      total_count: 0
-                      has_more: false
-                    category: Customer
-                    is_shared: true
-                    ticket_state_internal_label: Submitted
-                    ticket_state_external_label: Submitted
-              schema:
-                "$ref": "#/components/schemas/ticket"
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              examples:
-                Bad request:
-                  value:
-                    type: error.list
-                    request_id: 74656c1a-0a17-4c80-a7b9-66fa45c6d71b
-                    errors:
-                    - code: parameter_invalid
-                      message: Ticket type is not a customer ticket type
-              schema:
-                "$ref": "#/components/schemas/error"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              "$ref": "#/components/schemas/convert_conversation_to_ticket_request"
-            examples:
-              successful:
-                summary: successful
-                value:
-                  ticket_type_id: '79'
-              bad_request:
-                summary: Bad request
-                value:
-                  ticket_type_id: '80'
   "/conversations/redact":
     post:
       summary: Redact a conversation part
@@ -6262,117 +6331,25 @@ paths:
                   type: conversation_part
                   conversation_id: really_123_doesnt_exist
                   conversation_part_id: really_123_doesnt_exist
-  "/conversations/search":
+  "/conversations/{conversation_id}/convert":
     post:
-      summary: Search conversations
+      summary: Convert a conversation to a ticket
       parameters:
       - name: Intercom-Version
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: conversation_id
+        in: path
+        required: true
+        description: The id of the conversation to target
+        example: "123"
+        schema:
+          type: string
       tags:
       - Conversations
-      operationId: searchConversations
-      description: |
-        You can search for multiple conversations by the value of their attributes in order to fetch exactly which ones you want.
-
-        To search for conversations, you need to send a `POST` request to `https://api.intercom.io/conversations/search`.
-
-        This will accept a query object in the body which will define your filters in order to search for conversations.
-        {% admonition type="warning" name="Optimizing search queries" %}
-          Search queries can be complex, so optimizing them can help the performance of your search.
-          Use the `AND` and `OR` operators to combine multiple filters to get the exact results you need and utilize
-          pagination to limit the number of results returned. The default is `20` results per page and maximum is `150`.
-          See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#example-search-conversations-request) for more details on how to use the `starting_after` param.
-        {% /admonition %}
-
-        ### Nesting & Limitations
-
-        You can nest these filters in order to get even more granular insights that pinpoint exactly what you need. Example: (1 OR 2) AND (3 OR 4).
-        There are some limitations to the amount of multiple's there can be:
-        - There's a limit of max 2 nested filters
-        - There's a limit of max 15 filters for each AND or OR group
-
-        ### Accepted Fields
-
-        Most keys listed as part of the The conversation model is searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `"foorbar"`).
-        The `source.body` field is unique as the search will not be performed against the entire value, but instead against every element of the value separately. For example, when searching for a conversation with a `"I need support"` body - the query should contain a `=` operator with the value `"support"` for such conversation to be returned. A query with a `=` operator and a `"need support"` value will not yield a result.
-
-        | Field                                     | Type                                                                                                                                                   |
-        | :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
-        | id                                        | String                                                                                                                                                 |
-        | created_at                                | Date (UNIX timestamp)                                                                                                                                  |
-        | updated_at                                | Date (UNIX timestamp)                                                                                                                                  |
-        | source.type                               | String<br>Accepted fields are `conversation`, `email`, `facebook`, `instagram`, `phone_call`, `phone_switch`, `push`, `sms`, `twitter` and `whatsapp`. |
-        | source.id                                 | String                                                                                                                                                 |
-        | source.delivered_as                       | String                                                                                                                                                 |
-        | source.subject                            | String                                                                                                                                                 |
-        | source.body                               | String                                                                                                                                                 |
-        | source.author.id                          | String                                                                                                                                                 |
-        | source.author.type                        | String                                                                                                                                                 |
-        | source.author.name                        | String                                                                                                                                                 |
-        | source.author.email                       | String                                                                                                                                                 |
-        | source.url                                | String                                                                                                                                                 |
-        | contact_ids                               | String                                                                                                                                                 |
-        | teammate_ids                              | String                                                                                                                                                 |
-        | admin_assignee_id                         | String                                                                                                                                                 |
-        | team_assignee_id                          | String                                                                                                                                                 |
-        | channel_initiated                         | String                                                                                                                                                 |
-        | open                                      | Boolean                                                                                                                                                |
-        | read                                      | Boolean                                                                                                                                                |
-        | state                                     | String                                                                                                                                                 |
-        | waiting_since                             | Date (UNIX timestamp)                                                                                                                                  |
-        | snoozed_until                             | Date (UNIX timestamp)                                                                                                                                  |
-        | tag_ids                                   | String                                                                                                                                                 |
-        | priority                                  | String                                                                                                                                                 |
-        | statistics.time_to_assignment             | Integer                                                                                                                                                |
-        | statistics.time_to_admin_reply            | Integer                                                                                                                                                |
-        | statistics.time_to_first_close            | Integer                                                                                                                                                |
-        | statistics.time_to_last_close             | Integer                                                                                                                                                |
-        | statistics.median_time_to_reply           | Integer                                                                                                                                                |
-        | statistics.first_contact_reply_at         | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.first_assignment_at            | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.first_admin_reply_at           | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.first_close_at                 | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_assignment_at             | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_assignment_admin_reply_at | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_contact_reply_at          | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_admin_reply_at            | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_close_at                  | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_closed_by_id              | String                                                                                                                                                 |
-        | statistics.count_reopens                  | Integer                                                                                                                                                |
-        | statistics.count_assignments              | Integer                                                                                                                                                |
-        | statistics.count_conversation_parts       | Integer                                                                                                                                                |
-        | conversation_rating.requested_at          | Date (UNIX timestamp)                                                                                                                                  |
-        | conversation_rating.replied_at            | Date (UNIX timestamp)                                                                                                                                  |
-        | conversation_rating.score                 | Integer                                                                                                                                                |
-        | conversation_rating.remark                | String                                                                                                                                                 |
-        | conversation_rating.contact_id            | String                                                                                                                                                 |
-        | conversation_rating.admin_d               | String                                                                                                                                                 |
-        | ai_agent_participated                     | Boolean                                                                                                                                                |
-        | ai_agent.resolution_state                 | String                                                                                                                                                 |
-        | ai_agent.last_answer_type                 | String                                                                                                                                                 |
-        | ai_agent.rating                           | Integer                                                                                                                                                |
-        | ai_agent.rating_remark                    | String                                                                                                                                                 |
-        | ai_agent.source_type                      | String                                                                                                                                                 |
-        | ai_agent.source_title                     | String                                                                                                                                                 |
-
-        ### Accepted Operators
-
-        The table below shows the operators you can use to define how you want to search for the value.  The operator should be put in as a string (`"="`). The operator has to be compatible with the field's type  (eg. you cannot search with `>` for a given string value as it's only compatible for integer's and dates).
-
-        | Operator | Valid Types                    | Description                                                  |
-        | :------- | :----------------------------- | :----------------------------------------------------------- |
-        | =        | All                            | Equals                                                       |
-        | !=       | All                            | Doesn't Equal                                                |
-        | IN       | All                            | In  Shortcut for `OR` queries  Values most be in Array       |
-        | NIN      | All                            | Not In  Shortcut for `OR !` queries  Values must be in Array |
-        | >        | Integer  Date (UNIX Timestamp) | Greater (or equal) than                                      |
-        | <       | Integer  Date (UNIX Timestamp) | Lower (or equal) than                                        |
-        | ~        | String                         | Contains                                                     |
-        | !~       | String                         | Doesn't Contain                                              |
-        | ^        | String                         | Starts With                                                  |
-        | $        | String                         | Ends With                                                    |
+      description: You can convert a conversation to a ticket.
+      operationId: convertConversationToTicket
       responses:
         '200':
           description: successful
@@ -6381,84 +6358,107 @@ paths:
               examples:
                 successful:
                   value:
-                    type: conversation.list
-                    pages:
-                      type: pages
-                      page: 1
-                      per_page: 5
-                      total_pages: 1
-                    total_count: 1
-                    conversations:
-                    - type: conversation
-                      id: '378'
-                      created_at: 1719492843
-                      updated_at: 1719492843
-                      waiting_since:
-                      snoozed_until:
-                      source:
-                        type: conversation
-                        id: '403918266'
-                        delivered_as: admin_initiated
-                        subject: ''
-                        body: "<p>this is the message body</p>"
-                        author:
-                          type: admin
-                          id: '991267591'
-                          name: Ciaran180 Lee
-                          email: admin180@email.com
-                        attachments: []
-                        url:
-                        redacted: false
-                      contacts:
-                        type: contact.list
-                        contacts:
-                        - type: contact
-                          id: 667d60ea8a68186f43bafdec
-                          external_id: '70'
-                      first_contact_reply:
-                      admin_assignee_id:
-                      team_assignee_id:
-                      open: false
-                      state: closed
-                      read: false
-                      tags:
-                        type: tag.list
-                        tags: []
-                      priority: not_priority
-                      sla_applied:
-                      statistics:
-                      conversation_rating:
-                      teammates:
-                      title:
-                      custom_attributes: {}
-                      topics: {}
-                      ticket:
-                      linked_objects:
+                    type: ticket
+                    id: '474'
+                    ticket_id: '37'
+                    ticket_attributes: {}
+                    ticket_state: submitted
+                    ticket_type:
+                      type: ticket_type
+                      id: '79'
+                      name: my-ticket-type-1
+                      description: my ticket type description is awesome.
+                      icon: "\U0001F981"
+                      workspace_id: this_is_an_id404_that_should_be_at_least_
+                      archived: false
+                      created_at: 1719492947
+                      updated_at: 1719492947
+                      is_internal: false
+                      ticket_type_attributes:
                         type: list
                         data: []
-                        total_count: 0
-                        has_more: false
-                      ai_agent:
-                      ai_agent_participated: false
+                      category: Customer
+                    contacts:
+                      type: contact.list
+                      contacts:
+                      - type: contact
+                        id: 667d61518a68186f43bafe45
+                        external_id: '70'
+                    admin_assignee_id: '0'
+                    team_assignee_id: '0'
+                    created_at: 1719492945
+                    updated_at: 1719492947
+                    ticket_parts:
+                      type: ticket_part.list
+                      ticket_parts:
+                      - type: ticket_part
+                        id: '117'
+                        part_type: comment
+                        body: "<p>Comment for message</p>"
+                        created_at: 1719492945
+                        updated_at: 1719492945
+                        author:
+                          id: 667d61518a68186f43bafe45
+                          type: user
+                          name: Joe Bloggs
+                          email: joe@bloggs.com
+                        attachments: []
+                        redacted: false
+                      - type: ticket_part
+                        id: '118'
+                        part_type: ticket_state_updated_by_admin
+                        ticket_state: submitted
+                        previous_ticket_state: submitted
+                        created_at: 1719492947
+                        updated_at: 1719492947
+                        author:
+                          id: '991267667'
+                          type: bot
+                          name: Operator
+                          email: operator+this_is_an_id404_that_should_be_at_least_@intercom.io
+                        attachments: []
+                        redacted: false
+                      total_count: 2
+                    open: true
+                    linked_objects:
+                      type: list
+                      data: []
+                      total_count: 0
+                      has_more: false
+                    category: Customer
+                    is_shared: true
+                    ticket_state_internal_label: Submitted
+                    ticket_state_external_label: Submitted
               schema:
-                "$ref": "#/components/schemas/paginated_conversation_response"
+                "$ref": "#/components/schemas/ticket"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Bad request:
+                  value:
+                    type: error.list
+                    request_id: 74656c1a-0a17-4c80-a7b9-66fa45c6d71b
+                    errors:
+                    - code: parameter_invalid
+                      message: Ticket type is not a customer ticket type
+              schema:
+                "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/search_request"
+              "$ref": "#/components/schemas/convert_conversation_to_ticket_request"
             examples:
               successful:
                 summary: successful
                 value:
-                  query:
-                    operator: AND
-                    value:
-                    - field: created_at
-                      operator: ">"
-                      value: '1306054154'
-                  pagination:
-                    per_page: 5
+                  ticket_type_id: '79'
+              bad_request:
+                summary: Bad request
+                value:
+                  ticket_type_id: '80'
   "/data_attributes":
     get:
       summary: List all data attributes
@@ -7954,6 +7954,59 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/news/newsfeeds/{newsfeed_id}/items":
+    get:
+      summary: List all live newsfeed items
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: newsfeed_id
+        in: path
+        required: true
+        description: The unique identifier for the news feed item which is given by
+          Intercom.
+        example: "123"
+        schema:
+          type: string
+      tags:
+      - News
+      operationId: listLiveNewsfeedItems
+      description: You can fetch a list of all news items that are live on a given
+        newsfeed
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    pages:
+                      page: 1
+                      per_page: 20
+                      total_pages: 0
+                      type: pages
+                    data: []
+                    total_count: 0
+              schema:
+                "$ref": "#/components/schemas/paginated_news_item_response"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: de07bbcf-64ff-4fc8-a7e5-fcbe772b85a5
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/news/newsfeeds":
     get:
       summary: List all newsfeeds
@@ -8052,59 +8105,6 @@ paths:
                   value:
                     type: error.list
                     request_id: 185ce494-34e2-4cda-85cb-c51ad7281292
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-  "/news/newsfeeds/{newsfeed_id}/items":
-    get:
-      summary: List all live newsfeed items
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: newsfeed_id
-        in: path
-        required: true
-        description: The unique identifier for the news feed item which is given by
-          Intercom.
-        example: "123"
-        schema:
-          type: string
-      tags:
-      - News
-      operationId: listLiveNewsfeedItems
-      description: You can fetch a list of all news items that are live on a given
-        newsfeed
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              examples:
-                successful:
-                  value:
-                    type: list
-                    pages:
-                      page: 1
-                      per_page: 20
-                      total_pages: 0
-                      type: pages
-                    data: []
-                    total_count: 0
-              schema:
-                "$ref": "#/components/schemas/paginated_news_item_response"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: de07bbcf-64ff-4fc8-a7e5-fcbe772b85a5
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
@@ -8835,6 +8835,154 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/ticket_types/{ticket_type_id}/attributes":
+    post:
+      summary: Create a new attribute for a ticket type
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: ticket_type_id
+        in: path
+        required: true
+        description: The unique identifier for the ticket type which is given by Intercom.
+        schema:
+          type: string
+      tags:
+      - Ticket Type Attributes
+      description: You can create a new attribute for a ticket type.
+      operationId: createTicketTypeAttribute
+      responses:
+        '200':
+          description: Ticket Type Attribute created
+          content:
+            application/json:
+              examples:
+                Ticket Type Attribute created:
+                  value:
+                    type: ticket_type_attribute
+                    id: '210'
+                    workspace_id: this_is_an_id600_that_should_be_at_least_
+                    name: Attribute Title
+                    description: Attribute Description
+                    data_type: string
+                    input_options:
+                      multiline: false
+                    order: 2
+                    required_to_create: false
+                    required_to_create_for_contacts: false
+                    visible_on_create: true
+                    visible_to_contacts: true
+                    default: false
+                    ticket_type_id: 81
+                    archived: false
+                    created_at: 1719493013
+                    updated_at: 1719493013
+              schema:
+                "$ref": "#/components/schemas/ticket_type_attribute"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 3bc672fa-e051-4ede-b6e9-79f518231ba9
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_ticket_type_attribute_request"
+            examples:
+              ticket_type_attribute_created:
+                summary: Ticket Type Attribute created
+                value:
+                  name: Attribute Title
+                  description: Attribute Description
+                  data_type: string
+                  required_to_create: false
+  "/ticket_types/{ticket_type_id}/attributes/{attribute_id}":
+    put:
+      summary: Update an existing attribute for a ticket type
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: ticket_type_id
+        in: path
+        required: true
+        description: The unique identifier for the ticket type which is given by Intercom.
+        schema:
+          type: string
+      - name: attribute_id
+        in: path
+        required: true
+        description: The unique identifier for the ticket type attribute which is
+          given by Intercom.
+        schema:
+          type: string
+      tags:
+      - Ticket Type Attributes
+      description: You can update an existing attribute for a ticket type.
+      operationId: updateTicketTypeAttribute
+      responses:
+        '200':
+          description: Ticket Type Attribute updated
+          content:
+            application/json:
+              examples:
+                Ticket Type Attribute updated:
+                  value:
+                    type: ticket_type_attribute
+                    id: '215'
+                    workspace_id: this_is_an_id604_that_should_be_at_least_
+                    name: name
+                    description: New Attribute Description
+                    data_type: string
+                    order: 0
+                    required_to_create: false
+                    required_to_create_for_contacts: false
+                    visible_on_create: false
+                    visible_to_contacts: false
+                    default: false
+                    ticket_type_id: 83
+                    archived: false
+                    created_at: 1719493013
+                    updated_at: 1719493014
+              schema:
+                "$ref": "#/components/schemas/ticket_type_attribute"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 6e45414c-e627-4769-bdbd-d51f2c19e1e9
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_ticket_type_attribute_request"
+            examples:
+              ticket_type_attribute_updated:
+                summary: Ticket Type Attribute updated
+                value:
+                  description: New Attribute Description
   "/ticket_types":
     get:
       summary: List all ticket types
@@ -9269,52 +9417,104 @@ paths:
                 summary: Ticket type updated
                 value:
                   name: Bug Report 2
-  "/ticket_types/{ticket_type_id}/attributes":
+  "/tickets/{ticket_id}/reply":
     post:
-      summary: Create a new attribute for a ticket type
+      summary: Reply to a ticket
+      operationId: replyTicket
+      description: You can reply to a ticket with a message from an admin or on behalf
+        of a contact, or with a note for admins.
       parameters:
       - name: Intercom-Version
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: ticket_type_id
+      - name: ticket_id
         in: path
         required: true
-        description: The unique identifier for the ticket type which is given by Intercom.
         schema:
+          title: Ticket ID
           type: string
+          description: The id of the ticket to target.
+          example: "123"
       tags:
-      - Ticket Type Attributes
-      description: You can create a new attribute for a ticket type.
-      operationId: createTicketTypeAttribute
+      - Tickets
       responses:
-        '200':
-          description: Ticket Type Attribute created
+        '400':
+          description: User reply
           content:
             application/json:
               examples:
-                Ticket Type Attribute created:
+                User reply:
                   value:
-                    type: ticket_type_attribute
-                    id: '210'
-                    workspace_id: this_is_an_id600_that_should_be_at_least_
-                    name: Attribute Title
-                    description: Attribute Description
-                    data_type: string
-                    input_options:
-                      multiline: false
-                    order: 2
-                    required_to_create: false
-                    required_to_create_for_contacts: false
-                    visible_on_create: true
-                    visible_to_contacts: true
-                    default: false
-                    ticket_type_id: 81
-                    archived: false
-                    created_at: 1719493013
-                    updated_at: 1719493013
+                    type: error.list
+                    request_id: b8b42c55-347c-4704-b4c1-92220c01f4ac
+                    errors:
+                    - code: parameter_mismatch
+                      message: User replies are not allowed on Backoffice tickets
               schema:
-                "$ref": "#/components/schemas/ticket_type_attribute"
+                "$ref": "#/components/schemas/error"
+        '200':
+          description: Admin quick_reply reply
+          content:
+            application/json:
+              examples:
+                Admin note reply:
+                  value:
+                    type: ticket_part
+                    id: '122'
+                    part_type: note
+                    body: |-
+                      <h2>An Unordered HTML List</h2>
+                      <ul>
+                      <li>Coffee</li>
+                      <li>Tea</li>
+                      <li>Milk</li>
+                      </ul>
+                      <h2>An Ordered HTML List</h2>
+                      <ol>
+                      <li>Coffee</li>
+                      <li>Tea</li>
+                      <li>Milk</li>
+                      </ol>
+                    created_at: 1719493024
+                    updated_at: 1719493024
+                    author:
+                      id: '991267829'
+                      type: admin
+                      name: Ciaran375 Lee
+                      email: admin375@email.com
+                    attachments: []
+                    redacted: false
+                Admin quick_reply reply:
+                  value:
+                    type: ticket_part
+                    id: '124'
+                    part_type: quick_reply
+                    created_at: 1719493029
+                    updated_at: 1719493029
+                    author:
+                      id: '991267834'
+                      type: admin
+                      name: Ciaran379 Lee
+                      email: admin379@email.com
+                    attachments: []
+                    redacted: false
+              schema:
+                "$ref": "#/components/schemas/ticket_reply"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id: c23e8dab-6102-483c-bb1b-c62923be35ab
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -9323,7 +9523,7 @@ paths:
                 Unauthorized:
                   value:
                     type: error.list
-                    request_id: 3bc672fa-e051-4ede-b6e9-79f518231ba9
+                    request_id: bb012854-cca8-4fa7-972e-6c38204e8294
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
@@ -9333,66 +9533,93 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/create_ticket_type_attribute_request"
+              oneOf:
+              - "$ref": "#/components/schemas/contact_reply_ticket_request"
+              - "$ref": "#/components/schemas/admin_reply_ticket_request"
             examples:
-              ticket_type_attribute_created:
-                summary: Ticket Type Attribute created
+              user_reply:
+                summary: User reply
                 value:
-                  name: Attribute Title
-                  description: Attribute Description
-                  data_type: string
-                  required_to_create: false
-  "/ticket_types/{ticket_type_id}/attributes/{attribute_id}":
-    put:
-      summary: Update an existing attribute for a ticket type
+                  message_type: comment
+                  type: user
+                  intercom_user_id: 667d619d8a68186f43bafe82
+                  body: Thanks again :)
+              admin_note_reply:
+                summary: Admin note reply
+                value:
+                  message_type: note
+                  type: admin
+                  admin_id: 991267829
+                  body: "<html> <body>  <h2>An Unordered HTML List</h2>  <ul>   <li>Coffee</li>
+                    \  <li>Tea</li>   <li>Milk</li> </ul>    <h2>An Ordered HTML List</h2>
+                    \ <ol>   <li>Coffee</li>   <li>Tea</li>   <li>Milk</li> </ol>
+                    \  </body> </html>"
+              admin_quick_reply_reply:
+                summary: Admin quick_reply reply
+                value:
+                  message_type: quick_reply
+                  type: admin
+                  admin_id: 991267834
+                  reply_options:
+                  - text: 'Yes'
+                    uuid: 22d6d1f4-1a19-41d0-94c2-e54031f78aca
+                  - text: 'No'
+                    uuid: fbc3dbe0-ec0c-4fb6-826d-e19127191906
+              not_found:
+                summary: Not found
+                value:
+                  message_type: comment
+                  type: user
+                  intercom_user_id: 667d61a68a68186f43bafe85
+                  body: Thanks again :)
+  "/tickets/{ticket_id}/tags":
+    post:
+      summary: Add tag to a ticket
       parameters:
       - name: Intercom-Version
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: ticket_type_id
+      - name: ticket_id
         in: path
+        description: ticket_id
+        example: '64619700005694'
         required: true
-        description: The unique identifier for the ticket type which is given by Intercom.
-        schema:
-          type: string
-      - name: attribute_id
-        in: path
-        required: true
-        description: The unique identifier for the ticket type attribute which is
-          given by Intercom.
         schema:
           type: string
       tags:
-      - Ticket Type Attributes
-      description: You can update an existing attribute for a ticket type.
-      operationId: updateTicketTypeAttribute
+      - Tags
+      - Tickets
+      operationId: attachTagToTicket
+      description: You can tag a specific ticket. This will return a tag object for
+        the tag that was added to the ticket.
       responses:
         '200':
-          description: Ticket Type Attribute updated
+          description: successful
           content:
             application/json:
               examples:
-                Ticket Type Attribute updated:
+                successful:
                   value:
-                    type: ticket_type_attribute
-                    id: '215'
-                    workspace_id: this_is_an_id604_that_should_be_at_least_
-                    name: name
-                    description: New Attribute Description
-                    data_type: string
-                    order: 0
-                    required_to_create: false
-                    required_to_create_for_contacts: false
-                    visible_on_create: false
-                    visible_to_contacts: false
-                    default: false
-                    ticket_type_id: 83
-                    archived: false
-                    created_at: 1719493013
-                    updated_at: 1719493014
+                    type: tag
+                    id: '134'
+                    name: Manual tag
               schema:
-                "$ref": "#/components/schemas/ticket_type_attribute"
+                "$ref": "#/components/schemas/tag"
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              examples:
+                Ticket not found:
+                  value:
+                    type: error.list
+                    request_id: e11d8f55-82fe-4c0d-b4c6-6f22c6a694e9
+                    errors:
+                    - code: ticket_not_found
+                      message: Ticket not found
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -9401,7 +9628,7 @@ paths:
                 Unauthorized:
                   value:
                     type: error.list
-                    request_id: 6e45414c-e627-4769-bdbd-d51f2c19e1e9
+                    request_id: a502f48f-c80d-48fd-bea5-cafe7e24d9f9
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
@@ -9411,12 +9638,134 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/update_ticket_type_attribute_request"
+              type: object
+              required:
+              - id
+              - admin_id
+              properties:
+                id:
+                  type: string
+                  description: The unique identifier for the tag which is given by
+                    Intercom
+                  example: '7522907'
+                admin_id:
+                  type: string
+                  description: The unique identifier for the admin which is given
+                    by Intercom.
+                  example: '780'
             examples:
-              ticket_type_attribute_updated:
-                summary: Ticket Type Attribute updated
+              successful:
+                summary: successful
                 value:
-                  description: New Attribute Description
+                  id: 134
+                  admin_id: 991267844
+              ticket_not_found:
+                summary: Ticket not found
+                value:
+                  id: 135
+                  admin_id: 991267847
+  "/tickets/{ticket_id}/tags/{tag_id}":
+    delete:
+      summary: Remove tag from a ticket
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: ticket_id
+        in: path
+        description: ticket_id
+        example: '64619700005694'
+        required: true
+        schema:
+          type: string
+      - name: tag_id
+        in: path
+        description: The unique identifier for the tag which is given by Intercom
+        example: '7522907'
+        required: true
+        schema:
+          type: string
+      tags:
+      - Tags
+      - Tickets
+      operationId: detachTagFromTicket
+      description: You can remove tag from a specific ticket. This will return a tag
+        object for the tag that was removed from the ticket.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: tag
+                    id: '137'
+                    name: Manual tag
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '404':
+          description: Tag not found
+          content:
+            application/json:
+              examples:
+                Ticket not found:
+                  value:
+                    type: error.list
+                    request_id: ffa08bb4-3994-4132-b9e3-14837e0723e8
+                    errors:
+                    - code: ticket_not_found
+                      message: Ticket not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: d2385995-502c-4c03-bf4b-93ef3d24037b
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 0d3be117-0a9e-4e88-9a05-4fdd7f93d7bc
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - admin_id
+              properties:
+                admin_id:
+                  type: string
+                  description: The unique identifier for the admin which is given
+                    by Intercom.
+                  example: '123'
+            examples:
+              successful:
+                summary: successful
+                value:
+                  admin_id: 991267853
+              ticket_not_found:
+                summary: Ticket not found
+                value:
+                  admin_id: 991267856
+              tag_not_found:
+                summary: Tag not found
+                value:
+                  admin_id: 991267859
   "/tickets":
     post:
       summary: Create a ticket
@@ -9956,355 +10305,6 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/tickets/{ticket_id}/reply":
-    post:
-      summary: Reply to a ticket
-      operationId: replyTicket
-      description: You can reply to a ticket with a message from an admin or on behalf
-        of a contact, or with a note for admins.
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: ticket_id
-        in: path
-        required: true
-        schema:
-          title: Ticket ID
-          type: string
-          description: The id of the ticket to target.
-          example: "123"
-      tags:
-      - Tickets
-      responses:
-        '400':
-          description: User reply
-          content:
-            application/json:
-              examples:
-                User reply:
-                  value:
-                    type: error.list
-                    request_id: b8b42c55-347c-4704-b4c1-92220c01f4ac
-                    errors:
-                    - code: parameter_mismatch
-                      message: User replies are not allowed on Backoffice tickets
-              schema:
-                "$ref": "#/components/schemas/error"
-        '200':
-          description: Admin quick_reply reply
-          content:
-            application/json:
-              examples:
-                Admin note reply:
-                  value:
-                    type: ticket_part
-                    id: '122'
-                    part_type: note
-                    body: |-
-                      <h2>An Unordered HTML List</h2>
-                      <ul>
-                      <li>Coffee</li>
-                      <li>Tea</li>
-                      <li>Milk</li>
-                      </ul>
-                      <h2>An Ordered HTML List</h2>
-                      <ol>
-                      <li>Coffee</li>
-                      <li>Tea</li>
-                      <li>Milk</li>
-                      </ol>
-                    created_at: 1719493024
-                    updated_at: 1719493024
-                    author:
-                      id: '991267829'
-                      type: admin
-                      name: Ciaran375 Lee
-                      email: admin375@email.com
-                    attachments: []
-                    redacted: false
-                Admin quick_reply reply:
-                  value:
-                    type: ticket_part
-                    id: '124'
-                    part_type: quick_reply
-                    created_at: 1719493029
-                    updated_at: 1719493029
-                    author:
-                      id: '991267834'
-                      type: admin
-                      name: Ciaran379 Lee
-                      email: admin379@email.com
-                    attachments: []
-                    redacted: false
-              schema:
-                "$ref": "#/components/schemas/ticket_reply"
-        '404':
-          description: Not found
-          content:
-            application/json:
-              examples:
-                Not found:
-                  value:
-                    type: error.list
-                    request_id: c23e8dab-6102-483c-bb1b-c62923be35ab
-                    errors:
-                    - code: not_found
-                      message: Resource Not Found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: bb012854-cca8-4fa7-972e-6c38204e8294
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              oneOf:
-              - "$ref": "#/components/schemas/contact_reply_ticket_request"
-              - "$ref": "#/components/schemas/admin_reply_ticket_request"
-            examples:
-              user_reply:
-                summary: User reply
-                value:
-                  message_type: comment
-                  type: user
-                  intercom_user_id: 667d619d8a68186f43bafe82
-                  body: Thanks again :)
-              admin_note_reply:
-                summary: Admin note reply
-                value:
-                  message_type: note
-                  type: admin
-                  admin_id: 991267829
-                  body: "<html> <body>  <h2>An Unordered HTML List</h2>  <ul>   <li>Coffee</li>
-                    \  <li>Tea</li>   <li>Milk</li> </ul>    <h2>An Ordered HTML List</h2>
-                    \ <ol>   <li>Coffee</li>   <li>Tea</li>   <li>Milk</li> </ol>
-                    \  </body> </html>"
-              admin_quick_reply_reply:
-                summary: Admin quick_reply reply
-                value:
-                  message_type: quick_reply
-                  type: admin
-                  admin_id: 991267834
-                  reply_options:
-                  - text: 'Yes'
-                    uuid: 22d6d1f4-1a19-41d0-94c2-e54031f78aca
-                  - text: 'No'
-                    uuid: fbc3dbe0-ec0c-4fb6-826d-e19127191906
-              not_found:
-                summary: Not found
-                value:
-                  message_type: comment
-                  type: user
-                  intercom_user_id: 667d61a68a68186f43bafe85
-                  body: Thanks again :)
-  "/tickets/{ticket_id}/tags":
-    post:
-      summary: Add tag to a ticket
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: ticket_id
-        in: path
-        description: ticket_id
-        example: '64619700005694'
-        required: true
-        schema:
-          type: string
-      tags:
-      - Tags
-      - Tickets
-      operationId: attachTagToTicket
-      description: You can tag a specific ticket. This will return a tag object for
-        the tag that was added to the ticket.
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              examples:
-                successful:
-                  value:
-                    type: tag
-                    id: '134'
-                    name: Manual tag
-              schema:
-                "$ref": "#/components/schemas/tag"
-        '404':
-          description: Ticket not found
-          content:
-            application/json:
-              examples:
-                Ticket not found:
-                  value:
-                    type: error.list
-                    request_id: e11d8f55-82fe-4c0d-b4c6-6f22c6a694e9
-                    errors:
-                    - code: ticket_not_found
-                      message: Ticket not found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: a502f48f-c80d-48fd-bea5-cafe7e24d9f9
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - id
-              - admin_id
-              properties:
-                id:
-                  type: string
-                  description: The unique identifier for the tag which is given by
-                    Intercom
-                  example: '7522907'
-                admin_id:
-                  type: string
-                  description: The unique identifier for the admin which is given
-                    by Intercom.
-                  example: '780'
-            examples:
-              successful:
-                summary: successful
-                value:
-                  id: 134
-                  admin_id: 991267844
-              ticket_not_found:
-                summary: Ticket not found
-                value:
-                  id: 135
-                  admin_id: 991267847
-  "/tickets/{ticket_id}/tags/{tag_id}":
-    delete:
-      summary: Remove tag from a ticket
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: ticket_id
-        in: path
-        description: ticket_id
-        example: '64619700005694'
-        required: true
-        schema:
-          type: string
-      - name: tag_id
-        in: path
-        description: The unique identifier for the tag which is given by Intercom
-        example: '7522907'
-        required: true
-        schema:
-          type: string
-      tags:
-      - Tags
-      - Tickets
-      operationId: detachTagFromTicket
-      description: You can remove tag from a specific ticket. This will return a tag
-        object for the tag that was removed from the ticket.
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              examples:
-                successful:
-                  value:
-                    type: tag
-                    id: '137'
-                    name: Manual tag
-              schema:
-                "$ref": "#/components/schemas/tag"
-        '404':
-          description: Tag not found
-          content:
-            application/json:
-              examples:
-                Ticket not found:
-                  value:
-                    type: error.list
-                    request_id: ffa08bb4-3994-4132-b9e3-14837e0723e8
-                    errors:
-                    - code: ticket_not_found
-                      message: Ticket not found
-                Tag not found:
-                  value:
-                    type: error.list
-                    request_id: d2385995-502c-4c03-bf4b-93ef3d24037b
-                    errors:
-                    - code: tag_not_found
-                      message: Tag not found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 0d3be117-0a9e-4e88-9a05-4fdd7f93d7bc
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - admin_id
-              properties:
-                admin_id:
-                  type: string
-                  description: The unique identifier for the admin which is given
-                    by Intercom.
-                  example: '123'
-            examples:
-              successful:
-                summary: successful
-                value:
-                  admin_id: 991267853
-              ticket_not_found:
-                summary: Ticket not found
-                value:
-                  admin_id: 991267856
-              tag_not_found:
-                summary: Tag not found
-                value:
-                  admin_id: 991267859
   "/tickets/search":
     post:
       summary: Search tickets
