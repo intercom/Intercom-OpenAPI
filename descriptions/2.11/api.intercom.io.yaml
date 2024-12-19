@@ -56,7 +56,7 @@ paths:
                     has_inbox_seat: true
               schema:
                 "$ref": "#/components/schemas/admin_with_app"
-  "/admins/{id}/away":
+  "/admins/{admin_id}/away":
     put:
       summary: Set an admin to away
       parameters:
@@ -64,12 +64,12 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: admin_id
         in: path
         required: true
         description: The unique identifier of a given admin
         schema:
-          type: integer
+          type: string
       tags:
       - Admins
       operationId: setAwayAdmin
@@ -293,7 +293,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/admins/{id}":
+  "/admins/{admin_id}":
     get:
       summary: Retrieve an admin
       parameters:
@@ -301,13 +301,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: admin_id
         in: path
         required: true
         description: The unique identifier of a given admin
-        example: 123
+        example: "123"
         schema:
-          type: integer
+          type: string
       tags:
       - Admins
       operationId: retrieveAdmin
@@ -366,6 +366,20 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
       tags:
       - Articles
       operationId: listArticles
@@ -522,7 +536,7 @@ paths:
                   description: Description of the Article
                   body: Body of the Article
                   state: published
-  "/articles/{id}":
+  "/articles/{article_id}":
     get:
       summary: Retrieve an article
       parameters:
@@ -530,13 +544,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: article_id
         in: path
         required: true
         description: The unique identifier for the article which is given by Intercom.
-        example: 123
+        example: "123"
         schema:
-          type: integer
+          type: string
       tags:
       - Articles
       operationId: retrieveArticle
@@ -609,13 +623,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: article_id
         in: path
         required: true
         description: The unique identifier for the article which is given by Intercom.
-        example: 123
+        example: "123"
         schema:
-          type: integer
+          type: string
       tags:
       - Articles
       operationId: updateArticle
@@ -685,7 +699,7 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/update_article_request"
+              "$ref": "#/components/schemas/update_article_request_body"
             examples:
               successful:
                 summary: successful
@@ -704,13 +718,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: article_id
         in: path
         required: true
         description: The unique identifier for the article which is given by Intercom.
-        example: 123
+        example: "123"
         schema:
-          type: integer
+          type: string
       tags:
       - Articles
       operationId: deleteArticle
@@ -831,7 +845,7 @@ paths:
                       total_pages: 1
                       per_page: 10
               schema:
-                "$ref": "#/components/schemas/article_search_response"
+                "$ref": "#/components/schemas/search_articles_response"
         '401':
           description: Unauthorized
           content:
@@ -854,6 +868,20 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
       tags:
       - Help Center
       operationId: listAllCollections
@@ -989,7 +1017,7 @@ paths:
                 summary: Bad Request
                 value:
                   description: Missing required parameter
-  "/help_center/collections/{id}":
+  "/help_center/collections/{collection_id}":
     get:
       summary: Retrieve a collection
       parameters:
@@ -997,13 +1025,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: collection_id
         in: path
         required: true
         description: The unique identifier for the collection which is given by Intercom.
-        example: 123
+        example: "123"
         schema:
-          type: integer
+          type: string
       tags:
       - Help Center
       operationId: retrieveCollection
@@ -1065,13 +1093,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: collection_id
         in: path
         required: true
         description: The unique identifier for the collection which is given by Intercom.
-        example: 123
+        example: "123"
         schema:
-          type: integer
+          type: string
       tags:
       - Help Center
       operationId: updateCollection
@@ -1147,13 +1175,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: collection_id
         in: path
         required: true
         description: The unique identifier for the collection which is given by Intercom.
-        example: 123
+        example: "123"
         schema:
-          type: integer
+          type: string
       tags:
       - Help Center
       operationId: deleteCollection
@@ -1200,7 +1228,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/help_center/help_centers/{id}":
+  "/help_center/help_centers/{help_center_id}":
     get:
       summary: Retrieve a Help Center
       parameters:
@@ -1208,13 +1236,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: help_center_id
         in: path
         required: true
-        description: The unique identifier for the collection which is given by Intercom.
-        example: 123
+        description: The unique identifier for the Help Center which is given by Intercom.
+        example: "123"
         schema:
-          type: integer
+          type: string
       tags:
       - Help Center
       operationId: retrieveHelpCenter
@@ -1273,6 +1301,20 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
       tags:
       - Help Center
       operationId: listHelpCenters
@@ -1528,7 +1570,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/companies/{id}":
+  "/companies/{company_id}":
     get:
       summary: Retrieve a company by ID
       parameters:
@@ -1536,7 +1578,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: company_id
         in: path
         required: true
         description: The unique identifier for the company which is given by Intercom
@@ -1611,7 +1653,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: company_id
         in: path
         required: true
         description: The unique identifier for the company which is given by Intercom
@@ -1691,7 +1733,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: company_id
         in: path
         required: true
         description: The unique identifier for the company which is given by Intercom
@@ -1743,7 +1785,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/companies/{id}/contacts":
+  "/companies/{company_id}/contacts":
     get:
       summary: List attached contacts
       parameters:
@@ -1751,13 +1793,27 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: company_id
         in: path
         required: true
         description: The unique identifier for the company which is given by Intercom
         example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
         schema:
           type: string
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to return per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
       tags:
       - Companies
       - Contacts
@@ -1809,7 +1865,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/companies/{id}/segments":
+  "/companies/{company_id}/segments":
     get:
       summary: List attached segments for companies
       parameters:
@@ -1817,7 +1873,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: company_id
         in: path
         required: true
         description: The unique identifier for the company which is given by Intercom
@@ -2044,7 +2100,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/contacts/{id}/companies":
+  "/contacts/{contact_id}/companies":
     post:
       summary: Attach a Contact to a Company
       parameters:
@@ -2052,7 +2108,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: contact_id
         in: path
         required: true
         description: The unique identifier for the contact which is given by Intercom
@@ -2162,7 +2218,7 @@ paths:
     get:
       summary: List attached companies for contact
       parameters:
-      - name: id
+      - name: contact_id
         in: path
         description: The unique identifier for the contact which is given by Intercom
         example: 63a07ddf05a32042dffac965
@@ -2173,6 +2229,20 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
       tags:
       - Contacts
       - Companies
@@ -2245,7 +2315,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/contacts/{contact_id}/companies/{id}":
+  "/contacts/{contact_id}/companies/{company_id}":
     delete:
       summary: Detach a contact from a company
       parameters:
@@ -2260,7 +2330,7 @@ paths:
         example: 58a430d35458202d41b1e65b
         schema:
           type: string
-      - name: id
+      - name: company_id
         in: path
         required: true
         description: The unique identifier for the company which is given by Intercom
@@ -2336,20 +2406,34 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/contacts/{id}/notes":
+  "/contacts/{contact_id}/notes":
     get:
       summary: List all notes
       parameters:
-      - name: id
+      - name: contact_id
         in: path
         required: true
         description: The unique identifier of a contact.
         schema:
-          type: integer
+          type: string
       - name: Intercom-Version
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
       tags:
       - Notes
       - Contacts
@@ -2437,13 +2521,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: contact_id
         in: path
         required: true
         description: The unique identifier of a given contact.
-        example: '123'
+        example: "123"
         schema:
-          type: integer
+          type: string
       tags:
       - Notes
       - Contacts
@@ -2506,10 +2590,6 @@ paths:
                   type: string
                   description: The text of the note.
                   example: New note
-                contact_id:
-                  type: string
-                  description: The unique identifier of a given contact.
-                  example: '123'
                 admin_id:
                   type: string
                   description: The unique identifier of a given admin.
@@ -2813,7 +2893,7 @@ paths:
                 value:
                   id: invalid_id
                   consent_type: opt_in
-  "/contacts/{contact_id}/subscriptions/{id}":
+  "/contacts/{contact_id}/subscriptions/{subscription_id}":
     delete:
       summary: Remove subscription from a contact
       tags:
@@ -2831,7 +2911,7 @@ paths:
         required: true
         schema:
           type: string
-      - name: id
+      - name: subscription_id
         in: path
         description: The unique identifier for the subscription type which is given
           by Intercom
@@ -3060,7 +3140,7 @@ paths:
                 summary: Tag not found
                 value:
                   id: '123'
-  "/contacts/{contact_id}/tags/{id}":
+  "/contacts/{contact_id}/tags/{tag_id}":
     delete:
       summary: Remove tag from a contact
       tags:
@@ -3078,7 +3158,7 @@ paths:
         required: true
         schema:
           type: string
-      - name: id
+      - name: tag_id
         in: path
         description: The unique identifier for the tag which is given by Intercom
         example: '7522907'
@@ -3136,7 +3216,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/contacts/{id}":
+  "/contacts/{contact_id}":
     put:
       summary: Update a contact
       parameters:
@@ -3144,7 +3224,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: contact_id
         in: path
         description: id
         example: 63a07ddf05a32042dffac965
@@ -3283,7 +3363,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: contact_id
         in: path
         description: id
         example: 63a07ddf05a32042dffac965
@@ -3410,7 +3490,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: contact_id
         in: path
         description: id
         required: true
@@ -3750,6 +3830,26 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
+      - name: starting_after
+        in: query
+        required: false
+        description: String used to get the next page of conversations.
+        schema:
+          type: string
       tags:
       - Contacts
       operationId: ListContacts
@@ -3922,7 +4022,7 @@ paths:
                 summary: successful
                 value:
                   email: joebloggs@intercom.io
-  "/contacts/{id}/archive":
+  "/contacts/{contact_id}/archive":
     post:
       summary: Archive contact
       parameters:
@@ -3930,7 +4030,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: contact_id
         in: path
         description: id
         example: 63a07ddf05a32042dffac965
@@ -3955,7 +4055,7 @@ paths:
                     archived: true
               schema:
                 "$ref": "#/components/schemas/contact_archived"
-  "/contacts/{id}/unarchive":
+  "/contacts/{contact_id}/unarchive":
     post:
       summary: Unarchive contact
       parameters:
@@ -3963,7 +4063,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: contact_id
         in: path
         description: id
         example: 63a07ddf05a32042dffac965
@@ -4080,7 +4180,7 @@ paths:
                 value:
                   id: 100
                   admin_id: 991267528
-  "/conversations/{conversation_id}/tags/{id}":
+  "/conversations/{conversation_id}/tags/{tag_id}":
     delete:
       summary: Remove tag from a conversation
       parameters:
@@ -4095,7 +4195,7 @@ paths:
         required: true
         schema:
           type: string
-      - name: id
+      - name: tag_id
         in: path
         description: id
         example: '7522907'
@@ -4283,7 +4383,7 @@ paths:
                       ai_agent:
                       ai_agent_participated: false
               schema:
-                "$ref": "#/components/schemas/paginated_response"
+                "$ref": "#/components/schemas/paginated_conversation_response"
         '401':
           description: Unauthorized
           content:
@@ -4411,7 +4511,7 @@ paths:
                     type: user
                     id: 123_doesnt_exist
                   body: Hello there
-  "/conversations/{id}":
+  "/conversations/{conversation_id}":
     get:
       summary: Retrieve a conversation
       parameters:
@@ -4419,13 +4519,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: conversation_id
         in: path
         required: true
         description: The id of the conversation to target
-        example: 123
+        example: "123"
         schema:
-          type: integer
+          type: string
       - name: display_as
         in: query
         required: false
@@ -4561,13 +4661,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: conversation_id
         in: path
         required: true
         description: The id of the conversation to target
-        example: 123
+        example: "123"
         schema:
-          type: integer
+          type: string
       - name: display_as
         in: query
         required: false
@@ -4926,7 +5026,7 @@ paths:
                       ai_agent:
                       ai_agent_participated: false
               schema:
-                "$ref": "#/components/schemas/conversation_list"
+                "$ref": "#/components/schemas/paginated_conversation_response"
       requestBody:
         content:
           application/json:
@@ -4944,7 +5044,7 @@ paths:
                       value: '1306054154'
                   pagination:
                     per_page: 5
-  "/conversations/{id}/reply":
+  "/conversations/{conversation_id}/reply":
     post:
       summary: Reply to a conversation
       parameters:
@@ -4952,7 +5052,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: conversation_id
         in: path
         required: true
         description: The Intercom provisioned identifier for the conversation or the
@@ -5289,7 +5389,7 @@ paths:
                   type: user
                   intercom_user_id: 667d60f98a68186f43bafdf8
                   body: Thanks again :)
-  "/conversations/{id}/parts":
+  "/conversations/{conversation_id}/parts":
     post:
       summary: Manage a conversation
       parameters:
@@ -5297,7 +5397,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: conversation_id
         in: path
         required: true
         description: The identifier for the conversation as given by Intercom.
@@ -5699,7 +5799,7 @@ paths:
                   type: admin
                   admin_id: 991267617
                   body: Goodbye :)
-  "/conversations/{id}/run_assignment_rules":
+  "/conversations/{conversation_id}/run_assignment_rules":
     post:
       summary: Run Assignment Rules on a conversation
       parameters:
@@ -5707,7 +5807,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: conversation_id
         in: path
         required: true
         description: The identifier for the conversation as given by Intercom.
@@ -5847,7 +5947,7 @@ paths:
                       message: Active subscription needed.
               schema:
                 "$ref": "#/components/schemas/error"
-  "/conversations/{id}/customers":
+  "/conversations/{conversation_id}/customers":
     post:
       summary: Attach a contact to a conversation
       parameters:
@@ -5855,7 +5955,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: conversation_id
         in: path
         required: true
         description: The identifier for the conversation as given by Intercom.
@@ -6231,7 +6331,7 @@ paths:
                   type: conversation_part
                   conversation_id: really_123_doesnt_exist
                   conversation_part_id: really_123_doesnt_exist
-  "/conversations/{id}/convert":
+  "/conversations/{conversation_id}/convert":
     post:
       summary: Convert a conversation to a ticket
       parameters:
@@ -6239,13 +6339,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: conversation_id
         in: path
         required: true
         description: The id of the conversation to target
-        example: 123
+        example: "123"
         schema:
-          type: integer
+          type: string
       tags:
       - Conversations
       description: You can convert a conversation to a ticket.
@@ -6388,7 +6488,7 @@ paths:
           type: boolean
       tags:
       - Data Attributes
-      operationId: lisDataAttributes
+      operationId: listDataAttributes
       description: You can fetch a list of all data attributes belonging to a workspace
         for contacts, companies or conversations.
       responses:
@@ -6771,7 +6871,7 @@ paths:
                   options:
                   - value: 1-10
                   archived: false
-  "/data_attributes/{id}":
+  "/data_attributes/{data_attribute_id}":
     put:
       summary: Update a data attribute
       parameters:
@@ -6779,13 +6879,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: data_attribute_id
         in: path
         required: true
         description: The data attribute id
-        example: 1
+        example: "1"
         schema:
-          type: integer
+          type: string
       tags:
       - Data Attributes
       operationId: updateDataAttribute
@@ -7037,6 +7137,13 @@ paths:
         description: summary flag
         schema:
           type: boolean
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
       tags:
       - Data Events
       operationId: lisDataEvents
@@ -7521,7 +7628,7 @@ paths:
                       newsfeed_assignments: []
                     total_count: 2
               schema:
-                "$ref": "#/components/schemas/paginated_response"
+                "$ref": "#/components/schemas/paginated_news_item_response"
         '401':
           description: Unauthorized
           content:
@@ -7616,7 +7723,7 @@ paths:
                   newsfeed_assignments:
                   - newsfeed_id: 53
                     published_at: 1664638214
-  "/news/news_items/{id}":
+  "/news/news_items/{news_item_id}":
     get:
       summary: Retrieve a news item
       parameters:
@@ -7624,13 +7731,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: news_item_id
         in: path
         required: true
         description: The unique identifier for the news item which is given by Intercom.
-        example: 123
+        example: "123"
         schema:
-          type: integer
+          type: string
       tags:
       - News
       operationId: retrieveNewsItem
@@ -7700,13 +7807,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: news_item_id
         in: path
         required: true
         description: The unique identifier for the news item which is given by Intercom.
-        example: 123
+        example: "123"
         schema:
-          type: integer
+          type: string
       tags:
       - News
       operationId: updateNewsItem
@@ -7795,13 +7902,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: news_item_id
         in: path
         required: true
         description: The unique identifier for the news item which is given by Intercom.
-        example: 123
+        example: "123"
         schema:
-          type: integer
+          type: string
       tags:
       - News
       operationId: deleteNewsItem
@@ -7847,7 +7954,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/news/newsfeeds/{id}/items":
+  "/news/newsfeeds/{newsfeed_id}/items":
     get:
       summary: List all live newsfeed items
       parameters:
@@ -7855,12 +7962,12 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: newsfeed_id
         in: path
         required: true
         description: The unique identifier for the news feed item which is given by
           Intercom.
-        example: '123'
+        example: "123"
         schema:
           type: string
       tags:
@@ -7885,7 +7992,7 @@ paths:
                     data: []
                     total_count: 0
               schema:
-                "$ref": "#/components/schemas/paginated_response"
+                "$ref": "#/components/schemas/paginated_news_item_response"
         '401':
           description: Unauthorized
           content:
@@ -7939,7 +8046,7 @@ paths:
                       updated_at: 1719492987
                     total_count: 2
               schema:
-                "$ref": "#/components/schemas/paginated_response"
+                "$ref": "#/components/schemas/paginated_newsfeed_response"
         '401':
           description: Unauthorized
           content:
@@ -7954,7 +8061,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/news/newsfeeds/{id}":
+  "/news/newsfeeds/{newsfeed_id}":
     get:
       summary: Retrieve a newsfeed
       parameters:
@@ -7962,12 +8069,12 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: newsfeed_id
         in: path
         required: true
         description: The unique identifier for the news feed item which is given by
           Intercom.
-        example: '123'
+        example: "123"
         schema:
           type: string
       tags:
@@ -8003,7 +8110,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/notes/{id}":
+  "/notes/{note_id}":
     get:
       summary: Retrieve a note
       parameters:
@@ -8011,13 +8118,13 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: note_id
         in: path
         required: true
         description: The unique identifier of a given note
-        example: 1
+        example: "1"
         schema:
-          type: integer
+          type: string
       tags:
       - Notes
       operationId: retrieveNote
@@ -8131,7 +8238,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/segments/{id}":
+  "/segments/{segment_id}":
     get:
       summary: Retrieve a segment
       parameters:
@@ -8139,11 +8246,11 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: segment_id
         in: path
         required: true
         description: The unique identified of a given segment.
-        example: '123'
+        example: "123"
         schema:
           type: string
       tags:
@@ -8501,7 +8608,7 @@ paths:
                   name: test
                   users:
                   - id: '123'
-  "/tags/{id}":
+  "/tags/{tag_id}":
     get:
       summary: Find a specific tag
       parameters:
@@ -8509,10 +8616,10 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: tag_id
         in: path
         description: The unique identifier of a given tag
-        example: '123'
+        example: "123"
         required: true
         schema:
           type: string
@@ -8570,10 +8677,10 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: tag_id
         in: path
         description: The unique identifier of a given tag
-        example: '123'
+        example: "123"
         required: true
         schema:
           type: string
@@ -8666,7 +8773,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/teams/{id}":
+  "/teams/{team_id}":
     get:
       summary: Retrieve a team
       parameters:
@@ -8674,11 +8781,11 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: team_id
         in: path
         required: true
         description: The unique identifier of a given team.
-        example: '123'
+        example: "123"
         schema:
           type: string
       tags:
@@ -8801,7 +8908,7 @@ paths:
                   description: Attribute Description
                   data_type: string
                   required_to_create: false
-  "/ticket_types/{ticket_type_id}/attributes/{id}":
+  "/ticket_types/{ticket_type_id}/attributes/{attribute_id}":
     put:
       summary: Update an existing attribute for a ticket type
       parameters:
@@ -8815,7 +8922,7 @@ paths:
         description: The unique identifier for the ticket type which is given by Intercom.
         schema:
           type: string
-      - name: id
+      - name: attribute_id
         in: path
         required: true
         description: The unique identifier for the ticket type attribute which is
@@ -9082,7 +9189,7 @@ paths:
                   description: Customer Report Template
                   icon: "\U0001F39F️"
                   category: Customer
-  "/ticket_types/{id}":
+  "/ticket_types/{ticket_type_id}":
     get:
       summary: Retrieve a ticket type
       parameters:
@@ -9090,7 +9197,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: ticket_type_id
         in: path
         required: true
         description: The unique identifier for the ticket type which is given by Intercom.
@@ -9198,7 +9305,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: ticket_type_id
         in: path
         required: true
         description: The unique identifier for the ticket type which is given by Intercom.
@@ -9304,13 +9411,13 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/update_ticket_type_request"
+              "$ref": "#/components/schemas/update_ticket_type_request_body"
             examples:
               ticket_type_updated:
                 summary: Ticket type updated
                 value:
                   name: Bug Report 2
-  "/tickets/{id}/reply":
+  "/tickets/{ticket_id}/reply":
     post:
       summary: Reply to a ticket
       operationId: replyTicket
@@ -9321,14 +9428,14 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: ticket_id
         in: path
         required: true
         schema:
           title: Ticket ID
           type: string
           description: The id of the ticket to target.
-          example: '123'
+          example: "123"
       tags:
       - Tickets
       responses:
@@ -9557,7 +9664,7 @@ paths:
                 value:
                   id: 135
                   admin_id: 991267847
-  "/tickets/{ticket_id}/tags/{id}":
+  "/tickets/{ticket_id}/tags/{tag_id}":
     delete:
       summary: Remove tag from a ticket
       parameters:
@@ -9572,7 +9679,7 @@ paths:
         required: true
         schema:
           type: string
-      - name: id
+      - name: tag_id
         in: path
         description: The unique identifier for the tag which is given by Intercom
         example: '7522907'
@@ -9804,7 +9911,7 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
-  "/tickets/{id}":
+  "/tickets/{ticket_id}":
     put:
       summary: Update a ticket
       parameters:
@@ -9812,7 +9919,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: ticket_id
         in: path
         required: true
         description: The unique identifier for the ticket which is given by Intercom
@@ -10070,7 +10177,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: ticket_id
         in: path
         required: true
         description: The unique identifier for the ticket which is given by Intercom.
@@ -10757,7 +10864,6 @@ components:
       title: Activity Log
       type: object
       description: Activities performed by Admins.
-      nullable: true
       properties:
         id:
           type: string
@@ -10772,6 +10878,8 @@ components:
               description: String representing the object's type. Always has the value
                 `admin`.
               example: admin
+              enum:
+              - admin
             id:
               type: string
               description: The id representing the admin.
@@ -10866,6 +10974,10 @@ components:
           type: string
           description: A sentence or two describing the activity.
           example: Admin updated the app's name to "My App".
+      required:
+        - id
+        - performed_by
+        - activity_type
     activity_log_list:
       title: Paginated Response
       type: object
@@ -10876,6 +10988,8 @@ components:
           description: String representing the object's type. Always has the value
             `activity_log.list`.
           example: activity_log.list
+          enum:
+          - activity_log.list
         pages:
           "$ref": "#/components/schemas/cursor_pages"
         activity_logs:
@@ -10883,11 +10997,13 @@ components:
           description: An array of activity logs
           items:
             "$ref": "#/components/schemas/activity_log"
+      required:
+        - type
+        - activity_logs
     activity_log_metadata:
       title: Activity Log Metadata
       type: object
       description: Additional data provided about Admin activity.
-      nullable: true
       properties:
         sign_in_method:
           type: string
@@ -10940,7 +11056,6 @@ components:
     addressable_list:
       title: Addressable List
       type: object
-      nullable: false
       description: A list used to access other resources from a parent model.
       properties:
         type:
@@ -10957,13 +11072,16 @@ components:
           format: uri
           description: Url to get more company resources for this contact
           example: "/contacts/5ba682d23d7cf92bef87bfd4/notes"
+      required:
+        - type
+        - id
+        - url
     admin:
       title: Admin
       type: object
       x-tags:
       - Admins
       description: Admins are teammate accounts that have access to a workspace.
-      nullable: true
       required:
         - id
         - name
@@ -10979,6 +11097,8 @@ components:
           description: String representing the object's type. Always has the value
             `admin`.
           example: admin
+          enum:
+          - admin
         id:
           type: string
           description: The id representing the admin.
@@ -11034,15 +11154,19 @@ components:
           description: String representing the object's type. Always has the value
             `admin.list`.
           example: admin.list
+          enum:
+          - admin.list
         admins:
           type: array
           description: A list of admins associated with a given workspace.
           items:
             "$ref": "#/components/schemas/admin"
+      required:
+        - type
+        - admins
     admin_priority_level:
       title: Admin Priority Level
       type: object
-      nullable: true
       description: Admin priority levels for the team
       properties:
         primary_admin_ids:
@@ -11177,13 +11301,14 @@ components:
       title: Admin
       type: object
       description: Admins are the teammate accounts that have access to a workspace
-      nullable: true
       properties:
         type:
           type: string
           description: String representing the object's type. Always has the value
             `admin`.
           example: admin
+          enum:
+          - admin
         id:
           type: string
           description: The id representing the admin.
@@ -11231,6 +11356,8 @@ components:
               description: This is a string that identifies the type of the object.
                 It will always have the value `avatar`.
               default: avatar
+              enum:
+              - avatar
               example: avatar
             image_url:
               type: string
@@ -11247,6 +11374,16 @@ components:
           "$ref": "#/components/schemas/app"
           nullable: true
           description: App that the admin belongs to.
+      required:
+        - type
+        - id
+        - name
+        - email
+        - job_title
+        - away_mode_enabled
+        - away_mode_reassign
+        - has_inbox_seat
+        - team_ids
     ai_agent:
       title: AI Agent
       type: object
@@ -11306,11 +11443,12 @@ components:
           nullable: true
         content_sources:
           "$ref": "#/components/schemas/content_sources_list"
+      required:
+        - source_type
     app:
       title: App
       type: object
       description: App is a workspace on Intercom
-      nullable: true
       properties:
         type:
           type: string
@@ -11341,6 +11479,14 @@ components:
           type: boolean
           description: Whether or not the app uses identity verification.
           example: false
+      required:
+        - type
+        - id_code
+        - name
+        - region
+        - timezone
+        - created_at
+        - identity_verification
     article:
       title: Article
       type: object
@@ -11359,16 +11505,13 @@ components:
       title: Article Content
       type: object
       description: The Content of an Article.
-      nullable: true
       properties:
         type:
           type: string
           description: The type of object - `article_content` .
           enum:
-          -
           - article_content
           example: article_content
-          nullable: true
         title:
           type: string
           description: The title of the article.
@@ -11406,6 +11549,13 @@ components:
           type: string
           description: The URL of the article.
           example: http://intercom.test/help/en/articles/3-default-language
+      required:
+        - type
+        - title
+        - description
+        - body
+        - author_id
+        - state
     article_list:
       title: Articles
       type: object
@@ -11428,12 +11578,16 @@ components:
           description: An array of Article objects
           items:
             "$ref": "#/components/schemas/article_list_item"
+      required:
+        - type
+        - total_count
+        - data
     article_list_item:
       title: Articles
       type: object
       required:
         - id
-        - workspace_id 
+        - workspace_id
         - title
         - description
         - body
@@ -11598,7 +11752,11 @@ components:
                   type: string
                   description: The text of the title.
                   example: my query
-    article_search_response:
+      required:
+        - article_id
+        - highlighted_title
+        - highlighted_summary
+    search_articles_response:
       title: Article Search Response
       type: object
       x-tags:
@@ -11631,11 +11789,14 @@ components:
                 "$ref": "#/components/schemas/article_search_highlights"
         pages:
           "$ref": "#/components/schemas/cursor_pages"
+      required:
+        - type
+        - total_count
+        - data
     article_statistics:
       title: Article Statistics
       type: object
       description: The statistics of an article.
-      nullable: true
       properties:
         type:
           type: string
@@ -11674,21 +11835,26 @@ components:
           description: The percentage of sad reactions the article has received against
             other types of reaction.
           example: 20.0
+      required:
+        - type
+        - views
+        - conversions
+        - reactions
+        - happy_reaction_percentage
+        - neutral_reaction_percentage
+        - sad_reaction_percentage
     article_translated_content:
       title: Article Translated Content
       type: object
       description: The Translated Content of an Article. The keys are the locale codes
         and the values are the translated content of the article.
-      nullable: true
       properties:
         type:
           type: string
           description: The type of object - article_translated_content.
           enum:
-          -
           - article_translated_content
           example: article_translated_content
-          nullable: true
         ar:
           description: The content of the article in Arabic
           "$ref": "#/components/schemas/article_content"
@@ -11986,6 +12152,13 @@ components:
           nullable: true
           description: The id of the help center the collection is in.
           example: '123'
+      required:
+        - id
+        - workspace_id
+        - name
+        - created_at
+        - order
+        - default_locale
     collection_list:
       title: Collections
       type: object
@@ -12008,6 +12181,10 @@ components:
           description: An array of collection objects
           items:
             "$ref": "#/components/schemas/collection"
+      required:
+        - type
+        - total_count
+        - data
     company:
       title: Company
       type: object
@@ -12058,6 +12235,8 @@ components:
               type: string
               description: Value is always "plan"
               example: plan
+              enum:
+              - plan
             id:
               type: string
               description: The id of the plan
@@ -12168,6 +12347,10 @@ components:
           example: 100
         pages:
           "$ref": "#/components/schemas/cursor_pages"
+      required:
+        - type
+        - total_count
+        - data
     company_attached_segments:
       title: Company Attached Segments
       type: object
@@ -12184,6 +12367,10 @@ components:
           description: An array containing Segment Objects
           items:
             "$ref": "#/components/schemas/segment"
+      required:
+        - type
+        - total_count
+        - data
     company_list:
       title: Companies
       type: object
@@ -12206,13 +12393,16 @@ components:
           description: An array containing Company Objects.
           items:
             "$ref": "#/components/schemas/company"
+      required:
+        - type
+        - total_count
+        - data
     company_scroll:
       title: Company Scroll
       type: object
       description: Companies allow you to represent organizations using your product.
         Each company will have its own description and be associated with contacts.
         You can fetch, create, update and list companies.
-      nullable: true
       properties:
         type:
           type: string
@@ -12236,6 +12426,10 @@ components:
           description: The scroll parameter to use in the next request to fetch the
             next page of results.
           example: 25b649f7-4d33-4ef6-88f5-60e5b8244309
+      required:
+        - type
+        - data
+        - total_count
     contact:
       title: Contact
       type: object
@@ -12526,6 +12720,10 @@ components:
           type: boolean
           description: Whether the contact is archived or not.
           example: true
+      required:
+        - type
+        - id
+        - archived
     contact_attached_companies:
       title: Contact Attached Companies
       type: object
@@ -12548,10 +12746,13 @@ components:
           example: 100
         pages:
           "$ref": "#/components/schemas/pages_link"
+      required:
+        - type
+        - companies
+        - total_count
     contact_companies:
       title: Contact companies
       type: object
-      nullable: false
       description: An object containing companies meta data about the companies that
         a contact has. Up to 10 will be displayed here. Use the url to get more.
       properties:
@@ -12570,6 +12771,10 @@ components:
           description: Whether there's more Addressable Objects to be viewed. If true,
             use the url to view all
           example: true
+      required:
+        - url
+        - total_count
+        - has_more
     contact_deleted:
       title: Contact Deleted
       type: object
@@ -12595,6 +12800,10 @@ components:
           type: boolean
           description: Whether the contact is deleted or not.
           example: true
+      required:
+        - type
+        - id
+        - deleted
     contact_list:
       title: Contact List
       type: object
@@ -12617,17 +12826,21 @@ components:
           example: 100
         pages:
           "$ref": "#/components/schemas/cursor_pages"
+      required:
+        - type
+        - data
+        - total_count
     contact_location:
       title: Contact Location
       type: object
-      nullable: false
       description: An object containing location meta data about a Intercom contact.
       properties:
         type:
           type: string
-          nullable: true
           description: Always location
           example: location
+          enum:
+          - location
         country:
           type: string
           nullable: true
@@ -12643,10 +12856,11 @@ components:
           nullable: true
           description: The city that the contact is located in
           example: Dublin
+      required:
+        - type
     contact_notes:
       title: Contact notes
       type: object
-      nullable: false
       description: An object containing notes meta data about the notes that a contact
         has. Up to 10 will be displayed here. Use the url to get more.
       properties:
@@ -12670,6 +12884,11 @@ components:
           description: Whether there's more Addressable Objects to be viewed. If true,
             use the url to view all
           example: true
+      required:
+        - data
+        - url
+        - total_count
+        - has_more
     contact_reference:
       title: Contact Reference
       type: object
@@ -12691,6 +12910,9 @@ components:
           description: The unique identifier for the contact which is provided by
             the Client.
           example: f3b87a2e09d514c6c2e79b9a
+      required:
+        - type
+        - id
     contact_reply_base_request:
       title: Contact Reply Base Object
       type: object
@@ -12847,10 +13069,12 @@ components:
           description: Segment objects associated with the contact.
           items:
             "$ref": "#/components/schemas/segment"
+      required:
+        - type
+        - data
     contact_social_profiles:
       title: Social Profile
       type: object
-      nullable: false
       description: An object containing social profiles that a contact has.
       properties:
         data:
@@ -12858,10 +13082,11 @@ components:
           description: A list of social profiles objects associated with the contact.
           items:
             "$ref": "#/components/schemas/social_profile"
+      required:
+        - data
     contact_subscription_types:
       title: Contact Subscription Types
       type: object
-      nullable: false
       description: An object containing Subscription Types meta data about the SubscriptionTypes
         that a contact has.
       properties:
@@ -12885,10 +13110,14 @@ components:
           description: Whether there's more Addressable Objects to be viewed. If true,
             use the url to view all
           example: true
+      required:
+        - data
+        - url
+        - total_count
+        - has_more
     contact_tags:
       title: Contact Tags
       type: object
-      nullable: true
       description: An object containing tags meta data about the tags that a contact
         has. Up to 10 will be displayed here. Use the url to get more.
       properties:
@@ -12912,6 +13141,11 @@ components:
           description: Whether there's more Addressable Objects to be viewed. If true,
             use the url to view all
           example: true
+      required:
+        - data
+        - url
+        - total_count
+        - has_more
     contact_unarchived:
       title: Contact Unarchived
       type: object
@@ -12937,6 +13171,10 @@ components:
           type: boolean
           description: Whether the contact is archived or not.
           example: false
+      required:
+        - type
+        - id
+        - archived
     content_source:
       title: Content Source
       type: object
@@ -12966,9 +13204,13 @@ components:
           type: string
           description: The ISO 639 language code of the content source.
           example: en
+      required:
+        - content_type
+        - url
+        - title
+        - locale
     content_sources_list:
       title: Content Source List
-      nullable: false
       properties:
         type:
           type: string
@@ -12985,6 +13227,10 @@ components:
           description: The content sources used by AI Agent in the conversation.
           items:
             "$ref": "#/components/schemas/content_source"
+      required:
+        - type
+        - total_count
+        - content_sources
     conversation:
       title: Conversation
       type: object
@@ -12995,7 +13241,7 @@ components:
         admin directly sends a message to a single contact.
       required:
         - id
-        - created_at 
+        - created_at
         - updated_at
         - source
         - contacts
@@ -13015,6 +13261,8 @@ components:
           type: string
           description: Always conversation.
           example: conversation
+          enum:
+          - conversation
         id:
           type: string
           description: The id representing the conversation.
@@ -13131,6 +13379,10 @@ components:
           type: string
           description: The name of the file.
           example: test.json
+      required:
+        - content_type
+        - data
+        - name
     conversation_contacts:
       title: Contacts
       type: object
@@ -13140,7 +13392,6 @@ components:
       properties:
         type:
           type: string
-          description: ''
           enum:
           - contact.list
           example: contact.list
@@ -13151,10 +13402,12 @@ components:
             conversation feature.
           items:
             "$ref": "#/components/schemas/contact_reference"
+      required:
+        - type
+        - contacts
     conversation_first_contact_reply:
       title: First contact reply
       type: object
-      nullable: true
       description: An object containing information on the first users message. For
         a contact initiated message this will represent the users original message.
       properties:
@@ -13172,7 +13425,10 @@ components:
           nullable: true
           description: ''
           example: https://developers.intercom.com/
-    conversation_list:
+      required:
+        - type
+        - created_at
+    paginated_conversation_response:
       title: Conversation List
       type: object
       description: Conversations are how you can communicate with users in Intercom.
@@ -13196,6 +13452,10 @@ components:
           example: 12345
         pages:
           "$ref": "#/components/schemas/cursor_pages"
+      required:
+        - type
+        - conversations
+        - total_count
     conversation_part:
       title: Conversation Part
       type: object
@@ -13205,6 +13465,8 @@ components:
           type: string
           description: Always conversation_part
           example: conversation_part
+          enum:
+          - conversation_part
         id:
           type: string
           description: The id representing the conversation part.
@@ -13256,6 +13518,14 @@ components:
           type: boolean
           description: Whether or not the conversation part has been redacted.
           example: false
+      required:
+        - type
+        - id
+        - part_type
+        - created_at
+        - notified_at
+        - author
+        - redacted
     conversation_part_author:
       title: Conversation part author
       type: object
@@ -13280,6 +13550,11 @@ components:
           format: email
           description: The email of the author
           example: operator+abcd1234@intercom.io
+      required:
+        - type
+        - id
+        - name
+        - email
     conversation_parts:
       title: Conversation Parts
       type: object
@@ -13305,10 +13580,13 @@ components:
           type: integer
           description: ''
           example: 2
+      required:
+        - type
+        - conversation_parts
+        - total_count
     conversation_rating:
       title: Conversation Rating
       type: object
-      nullable: true
       description: The Conversation Rating object which contains information on the
         rating and/or remark added by a Contact and the Admin assigned to the conversation.
       properties:
@@ -13331,6 +13609,12 @@ components:
           "$ref": "#/components/schemas/contact_reference"
         teammate:
           "$ref": "#/components/schemas/reference"
+      required:
+        - rating
+        - remark
+        - created_at
+        - contact
+        - teammate
     conversation_source:
       title: Conversation source
       type: object
@@ -13382,10 +13666,16 @@ components:
           description: Whether or not the source message has been redacted. Only applicable
             for contact initiated messages.
           example: false
+      required:
+        - type
+        - id
+        - delivered_as
+        - subject
+        - author
+        - redacted
     conversation_statistics:
       title: Conversation statistics
       type: object
-      nullable: true
       description: A Statistics object containing all information required for reporting,
         with timestamps and calculated metrics.
       properties:
@@ -13393,6 +13683,8 @@ components:
           type: string
           description: ''
           example: conversation_statistics
+          enum:
+          - conversation_statistics
         time_to_assignment:
           type: integer
           description: Duration until last assignment before first admin reply. In
@@ -13480,10 +13772,11 @@ components:
           type: integer
           description: Total number of conversation parts.
           example: 1
+      required:
+        - type
     conversation_teammates:
       title: Conversation teammates
       type: object
-      nullable: true
       description: The list of teammates who participated in the conversation (wrote
         at least one conversation part).
       properties:
@@ -13497,6 +13790,9 @@ components:
             (wrote at least one conversation part).
           items:
             "$ref": "#/components/schemas/reference"
+      required:
+        - type
+        - teammates
     convert_conversation_to_ticket_request:
       description: You can convert a Conversation to a Ticket
       type: object
@@ -13576,7 +13872,6 @@ components:
       description: You can create an Article
       type: object
       title: Create Article Request Payload
-      nullable: true
       properties:
         title:
           type: string
@@ -13920,7 +14215,6 @@ components:
       description: You can create a message
       type: object
       title: Create Message Request Payload
-      nullable: true
       properties:
         message_type:
           type: string
@@ -14009,7 +14303,6 @@ components:
       type: object
       title: Create Or Update Company Request Payload
       description: You can create or update a Company
-      nullable: true
       properties:
         name:
           type: string
@@ -14078,7 +14371,6 @@ components:
       description: You can create an phone switch
       type: object
       title: Create Phone Switch Request Payload
-      nullable: true
       properties:
         phone:
           type: string
@@ -14226,7 +14518,6 @@ components:
           You can copy the `icon` property for your ticket type from [Twemoji Cheatsheet](https://twemoji-cheatsheet.vercel.app/)
       type: object
       title: Create Ticket Type Request Payload
-      nullable: true
       properties:
         name:
           type: string
@@ -14264,7 +14555,6 @@ components:
       description: |
         Cursor-based pagination is a technique used in the Intercom API to navigate through large amounts of data.
         A "cursor" or pointer is used to keep track of the current position in the result set, allowing the API to return the data in small chunks or "pages" as needed.
-      nullable: true
       properties:
         type:
           type: string
@@ -14286,6 +14576,8 @@ components:
           type: integer
           description: Total number of pages
           example: 13
+      required:
+        - type
     custom_attributes:
       title: Custom Attributes
       type: object
@@ -14301,7 +14593,6 @@ components:
       type: object
       x-tags:
       - Custom Object Instances
-      nullable: true
       description: A Custom Object Instance represents an instance of a custom object
         type. This allows you to create and set custom attributes to store data about
         your customers that is not already captured by Intercom. The parent object
@@ -14325,6 +14616,9 @@ components:
           description: The custom attributes you have set on the custom object instance.
           additionalProperties:
             type: string
+      required:
+        - id
+        - type
     customer_request:
       type: object
       nullable: true
@@ -14454,6 +14748,13 @@ components:
           type: string
           description: Teammate who created the attribute. Only applicable to CDAs
           example: '5712945'
+      required:
+        - type
+        - name
+        - full_name
+        - label
+        - description
+        - data_type
     data_attribute_list:
       title: Data Attribute List
       type: object
@@ -14471,6 +14772,9 @@ components:
           description: A list of data attributes
           items:
             "$ref": "#/components/schemas/data_attribute"
+      required:
+        - type
+        - data
     data_event:
       title: Data Event
       type: object
@@ -14549,6 +14853,9 @@ components:
             since:
               type: string
               example: https://api.intercom.io/events?intercom_user_id=63a0979a5eeebeaf28dd56ba&type=user&since=1389913941065
+      required:
+        - type
+        - events
     data_event_summary:
       title: Data Event Summary
       type: object
@@ -14577,11 +14884,16 @@ components:
           description: A summary of data events
           items:
             "$ref": "#/components/schemas/data_event_summary_item"
+      required:
+        - type
+        - email
+        - intercom_user_id
+        - user_id
+        - events
     data_event_summary_item:
       title: Data Event Summary Item
       type: object
       description: This will return a summary of a data event for the App.
-      nullable: true
       properties:
         name:
           type: string
@@ -14603,6 +14915,12 @@ components:
           type: string
           description: The description of the event
           example: A user placed an order
+      required:
+        - name
+        - first
+        - last
+        - count
+        - description
     data_export:
       title: Data Export
       type: object
@@ -14611,7 +14929,7 @@ components:
       description: The data export api is used to view all message sent & viewed in
         a given timeframe.
       properties:
-        job_identfier:
+        job_identifier:
           type: string
           description: The identifier for your job.
           example: orzzsbd7hk67xyu
@@ -14634,6 +14952,11 @@ components:
           type: string
           description: The location where you can download your data.
           example: https://api.intercom.test/download/messages/data/example
+      required:
+        - job_identifier
+        - status
+        - download_expires_at
+        - download_url
     data_export_csv:
       title: Data Export CSV
       type: object
@@ -14730,6 +15053,15 @@ components:
         first_hard_bounce:
           type: integer
           description: The first time this message hard bounced for this user
+      required:
+        - user_id
+        - company_id
+        - email
+        - name
+        - ruleset_id
+        - content_id
+        - content_type
+        - content_title
     deleted_article_object:
       title: Deleted Article Object
       type: object
@@ -14750,6 +15082,10 @@ components:
           type: boolean
           description: Whether the article was deleted successfully or not.
           example: true
+      required:
+        - id
+        - object
+        - deleted
     deleted_collection_object:
       title: Deleted Collection Object
       type: object
@@ -14770,6 +15106,10 @@ components:
           type: boolean
           description: Whether the collection was deleted successfully or not.
           example: true
+      required:
+        - id
+        - object
+        - deleted
     deleted_company_object:
       title: Deleted Company Object
       type: object
@@ -14789,6 +15129,10 @@ components:
           type: boolean
           description: Whether the company was deleted successfully or not.
           example: true
+      required:
+        - id
+        - object
+        - deleted
     deleted_object:
       title: Deleted Object
       type: object
@@ -14809,6 +15153,10 @@ components:
           type: boolean
           description: Whether the news item was deleted successfully or not.
           example: true
+      required:
+        - id
+        - object
+        - deleted
     detach_contact_from_conversation_request:
       properties:
         admin_id:
@@ -14892,20 +15240,25 @@ components:
           type: integer
           description: The height of the file in pixels, if applicable
           example: 1964
+      required:
+        - type
+        - name
+        - url
+        - content_type
+        - filesize
+        - width
+        - height
     group_content:
       title: Group Content
       type: object
       description: The Content of a Group.
-      nullable: true
       properties:
         type:
           type: string
           description: The type of object - `group_content` .
           enum:
-          -
           - group_content
           example: group_content
-          nullable: true
         name:
           type: string
           description: The name of the collection or section.
@@ -14914,19 +15267,20 @@ components:
           type: string
           description: The description of the collection. Only available for collections.
           example: " Collection description"
+      required:
+        - type
+        - name
+        - description
     group_translated_content:
       title: Group Translated Content
       type: object
       description: The Translated Content of an Group. The keys are the locale codes
         and the values are the translated content of the Group.
-      nullable: true
       properties:
         type:
           type: string
           description: The type of object - group_translated_content.
-          nullable: true
           enum:
-          -
           - group_translated_content
           example: group_translated_content
         ar:
@@ -15040,6 +15394,8 @@ components:
         zh-TW:
           description: The content of the group in Chinese (Taiwan)
           "$ref": "#/components/schemas/group_content"
+      required:
+        - type
     help_center:
       title: Help Center
       type: object
@@ -15080,6 +15436,13 @@ components:
           type: string
           description: The display name of the Help Center only seen by teammates.
           example: Intercom Help Center
+      required:
+        - id
+        - workspace_id
+        - created_at
+        - identifier
+        - website_turned_on
+        - display_name
     help_center_list:
       title: Help Centers
       type: object
@@ -15098,6 +15461,9 @@ components:
           description: An array of Help Center objects
           items:
             "$ref": "#/components/schemas/help_center"
+      required:
+        - type
+        - data
     intercom_version:
       description: Intercom API version.</br>By default, it's equal to the version
         set in the app package.
@@ -15149,6 +15515,10 @@ components:
           -
           example: Customer
           nullable: true
+      required:
+        - type
+        - id
+        - category
     linked_object_list:
       title: Linked Objects
       type: object
@@ -15174,6 +15544,11 @@ components:
           description: An array containing the linked conversations and linked tickets.
           items:
             "$ref": "#/components/schemas/linked_object"
+      required:
+        - type
+        - total_count
+        - has_more
+        - data
     merge_contacts_request:
       description: Merge contact data.
       type: object
@@ -15189,6 +15564,9 @@ components:
           description: The unique identifier for the contact to merge into. Must be
             a user.
           example: 5ba682d23d7cf92bef87bfd4
+      required:
+        - from
+        - into
     message:
       type: object
       title: Message
@@ -15233,6 +15611,14 @@ components:
           type: string
           description: The associated conversation_id
           example: '64619700005570'
+      required:
+        - type
+        - id
+        - created_at
+        - subject
+        - body
+        - message_type
+        - conversation_id
     multiple_filter_search_request:
       title: Multiple Filter Search Request
       description: Search using Intercoms Search APIs with more than one filter.
@@ -15345,6 +15731,15 @@ components:
           format: timestamp
           description: Timestamp for when the news item was last updated.
           example: 1610589632
+      required:
+        - type
+        - id
+        - workspace_id
+        - title
+        - body
+        - sender_id
+        - state
+        - created_at
     news_item_request:
       description: A News Item is a content type in Intercom enabling you to announce
         product updates, company news, promotions, events and more with your customers.
@@ -15439,6 +15834,11 @@ components:
           format: timestamp
           description: Timestamp for when the newsfeed was last updated.
           example: 1674917488
+      required:
+        - id
+        - type
+        - name
+        - created_at
     newsfeed_assignment:
       title: Newsfeed Assignment
       type: object
@@ -15460,6 +15860,9 @@ components:
             news items). On write, this field will be ignored if the news item state
             is "draft".
           example: 1674917488
+      required:
+        - newsfeed_id
+        - published_at
     note:
       title: Note
       type: object
@@ -15472,6 +15875,8 @@ components:
           description: String representing the object's type. Always has the value
             `note`.
           example: note
+          enum:
+          - note
         id:
           type: string
           description: The id of the note.
@@ -15490,6 +15895,8 @@ components:
               type: string
               description: String representing the object's type. Always has the value
                 `contact`.
+              enum:
+              - contact
             id:
               type: string
               description: The id of the contact.
@@ -15501,6 +15908,13 @@ components:
           type: string
           description: The body text of the note.
           example: "<p>Text for the note.</p>"
+      required:
+        - type
+        - id
+        - created_at
+        - contact
+        - author
+        - body
     note_list:
       title: Paginated Response
       type: object
@@ -15511,6 +15925,8 @@ components:
           description: String representing the object's type. Always has the value
             `list`.
           example: list
+          enum:
+          - list
         data:
           type: array
           description: An array of notes.
@@ -15522,6 +15938,10 @@ components:
           example: 1
         pages:
           "$ref": "#/components/schemas/cursor_pages"
+      required:
+        - type
+        - data
+        - total_count
     open_conversation_request:
       title: Open Conversation Request
       type: object
@@ -15567,31 +15987,63 @@ components:
         total_pages:
           type: integer
           example: 1
-    paginated_response:
-      title: Paginated Response
+      required:
+        - type
+        - page
+        - per_page
+        - total_pages
+    paginated_news_item_response:
+      title: Paginated News Item Response
       type: object
-      description: Paginated Response
+      description: Paginated News Item Response
       properties:
         type:
           type: string
           description: The type of object
           enum:
           - list
-          - conversation.list
           example: list
         pages:
           "$ref": "#/components/schemas/cursor_pages"
         total_count:
           type: integer
-          description: A count of the total number of objects.
+          description: A count of the total number of News Items.
           example: 1
         data:
           type: array
-          description: An array of Objects
+          description: An array of News Items
           items:
-            anyOf:
-            - "$ref": "#/components/schemas/news_item"
-            - "$ref": "#/components/schemas/newsfeed"
+            "$ref": "#/components/schemas/news_item"
+      required:
+        - type
+        - total_count
+        - data
+    paginated_newsfeed_response:
+      title: Paginated Newsfeed Response
+      type: object
+      description: Paginated Newsfeed Response
+      properties:
+        type:
+          type: string
+          description: The type of object
+          enum:
+          - list
+          example: list
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
+        total_count:
+          type: integer
+          description: A count of the total number of Newsfeeds.
+          example: 1
+        data:
+          type: array
+          description: An array of Newsfeeds
+          items:
+           "$ref": "#/components/schemas/newsfeed"
+      required:
+        - type
+        - total_count
+        - data
     part_attachment:
       title: Part attachment
       type: object
@@ -15625,6 +16077,14 @@ components:
           type: integer
           description: The height of the attachment
           example: 100
+      required:
+        - type
+        - name
+        - url
+        - content_type
+        - filesize
+        - width
+        - height
     phone_switch:
       title: Phone Switch
       type: object
@@ -15643,6 +16103,9 @@ components:
           description: Phone number in E.164 format, that has received the SMS to
             continue the conversation in the Messenger.
           example: "+1 1234567890"
+      required:
+        - type
+        - phone
     redact_conversation_request:
       oneOf:
       - title: Redact Conversation Part Request
@@ -15703,6 +16166,8 @@ components:
           nullable: true
           description: ''
           example: 1a2b3c
+      required:
+        - type
     reply_conversation_request:
       oneOf:
       - "$ref": "#/components/schemas/contact_reply_conversation_request"
@@ -15734,7 +16199,6 @@ components:
         - id
         - name
         - created_at
-        - updated_at
         - person_type
       properties:
         type:
@@ -15793,6 +16257,9 @@ components:
           type: object
           description: A pagination object, which may be empty, indicating no further
             pages to fetch.
+      required:
+        - type
+        - segments
     single_filter_search_request:
       title: Single Filter Search Request
       description: Search using Intercoms Search APIs with a single filter.
@@ -15851,6 +16318,10 @@ components:
                         - `missed`: If there are any missed sla_events for the conversation and no canceled events. If there’s even a single missed sla event, the status will always be missed. A missed status is not applied when the SLA expires, only the next time a teammate replies.
                         - `active`: An SLA has been applied to a conversation, but has not yet been fulfilled. SLA status is active only if there are no “hit, “missed”, or “canceled” events.
           example: hit
+      required:
+        - type
+        - sla_name
+        - sla_status
     snooze_conversation_request:
       title: Snooze Conversation Request
       type: object
@@ -15893,6 +16364,10 @@ components:
           format: uri
           description: The name of the Social media profile
           example: http://twitter.com/th1sland
+      required:
+        - type
+        - name
+        - url
     starting_after_paging:
       title: 'Pagination: Starting After'
       type: object
@@ -15908,6 +16383,8 @@ components:
             of results.
           nullable: true
           example: your-cursor-from-response
+      required:
+        - per_page
     subscription_type:
       title: Subscription Types
       type: object
@@ -15958,6 +16435,14 @@ components:
             - email
             - sms_message
             example: email
+      required:
+        - type
+        - id
+        - state
+        - default_translation
+        - translations
+        - consent_type
+        - content_types
     subscription_type_list:
       title: Subscription Types
       type: object
@@ -15975,6 +16460,9 @@ components:
             .
           items:
             "$ref": "#/components/schemas/subscription_type"
+      required:
+        - type
+        - data
     tag:
       title: Tag
       type: object
@@ -16002,6 +16490,12 @@ components:
           example: 1663597223
         applied_by:
           "$ref": "#/components/schemas/reference"
+      required:
+        - type
+        - id
+        - name
+        - applied_at
+        - applied_by
     tag_company_request:
       description: You can tag a single company or a list of companies.
       type: object
@@ -16044,6 +16538,9 @@ components:
           description: A list of tags objects associated with the workspace .
           items:
             "$ref": "#/components/schemas/tag"
+      required:
+        - type
+        - data
     tag_multiple_users_request:
       description: You can tag a list of users.
       type: object
@@ -16080,6 +16577,9 @@ components:
           description: A list of tags objects associated with the conversation.
           items:
             "$ref": "#/components/schemas/tag"
+      required:
+        - type
+        - tags
     team:
       title: Team
       type: object
@@ -16091,6 +16591,8 @@ components:
           type: string
           description: Value is always "team"
           example: team
+          enum:
+          - team
         id:
           type: string
           description: The id of the team
@@ -16108,6 +16610,11 @@ components:
             type: integer
         admin_priority_level:
           "$ref": "#/components/schemas/admin_priority_level"
+      required:
+        - type
+        - id
+        - name
+        - admin_ids
     team_list:
       title: Team List
       type: object
@@ -16124,10 +16631,12 @@ components:
           description: A list of team objects
           items:
             "$ref": "#/components/schemas/team"
+      required:
+        - type
+        - teams
     team_priority_level:
       title: Team Priority Level
       type: object
-      nullable: true
       description: Admin priority levels for teams
       properties:
         primary_team_ids:
@@ -16238,6 +16747,15 @@ components:
           type: string
           description: The state the ticket is currently in, in a human readable form
             - visible to customers, in the messenger, email and tickets portal.
+      required:
+        - type
+        - id
+        - ticket_id
+        - category
+        - ticket_attributes
+        - ticket_state
+        - ticket_type
+        - contacts
     ticket_contacts:
       title: Contacts
       type: object
@@ -16256,6 +16774,9 @@ components:
           description: The list of contacts affected by this ticket.
           items:
             "$ref": "#/components/schemas/contact_reference"
+      required:
+        - type
+        - contacts
     ticket_custom_attributes:
       title: Ticket Attributes
       type: object
@@ -16295,6 +16816,10 @@ components:
           example: 12345
         pages:
           "$ref": "#/components/schemas/cursor_pages"
+      required:
+        - type
+        - tickets
+        - total_count
     ticket_part:
       title: Ticket Part
       type: object
@@ -16306,6 +16831,8 @@ components:
           type: string
           description: Always ticket_part
           example: ticket_part
+          enum:
+          - ticket_part
         id:
           type: string
           description: The id representing the ticket part.
@@ -16369,6 +16896,13 @@ components:
           type: boolean
           description: Whether or not the ticket part has been redacted.
           example: false
+      required:
+        - type
+        - id
+        - part_type
+        - body
+        - ticket_state
+        - created_at
     ticket_part_author:
       title: Ticket part author
       type: object
@@ -16398,6 +16932,10 @@ components:
           format: email
           description: The email of the author
           example: operator+abcd1234@intercom.io
+      required:
+        - type
+        - id
+        - email
     ticket_parts:
       title: Ticket Parts
       type: object
@@ -16421,6 +16959,10 @@ components:
           type: integer
           description: ''
           example: 2
+      required:
+        - type
+        - ticket_parts
+        - total_count
     ticket_reply:
       title: A Ticket Part representing a note, comment, or quick_reply on a ticket
       type: object
@@ -16472,6 +17014,11 @@ components:
           type: boolean
           description: Whether or not the ticket part has been redacted.
           example: false
+      required:
+        - type
+        - id
+        - part_type
+        - created_at
     ticket_request_custom_attributes:
       title: Ticket Attributes
       type: object
@@ -16507,6 +17054,8 @@ components:
           description: String representing the object's type. Always has the value
             `ticket_type`.
           example: ticket_type
+          enum:
+          - ticket_type
         id:
           type: string
           description: The id representing the ticket type.
@@ -16549,6 +17098,17 @@ components:
           type: integer
           format: timestamp
           description: The date and time the ticket type was last updated.
+      required:
+        - type
+        - id
+        - category
+        - name
+        - description
+        - icon
+        - workspace_id
+        - ticket_type_attributes
+        - archived
+        - created_at
     ticket_type_attribute:
       title: Ticket Type Attribute
       type: object
@@ -16561,6 +17121,8 @@ components:
           description: String representing the object's type. Always has the value
             `ticket_type_attribute`.
           example: ticket_type_attribute
+          enum:
+          - ticket_type_attribute
         id:
           type: string
           description: The id representing the ticket type attribute.
@@ -16631,6 +17193,23 @@ components:
           type: integer
           format: timestamp
           description: The date and time the ticket type attribute was last updated.
+      required:
+        - type
+        - id
+        - workspace_id
+        - name
+        - description
+        - data_type
+        - input_options
+        - order
+        - required_to_create
+        - required_to_create_for_contacts
+        - visible_on_create
+        - visible_to_contacts
+        - default
+        - ticket_type_id
+        - archived
+        - created_at
     ticket_type_attribute_list:
       title: Ticket Type Attributes
       type: object
@@ -16640,12 +17219,17 @@ components:
           type: string
           description: String representing the object's type. Always has the value
             `ticket_type_attributes.list`.
+          enum:
+          - ticket_type_attributes.list
         ticket_type_attributes:
           type: array
           description: A list of ticket type attributes associated with a given ticket
             type.
           items:
             "$ref": "#/components/schemas/ticket_type_attribute"
+      required:
+        - type
+        - ticket_type_attributes
     ticket_type_list:
       title: Ticket Types
       type: object
@@ -16655,11 +17239,16 @@ components:
           type: string
           description: String representing the object's type. Always has the value
             `ticket_type.list`.
+          enum:
+          - ticket_type_attributes.list
         ticket_types:
           type: array
           description: A list of ticket_types associated with a given workspace.
           items:
             "$ref": "#/components/schemas/ticket_type"
+      required:
+        - type
+        - ticket_types
     translation:
       title: Translation
       type: object
@@ -16679,6 +17268,10 @@ components:
           description: The two character identifier for the language of the translation
             object.
           example: en
+      required:
+        - name
+        - description
+        - locale
     untag_company_request:
       description: You can tag a single company or a list of companies.
       type: object
@@ -16703,13 +17296,18 @@ components:
               untag:
                 type: boolean
                 description: Always set to true
-                example: 'true'
+                example: true
+                x-fern-type: literal<true>
+            required:
+            - id
+            - company_id
+            - untag
           description: The id or company_id of the company can be passed as input
             parameters.
       required:
       - name
       - companies
-    update_article_request:
+    update_article_request_body:
       description: You can Update an Article
       type: object
       title: Update Article Request Payload
@@ -16867,7 +17465,12 @@ components:
           description: To create list attributes. Provide a set of hashes with `value`
             as the key of the options you want to make. `data_type` must be `string`.
           items:
-            type: string
+            type: object
+            required:
+              - value
+            properties:
+              value:
+                type: string
           example:
           - option1
           - option2
@@ -16979,7 +17582,7 @@ components:
             creation of the ticket (it will still be present on previously created
             tickets)
           example: false
-    update_ticket_type_request:
+    update_ticket_type_request_body:
       description: |
         The request payload for updating a ticket type.
         You can copy the `icon` property for your ticket type from [Twemoji Cheatsheet](https://twemoji-cheatsheet.vercel.app/)
@@ -17297,6 +17900,17 @@ components:
           nullable: true
           description: Identifies if this visitor has do not track enabled.
           example: false
+      required:
+        - type
+        - id
+        - user_id
+        - anonymous
+        - email
+        - phone
+        - name
+        - app_id
+        - created_at
+        - signed_up_at
     visitor_deleted_object:
       title: Visitor Deleted Object
       type: object
@@ -17316,6 +17930,10 @@ components:
           type: string
           description: Automatically generated identifier for the Visitor.
           example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+      required:
+        - type
+        - id
+        - user_id
   securitySchemes:
     bearerAuth:
       type: http

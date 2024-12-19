@@ -1,211 +1,316 @@
-paths: 
+paths:
   /me:
     get:
       x-fern-sdk-group-name:
         - admins
       x-fern-sdk-method-name: identify
-  /admins/{id}/away:
-    put:
-      x-fern-sdk-group-name:
-        - admins
-      x-fern-sdk-method-name: away
+      x-fern-request-name: IdentifyAdminRequest
   /admins/activity_logs:
     get:
       x-fern-sdk-group-name:
         - admins
       x-fern-sdk-method-name: listAllActivityLogs
+      x-fern-request-name: ListAllActivityLogsRequest
   /admins:
     get:
       x-fern-sdk-group-name:
         - admins
       x-fern-sdk-method-name: list
-  /admins/{id}:
+      x-fern-request-name: ListAdminsRequest
+  /admins/{admin_id}:
     get:
       x-fern-sdk-group-name:
         - admins
       x-fern-sdk-method-name: find
+      x-fern-request-name: FindAdminRequest
+  /admins/{admin_id}/away:
+    put:
+      x-fern-sdk-group-name:
+        - admins
+      x-fern-sdk-method-name: away
+      x-fern-request-name: ConfigureAwayAdminRequest
   /articles:
     get:
+      x-fern-pagination:
+        offset: $request.page
+        results: $response.data
       x-fern-sdk-group-name:
         - articles
       x-fern-sdk-method-name: list
+      x-fern-request-name: ListArticlesRequest
     post:
       x-fern-sdk-group-name:
         - articles
       x-fern-sdk-method-name: create
-  /articles/{id}:
+      x-fern-request-name: CreateArticleRequest
+  /articles/{article_id}:
     get:
       x-fern-sdk-group-name:
         - articles
       x-fern-sdk-method-name: find
+      x-fern-request-name: FindArticleRequest
     put:
       x-fern-sdk-group-name:
         - articles
       x-fern-sdk-method-name: update
+      x-fern-request-name: UpdateArticleRequest
     delete:
       x-fern-sdk-group-name:
         - articles
       x-fern-sdk-method-name: delete
+      x-fern-request-name: DeleteArticleRequest
   /articles/search:
     get:
       x-fern-sdk-group-name:
         - articles
       x-fern-sdk-method-name: search
+      x-fern-request-name: SearchArticlesRequest
   /help_center/collections:
     get:
+      x-fern-pagination:
+        offset: $request.page
+        results: $response.data
       x-fern-sdk-group-name:
-        - helpCenter
+        - helpCenters
         - collections
       x-fern-sdk-method-name: list
+      x-fern-request-name: ListCollectionsRequest
     post:
       x-fern-sdk-group-name:
-        - helpCenter
+        - helpCenters
         - collections
       x-fern-sdk-method-name: create
-  /help_center/collections/{id}:
+      x-fern-request-name: CreateCollectionRequest
+  /help_center/collections/{collection_id}:
     get:
       x-fern-sdk-group-name:
-        - helpCenter
+        - helpCenters
         - collections
       x-fern-sdk-method-name: find
+      x-fern-request-name: FindCollectionRequest
     put:
       x-fern-sdk-group-name:
-        - helpCenter
+        - helpCenters
         - collections
       x-fern-sdk-method-name: update
+      x-fern-request-name: UpdateCollectionRequest
     delete:
       x-fern-sdk-group-name:
-        - helpCenter
+        - helpCenters
         - collections
       x-fern-sdk-method-name: delete
-  /help_center/help_centers/{id}:
-    get:
-      x-fern-sdk-group-name:
-        - helpCenter
-      x-fern-sdk-method-name: find
+      x-fern-request-name: DeleteCollectionRequest
   /help_center/help_centers:
     get:
+      x-fern-pagination:
+        offset: $request.page
+        results: $response.data
       x-fern-sdk-group-name:
-        - helpCenter
+        - helpCenters
       x-fern-sdk-method-name: list
+      x-fern-request-name: ListHelpCentersRequest
+  /help_center/help_centers/{help_center_id}:
+    get:
+      x-fern-sdk-group-name:
+        - helpCenters
+      x-fern-sdk-method-name: find
+      x-fern-request-name: FindHelpCenterRequest
   /companies:
     get:
       x-fern-sdk-group-name:
         - companies
       x-fern-sdk-method-name: retrieve
+      x-fern-request-name: RetrieveCompanyRequest
     post:
       x-fern-sdk-group-name:
         - companies
-      x-fern-sdk-method-name: create
-  /companies/{id}:
+      x-fern-sdk-method-name: createOrUpdate
+      x-fern-request-name: CreateOrUpdateCompanyRequest
+  /companies/{company_id}:
     get:
       x-fern-sdk-group-name:
         - companies
       x-fern-sdk-method-name: find
+      x-fern-request-name: FindCompanyRequest
     put:
       x-fern-sdk-group-name:
         - companies
       x-fern-sdk-method-name: update
+      x-fern-request-name: UpdateCompanyRequest
     delete:
       x-fern-sdk-group-name:
         - companies
       x-fern-sdk-method-name: delete
-  /companies/{id}/contacts:
+      x-fern-request-name: DeleteCompanyRequest
+  /companies/{company_id}/contacts:
     get:
       x-fern-sdk-group-name:
         - companies
       x-fern-sdk-method-name: listAttachedContacts
-  /companies/{id}/segments:
+      x-fern-request-name: ListAttachedContactsRequest
+  /companies/{company_id}/segments:
     get:
       x-fern-sdk-group-name:
         - companies
       x-fern-sdk-method-name: listAttachedSegments
+      x-fern-request-name: ListSegmentsAttachedToCompanyRequest
   /companies/list:
-    post: 
-      x-fern-pagination: 
+    post:
+      x-fern-pagination:
         offset: $request.page
         results: $response.data
       x-fern-sdk-group-name:
         - companies
       x-fern-sdk-method-name: list
+      x-fern-request-name: ListCompaniesRequest
   /companies/scroll:
     get:
-      x-fern-pagination: 
+      x-fern-pagination:
         cursor: $request.scroll_param
         next_cursor: $response.scroll_param
         results: $response.data
       x-fern-sdk-group-name:
         - companies
       x-fern-sdk-method-name: scroll
-  /contacts/{id}/companies:
+      x-fern-request-name: ScrollCompaniesRequest
+  /contacts:
+    get:
+      x-fern-pagination:
+        cursor: $request.starting_after
+        next_cursor: $response.pages.next.starting_after
+        results: $response.data
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: list
+      x-fern-request-name: ListContactsRequest
+    post:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: create
+      x-fern-request-name: CreateContactRequest
+  /contacts/{contact_id}:
     get:
       x-fern-sdk-group-name:
         - contacts
+      x-fern-sdk-method-name: find
+      x-fern-request-name: FindContactRequest
+    put:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: update
+      x-fern-request-name: UpdateContactRequest
+    delete:
+      x-fern-sdk-group-name:
+        - contacts
+      x-fern-sdk-method-name: delete
+      x-fern-request-name: DeleteContactRequest
+  /contacts/{contact_id}/companies:
+    get:
+      x-fern-pagination:
+        offset: $request.page
+        results: $response.companies
+      x-fern-sdk-group-name:
+        - contacts
       x-fern-sdk-method-name: listAttachedCompanies
+      x-fern-request-name: ListAttachedCompaniesRequest
     post:
       x-fern-sdk-group-name:
         - companies
       x-fern-sdk-method-name: attachContact
-  /contacts/{contact_id}/companies/{id}:
+      x-fern-request-name: AttachContactToCompanyRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  x-fern-property-name: company_id
+  /contacts/{contact_id}/companies/{company_id}:
     delete:
       x-fern-sdk-group-name:
         - companies
       x-fern-sdk-method-name: detachContact
-  /contacts/{id}/notes:
+      x-fern-request-name: DetachContactFromCompanyRequest
+  /contacts/{contact_id}/notes:
     get:
+      x-fern-pagination:
+        offset: $request.page
+        results: $response.data
       x-fern-sdk-group-name:
         - notes
       x-fern-sdk-method-name: list
+      x-fern-request-name: ListContactNotesRequest
     post:
       x-fern-sdk-group-name:
         - notes
       x-fern-sdk-method-name: create
+      x-fern-request-name: CreateContactNoteRequest
   /contacts/{contact_id}/segments:
     get:
       x-fern-sdk-group-name:
         - contacts
       x-fern-sdk-method-name: listAttachedSegments
+      x-fern-request-name: ListSegmentsAttachedToContactRequest
   /contacts/{contact_id}/subscriptions:
     get:
       x-fern-sdk-group-name:
         - contacts
-      x-fern-sdk-method-name: listAttachedEmailSubscriptions
+      x-fern-sdk-method-name: listAttachedSubscriptions
+      x-fern-request-name: ListAttachedSubscriptionsRequest
     post:
       x-fern-sdk-group-name:
         - contacts
-      x-fern-sdk-method-name: attachToContact
-  /contacts/{contact_id}/subscriptions/{id}:
+      x-fern-sdk-method-name: attachSubscription
+      x-fern-request-name: AttachSubscriptionToContactRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  x-fern-property-name: subscription_id
+  /contacts/{contact_id}/subscriptions/{subscription_id}:
     delete:
       x-fern-sdk-group-name:
         - contacts
-      x-fern-sdk-method-name: detachFromContact
+      x-fern-sdk-method-name: detachSubscription
+      x-fern-request-name: DetachSubscriptionFromContactRequest
   /contacts/{contact_id}/tags:
     get:
       x-fern-sdk-group-name:
         - contacts
       x-fern-sdk-method-name: listAttachedTags
+      x-fern-request-name: ListTagsAttachedToContactRequest
     post:
       x-fern-sdk-group-name:
         - tags
       x-fern-sdk-method-name: tagContact
-  /contacts/{contact_id}/tags/{id}:
+      x-fern-request-name: TagContactRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  x-fern-property-name: tag_id
+  /contacts/{contact_id}/tags/{tag_id}:
     delete:
       x-fern-sdk-group-name:
         - tags
       x-fern-sdk-method-name: untagContact
-  /contacts/{id}:
-    get:
+      x-fern-request-name: UntagContactRequest
+  /contacts/{contact_id}/archive:
+    post:
       x-fern-sdk-group-name:
         - contacts
-      x-fern-sdk-method-name: find
-    put:
+      x-fern-sdk-method-name: archive
+      x-fern-request-name: ArchiveContactRequest
+  /contacts/{contact_id}/unarchive:
+    post:
       x-fern-sdk-group-name:
         - contacts
-      x-fern-sdk-method-name: update
-    delete:
-      x-fern-sdk-group-name:
-        - contacts
-      x-fern-sdk-method-name: delete
+      x-fern-sdk-method-name: unarchive
+      x-fern-request-name: UnarchiveContactRequest
   /contacts/merge:
     post:
       x-fern-sdk-group-name:
@@ -213,70 +318,60 @@ paths:
       x-fern-sdk-method-name: mergeLeadInUser
   /contacts/search:
     post:
-      x-fern-pagination: 
+      x-fern-pagination:
         cursor: $request.pagination.starting_after
         next_cursor: $response.pages.next.starting_after
         results: $response.data
       x-fern-sdk-group-name:
         - contacts
       x-fern-sdk-method-name: search
-  /contacts:
-    get:
-      x-fern-sdk-group-name:
-        - contacts
-      x-fern-sdk-method-name: list
-    post:
-      x-fern-sdk-group-name:
-        - contacts
-      x-fern-sdk-method-name: create
-  /contacts/{id}/archive:
-    post:
-      x-fern-sdk-group-name:
-        - contacts
-      x-fern-sdk-method-name: archive
-  /contacts/{id}/unarchive:
-    post:
-      x-fern-sdk-group-name:
-        - contacts
-      x-fern-sdk-method-name: unarchive
+      x-fern-request-name: SearchContactsRequest
   /conversations/{conversation_id}/tags:
     post:
       x-fern-sdk-group-name:
         - tags
       x-fern-sdk-method-name: tagConversation
-  /conversations/{conversation_id}/tags/{id}:
+      x-fern-request-name: TagConversationRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  x-fern-property-name: tag_id
+  /conversations/{conversation_id}/tags/{tag_id}:
     delete:
       x-fern-sdk-group-name:
         - tags
       x-fern-sdk-method-name: untagConversation
+      x-fern-request-name: UntagConversationRequest
   /conversations:
     get:
-      x-fern-sdk-group-name:
-        - conversations
-      x-fern-sdk-method-name: list
-    post:
-      x-fern-sdk-group-name:
-        - conversations
-      x-fern-sdk-method-name: create
-  /conversations/{id}:
-    get:
-      x-fern-sdk-group-name:
-        - conversations
-      x-fern-sdk-method-name: find
-    put:
-      x-fern-sdk-group-name:
-        - conversations
-      x-fern-sdk-method-name: update
-  /conversations/search:
-    post:
-      x-fern-pagination: 
-        cursor: $request.pagination.starting_after
+      x-fern-pagination:
+        cursor: $request.starting_after
         next_cursor: $response.pages.next.starting_after
         results: $response.conversations
       x-fern-sdk-group-name:
         - conversations
-      x-fern-sdk-method-name: search
-  /conversations/{id}/reply:
+      x-fern-sdk-method-name: list
+      x-fern-request-name: ListConversationsRequest
+    post:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: create
+      x-fern-request-name: CreateConversationRequest
+  /conversations/{conversation_id}:
+    get:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: find
+      x-fern-request-name: FindConversationRequest
+    put:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: update
+      x-fern-request-name: UpdateConversationRequest
+  /conversations/{conversation_id}/reply:
     post:
       requestBody:
         content:
@@ -291,84 +386,154 @@ paths:
       x-fern-sdk-group-name:
         - conversations
       x-fern-sdk-method-name: reply
-  /conversations/{id}/parts:
+      x-fern-request-name: ReplyToConversationRequest
+  /conversations/{conversation_id}/parts:
     post:
       x-fern-sdk-group-name:
         - conversations
       x-fern-sdk-method-name: manage
-  /conversations/{id}/run_assignment_rules:
+      x-fern-request-name: ManageConversationPartsRequest
+  /conversations/{conversation_id}/run_assignment_rules:
     post:
       x-fern-sdk-group-name:
         - conversations
-      x-fern-sdk-method-name: assign
-  /conversations/{id}/customers:
+      x-fern-sdk-method-name: runAssignmentRules
+      x-fern-request-name: AutoAssignConversationRequest
+  /conversations/{conversation_id}/customers:
     post:
       x-fern-sdk-group-name:
         - conversations
-      x-fern-sdk-method-name: attachContact
+      x-fern-sdk-method-name: attachContactAsAdmin
+      x-fern-request-name: AttachContactToConversationRequest
   /conversations/{conversation_id}/customers/{contact_id}:
     delete:
       x-fern-sdk-group-name:
         - conversations
       x-fern-sdk-method-name: detachContactAsAdmin
+      x-fern-request-name: DetachContactFromConversationRequest
+  /conversations/{conversation_id}/convert:
+    post:
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: convertToTicket
+      x-fern-request-name: ConvertConversationToTicketRequest
+  /conversations/search:
+    post:
+      x-fern-pagination:
+        cursor: $request.pagination.starting_after
+        next_cursor: $response.pages.next.starting_after
+        results: $response.conversations
+      x-fern-sdk-group-name:
+        - conversations
+      x-fern-sdk-method-name: search
+      x-fern-request-name: SearchConversationsRequest
   /conversations/redact:
     post:
       x-fern-sdk-group-name:
         - conversations
       x-fern-sdk-method-name: redactConversationPart
-  /conversations/{id}/convert:
-    post:
-      x-fern-sdk-group-name:
-        - conversations
-      x-fern-sdk-method-name: convertToTicket
+      x-fern-request-name: RedactConversationPartRequest
   /data_attributes:
     get:
       x-fern-sdk-group-name:
         - dataAttributes
       x-fern-sdk-method-name: list
+      x-fern-request-name: ListDataAttributesRequest
     post:
       x-fern-sdk-group-name:
         - dataAttributes
       x-fern-sdk-method-name: create
-  /data_attributes/{id}:
+      x-fern-request-name: CreateDataAttributeRequest
+  /data_attributes/{data_attribute_id}:
     put:
       x-fern-sdk-group-name:
         - dataAttributes
       x-fern-sdk-method-name: update
+      x-fern-request-name: UpdateDataAttributeRequest
   /events:
     get:
       x-fern-sdk-group-name:
         - events
       x-fern-sdk-method-name: list
+      x-fern-request-name: ListEventsRequest
+
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: user_id
+        in: query
+        required: false
+        description: user_id query parameter
+        schema:
+          type: string
+      - name: intercom_user_id
+        in: query
+        required: false
+        description: intercom_user_id query parameter
+        schema:
+          type: string
+      - name: email
+        in: query
+        required: false
+        description: email query parameter
+        schema:
+          type: string
+      - name: type
+        in: query
+        required: true
+        description: The value must be user
+        schema:
+          type: string
+      - name: summary
+        in: query
+        required: false
+        description: summary flag
+        schema:
+          type: boolean
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
     post:
       x-fern-sdk-group-name:
         - events
       x-fern-sdk-method-name: create
+      x-fern-request-name: CreateEventRequest
   /events/summaries:
     post:
       x-fern-sdk-group-name:
         - events
       x-fern-sdk-method-name: summaries
+      x-fern-request-name: ListEventSummariesRequest
   /export/content/data:
     post:
       x-fern-sdk-group-name:
         - dataExport
       x-fern-sdk-method-name: create
+      x-fern-request-name: CreateDataExportRequest
   /export/content/data/{job_identifier}:
     get:
       x-fern-sdk-group-name:
         - dataExport
       x-fern-sdk-method-name: find
+      x-fern-request-name: FindDataExportRequest
   /export/cancel/{job_identifier}:
     post:
       x-fern-sdk-group-name:
         - dataExport
       x-fern-sdk-method-name: cancel
+      x-fern-request-name: CancelDataExportRequest
   /download/content/data/{job_identifier}:
     get:
       x-fern-sdk-group-name:
         - dataExport
       x-fern-sdk-method-name: download
+      x-fern-request-name: DownloadDataExportRequest
   /messages:
     post:
       requestBody:
@@ -384,125 +549,178 @@ paths:
       x-fern-sdk-group-name:
         - messages
       x-fern-sdk-method-name: create
+      x-fern-request-name: CreateMessageRequest
   /news/news_items:
     get:
       x-fern-sdk-group-name:
         - news
-      x-fern-sdk-method-name: listItems
+        - items
+      x-fern-sdk-method-name: list
+      x-fern-request-name: ListNewsItemsRequest
     post:
       x-fern-sdk-group-name:
         - news
-      x-fern-sdk-method-name: createItem
-  /news/news_items/{id}:
+        - items
+      x-fern-sdk-method-name: create
+      x-fern-request-name: CreateNewsItemRequest
+  /news/news_items/{news_item_id}:
     get:
       x-fern-sdk-group-name:
         - news
-      x-fern-sdk-method-name: findItem
+        - items
+      x-fern-sdk-method-name: find
+      x-fern-request-name: FindNewsItemRequest
     put:
       x-fern-sdk-group-name:
         - news
-      x-fern-sdk-method-name: updateItem
+        - items
+      x-fern-sdk-method-name: update
+      x-fern-request-name: UpdateNewsItemRequest
     delete:
       x-fern-sdk-group-name:
         - news
-      x-fern-sdk-method-name: deleteItem
-  /news/newsfeeds/{id}/items:
-    get:
-      x-fern-sdk-group-name:
-        - news
-      x-fern-sdk-method-name: listLiveItems
+        - items
+      x-fern-sdk-method-name: delete
+      x-fern-request-name: DeleteNewsItemRequest
   /news/newsfeeds:
     get:
       x-fern-sdk-group-name:
         - news
+        - feeds
       x-fern-sdk-method-name: list
-  /news/newsfeeds/{id}:
+      x-fern-request-name: ListNewsFeedsRequest
+  /news/newsfeeds/{newsfeed_id}:
     get:
       x-fern-sdk-group-name:
         - news
+        - feeds
       x-fern-sdk-method-name: find
-  /notes/{id}:
+      x-fern-request-name: FindNewsFeedRequest
+  /news/newsfeeds/{newsfeed_id}/items:
+    get:
+      x-fern-sdk-group-name:
+        - news
+        - feeds
+      x-fern-sdk-method-name: listItems
+      x-fern-request-name: ListNewsFeedItemsRequest
+  /notes/{note_id}:
     get:
       x-fern-sdk-group-name:
         - notes
       x-fern-sdk-method-name: find
+      x-fern-request-name: FindNoteRequest
   /segments:
     get:
       x-fern-sdk-group-name:
         - segments
       x-fern-sdk-method-name: list
-  /segments/{id}:
+      x-fern-request-name: ListSegmentsRequest
+  /segments/{segment_id}:
     get:
       x-fern-sdk-group-name:
         - segments
       x-fern-sdk-method-name: find
+      x-fern-request-name: FindSegmentRequest
   /subscription_types:
     get:
       x-fern-sdk-group-name:
-        - subscriptions
-      x-fern-sdk-method-name: listTypes
+        - subscriptionTypes
+      x-fern-sdk-method-name: list
+      x-fern-request-name: ListSubscriptionTypesRequest
   /phone_call_redirects:
     post:
       x-fern-sdk-group-name:
-        - phoneCallRedirect
+        - phoneCallRedirects
       x-fern-sdk-method-name: create
+      x-fern-request-name: CreatePhoneCallRedirectRequest
   /tags:
     get:
       x-fern-sdk-group-name:
         - tags
       x-fern-sdk-method-name: list
+      x-fern-request-name: ListTagsRequest
     post:
       x-fern-sdk-group-name:
         - tags
       x-fern-sdk-method-name: create
-  /tags/{id}:
+      x-fern-request-name: CreateTagRequest
+  /tags/{tag_id}:
     get:
       x-fern-sdk-group-name:
         - tags
       x-fern-sdk-method-name: find
+      x-fern-request-name: FindTagRequest
     delete:
       x-fern-sdk-group-name:
         - tags
       x-fern-sdk-method-name: delete
+      x-fern-request-name: DeleteTagRequest
   /teams:
     get:
       x-fern-sdk-group-name:
         - teams
       x-fern-sdk-method-name: list
-  /teams/{id}:
+      x-fern-request-name: ListTeamsRequest
+  /teams/{team_id}:
     get:
       x-fern-sdk-group-name:
         - teams
       x-fern-sdk-method-name: find
-  /ticket_types/{ticket_type_id}/attributes:
-    post:
-      x-fern-sdk-group-name:
-        - ticketTypeAttributes
-      x-fern-sdk-method-name: create
-  /ticket_types/{ticket_type_id}/attributes/{id}:
-    put:
-      x-fern-sdk-group-name:
-        - ticketTypeAttributes
-      x-fern-sdk-method-name: update
+      x-fern-request-name: FindTeamRequest
   /ticket_types:
     get:
       x-fern-sdk-group-name:
         - ticketTypes
       x-fern-sdk-method-name: list
+      x-fern-request-name: ListTicketTypesRequest
     post:
       x-fern-sdk-group-name:
         - ticketTypes
       x-fern-sdk-method-name: create
-  /ticket_types/{id}:
+      x-fern-request-name: CreateTicketTypeRequest
+  /ticket_types/{ticket_type_id}:
     get:
       x-fern-sdk-group-name:
         - ticketTypes
       x-fern-sdk-method-name: get
+      x-fern-request-name: FindTicketTypeRequest
     put:
       x-fern-sdk-group-name:
         - ticketTypes
       x-fern-sdk-method-name: update
-  /tickets/{id}/reply:
+      x-fern-request-name: UpdateTicketTypeRequest
+  /ticket_types/{ticket_type_id}/attributes:
+    post:
+      x-fern-sdk-group-name:
+        - ticketTypes
+        - attributes
+      x-fern-sdk-method-name: create
+      x-fern-request-name: CreateTicketTypeAttributeRequest
+  /ticket_types/{ticket_type_id}/attributes/{attribute_id}:
+    put:
+      x-fern-sdk-group-name:
+        - ticketTypes
+        - attributes
+      x-fern-sdk-method-name: update
+      x-fern-request-name: UpdateTicketTypeAttributeRequest
+  /tickets:
+    post:
+      x-fern-sdk-group-name:
+        - tickets
+      x-fern-sdk-method-name: create
+      x-fern-request-name: CreateTicketRequest
+  /tickets/{ticket_id}:
+    get:
+      x-fern-sdk-group-name:
+        - tickets
+      x-fern-sdk-method-name: get
+      x-fern-request-name: FindTicketRequest
+    put:
+      x-fern-sdk-group-name:
+        - tickets
+      x-fern-sdk-method-name: update
+      x-fern-request-name: UpdateTicketRequest
+  /tickets/{ticket_id}/reply:
     post:
       requestBody:
         content:
@@ -517,53 +735,53 @@ paths:
       x-fern-sdk-group-name:
         - tickets
       x-fern-sdk-method-name: reply
+      x-fern-request-name: ReplyToTicketRequest
   /tickets/{ticket_id}/tags:
     post:
       x-fern-sdk-group-name:
         - tags
-      x-fern-sdk-method-name: attach
-  /tickets/{ticket_id}/tags/{id}:
+      x-fern-sdk-method-name: tagTicket
+      x-fern-request-name: TagTicketRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                id:
+                  x-fern-property-name: tag_id
+  /tickets/{ticket_id}/tags/{tag_id}:
     delete:
       x-fern-sdk-group-name:
         - tags
-      x-fern-sdk-method-name: detach
-  /tickets:
-    post:
-      x-fern-sdk-group-name:
-        - tickets
-      x-fern-sdk-method-name: create
-  /tickets/{id}:
-    get:
-      x-fern-sdk-group-name:
-        - tickets
-      x-fern-sdk-method-name: get
-    put:
-      x-fern-sdk-group-name:
-        - tickets
-      x-fern-sdk-method-name: update
+      x-fern-sdk-method-name: untagTicket
+      x-fern-request-name: UntagTicketRequest
   /tickets/search:
     post:
-      x-fern-pagination: 
+      x-fern-pagination:
         cursor: $request.pagination.starting_after
         next_cursor: $response.pages.next.starting_after
         results: $response.tickets
       x-fern-sdk-group-name:
         - tickets
       x-fern-sdk-method-name: search
+      x-fern-request-name: SearchTicketsRequest
   /visitors:
     get:
       x-fern-sdk-group-name:
         - visitors
       x-fern-sdk-method-name: find
+      x-fern-request-name: FindVisitorRequest
     put:
       x-fern-sdk-group-name:
         - visitors
       x-fern-sdk-method-name: update
+      x-fern-request-name: UpdateVisitorRequest
   /visitors/convert:
     post:
       x-fern-sdk-group-name:
         - visitors
       x-fern-sdk-method-name: mergeToContact
+      x-fern-request-name: MergeVisitorToContactRequest
 components:
   schemas:
     intercom_version:
@@ -627,13 +845,15 @@ components:
               type: integer
               format: date-time
               nullable: true
-              description: The time when the contact was last seen (either where the Intercom
+              description:
+                The time when the contact was last seen (either where the Intercom
                 Messenger was installed or when specified manually)
               example: 1571672154
             owner_id:
               type: integer
               nullable: true
-              description: The id of an admin that has been assigned account ownership
+              description:
+                The id of an admin that has been assigned account ownership
                 of the contact
               example: 123
             unsubscribed_from_emails:
@@ -678,13 +898,15 @@ components:
               type: integer
               format: date-time
               nullable: true
-              description: The time when the contact was last seen (either where the Intercom
+              description:
+                The time when the contact was last seen (either where the Intercom
                 Messenger was installed or when specified manually)
               example: 1571672154
             owner_id:
               type: integer
               nullable: true
-              description: The id of an admin that has been assigned account ownership
+              description:
+                The id of an admin that has been assigned account ownership
                 of the contact
               example: 123
             unsubscribed_from_emails:
@@ -729,13 +951,15 @@ components:
               type: integer
               format: date-time
               nullable: true
-              description: The time when the contact was last seen (either where the Intercom
+              description:
+                The time when the contact was last seen (either where the Intercom
                 Messenger was installed or when specified manually)
               example: 1571672154
             owner_id:
               type: integer
               nullable: true
-              description: The id of an admin that has been assigned account ownership
+              description:
+                The id of an admin that has been assigned account ownership
                 of the contact
               example: 123
             unsubscribed_from_emails:
@@ -757,14 +981,16 @@ components:
           properties:
             id:
               type: string
-              description: The unique identifier for the contact (lead or user) which
+              description:
+                The unique identifier for the contact (lead or user) which
                 is given by Intercom.
               example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
             user_id: null
             email: null
             event_name:
               type: string
-              description: The name of the event that occurred. This is presented to your
+              description:
+                The name of the event that occurred. This is presented to your
                 App's admins when filtering and creating segments - a good event name
                 is typically a past tense 'verb-noun' combination, to improve readability,
                 for example `updated-plan`.
@@ -791,12 +1017,13 @@ components:
             user_id:
               type: string
               description: Your identifier for the user.
-              example: '314159'
+              example: "314159"
             id: null
             email: null
             event_name:
               type: string
-              description: The name of the event that occurred. This is presented to your
+              description:
+                The name of the event that occurred. This is presented to your
                 App's admins when filtering and creating segments - a good event name
                 is typically a past tense 'verb-noun' combination, to improve readability,
                 for example `updated-plan`.
@@ -822,14 +1049,16 @@ components:
           properties:
             email:
               type: string
-              description: An email address for your user. An email should only be used
+              description:
+                An email address for your user. An email should only be used
                 where your application uses email to uniquely identify users.
               example: frodo.baggins@example.com
             user_id: null
             id: null
             event_name:
               type: string
-              description: The name of the event that occurred. This is presented to your
+              description:
+                The name of the event that occurred. This is presented to your
                 App's admins when filtering and creating segments - a good event name
                 is typically a past tense 'verb-noun' combination, to improve readability,
                 for example `updated-plan`.
@@ -854,13 +1083,13 @@ components:
       properties: null
       anyOf:
         - x-fern-type-name: CreateMessageRequestWithEmail
-          title: 'message_type: `email`.'
+          title: "message_type: `email`."
           properties:
             message_type:
               type: string
-              description: 'The kind of message being created.'
+              description: "The kind of message being created."
               enum:
-              - email
+                - email
               example: email
             subject:
               type: string
@@ -872,32 +1101,35 @@ components:
               example: Hello there
             template:
               type: string
-              description: The style of the outgoing message. Possible values `plain`
+              description:
+                The style of the outgoing message. Possible values `plain`
                 or `personal`.
               example: plain
             from:
               x-fern-type-name: CreateMessageRequestFrom
               type: object
-              description: The sender of the message. If not provided, the default sender
+              description:
+                The sender of the message. If not provided, the default sender
                 will be used.
               properties:
                 type:
                   type: string
                   description: Always `admin`.
                   enum:
-                  - admin
+                    - admin
                   example: admin
                 id:
                   type: integer
                   description: The identifier for the admin which is given by Intercom.
                   example: 394051
               required:
-              - type
-              - id
+                - type
+                - id
             to:
               x-fern-type-name: CreateMessageRequestTo
               type: object
-              description: The sender of the message. If not provided, the default sender
+              description:
+                The sender of the message. If not provided, the default sender
                 will be used.
               properties:
                 type:
@@ -905,24 +1137,26 @@ components:
                   type: string
                   description: The role associated to the contact - `user` or `lead`.
                   enum:
-                  - user
-                  - lead
+                    - user
+                    - lead
                   example: user
                 id:
                   type: string
                   description: The identifier for the contact which is given by Intercom.
                   example: 536e564f316c83104c000020
               required:
-              - type
-              - id
+                - type
+                - id
             created_at:
               type: integer
-              description: The time the message was created. If not provided, the current
+              description:
+                The time the message was created. If not provided, the current
                 time will be used.
               example: 1590000000
             create_conversation_without_contact_reply:
               type: boolean
-              description: Whether a conversation should be opened in the inbox for the
+              description:
+                Whether a conversation should be opened in the inbox for the
                 message without the contact replying. Defaults to false if not provided.
               default: false
               example: true
@@ -934,13 +1168,13 @@ components:
             - from
             - to
         - x-fern-type-name: CreateMessageRequestWithInapp
-          title: 'message_type: `inapp`.'
+          title: "message_type: `inapp`."
           properties:
             message_type:
               type: string
-              description: 'The kind of message being created.'
+              description: "The kind of message being created."
               enum:
-              - inapp
+                - inapp
               example: inapp
             subject:
               type: string
@@ -952,32 +1186,35 @@ components:
               example: Hello there
             template:
               type: string
-              description: The style of the outgoing message. Possible values `plain`
+              description:
+                The style of the outgoing message. Possible values `plain`
                 or `personal`.
               example: plain
             from:
               x-fern-type-name: CreateMessageRequestFrom
               type: object
-              description: The sender of the message. If not provided, the default sender
+              description:
+                The sender of the message. If not provided, the default sender
                 will be used.
               properties:
                 type:
                   type: string
                   description: Always `admin`.
                   enum:
-                  - admin
+                    - admin
                   example: admin
                 id:
                   type: integer
                   description: The identifier for the admin which is given by Intercom.
                   example: 394051
               required:
-              - type
-              - id
+                - type
+                - id
             to:
               x-fern-type-name: CreateMessageRequestTo
               type: object
-              description: The sender of the message. If not provided, the default sender
+              description:
+                The sender of the message. If not provided, the default sender
                 will be used.
               properties:
                 type:
@@ -985,24 +1222,26 @@ components:
                   type: string
                   description: The role associated to the contact - `user` or `lead`.
                   enum:
-                  - user
-                  - lead
+                    - user
+                    - lead
                   example: user
                 id:
                   type: string
                   description: The identifier for the contact which is given by Intercom.
                   example: 536e564f316c83104c000020
               required:
-              - type
-              - id
+                - type
+                - id
             created_at:
               type: integer
-              description: The time the message was created. If not provided, the current
+              description:
+                The time the message was created. If not provided, the current
                 time will be used.
               example: 1590000000
             create_conversation_without_contact_reply:
               type: boolean
-              description: Whether a conversation should be opened in the inbox for the
+              description:
+                Whether a conversation should be opened in the inbox for the
                 message without the contact replying. Defaults to false if not provided.
               default: false
               example: true
@@ -1020,7 +1259,8 @@ components:
               properties:
                 id:
                   type: string
-                  description: The unique identifier for the contact which is given by
+                  description:
+                    The unique identifier for the contact which is given by
                     Intercom.
                   example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
                 user_id: null
@@ -1050,7 +1290,8 @@ components:
               properties:
                 id:
                   type: string
-                  description: The unique identifier for the contact which is given by
+                  description:
+                    The unique identifier for the contact which is given by
                     Intercom.
                   example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
                 user_id: null
@@ -1087,6 +1328,10 @@ components:
               description: A unique identified for the visitor which is given by Intercom.
               example: 8a88a590-e
             user_id: null
+            name:
+              type: string
+              description: The visitor's name.
+              example: Christian Bale
             custom_attributes:
               type: object
               description: The custom attributes which are set for the visitor.
@@ -1104,7 +1349,15 @@ components:
             user_id:
               type: string
               description: A unique identified for the visitor which is given by you.
-              example: '123'
+              example: "123"
+            user_id:
+              type: string
+              description: A unique identified for the visitor which is given by you.
+              example: "123"
+            name:
+              type: string
+              description: The visitor's name.
+              example: Christian Bale
             custom_attributes:
               type: object
               description: The custom attributes which are set for the visitor.
@@ -1116,6 +1369,12 @@ components:
                 team_mates: 9
           required:
             - user_id
+    merge_contacts_request:
+      properties:
+        from:
+          x-fern-property-name: lead_id
+        into:
+          x-fern-property-name: contact_id
   securitySchemes:
     bearerAuth:
       x-fern-bearer:
