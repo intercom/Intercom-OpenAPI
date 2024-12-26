@@ -3348,8 +3348,7 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-              - "$ref": "#/components/schemas/update_contact_request"
+              "$ref": "#/components/schemas/update_contact_request"
             examples:
               successful:
                 summary: successful
@@ -4015,8 +4014,7 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-              - "$ref": "#/components/schemas/create_contact_request"
+              "$ref": "#/components/schemas/create_contact_request"
             examples:
               successful:
                 summary: successful
@@ -12022,6 +12020,7 @@ components:
                 example: 6329bd9ffe4e2e91dac76188
               customer:
                 "$ref": "#/components/schemas/customer_request"
+                nullable: true
             required:
             - intercom_user_id
           - title: User ID
@@ -12033,6 +12032,7 @@ components:
                 example: 6329bd9ffe4e2e91dac76188
               customer:
                 "$ref": "#/components/schemas/customer_request"
+                nullable: true
             required:
             - user_id
           - title: Email
@@ -12044,6 +12044,7 @@ components:
                 example: winstonsmith@truth.org
               customer:
                 "$ref": "#/components/schemas/customer_request"
+                nullable: true
             required:
             - email
     close_conversation_request:
@@ -13349,6 +13350,7 @@ components:
           "$ref": "#/components/schemas/conversation_first_contact_reply"
         sla_applied:
           "$ref": "#/components/schemas/sla_applied"
+          nullable: true
         statistics:
           "$ref": "#/components/schemas/conversation_statistics"
         conversation_parts:
@@ -14568,6 +14570,7 @@ components:
           example: 1
         next:
           "$ref": "#/components/schemas/starting_after_paging"
+          nullable: true
         per_page:
           type: integer
           description: Number of results per page
@@ -14621,7 +14624,6 @@ components:
         - type
     customer_request:
       type: object
-      nullable: true
       oneOf:
       - title: Intercom User ID
         properties:
@@ -16089,7 +16091,6 @@ components:
       title: Phone Switch
       type: object
       description: Phone Switch Response
-      nullable: true
       properties:
         type:
           type: string
@@ -16185,6 +16186,7 @@ components:
             title: multiple filter search request
         pagination:
           "$ref": "#/components/schemas/starting_after_paging"
+          nullable: true
       required:
       - query
     segment:
@@ -16292,7 +16294,6 @@ components:
     sla_applied:
       title: Applied SLA
       type: object
-      nullable: true
       description: |
         The SLA Applied object contains the details for which SLA has been applied to this conversation.
         Important: if there are any canceled sla_events for the conversation - meaning an SLA has been manually removed from a conversation, the sla_status will always be returned as null.
@@ -16371,7 +16372,6 @@ components:
     starting_after_paging:
       title: 'Pagination: Starting After'
       type: object
-      nullable: true
       properties:
         per_page:
           type: integer
@@ -16661,7 +16661,6 @@ components:
       x-tags:
       - Tickets
       description: Tickets are how you track requests from your users.
-      nullable: true
       properties:
         type:
           type: string
@@ -16700,6 +16699,7 @@ components:
           example: submitted
         ticket_type:
           "$ref": "#/components/schemas/ticket_type"
+          nullable: true
         contacts:
           "$ref": "#/components/schemas/ticket_contacts"
         admin_assignee_id:
@@ -17047,7 +17047,6 @@ components:
       - Tickets
       description: A ticket type, used to define the data fields to be captured in
         a ticket.
-      nullable: true
       properties:
         type:
           type: string
@@ -17114,7 +17113,6 @@ components:
       type: object
       description: Ticket type attribute, used to define each data field to be captured
         in a ticket.
-      nullable: true
       properties:
         type:
           type: string
@@ -17311,7 +17309,6 @@ components:
       description: You can Update an Article
       type: object
       title: Update Article Request Payload
-      nullable: true
       properties:
         title:
           type: string
@@ -17588,7 +17585,6 @@ components:
         You can copy the `icon` property for your ticket type from [Twemoji Cheatsheet](https://twemoji-cheatsheet.vercel.app/)
       type: object
       title: Update Ticket Type Request Payload
-      nullable: true
       properties:
         name:
           type: string
@@ -17660,7 +17656,6 @@ components:
         not yet been identified. They usually represent website visitors. Visitors
         are not visible in Intercom platform. The Visitors resource provides methods
         to fetch, update, convert and delete.
-      nullable: true
       properties:
         type:
           type: string
