@@ -14245,21 +14245,24 @@ components:
           properties:
             type:
               type: string
-              description: Always `admin`.
+              description: One of `lead`, `user`, `contact`, or `admin`.
               enum:
+              - lead
+              - user
+              - contact
               - admin
               example: admin
             id:
               type: integer
-              description: The identifier for the admin which is given by Intercom.
+              description: The identifier for the sender which is given by Intercom.
               example: 394051
           required:
           - type
           - id
         to:
           type: object
-          description: The sender of the message. If not provided, the default sender
-            will be used.
+          description: The recipient of the message. If not provided, the default
+            recipient will be used.
           properties:
             type:
               type: string
@@ -16288,9 +16291,18 @@ components:
             search for the value.
           example: ">"
         value:
-          type: string
+          oneOf:
+          - type: string
+          - type: integer
+          - type: array
+            items:
+              type: string
+          - type: array
+            items:
+              type: integer
           description: The value that you want to search on.
           example: '73732934'
+          nullable: true
     sla_applied:
       title: Applied SLA
       type: object
