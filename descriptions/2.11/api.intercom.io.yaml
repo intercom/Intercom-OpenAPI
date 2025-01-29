@@ -10856,6 +10856,105 @@ paths:
                   user:
                     email: foo@bar.com
                   type: user
+  "/canvas-kit/initialize":
+    post:
+      summary: Initialize webhook
+      description: Triggered when a user or teammate adds or interacts with the app in various contexts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/InitializeRequestMessenger'
+                - $ref: '#/components/schemas/InitializeRequestInbox'
+      responses:
+        '200':
+          description: Successful response with the initial canvas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CanvasResponse'
+  "/canvas-kit/submit":
+    post:
+      summary: Submit webhook
+      description: Triggered when a component with a submit action is interacted with.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/SubmitRequestMessenger'
+                - $ref: '#/components/schemas/SubmitRequestInbox'
+      responses:
+        '200':
+          description: Successful response with the updated canvas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CanvasResponse'
+  "/canvas-kit/configure":
+    post:
+      summary: Configure webhook
+      description: Triggered when the app is being configured.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfigureRequest'
+  "/canvas-kit/open-sheet":
+    post:
+      summary: Open Sheet webhook
+      description: Triggered when a sheet is opened within the app.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenSheetRequest'
+      responses:
+        '200':
+          description: Successful response with the sheet content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SheetResponse'
+  "/canvas-kit/live-canvas":
+    post:
+      summary: Live Canvas webhook
+      description: Triggered to update the canvas in real-time.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LiveCanvasRequest'
+      responses:
+        '200':
+          description: Successful response with the live canvas update.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CanvasResponse'
+  "/canvas-kit/submit-sheet":
+    post:
+      summary: Submit Sheet webhook
+      description: Triggered when a sheet is submitted within the app.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitSheetRequest'
+      responses:
+        '200':
+          description: Successful response after sheet submission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SheetResponse'
 components:
   schemas:
     activity_log:
