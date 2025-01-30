@@ -12757,6 +12757,17 @@ components:
       description: An object containing companies meta data about the companies that
         a contact has. Up to 10 will be displayed here. Use the url to get more.
       properties:
+        type:
+          type: string
+          description: The type of object
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array containing Company Objects
+          items:
+            "$ref": "#/components/schemas/contact_company"
         url:
           type: string
           format: uri
@@ -12776,6 +12787,30 @@ components:
         - url
         - total_count
         - has_more
+    contact_company:
+      title: Contact company
+      type: object
+      description: A reference to a company associated with a contact
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the company
+          example: "66e0800ad24ad5513b91014d"
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - company
+          example: company
+        url:
+          type: string
+          format: uri
+          description: URL to get the full company resource
+          example: "/companies/66e0800ad24ad5513b91014d"
+      required:
+        - id
+        - type
+        - url
     contact_deleted:
       title: Contact Deleted
       type: object
