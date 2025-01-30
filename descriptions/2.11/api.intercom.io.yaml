@@ -12757,6 +12757,17 @@ components:
       description: An object containing companies meta data about the companies that
         a contact has. Up to 10 will be displayed here. Use the url to get more.
       properties:
+        type:
+          type: string
+          description: The type of object
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array containing Company Objects
+          items:
+            "$ref": "#/components/schemas/contact_company"
         url:
           type: string
           format: uri
@@ -12776,6 +12787,30 @@ components:
         - url
         - total_count
         - has_more
+    contact_company:
+      title: Contact company
+      type: object
+      description: A reference to a company associated with a contact
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the company
+          example: "66e0800ad24ad5513b91014d"
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - company
+          example: company
+        url:
+          type: string
+          format: uri
+          description: URL to get the full company resource
+          example: "/companies/66e0800ad24ad5513b91014d"
+      required:
+        - id
+        - type
+        - url
     contact_deleted:
       title: Contact Deleted
       type: object
@@ -13627,6 +13662,17 @@ components:
           type: string
           description: This includes conversation, email, facebook, instagram, phone_call,
             phone_switch, push, sms, twitter and whatsapp.
+          enum:
+          - conversation
+          - email
+          - facebook
+          - instagram
+          - phone_call
+          - phone_switch
+          - push
+          - sms
+          - twitter
+          - whatsapp
           example: conversation
         id:
           type: string
@@ -14245,21 +14291,24 @@ components:
           properties:
             type:
               type: string
-              description: Always `admin`.
+              description: One of `lead`, `user`, `contact`, or `admin`.
               enum:
+              - lead
+              - user
+              - contact
               - admin
               example: admin
             id:
               type: integer
-              description: The identifier for the admin which is given by Intercom.
+              description: The identifier for the sender which is given by Intercom.
               example: 394051
           required:
           - type
           - id
         to:
           type: object
-          description: The sender of the message. If not provided, the default sender
-            will be used.
+          description: The recipient of the message. If not provided, the default
+            recipient will be used.
           properties:
             type:
               type: string
@@ -16288,9 +16337,18 @@ components:
             search for the value.
           example: ">"
         value:
-          type: string
+          oneOf:
+          - type: string
+          - type: integer
+          - type: array
+            items:
+              type: string
+          - type: array
+            items:
+              type: integer
           description: The value that you want to search on.
           example: '73732934'
+          nullable: true
     sla_applied:
       title: Applied SLA
       type: object
