@@ -10858,6 +10858,12 @@ paths:
                   type: user
 components:
   schemas:
+    action_component:
+      title: Action Component
+      oneOf:
+      - "$ref": "#/components/schemas/sheet_action_component"
+      - "$ref": "#/components/schemas/url_action_component" 
+      - "$ref": "#/components/schemas/submit_action_component"
     activity_log:
       title: Activity Log
       type: object
@@ -12047,6 +12053,141 @@ components:
                 nullable: true
             required:
             - email
+    button_component:
+      title: Button Component
+      type: object
+      description: |
+        A button component is used to take an action by clicking a button. This can either:
+        - [Trigger a submit request to be sent](https://developers.intercom.com/docs/references/canvas-kit/actioncomponents/submit-action) Inbox Messenger
+        - [Open a link in a new page](https://developers.intercom.com/docs/references/canvas-kit/actioncomponents/url-action) Inbox Messenger
+        - [Open a sheet](https://developers.intercom.com/docs/references/canvas-kit/actioncomponents/sheets-action) Messenger
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - button
+        id:
+          type: string
+          description: A unique identifier for the component.
+        label:
+          type: string
+          description: The text that will be rendered inside the button.
+        action:
+          "$ref": "#/components/schemas/action_component"
+          description: This can be a Submit Action, URL Action, or Sheets Action.
+        style:
+          type: string
+          description: Styles the button. Default is 'primary'.
+          enum:
+            - primary
+            - secondary
+            - link
+          default: primary
+        disabled:
+          type: boolean
+          description: Styles the button and prevents the action. Default is false.
+          default: false
+      required:
+        - type
+        - id
+        - label
+        - action
+    canvas_object:
+      title: Canvas Object
+      type: object
+      description: |
+        You have to respond to the majority of requests with a canvas object. This will tell us what UI to show for your app.
+
+        A canvas can either be static (meaning we send you the next request only when an action takes place) or live (meaning we send you the next request when someone views the app).
+
+        - A static canvas needs a ContentObject which will contain the components to show.
+        - A live canvas needs a `content_url` which we we will make the Live Canvas requests to when the app is viewed. This is only possible for apps viewed or used in the Messenger.
+      properties:
+        content:
+          "$ref": "#/components/schemas/content_object"
+          description: The content object that will be shown as the UI of the app. Max Size is 64KB.
+        content_url:
+          type: string
+          description: The URL which we make Live Canvas requests to. You must respond to these with a content object. Max size is 64KB.
+        stored_data:
+          type: object
+          additionalProperties: true
+          description: Optional Stored Data that you want to be returned in the next sent request. Max Size is 64KB.
+      required:
+        - content
+    checkbox_option:
+      title: Checkbox Option
+      type: object
+      description: A checkbox option component that can be selected.
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - option
+        id:
+          type: string
+          description: A unique identifier for the option.
+        text:
+          type: string
+          description: The text shown next to the checkbox.
+        disabled:
+          type: boolean
+          description: Styles the option and prevents the action. Default is false.
+          default: false
+      required:
+        - type
+        - id
+        - text
+    checkbox_component:
+      title: Checkbox Component
+      type: object
+      description: |
+        A checkbox component is used to capture multiple choices from as many options as you want to provide. You can submit the options by:
+
+        - Using a ButtonComponent (which will submit all interactive components in the canvas)
+
+        When a submit action takes place, the results are given in a hash with the `id` from the checkbox component used as the key and an array containing the `id` of each chosen option as the value.
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - checkbox
+        id:
+          type: string
+          description: A unique identifier for the component.
+        option:
+          type: array
+          description: The list of options. Minimum of 1.
+          items:
+            "$ref": "#/components/schemas/checkbox_option"
+        label:
+          type: string
+          description: The text shown above the options.
+        value:
+          type: array
+          description: The option's that are selected by default.
+          items:
+            type: string
+        save_state:
+          type: string
+          description: Styles the input. Default is `unsaved`. Prevent action with `saved`.
+          enum:
+            - unsaved
+            - saved
+            - failed
+          default: unsaved
+        disabled:
+          type: boolean
+          description: Styles all options and prevents the action. Default is false. Will be overridden if save_state is saved.
+          default: false
+      required:
+        - type
+        - id
+        - option
+        - label
     close_conversation_request:
       title: Close Conversation Request
       type: object
@@ -12431,6 +12572,90 @@ components:
         - type
         - data
         - total_count
+    component:
+      oneOf:
+      - "$ref": "#/components/schemas/button_component"
+      - "$ref": "#/components/schemas/checkbox_component"
+      - "$ref": "#/components/schemas/dropdown_component"
+      - "$ref": "#/components/schemas/input_component"
+      - "$ref": "#/components/schemas/list_component"
+      - "$ref": "#/components/schemas/single_select_component"
+      - "$ref": "#/components/schemas/text_area_component"
+      - "$ref": "#/components/schemas/data_table_component"
+      - "$ref": "#/components/schemas/divider_component"
+      - "$ref": "#/components/schemas/image_component"
+      - "$ref": "#/components/schemas/spacer_component"
+      - "$ref": "#/components/schemas/text_component"
+    configure_request:
+      title: Configure Request
+      type: object
+      description: |
+        The first request we send will allow you to know the workspace where this is happening, the admin who will be configuring the app, and additional context such as where this will be added once complete.
+
+        For subsequent requests whereby an admin has interacted with a component with a submit action, the request payload will contain the same details with `current_canvas`, `input_values` and the `component_id` also present. This allows you to understand what component the request came from, see what the value of any input was, action anything in your codebase, and then respond knowing what canvas was previously shown beforehand.
+      oneOf:
+      - type: object
+        properties:
+          workspace_id:
+            type: string
+            description: The workspace ID of the teammate. Attribute is app_id for V1.2 and below.
+          admin:
+            "$ref": "#/components/schemas/admin"
+            description: The Intercom teammate configuring the app.
+          context:
+            "$ref": "#/components/schemas/context"
+            description: The context of where the app is added, where the user last visited, and information on the Messenger settings.
+        required:
+          - workspace_id
+          - admin
+          - context
+      - type: object
+        properties:
+          workspace_id:
+            type: string
+            description: The workspace ID of the teammate. Attribute is app_id for V1.2 and below.
+          workspace_region:
+            type: string
+            description: The Intercom hosted region that this app is located in.
+          component_id:
+            type: string
+            description: The id of the component clicked by the teammate to trigger the request.
+          admin:
+            "$ref": "#/components/schemas/admin"
+            description: The Intercom teammate configuring the app.
+          context:
+            "$ref": "#/components/schemas/context"
+            description: The context of where the app is added, where the user last visited, and information on the Messenger settings.
+          current_canvas:
+            "$ref": "#/components/schemas/canvas_object"
+            description: The current canvas the teammate can see.
+          input_values:
+            type: object
+            description: A list of key/value pairs of data, inputted by the teammate on the current canvas.
+            additionalProperties: true
+        required:
+          - workspace_id
+          - workspace_region
+          - component_id
+          - admin
+          - context
+          - current_canvas
+          - input_values
+    configure_response:
+      title: Configure Response
+      description: |
+        The response object returned when configuring an app. This will either:
+        - A canvas object which will replace the previous canvas that was visible until the teammate interacted with your app
+        - A results object which will end the configuration and trigger the initialize request to be sent. There will be a card_creation_options object in the payload showing your key-value pairs from the results object.
+      oneOf:
+      - "$ref": "#/components/schemas/results_response"
+      - type: object
+        properties:
+          canvas:
+            "$ref": "#/components/schemas/canvas_object"
+            description: The canvas object that defines the new UI to be shown. This will replace the previous canvas that was visible until the teammate interacted with your app.
+        required:
+          - canvas
     contact:
       title: Contact
       type: object
@@ -13211,6 +13436,21 @@ components:
         - type
         - id
         - archived
+    content_object:
+      title: Content Object
+      type: object
+      description: |
+        The content object is where you specify the UI of your app. You provide us with a set of `components` in a components array that we then render.
+
+        The content object should usually be returned within the [canvas object](https://developers.intercom.com/docs/references/canvas-kit/responseobjects/canvas). If you're responding to a Live Canvas request however, then you should only respond with the content object.
+      properties:
+        components:
+          type: array
+          description: The list of components to be rendered.
+          items:
+            "$ref": "#/components/schemas/component"
+      required:
+        - components
     content_source:
       title: Content Source
       type: object
@@ -13267,6 +13507,43 @@ components:
         - type
         - total_count
         - content_sources
+    context:
+      title: Context
+      type: object
+      description: |
+        The context object provides additional details on where the app has been added (or is currently being used), what page the app is being used on, and information on the Messenger settings. This is in order for you give a fully customised experience based on the customers use case.
+
+        If the `location` is `conversation` then you will also be given a `conversation_id`. If you need to use details about the conversation, then you have to use the `conversation_id` to [make a call to our Conversations API and retrieve the conversation object](https://developers.intercom.com/intercom-api-reference/reference#get-a-single-conversation).
+      properties:
+        conversation_id:
+          type: integer
+          description: The id of the conversation where the app is added or being used.
+          example: 1295
+        location:
+          type: string
+          description: Where the app is added or the action took place. Can be either 'conversation', 'home', 'message', or 'operator'.
+          enum:
+            - conversation
+            - home
+            - message
+            - operator
+          example: conversation
+        locale:
+          type: string
+          description: The default end-user language of the Messenger. Use to localise Messenger App content.
+          example: en
+        messenger_action_colour:
+          type: string
+          description: The messengers action colour. Use in Sheets and Icons to make a Messenger App experience feel part of the host Messenger.
+          example: "#0057ff"
+        messenger_background_colour:
+          type: string
+          description: The messengers background colour. Use in Sheets and Icons to make a Messenger App experience feel part of the host Messenger.
+          example: "#ffffff"
+        referrer:
+          type: string
+          description: The current page URL where the app is being used.
+          example: "https://example.com/page"
     conversation:
       title: Conversation
       type: object
@@ -14600,6 +14877,17 @@ components:
           default: false
       required:
       - name
+    current_canvas:
+      title: Current Canvas
+      type: object
+      description: |
+        The current canvas that was most recently showing before the request was sent. This object mirrors the same format as the Canvas Object.
+      properties:
+        current_canvas:
+          "$ref": "#/components/schemas/canvas_object"
+          description: The canvas object representing the current canvas state.
+      required:
+        - current_canvas
     cursor_pages:
       title: Cursor based pages
       type: object
@@ -15113,6 +15401,46 @@ components:
         - content_id
         - content_type
         - content_title
+    data_table_item:
+      title: Data Table Item
+      type: object
+      description: A field-value pair component for use in a data table.
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - field-value
+        field:
+          type: string
+          description: The text of the key in your key-value pair.
+        value:
+          type: string
+          description: The text of the value in your key-value pair.
+      required:
+        - type
+        - field
+        - value
+
+    data_table_component:
+      title: Data Table Component
+      type: object
+      description: |
+        A data-table component is used for rendering a table of key-value pairs. For Messenger, text will wrap around on multiple lines. For Inbox and Frame (ie. Configure) views, we will truncate and use tooltips on hover if the text overflows.
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - data-table
+        items:
+          type: array
+          description: The items that will be rendered in the data-table.
+          items:
+            "$ref": "#/components/schemas/data_table_item"
+      required:
+        - type
+        - items
     deleted_article_object:
       title: Deleted Article Object
       type: object
@@ -15216,6 +15544,93 @@ components:
           example: '5017690'
       required:
       - admin_id
+    divider_component:
+      title: Divider Component
+      type: object
+      description: A divider component is used to separate components with a line.
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - divider
+        id:
+          type: string
+          description: A unique identifier for the component.
+        bottom_margin:
+          type: string
+          description: Disables a component's margin-bottom of 10px.
+          enum:
+            - none
+      required:
+        - type
+    dropdown_option:
+      title: Dropdown Option
+      type: object
+      description: A dropdown option component that can be selected.
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - option
+        id:
+          type: string
+          description: A unique identifier for the option.
+        text:
+          type: string
+          description: The text shown within this option.
+        disabled:
+          type: boolean
+          description: Styles the option and prevents the action. Default is false.
+          default: false
+      required:
+        - type
+        - id
+        - text
+    dropdown_component:
+      title: Dropdown Component
+      type: object
+      description: |
+        A dropdown component is used to capture a choice from the options that you provide.
+
+        When submitted, the dropdown choices are returned in a hash with the id from the dropdown component used as the key and the id from the chosen option as the value.
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - dropdown
+        id:
+          type: string
+          description: A unique identifier for the component.
+        options:
+          type: array
+          description: The list of options. Can provide 2 to 10.
+          items:
+            "$ref": "#/components/schemas/dropdown_option"
+        label:
+          type: string
+          description: The text shown above the dropdown.
+        value:
+          type: string
+          description: The option that is selected by default.
+        save_state:
+          type: string
+          description: Styles all options and prevents the action. Default is `unsaved`. Will be overridden if `save_state` is `saved`.
+          enum:
+            - unsaved
+            - saved
+            - failed
+          default: unsaved
+        disabled:
+          type: boolean
+          description: Styles all options and prevents the action. Default is false. Will be overridden if save_state is saved.
+          default: false
+      required:
+        - type
+        - id
+        - options
     error:
       type: object
       title: Error
@@ -15258,6 +15673,18 @@ components:
       required:
       - type
       - errors
+    event:
+      title: Event
+      type: object
+      description: The event object enables Intercom to know more about the actions that took place in your app. Currently, you can only tell us when an app's flow has been completed.
+      properties:
+        type:
+          type: string
+          description: What action took place. The only value currently accepted is `completed`.
+          enum:
+            - completed
+      required:
+        - type
     file_attribute:
       title: File
       type: object
@@ -15515,6 +15942,148 @@ components:
       required:
         - type
         - data
+    image_component:
+      title: Image Component
+      type: object
+      description: |
+        An image component is used to display an image.
+
+        HTTPS Images:
+        If your request URLs (or website URLs) are over HTTPS, you will need to ensure that images are loaded over HTTPS likewise. Otherwise, they will not work.
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - image
+        id:
+          type: string
+          description: A unique identifier for the component.
+        url:
+          type: string
+          description: The URL where the image is located.
+        align:
+          type: string
+          description: Aligns the image inside the component. Default is `left`.
+          enum:
+            - left
+            - center
+            - right
+            - full_width
+          default: left
+        width:
+          type: integer
+          description: The exact width of the image in pixels.
+        height:
+          type: integer
+          description: The exact height of the image in pixels.
+        rounded:
+          type: boolean
+          description: Rounds the corners of the image. Default is `false`.
+          default: false
+        bottom_margin:
+          type: string
+          description: Disables a component's margin-bottom of 10px.
+          enum:
+            - none
+        action:
+          "$ref": "#/components/schemas/url_action_component"
+          description: This can be a URL Action only.
+      required:
+        - type
+        - url
+        - width
+        - height
+    initialize_request:
+      title: Initialize Request
+      type: object
+      description: |
+        The request payload will have all the data needed for you to understand who is using your app, where they are using it, and how you should respond. There are different request payloads for Messenger capabilities and Inbox capabilities.
+      properties:
+        workspace_id:
+          type: string
+          description: The workspace ID of the teammate. Attribute is `app_id` for V1.2 and below.
+        workspace_region:
+          type: string
+          description: The Intercom hosted region that this app is located in.
+        admin:
+          "$ref": "#/components/schemas/admin"
+          description: The Intercom teammate viewing the conversation.
+        card_creation_options:
+          type: object
+          description: Key-value pairs which were given as results in response to the Configure request.
+          additionalProperties: true
+        context:
+          "$ref": "#/components/schemas/context"
+          description: The context of where the app is added, where the user last visited, and information on the Messenger settings.
+        conversation:
+          "$ref": "#/components/schemas/conversation"
+          description: The conversation your app is being shown for.
+        contact:
+          "$ref": "#/components/schemas/contact"
+          description: The contact which is currently being viewed by the teammate in the conversation details panel. We send an individual initialize request for each customer when it's a group conversation.
+      required:
+        - workspace_id
+        - workspace_region
+        - admin
+        - card_creation_options
+        - context
+        - conversation
+        - contact
+    initialize_response:
+      title: Initialize Response
+      type: object
+      description: The response object returned when initializing an app, specifying the UI for the first screen using components.
+      properties:
+        canvas:
+          "$ref": "#/components/schemas/canvas_object"
+          description: The canvas object that defines the UI to be shown for the app.
+      required:
+        - canvas
+    input_component:
+      title: Input Component
+      type: object
+      description: |
+        An input component is used to capture text input from the end user. You can submit the value of the input by:
+
+        - Adding an `action` to the input component (which will render an inline button)
+        - Using a ButtonComponent (which will submit all interactive components in the canvas)
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - input
+        id:
+          type: string
+          description: A unique identifier for the component.
+        label:
+          type: string
+          description: The text shown above the input.
+        placeholder:
+          type: string
+          description: An example value shown inside the component when it's empty.
+        value:
+          type: string
+          description: An entered value which is already inside the component.
+        action:
+          "$ref": "#/components/schemas/action_component"
+          description: This can be a Submit Action, URL Action, or Sheets Action.
+        save_state:
+          type: string
+          description: Styles the input. Default is `unsaved`. Prevent action with `saved`.
+          enum:
+            - unsaved
+            - saved
+            - failed
+          default: unsaved
+        disabled:
+          type: boolean
+          description: Styles the input and prevents the action. Default is false. Will be overridden if save_state is saved.
+          default: false
+      required:
+        - type
+        - id
     intercom_version:
       description: Intercom API version.</br>By default, it's equal to the version
         set in the app package.
@@ -15600,6 +16169,148 @@ components:
         - total_count
         - has_more
         - data
+    list_item:
+      title: List Item
+      type: object
+      description: A list item component that can be rendered in a list.
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - item
+        id:
+          type: string
+          description: A unique identifier for the item.
+        title:
+          type: string
+          description: The text shown as the title for the item.
+        subtitle:
+          type: string
+          description: The text shown underneath the item's title.
+        tertiary_text:
+          type: string
+          description: The text shown next to the subtitle, separates by a bullet.
+        rounded_image:
+          type: boolean
+          description: Rounds the corners of the image. Default is `false`.
+          default: false
+        disabled:
+          type: boolean
+          description: Styles all list items and prevents the action. Default is `false`.
+          default: false
+        action:
+          "$ref": "#/components/schemas/action_component"
+          description: This can be a Submit Action, URL Action, or Sheets Action.
+      required:
+        - type
+        - id
+        - title
+
+    list_item_with_image:
+      title: List Item With Image
+      allOf:
+        - "$ref": "#/components/schemas/list_item"
+        - type: object
+          properties:
+            image:
+              type: string
+              description: An image that will be displayed to the left of the item.
+            image_width:
+              type: integer
+              description: The exact width of the image in pixels.
+            image_height:
+              type: integer
+              description: The exact height of the image in pixels.
+          required:
+            - image
+            - image_width
+            - image_height
+
+    list_item_without_image:
+      title: List Item Without Image
+      allOf:
+        - "$ref": "#/components/schemas/list_item"
+        - type: object
+          properties:
+            image:
+              type: string
+              description: An image that will be displayed to the left of the item.
+            image_width:
+              type: integer
+              description: The exact width of the image in pixels.
+            image_height:
+              type: integer
+              description: The exact height of the image in pixels.
+
+    list_component:
+      title: List Component
+      type: object
+      description: |
+        A list component renders a list of items which you provide in an array. You can make each list item take an action by adding the relevant action object to the item:
+
+        - [Trigger a submit request to be sent](https://developers.intercom.com/docs/references/canvas-kit/actioncomponents/submit-action) Inbox Messenger
+        - [Open a link in a new page](https://developers.intercom.com/docs/references/canvas-kit/actioncomponents/url-action) Inbox Messenger
+        - [Open a sheet](https://developers.intercom.com/docs/references/canvas-kit/actioncomponents/sheets-action) Messenger
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - list
+        items:
+          type: array
+          description: The items that will be rendered in the list.
+          items:
+            oneOf:
+              - "$ref": "#/components/schemas/list_item_with_image"
+              - "$ref": "#/components/schemas/list_item_without_image"
+        disabled:
+          type: boolean
+          description: Styles all list items and prevents the action. Default is `false`.
+          default: false
+      required:
+        - type
+        - items
+    live_canvas_request:
+      title: Live Canvas Request
+      type: object
+      description: |
+        Canvases are static by default and require a new request to come through in order to update them. Live canvases however will make requests every time the card is viewed without any interaction needed, meaning the canvas can be kept up-to-date with no action from the user.
+
+        This works for every Messenger request that you can respond with a canvas object to. Instead of returning the content object within the canvas object, you should provide a `content_url` attribute instead with the value being the URL you want us to send a POST request to when someone views the app.
+      properties:
+        workspace_id:
+          type: string
+          description: The workspace ID of the teammate. Attribute is `app_id` for V1.2 and below.
+        workspace_region:
+          type: string
+          description: The Intercom hosted region that this app is located in.
+        canvas:
+          "$ref": "#/components/schemas/canvas_object"
+          description: The current_canvas the teammate can see.
+        context:
+          "$ref": "#/components/schemas/context"
+          description: The context of where the app is added, where the user last visited, and information on the Messenger settings.
+        contact:
+          "$ref": "#/components/schemas/contact"
+          description: The contact who viewed the card.
+      required:
+        - workspace_id
+        - workspace_region
+        - canvas
+        - context
+        - contact
+    live_canvas_response:
+      title: Live Canvas Response
+      type: object
+      description: The response object returned when responding to a Live Canvas request. This contains the components you want to show.
+      properties:
+        content:
+          "$ref": "#/components/schemas/content_object"
+          description: The content object that defines the components to be shown.
+      required:
+        - content
     merge_contacts_request:
       description: Merge contact data.
       type: object
@@ -16222,6 +16933,18 @@ components:
       oneOf:
       - "$ref": "#/components/schemas/contact_reply_conversation_request"
       - "$ref": "#/components/schemas/admin_reply_conversation_request"
+    results_response:
+      title: Results Response
+      type: object
+      description: |
+        The results object should be sent when you want to end configuration of the app and trigger the [Initialize request](https://developers.intercom.com/docs/canvas-kit/#initialize) to be sent. You provide the key-value pairs of data you want access to and we will send these in the Initialize request within a [card_creation_options object](https://developers.intercom.com/docs/references/canvas-kit/requestobjects/card-creation-options/#card-creation-options).
+      properties:
+        results:
+          type: object
+          description: Key-value pairs of data you want access to in the Initialize request
+          additionalProperties: true
+      required:
+        - results
     search_request:
       description: Search using Intercoms Search APIs.
       type: object
@@ -16311,6 +17034,25 @@ components:
       required:
         - type
         - segments
+    sheet_action_component:
+      title: Sheet Action Component
+      type: object
+      description: |
+        A sheet action opens the link you give within the Messenger as an embedded iframe.
+
+        [More on how Sheets work is in our Canvas Kit documentation.](https://developers.intercom.com/docs/canvas-kit#sheets-optional)
+      properties:
+        type:
+          type: string
+          description: The type of action you are attaching to a component.
+          enum:
+            - sheet
+        url:
+          type: string
+          description: The link which hosts your sheet.
+      required:
+        - type
+        - url
     single_filter_search_request:
       title: Single Filter Search Request
       description: Search using Intercoms Search APIs with a single filter.
@@ -16349,6 +17091,79 @@ components:
           description: The value that you want to search on.
           example: '73732934'
           nullable: true
+    single_select_option:
+      title: Single Select Option
+      type: object
+      description: A single select option component that can be selected.
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - option
+        id:
+          type: string
+          description: A unique identifier for the option.
+        text:
+          type: string
+          description: The text shown within this option.
+        disabled:
+          type: boolean
+          description: Styles the option and prevents the action. Default is false.
+          default: false
+      required:
+        - type
+        - id
+        - text
+    single_select_component:
+      title: Single Select Component
+      type: object
+      description: |
+        A single-select component is used to capture a choice from up to 10 options that you provide. You can submit the value of the select option by:
+
+        - Adding an `action` to the single-select component
+        - Using a ButtonComponent (which will submit all interactive components in the canvas)
+        
+        When a submit action takes place, the results are given in a hash with the `id` from the single-select component used as the key and the `id` from the chosen option as the value.
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - single-select
+        id:
+          type: string
+          description: A unique identifier for the component.
+        options:
+          type: array
+          description: The list of options. Can provide 2 to 10.
+          items:
+            "$ref": "#/components/schemas/single_select_option"
+        label:
+          type: string
+          description: The text shown above the options.
+        value:
+          type: string
+          description: The option that is selected by default.
+        save_state:
+          type: string
+          description: Styles the input. Default is `unsaved`. Prevent action with `saved`.
+          enum:
+            - unsaved
+            - saved
+            - failed
+          default: unsaved
+        disabled:
+          type: boolean
+          description: Styles all options and prevents the action. Default is false. Will be overridden if save_state is saved.
+          default: false
+        action:
+          "$ref": "#/components/schemas/action_component"
+          description: This can be a Submit Action, URL Action, or Sheets Action.
+      required:
+        - type
+        - id
+        - options
     sla_applied:
       title: Applied SLA
       type: object
@@ -16427,6 +17242,31 @@ components:
         - type
         - name
         - url
+    spacer_component:
+      title: Spacer Component
+      type: object
+      description: A spacer component is used to create empty space between components.
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - spacer
+        id:
+          type: string
+          description: A unique identifier for the component.
+        size:
+          type: string
+          description: The amount of space between components. Default is `s`.
+          enum:
+            - xs
+            - s
+            - m
+            - l
+            - xl
+          default: s
+      required:
+        - type
     starting_after_paging:
       title: 'Pagination: Starting After'
       type: object
@@ -16443,6 +17283,93 @@ components:
           example: your-cursor-from-response
       required:
         - per_page
+    submit_action_component:
+      title: Submit Action Component
+      type: object
+      description: |
+        A submit action triggers a [Submit Request](https://developers.intercom.com/docs/canvas-kit#submit-request) to be sent. This request will include all values which have been entered into all the interactive components on the current canvas.
+      properties:
+        type:
+          type: string
+          description: The type of action you are attaching to a component.
+          enum:
+            - submit
+      required:
+        - type
+    submit_request:
+      title: Submit Request
+      type: object
+      description: |
+        The Submit request is triggered when a component with a submit action is interacted with in Messenger Inbox.
+      properties:
+        workspace_id:
+          type: string
+          description: The workspace ID of the teammate. Attribute is `app_id` for V1.2 and below.
+        workspace_region:
+          type: string
+          description: The Intercom hosted region that this app is located in.
+        admin:
+          "$ref": "#/components/schemas/admin"
+          description: The Intercom teammate viewing the conversation.
+        component_id:
+          type: string
+          description: The id of the component clicked by the teammate to trigger the request.
+        context:
+          "$ref": "#/components/schemas/context" 
+          description: The context of where the app is added, where the user last visited, and information on the Messenger settings.
+        conversation:
+          "$ref": "#/components/schemas/conversation"
+          description: The conversation where your app is being shown.
+        current_canvas:
+          "$ref": "#/components/schemas/current_canvas"
+          description: The current canvas the teammate can see.
+        contact:
+          "$ref": "#/components/schemas/contact"
+          description: The contact which is currently being viewed by the teammate in the conversation details panel.
+        input_values:
+          type: object
+          description: A list of key/value pairs of data, inputted by the teammate on the current canvas.
+          additionalProperties: true
+        user:
+          "$ref": "#/components/schemas/contact"
+          description: The user who took the action.
+      required:
+        - workspace_id
+        - workspace_region
+        - admin
+        - component_id
+        - context
+        - conversation
+        - current_canvas
+        - contact
+        - input_values
+        - user
+    submit_response:
+      title: Submit Response
+      type: object
+      description: |
+        The response object returned when submitting an app interaction. This will replace the previous canvas that was visible until the app was interacted with.
+        
+        You can optionally provide an event object with the attribute `type` given as `completed` to tell us if the app has completed its purpose. For example, an email collector app would be complete when the end-user submits their email address.
+        
+        Apps in conversation details can also optionally insert an app into the conversation reply:
+        
+        1. You respond with a card_creation_options object (https://developers.intercom.com/canvas-kit-reference/reference/card-creation-options)
+        2. We send a request to the initialize URL for Messenger capabilities (https://developers.intercom.com/docs/build-an-integration/getting-started/build-an-app-for-your-messenger/request-flows) with the card_creation_options object present
+        3. You respond with a canvas object with the components you want to insert into the conversation reply
+      properties:
+        canvas:
+          "$ref": "#/components/schemas/canvas_object"
+          description: The canvas object that defines the new UI to be shown.
+        card_creation_options:
+          type: object
+          description: Optional. Key-value pairs that will be sent in the initialize request to insert an app into the conversation reply.
+          additionalProperties: true
+        event:
+          "$ref": "#/components/schemas/event"
+          description: Optional. Indicates if the app has completed its purpose.
+      required:
+        - canvas
     subscription_type:
       title: Subscription Types
       type: object
@@ -16713,6 +17640,84 @@ components:
           - 493881
           items:
             type: integer
+    text_component:
+      title: Text Component
+      type: object
+      description: |
+        A text component is used for rendering blocks of text. Links and bold font can be rendered through Markdown. There are different styles provided which edit the color, weight, and font size. These cannot be edited through Markdown.
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - text
+        id:
+          type: string
+          description: A unique identifier for the component.
+        text:
+          type: string
+          description: The text that will be rendered.
+        align:
+          type: string
+          description: Aligns the text. Default is `left`.
+          enum:
+            - left
+            - center
+            - right
+          default: left
+        style:
+          type: string
+          description: Styles the text. Default is `paragraph`.
+          enum:
+            - header
+            - paragraph
+            - muted
+            - error
+          default: paragraph
+        bottom_margin:
+          type: string
+          description: Disables a component's margin-bottom of 10px.
+          enum:
+            - none
+      required:
+        - type
+        - text
+    text_area_component:
+      title: Text Area Component
+      type: object
+      description: |
+        A text area component is used to capture a large amount of text as input with a multi-line text box. You can submit the value of the text area by:
+
+        - Using a ButtonComponent (which will submit all interactive components in the canvas)
+      properties:
+        type:
+          type: string
+          description: The type of component you are rendering.
+          enum:
+            - textarea
+        id:
+          type: string
+          description: A unique identifier for the component.
+        label:
+          type: string
+          description: The text shown above the text area.
+        placeholder:
+          type: string
+          description: An example value shown inside the component when it's empty.
+        value:
+          type: string
+          description: An entered value which is already inside the component.
+        error:
+          type: boolean
+          description: Styles the input as failed. Default is false.
+          default: false
+        disabled:
+          type: boolean
+          description: Styles the input and prevents the action. Default is false.
+          default: false
+      required:
+        - type
+        - id
     ticket:
       title: Ticket
       type: object
@@ -17707,6 +18712,22 @@ components:
         - id
       - required:
         - user_id
+    url_action_component:
+      title: URL Action Component
+      type: object
+      description: A URL action opens a given link in a new browser tab.
+      properties:
+        type:
+          type: string
+          description: The type of action you are attaching to a component.
+          enum:
+            - url
+        url:
+          type: string
+          description: The link you want to open.
+      required:
+        - type
+        - url
     visitor:
       title: Visitor
       type: object
