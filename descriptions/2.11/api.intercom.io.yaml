@@ -11141,11 +11141,17 @@ components:
           items:
             type: integer
         avatar:
-          type: string
-          format: uri
+          type: object
           nullable: true
-          description: Image for the associated team or teammate
-          example: https://picsum.photos/200/300
+          description: The avatar object associated with the admin
+          properties:
+            image_url:
+              type: string
+              format: uri
+              description: URL of the admin's avatar image
+              example: https://example.org/128Wash.jpg
+          required:
+            - image_url
         team_priority_level:
           "$ref": "#/components/schemas/team_priority_level"
     admin_list:
@@ -12668,7 +12674,6 @@ components:
         - workspace_id
         - external_id
         - role
-        - email
         - phone
         - name
         - avatar
@@ -15259,7 +15264,6 @@ components:
         - first
         - last
         - count
-        - description
     data_export:
       title: Data Export
       type: object
