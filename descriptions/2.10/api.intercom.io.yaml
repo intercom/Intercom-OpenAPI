@@ -15065,6 +15065,11 @@ components:
       - created_at
       - body
       - message_type
+    multiple_or_single_filter_search_request:
+      title: Multiple or Single Filter Search Request
+      oneOf:
+        - "$ref": "#/components/schemas/multiple_filter_search_request"
+        - "$ref": "#/components/schemas/single_filter_search_request"
     multiple_filter_search_request:
       title: Multiple Filter Search Request
       description: Search using Intercoms Search APIs with more than one filter.
@@ -15078,17 +15083,9 @@ components:
           description: An operator to allow boolean inspection between multiple fields.
           example: AND
         value:
-          oneOf:
-          - type: array
-            description: Add mutiple filters.
-            title: multiple filter search request
-            items:
-              "$ref": "#/components/schemas/multiple_filter_search_request"
-          - type: array
-            description: Add a single filter field.
-            title: single filter search request
-            items:
-              "$ref": "#/components/schemas/single_filter_search_request"
+          type: array
+          items:
+            "$ref": "#/components/schemas/multiple_or_single_filter_search_request"
     news_item:
       title: News Item
       type: object
@@ -15552,6 +15549,7 @@ components:
             title: multiple filter search request
         pagination:
           "$ref": "#/components/schemas/starting_after_paging"
+          nullable: true
       required:
       - query
     segment:
@@ -15649,9 +15647,10 @@ components:
           - type: integer
           - type: array
             items:
-              oneOf:
-              - type: string
-              - type: integer
+              type: string
+          - type: array
+            items:
+              type: integer
           description: The value that you want to search on.
           example: '73732934'
           nullable: true
