@@ -1363,7 +1363,7 @@ paths:
 
         Companies are looked up via `company_id` in a `POST` request, if not found via `company_id`, the new company will be created, if found, that company will be updated.
 
-        {% admonition type="warning" name="Using `company_id`" %}
+        {% admonition type="attention" name="Using `company_id`" %}
           You can set a unique `company_id` value when creating a company. However, it is not possible to update `company_id`. Be sure to set a unique value once upon creation of the company.
         {% /admonition %}
       responses:
@@ -1666,7 +1666,7 @@ paths:
       description: |
         You can update a single company using the Intercom provisioned `id`.
 
-        {% admonition type="warning" name="Using `company_id`" %}
+        {% admonition type="attention" name="Using `company_id`" %}
           When updating a company it is not possible to update `company_id`. This can only be set once upon creation of the company.
         {% /admonition %}
       responses:
@@ -3716,6 +3716,7 @@ paths:
         | email                              | String                         |
         | email_domain                       | String                         |
         | phone                              | String                         |
+        | formatted_phone                    | String                         |
         | external_id                        | String                         |
         | created_at                         | Date (UNIX Timestamp)          |
         | signed_up_at                       | Date (UNIX Timestamp)          |
@@ -3753,7 +3754,7 @@ paths:
 
         ### Accepted Operators
 
-        {% admonition type="warning" name="Searching based on `created_at`" %}
+        {% admonition type="attention" name="Searching based on `created_at`" %}
           You cannot use the `<=` or `>=` operators to search by `created_at`.
         {% /admonition %}
 
@@ -4877,7 +4878,7 @@ paths:
 
         ### Accepted Fields
 
-        Most keys listed in the table below are searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `"foorbar"`).
+        Most keys listed as part of the The conversation model is searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `"foorbar"`).
         The `source.body` field is unique as the search will not be performed against the entire value, but instead against every element of the value separately. For example, when searching for a conversation with a `"I need support"` body - the query should contain a `=` operator with the value `"support"` for such conversation to be returned. A query with a `=` operator and a `"need support"` value will not yield a result.
 
         | Field                                     | Type                                                                                                                                                   |
@@ -5815,11 +5816,8 @@ paths:
       - Conversations
       operationId: autoAssignConversation
       description: |
-        {% admonition type="danger" name="Deprecation of Run Assignment Rules" %}
-        Run assignment rules is now deprecated in version 2.12 and future versions and will be permanently removed on December 31, 2026. After this date, any requests made to this endpoint will fail.
-        {% /admonition %}
         You can let a conversation be automatically assigned following assignment rules.
-        {% admonition type="warning" name="When using workflows" %}
+        {% admonition type="attention" name="When using workflows" %}
         It is not possible to use this endpoint with Workflows.
         {% /admonition %}
       responses:
@@ -5968,7 +5966,7 @@ paths:
       description: |+
         You can add participants who are contacts to a conversation, on behalf of either another contact or an admin.
 
-        {% admonition type="warning" name="Contacts without an email" %}
+        {% admonition type="attention" name="Contacts without an email" %}
         If you add a contact via the email parameter and there is no user/lead found on that workspace with he given email, then we will create a new contact with `role` set to `lead`.
         {% /admonition %}
 
@@ -6073,7 +6071,7 @@ paths:
       description: |+
         You can add participants who are contacts to a conversation, on behalf of either another contact or an admin.
 
-        {% admonition type="warning" name="Contacts without an email" %}
+        {% admonition type="attention" name="Contacts without an email" %}
         If you add a contact via the email parameter and there is no user/lead found on that workspace with he given email, then we will create a new contact with `role` set to `lead`.
         {% /admonition %}
 
@@ -10339,15 +10337,14 @@ paths:
         ### Accepted Fields
 
         Most keys listed as part of the Ticket model are searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `"foobar"`).
-        The `description` field is unique as the search will not be performed against the entire value, but instead against every element of the value separately. For example, when searching for a conversation with a `"I need support"` description - the query should contain a `=` operator with the value `"support"` for such conversation to be returned. A query with a `=` operator and a `"need support"` value will not yield a result.
 
         | Field                                     | Type                                                                                     |
         | :---------------------------------------- | :--------------------------------------------------------------------------------------- |
         | id                                        | String                                                                                   |
         | created_at                                | Date (UNIX timestamp)                                                                    |
         | updated_at                                | Date (UNIX timestamp)                                                                    |
-        | title                                     | String                                                                                   |
-        | description                               | String                                                                                   |
+        | _default_title_                           | String                                                                                   |
+        | _default_description_                     | String                                                                                   |
         | category                                  | String                                                                                   |
         | ticket_type_id                            | String                                                                                   |
         | contact_ids                               | String                                                                                   |
@@ -13102,7 +13099,7 @@ components:
     contact_location:
       title: Contact Location
       type: object
-      description: An object containing location metadata about a Intercom contact.
+      description: An object containing location meta data about a Intercom contact.
       properties:
         type:
           type: string
@@ -13940,7 +13937,8 @@ components:
     conversation_source:
       title: Conversation source
       type: object
-      description: The type of the conversation part that started this conversation. Can be Contact, Admin, Campaign, Automated or Operator initiated.
+      description: The Conversation Part that originated this conversation, which
+        can be Contact, Admin, Campaign, Automated or Operator initiated.
       properties:
         type:
           type: string
@@ -15732,10 +15730,6 @@ components:
         - filesize
         - width
         - height
-    filter:
-      anyOf:
-      - "$ref": "#/components/schemas/single_filter_search_request"
-      - "$ref": "#/components/schemas/multiple_filter_search_request"
     group_content:
       title: Group Content
       type: object
@@ -16398,7 +16392,7 @@ components:
         - "$ref": "#/components/schemas/single_filter_search_request"
     multiple_filter_search_request:
       title: Multiple Filter Search Request
-      description: Search with more than one filter.
+      description: Search using Intercoms Search APIs with more than one filter.
       type: object
       properties:
         operator:
@@ -17068,51 +17062,7 @@ components:
         field:
           type: string
           description: The accepted field that you want to search on.
-          enum:
-          - id
-          - role
-          - name
-          - avatar
-          - owner_id
-          - email
-          - email_domain
-          - phone
-          - external_id
-          - created_at
-          - signed_up_at
-          - updated_at
-          - last_seen_at
-          - last_contacted_at
-          - last_replied_at
-          - last_email_opened_at
-          - last_email_clicked_at
-          - language_override
-          - browser
-          - browser_language
-          - os
-          - location.country
-          - location.city
-          - location.region
-          - unsubscribed_from_emails
-          - marked_email_as_spam
-          - has_hard_bounced
-          - ios_last_seen_at
-          - ios_app_version
-          - ios_device
-          - ios_app_device
-          - ios_os_version
-          - ios_app_name
-          - ios_sdk_version
-          - android_last_seen_at
-          - android_app_version
-          - android_device
-          - android_app_device
-          - android_app_name
-          - android_sdk_version
-          - segment_id
-          - tag_id
-          - custom_attributes.*
-          example: custom_attributes.favorite_color
+          example: created_at
         operator:
           type: string
           enum:
