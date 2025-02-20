@@ -1918,7 +1918,7 @@ paths:
 
         Companies are looked up via `company_id` in a `POST` request, if not found via `company_id`, the new company will be created, if found, that company will be updated.
 
-        {% admonition type="attention" name="Using `company_id`" %}
+        {% admonition type="warning" name="Using `company_id`" %}
           You can set a unique `company_id` value when creating a company. However, it is not possible to update `company_id`. Be sure to set a unique value once upon creation of the company.
         {% /admonition %}
       responses:
@@ -2221,7 +2221,7 @@ paths:
       description: |
         You can update a single company using the Intercom provisioned `id`.
 
-        {% admonition type="attention" name="Using `company_id`" %}
+        {% admonition type="warning" name="Using `company_id`" %}
           When updating a company it is not possible to update `company_id`. This can only be set once upon creation of the company.
         {% /admonition %}
       responses:
@@ -4299,7 +4299,7 @@ paths:
 
         ### Accepted Operators
 
-        {% admonition type="attention" name="Searching based on `created_at`" %}
+        {% admonition type="warning" name="Searching based on `created_at`" %}
           You cannot use the `<=` or `>=` operators to search by `created_at`.
         {% /admonition %}
 
@@ -6722,7 +6722,7 @@ paths:
       operationId: autoAssignConversation
       description: |
         You can let a conversation be automatically assigned following assignment rules.
-        {% admonition type="attention" name="When using workflows" %}
+        {% admonition type="warning" name="When using workflows" %}
         It is not possible to use this endpoint with Workflows.
         {% /admonition %}
       responses:
@@ -6873,7 +6873,7 @@ paths:
       description: |+
         You can add participants who are contacts to a conversation, on behalf of either another contact or an admin.
 
-        {% admonition type="attention" name="Contacts without an email" %}
+        {% admonition type="warning" name="Contacts without an email" %}
         If you add a contact via the email parameter and there is no user/lead found on that workspace with he given email, then we will create a new contact with `role` set to `lead`.
         {% /admonition %}
 
@@ -6978,7 +6978,7 @@ paths:
       description: |+
         You can add participants who are contacts to a conversation, on behalf of either another contact or an admin.
 
-        {% admonition type="attention" name="Contacts without an email" %}
+        {% admonition type="warning" name="Contacts without an email" %}
         If you add a contact via the email parameter and there is no user/lead found on that workspace with he given email, then we will create a new contact with `role` set to `lead`.
         {% /admonition %}
 
@@ -17324,6 +17324,11 @@ components:
       - created_at
       - body
       - message_type
+    multiple_or_single_filter_search_request:
+      title: Multiple or Single Filter Search Request
+      oneOf:
+        - "$ref": "#/components/schemas/multiple_filter_search_request"
+        - "$ref": "#/components/schemas/single_filter_search_request"
     multiple_filter_search_request:
       title: Multiple Filter Search Request
       description: Search using Intercoms Search APIs with more than one filter.
@@ -17337,17 +17342,9 @@ components:
           description: An operator to allow boolean inspection between multiple fields.
           example: AND
         value:
-          oneOf:
-          - type: array
-            description: Add mutiple filters.
-            title: multiple filter search request
-            items:
-              "$ref": "#/components/schemas/multiple_filter_search_request"
-          - type: array
-            description: Add a single filter field.
-            title: single filter search request
-            items:
-              "$ref": "#/components/schemas/single_filter_search_request"
+          type: array
+          items:
+            "$ref": "#/components/schemas/multiple_or_single_filter_search_request"
     news_item:
       title: News Item
       type: object
@@ -17903,9 +17900,18 @@ components:
             search for the value.
           example: ">"
         value:
-          type: string
+          oneOf:
+          - type: string
+          - type: integer
+          - type: array
+            items:
+              type: string
+          - type: array
+            items:
+              type: integer
           description: The value that you want to search on.
           example: '73732934'
+          nullable: true
     sla_applied:
       title: Applied SLA
       type: object

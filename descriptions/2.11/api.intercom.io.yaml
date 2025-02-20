@@ -1363,7 +1363,7 @@ paths:
 
         Companies are looked up via `company_id` in a `POST` request, if not found via `company_id`, the new company will be created, if found, that company will be updated.
 
-        {% admonition type="attention" name="Using `company_id`" %}
+        {% admonition type="warning" name="Using `company_id`" %}
           You can set a unique `company_id` value when creating a company. However, it is not possible to update `company_id`. Be sure to set a unique value once upon creation of the company.
         {% /admonition %}
       responses:
@@ -1666,7 +1666,7 @@ paths:
       description: |
         You can update a single company using the Intercom provisioned `id`.
 
-        {% admonition type="attention" name="Using `company_id`" %}
+        {% admonition type="warning" name="Using `company_id`" %}
           When updating a company it is not possible to update `company_id`. This can only be set once upon creation of the company.
         {% /admonition %}
       responses:
@@ -3716,7 +3716,6 @@ paths:
         | email                              | String                         |
         | email_domain                       | String                         |
         | phone                              | String                         |
-        | formatted_phone                    | String                         |
         | external_id                        | String                         |
         | created_at                         | Date (UNIX Timestamp)          |
         | signed_up_at                       | Date (UNIX Timestamp)          |
@@ -3754,7 +3753,7 @@ paths:
 
         ### Accepted Operators
 
-        {% admonition type="attention" name="Searching based on `created_at`" %}
+        {% admonition type="warning" name="Searching based on `created_at`" %}
           You cannot use the `<=` or `>=` operators to search by `created_at`.
         {% /admonition %}
 
@@ -5816,8 +5815,11 @@ paths:
       - Conversations
       operationId: autoAssignConversation
       description: |
+        {% admonition type="danger" name="Deprecation of Run Assignment Rules" %}
+        Run assignment rules is now deprecated in version 2.12 and future versions and will be permanently removed on December 31, 2026. After this date, any requests made to this endpoint will fail.
+        {% /admonition %}
         You can let a conversation be automatically assigned following assignment rules.
-        {% admonition type="attention" name="When using workflows" %}
+        {% admonition type="warning" name="When using workflows" %}
         It is not possible to use this endpoint with Workflows.
         {% /admonition %}
       responses:
@@ -5966,7 +5968,7 @@ paths:
       description: |+
         You can add participants who are contacts to a conversation, on behalf of either another contact or an admin.
 
-        {% admonition type="attention" name="Contacts without an email" %}
+        {% admonition type="warning" name="Contacts without an email" %}
         If you add a contact via the email parameter and there is no user/lead found on that workspace with he given email, then we will create a new contact with `role` set to `lead`.
         {% /admonition %}
 
@@ -6071,7 +6073,7 @@ paths:
       description: |+
         You can add participants who are contacts to a conversation, on behalf of either another contact or an admin.
 
-        {% admonition type="attention" name="Contacts without an email" %}
+        {% admonition type="warning" name="Contacts without an email" %}
         If you add a contact via the email parameter and there is no user/lead found on that workspace with he given email, then we will create a new contact with `role` set to `lead`.
         {% /admonition %}
 
@@ -14922,47 +14924,6 @@ components:
           description: Total number of pages
           example: 13
       required:
-        - type
-    custom_attributes:
-      title: Custom Attributes
-      type: object
-      description: An object containing the different custom attributes associated
-        to the conversation as key-value pairs. For relationship attributes the value
-        will be a list of custom object instance models.
-      additionalProperties:
-        anyOf:
-        - type: string
-        - "$ref": "#/components/schemas/custom_object_instance"
-    custom_object_instance:
-      title: Custom Object Instance
-      type: object
-      x-tags:
-      - Custom Object Instances
-      description: A Custom Object Instance represents an instance of a custom object
-        type. This allows you to create and set custom attributes to store data about
-        your customers that is not already captured by Intercom. The parent object
-        includes recommended default attributes and you can add your own custom attributes.
-      properties:
-        id:
-          type: string
-          description: The Intercom defined id representing the custom object instance.
-          example: 5a7a19e9f59ae20001d1c1e6
-        external_id:
-          type: string
-          description: The id you have defined for the custom object instance.
-          example: 0001d1c1e65a7a19e9f59ae2
-        type:
-          type: string
-          description: The identifier of the custom object type that defines the structure
-            of the custom object instance.
-          example: Order
-        custom_attributes:
-          type: object
-          description: The custom attributes you have set on the custom object instance.
-          additionalProperties:
-            type: string
-      required:
-        - id
         - type
     customer_request:
       type: object

@@ -1540,7 +1540,7 @@ paths:
 
         Companies are looked up via `company_id` in a `POST` request, if not found via `company_id`, the new company will be created, if found, that company will be updated.
 
-        {% admonition type="attention" name="Using `company_id`" %}
+        {% admonition type="warning" name="Using `company_id`" %}
           You can set a unique `company_id` value when creating a company. However, it is not possible to update `company_id`. Be sure to set a unique value once upon creation of the company.
         {% /admonition %}
       responses:
@@ -1843,7 +1843,7 @@ paths:
       description: |
         You can update a single company using the Intercom provisioned `id`.
 
-        {% admonition type="attention" name="Using `company_id`" %}
+        {% admonition type="warning" name="Using `company_id`" %}
           When updating a company it is not possible to update `company_id`. This can only be set once upon creation of the company.
         {% /admonition %}
       responses:
@@ -3855,7 +3855,6 @@ paths:
         | email                              | String                         |
         | email_domain                       | String                         |
         | phone                              | String                         |
-        | formatted_phone                    | String                         |
         | external_id                        | String                         |
         | created_at                         | Date (UNIX Timestamp)          |
         | signed_up_at                       | Date (UNIX Timestamp)          |
@@ -3893,7 +3892,7 @@ paths:
 
         ### Accepted Operators
 
-        {% admonition type="attention" name="Searching based on `created_at`" %}
+        {% admonition type="warning" name="Searching based on `created_at`" %}
           You cannot use the `<=` or `>=` operators to search by `created_at`.
         {% /admonition %}
 
@@ -4487,7 +4486,6 @@ paths:
                       conversation_rating:
                       teammates:
                       title:
-                      custom_attributes: {}
                       topics: {}
               schema:
                 "$ref": "#/components/schemas/paginated_response"
@@ -4702,7 +4700,6 @@ paths:
                     conversation_rating:
                     teammates:
                     title:
-                    custom_attributes: {}
                     topics: {}
                     conversation_parts:
                       type: conversation_part.list
@@ -4832,9 +4829,6 @@ paths:
                     conversation_rating:
                     teammates:
                     title:
-                    custom_attributes:
-                      issue_type: Billing
-                      priority: High
                     topics: {}
                     conversation_parts:
                       type: conversation_part.list
@@ -4926,16 +4920,10 @@ paths:
                 summary: conversation found
                 value:
                   read: true
-                  custom_attributes:
-                    issue_type: Billing
-                    priority: High
               not_found:
                 summary: Not found
                 value:
                   read: true
-                  custom_attributes:
-                    issue_type: Billing
-                    priority: High
   "/conversations/search":
     post:
       summary: Search conversations
@@ -4969,7 +4957,7 @@ paths:
 
         ### Accepted Fields
 
-        Most keys listed as part of the The conversation model is searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `"foorbar"`).
+        Most keys listed as part of the conversation model are searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `"foorbar"`).
         The `source.body` field is unique as the search will not be performed against the entire value, but instead against every element of the value separately. For example, when searching for a conversation with a `"I need support"` body - the query should contain a `=` operator with the value `"support"` for such conversation to be returned. A query with a `=` operator and a `"need support"` value will not yield a result.
 
         | Field                                     | Type                                                                                                                                                   |
@@ -5103,7 +5091,6 @@ paths:
                       conversation_rating:
                       teammates:
                       title:
-                      custom_attributes: {}
                       topics: {}
               schema:
                 "$ref": "#/components/schemas/conversation_list"
@@ -5196,7 +5183,6 @@ paths:
                     conversation_rating:
                     teammates:
                     title:
-                    custom_attributes: {}
                     topics: {}
                     conversation_parts:
                       type: conversation_part.list
@@ -5276,7 +5262,6 @@ paths:
                     conversation_rating:
                     teammates:
                     title:
-                    custom_attributes: {}
                     topics: {}
                     conversation_parts:
                       type: conversation_part.list
@@ -5355,7 +5340,6 @@ paths:
                     conversation_rating:
                     teammates:
                     title:
-                    custom_attributes: {}
                     topics: {}
                     conversation_parts:
                       type: conversation_part.list
@@ -5546,7 +5530,6 @@ paths:
                     conversation_rating:
                     teammates:
                     title:
-                    custom_attributes: {}
                     topics: {}
                     conversation_parts:
                       type: conversation_part.list
@@ -5610,7 +5593,6 @@ paths:
                     conversation_rating:
                     teammates:
                     title:
-                    custom_attributes: {}
                     topics: {}
                     conversation_parts:
                       type: conversation_part.list
@@ -5674,7 +5656,6 @@ paths:
                     conversation_rating:
                     teammates:
                     title: ''
-                    custom_attributes: {}
                     topics: {}
                     conversation_parts:
                       type: conversation_part.list
@@ -5738,7 +5719,6 @@ paths:
                     conversation_rating:
                     teammates:
                     title:
-                    custom_attributes: {}
                     topics: {}
                     conversation_parts:
                       type: conversation_part.list
@@ -5867,8 +5847,11 @@ paths:
       - Conversations
       operationId: autoAssignConversation
       description: |
+        {% admonition type="danger" name="Deprecation of Run Assignment Rules" %}
+        Run assignment rules is now deprecated in version 2.12 and future versions and will be permanently removed on December 31, 2026. After this date, any requests made to this endpoint will fail.
+        {% /admonition %}
         You can let a conversation be automatically assigned following assignment rules.
-        {% admonition type="attention" name="When using workflows" %}
+        {% admonition type="warning" name="When using workflows" %}
         It is not possible to use this endpoint with Workflows.
         {% /admonition %}
       responses:
@@ -5919,7 +5902,6 @@ paths:
                     conversation_rating:
                     teammates:
                     title:
-                    custom_attributes: {}
                     topics: {}
                     conversation_parts:
                       type: conversation_part.list
@@ -6008,7 +5990,7 @@ paths:
       description: |+
         You can add participants who are contacts to a conversation, on behalf of either another contact or an admin.
 
-        {% admonition type="attention" name="Contacts without an email" %}
+        {% admonition type="warning" name="Contacts without an email" %}
         If you add a contact via the email parameter and there is no user/lead found on that workspace with he given email, then we will create a new contact with `role` set to `lead`.
         {% /admonition %}
 
@@ -6113,7 +6095,7 @@ paths:
       description: |+
         You can add participants who are contacts to a conversation, on behalf of either another contact or an admin.
 
-        {% admonition type="attention" name="Contacts without an email" %}
+        {% admonition type="warning" name="Contacts without an email" %}
         If you add a contact via the email parameter and there is no user/lead found on that workspace with he given email, then we will create a new contact with `role` set to `lead`.
         {% /admonition %}
 
@@ -6292,7 +6274,6 @@ paths:
                     conversation_rating:
                     teammates:
                     title:
-                    custom_attributes: {}
                     topics: {}
                     conversation_parts:
                       type: conversation_part.list
@@ -9324,11 +9305,11 @@ components:
         name:
           type: string
           description: The name of the admin.
-          example: Hoban Washburne
+          example: Joe Examplee
         email:
           type: string
           description: The email of the admin.
-          example: wash@serenity.io
+          example: wash@example.com
         job_title:
           type: string
           description: The job title of the admin.
@@ -9465,11 +9446,11 @@ components:
         name:
           type: string
           description: The name of the admin.
-          example: Hoban Washburne
+          example: Joe Examplee
         email:
           type: string
           description: The email of the admin.
-          example: wash@serenity.io
+          example: wash@example.com
         job_title:
           type: string
           description: The job title of the admin.
@@ -9989,7 +9970,7 @@ components:
                 type: string
                 description: The email you have defined for the contact who is being
                   added as a participant.
-                example: winstonsmith@truth.org
+                example: joe@example.com
               customer:
                 "$ref": "#/components/schemas/customer_request"
             required:
@@ -10145,7 +10126,7 @@ components:
         name:
           type: string
           description: The name of the company.
-          example: Blue Sun
+          example: Example Company Inc.
         app_id:
           type: string
           description: The Intercom defined code of the workspace the company is associated
@@ -10378,11 +10359,6 @@ components:
           type: string
           nullable: true
           description: The contacts phone.
-          example: "+1123456789"
-        formatted_phone:
-          type: string
-          nullable: true
-          description: The contacts phone number normalized to the E164 format
           example: "+1123456789"
         name:
           type: string
@@ -10627,6 +10603,11 @@ components:
       description: An object containing companies meta data about the companies that
         a contact has. Up to 10 will be displayed here. Use the url to get more.
       properties:
+        data:
+          type: array
+          description: An array of company data objects attached to the contact.
+          items:
+            "$ref": "#/components/schemas/company_data"
         url:
           type: string
           format: uri
@@ -10642,6 +10623,26 @@ components:
           description: Whether there's more Addressable Objects to be viewed. If true,
             use the url to view all
           example: true
+    company_data:
+      title: Company Data
+      type: object
+      description: An object containing data about the companies that a contact is associated with.
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the company which is given by Intercom.
+          example: 5ba682d23d7cf92bef87bfd4
+        type:
+          type: string
+          description: The type of the object. Always company.
+          enum:
+          - company
+          example: company
+        url:
+          type: string
+          format: uri
+          description: The relative URL of the company.
+          example: "/companies/5ba682d23d7cf92bef87bfd4"
     contact_deleted:
       title: Contact Deleted
       type: object
@@ -11091,8 +11092,6 @@ components:
           "$ref": "#/components/schemas/conversation_contacts"
         teammates:
           "$ref": "#/components/schemas/conversation_teammates"
-        custom_attributes:
-          "$ref": "#/components/schemas/custom_attributes"
         first_contact_reply:
           "$ref": "#/components/schemas/conversation_first_contact_reply"
         sla_applied:
@@ -11321,14 +11320,24 @@ components:
     conversation_source:
       title: Conversation source
       type: object
-      description: The Conversation Part that originated this conversation, which
-        can be Contact, Admin, Campaign, Automated or Operator initiated.
+      description: The type of the conversation part that started this conversation. Can be Contact, Admin, Campaign, Automated or Operator initiated.
       properties:
         type:
           type: string
           description: This includes conversation, email, facebook, instagram, phone_call,
             phone_switch, push, sms, twitter and whatsapp.
           example: conversation
+          enum:
+          - conversation
+          - email
+          - facebook
+          - instagram
+          - phone_call
+          - phone_switch
+          - push
+          - sms
+          - twitter
+          - whatsapp
         id:
           type: string
           description: The id representing the message.
@@ -11511,7 +11520,7 @@ components:
             email:
               type: string
               description: The contact's email, retained by default if one is present.
-              example: winstonsmith@truth.org
+              example: joe@example.com
           anyOf:
           - required:
             - id
@@ -11533,7 +11542,7 @@ components:
             email:
               type: string
               description: The visitor's email.
-              example: winstonsmith@truth.org
+              example: joe@example.com
           anyOf:
           - required:
             - id
@@ -11997,7 +12006,7 @@ components:
         industry:
           type: string
           description: The industry that this company operates in.
-          example: Manufacturing
+          example: Technology
         custom_attributes:
           type: object
           description: A hash of key/value pairs containing any other data about the
@@ -12099,45 +12108,6 @@ components:
           type: integer
           description: Total number of pages
           example: 13
-    custom_attributes:
-      title: Custom Attributes
-      type: object
-      description: An object containing the different custom attributes associated
-        to the conversation as key-value pairs. For relationship attributes the value
-        will be a list of custom object instance models.
-      additionalProperties:
-        anyOf:
-        - type: string
-        - "$ref": "#/components/schemas/custom_object_instance"
-    custom_object_instance:
-      title: Custom Object Instance
-      type: object
-      x-tags:
-      - Custom Object Instances
-      nullable: true
-      description: A Custom Object Instance represents an instance of a custom object
-        type. This allows you to create and set custom attributes to store data about
-        your customers that is not already captured by Intercom. The parent object
-        includes recommended default attributes and you can add your own custom attributes.
-      properties:
-        id:
-          type: string
-          description: The Intercom defined id representing the custom object instance.
-          example: 5a7a19e9f59ae20001d1c1e6
-        external_id:
-          type: string
-          description: The id you have defined for the custom object instance.
-          example: 0001d1c1e65a7a19e9f59ae2
-        type:
-          type: string
-          description: The identifier of the custom object type that defines the structure
-            of the custom object instance.
-          example: Order
-        custom_attributes:
-          type: object
-          description: The custom attributes you have set on the custom object instance.
-          additionalProperties:
-            type: string
     customer_request:
       type: object
       nullable: true
@@ -13021,6 +12991,11 @@ components:
       - created_at
       - body
       - message_type
+    multiple_or_single_filter_search_request:
+      title: Multiple or Single Filter Search Request
+      oneOf:
+        - "$ref": "#/components/schemas/multiple_filter_search_request"
+        - "$ref": "#/components/schemas/single_filter_search_request"
     multiple_filter_search_request:
       title: Multiple Filter Search Request
       description: Search using Intercoms Search APIs with more than one filter.
@@ -13034,17 +13009,9 @@ components:
           description: An operator to allow boolean inspection between multiple fields.
           example: AND
         value:
-          oneOf:
-          - type: array
-            description: Add mutiple filters.
-            title: multiple filter search request
-            items:
-              "$ref": "#/components/schemas/multiple_filter_search_request"
-          - type: array
-            description: Add a single filter field.
-            title: single filter search request
-            items:
-              "$ref": "#/components/schemas/single_filter_search_request"
+          type: array
+          items:
+            "$ref": "#/components/schemas/multiple_or_single_filter_search_request"
     news_item:
       title: News Item
       type: object
@@ -13696,9 +13663,17 @@ components:
             search for the value.
           example: ">"
         value:
-          type: string
+          oneOf:
+          - type: string
+          - type: integer
+          - type: array
+            items:
+              oneOf:
+              - type: string
+              - type: integer
           description: The value that you want to search on.
           example: '73732934'
+          nullable: true
     sla_applied:
       title: Applied SLA
       type: object
