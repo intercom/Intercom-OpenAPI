@@ -4040,13 +4040,6 @@ paths:
           description: successful
           content:
             application/json:
-              examples:
-                successful:
-                  value:
-                    id: 6762f0d21bb69f9f2193bb7e
-                    external_id: '70'
-                    type: contact
-                    deleted: true
               schema:
                 "$ref": "#/components/schemas/contact_deleted"
         '401':
@@ -4717,13 +4710,6 @@ paths:
           description: successful
           content:
             application/json:
-              examples:
-                successful:
-                  value:
-                    id: 6762f0e21bb69f9f2193bb86
-                    external_id: '70'
-                    type: contact
-                    archived: true
               schema:
                 "$ref": "#/components/schemas/contact_archived"
   "/contacts/{id}/unarchive":
@@ -4750,15 +4736,34 @@ paths:
           description: successful
           content:
             application/json:
-              examples:
-                successful:
-                  value:
-                    id: 6762f0e31bb69f9f2193bb87
-                    external_id: '70'
-                    type: contact
-                    archived: false
               schema:
                 "$ref": "#/components/schemas/contact_unarchived"
+  "/contacts/{id}/block":
+    post:
+      summary: Block contact
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        description: id
+        example: 63a07ddf05a32042dffac965
+        required: true
+        schema:
+          type: string
+      tags:
+      - Contacts
+      operationId: BlockContact
+      description: You can block a single contact.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/contact_blocked"
   "/conversations/{conversation_id}/tags":
     post:
       summary: Add tag to a conversation
@@ -14153,30 +14158,6 @@ components:
           "$ref": "#/components/schemas/contact_location"
         social_profiles:
           "$ref": "#/components/schemas/contact_social_profiles"
-    contact_archived:
-      title: Contact Archived
-      type: object
-      description: archived contact object
-      properties:
-        type:
-          type: string
-          description: always contact
-          enum:
-          - contact
-          example: contact
-        id:
-          type: string
-          description: The unique identifier for the contact which is given by Intercom.
-          example: 5ba682d23d7cf92bef87bfd4
-        external_id:
-          type: string
-          nullable: true
-          description: The unique identifier for the contact which is provided by
-            the Client.
-          example: f3b87a2e09d514c6c2e79b9a
-        archived:
-          type: boolean
-          description: Whether the contact is archived or not.
           example: true
     contact_attached_companies:
       title: Contact Attached Companies
@@ -14224,25 +14205,10 @@ components:
           example: true
     contact_deleted:
       title: Contact Deleted
-      type: object
       description: deleted contact object
+      allOf:
+      - "$ref": "#/components/schemas/contact_reference"
       properties:
-        type:
-          type: string
-          description: always contact
-          enum:
-          - contact
-          example: contact
-        id:
-          type: string
-          description: The unique identifier for the contact which is given by Intercom.
-          example: 5ba682d23d7cf92bef87bfd4
-        external_id:
-          type: string
-          nullable: true
-          description: The unique identifier for the contact which is provided by
-            the Client.
-          example: f3b87a2e09d514c6c2e79b9a
         deleted:
           type: boolean
           description: Whether the contact is deleted or not.
@@ -14342,7 +14308,7 @@ components:
           nullable: true
           description: The unique identifier for the contact which is provided by
             the Client.
-          example: f3b87a2e09d514c6c2e79b9a
+          example: "70"
     contact_reply_base_request:
       title: Contact Reply Base Object
       type: object
@@ -14564,31 +14530,35 @@ components:
           description: Whether there's more Addressable Objects to be viewed. If true,
             use the url to view all
           example: true
+    contact_archived:
+      title: Contact Archived
+      description: archived contact object
+      allOf:
+      - "$ref": "#/components/schemas/contact_reference"
+      properties:
+        archived:
+          type: boolean
+          description: Whether the contact is archived or not.
     contact_unarchived:
       title: Contact Unarchived
-      type: object
       description: unarchived contact object
+      allOf:
+      - "$ref": "#/components/schemas/contact_reference"
       properties:
-        type:
-          type: string
-          description: always contact
-          enum:
-          - contact
-          example: contact
-        id:
-          type: string
-          description: The unique identifier for the contact which is given by Intercom.
-          example: 5ba682d23d7cf92bef87bfd4
-        external_id:
-          type: string
-          nullable: true
-          description: The unique identifier for the contact which is provided by
-            the Client.
-          example: f3b87a2e09d514c6c2e79b9a
         archived:
           type: boolean
           description: Whether the contact is archived or not.
           example: false
+    contact_blocked:
+      title: Contact Blocked
+      description: blocked contact object
+      allOf:
+      - "$ref": "#/components/schemas/contact_reference"
+      properties:
+        blocked:
+          type: boolean
+          description: Always true.
+          example: true
     content_import_source:
       title: Content Import Source
       type: object
