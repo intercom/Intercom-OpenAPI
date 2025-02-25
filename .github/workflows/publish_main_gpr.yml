@@ -1,0 +1,51 @@
+# This file is a generic workflow used across multiple Intercom repos.
+# The source of truth lives at:
+#   https://github.com/intercom/github-action-workflows
+# If you feel you need to make a change to this workflow, please reach out
+# to team-builder-tools on Slack.
+
+name: Publish to GitHub Package Registry
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Fetch all tags
+        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
+      - name: Setup NodeJS Runtime
+        uses: actions/setup-node@v2
+        with:
+          node-version: 18
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@intercom'
+
+      - name: Publish new tag
+        run: |
+          package_version="v$(node -e "console.log(require('./package.json').version)")"
+          tag_existed_before=$(git tag --list | grep "$package_version" | wc -l)
+          if [ "$tag_existed_before" == "0" ]; then
+            git config --global user.email "intercom-gpr-reader@intercom.com"
+            git config --global user.name "intercom/github-action-workflows - Auto-Tag - GitHub Action"
+            git tag -a "$package_version" -m "$package_version"
+            git push origin "$package_version"
+            echo "Pushed tag $package_version"
+          else
+            echo "Tag $package_version already exists, not overwriting"
+          fi
+
+      - name: Publish to GPR
+        # We need to remove the .npmrc here because it contains a read-only
+        # GPR token which takes precendence over the read-write token
+        # provided by GitHub via action secrets below
+        run: rm .npmrc || true; npm publish || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
