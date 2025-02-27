@@ -1,9 +1,3 @@
-# This file is a generic workflow used across multiple Intercom repos.
-# The source of truth lives at:
-#   https://github.com/intercom/github-action-workflows
-# If you feel you need to make a change to this workflow, please reach out
-# to team-builder-tools on Slack.
-
 name: Publish pre-release version to GitHub Package Registry
 
 on:
@@ -53,9 +47,6 @@ jobs:
 
       - name: Publish to GPR
         if: steps.package-version-check.outputs.is-pre-release == 'true'
-        # We need to remove the .npmrc here because it contains a read-only
-        # GPR token which takes precendence over the read-write token
-        # provided by GitHub via action secrets below
         run: rm .npmrc || true; npm publish || true
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
