@@ -8477,7 +8477,7 @@ paths:
       - Messages
       operationId: createMessage
       description: "You can create a message that has been initiated by an admin.
-        The conversation can be either an in-app message or an email.\n\n> \U0001F6A7
+        The conversation can be either an in-app message, an email or sms.\n\n> \U0001F6A7
         Sending for visitors\n>\n> There can be a short delay between when a contact
         is created and when a contact becomes available to be messaged through the
         API. A 404 Not Found error will be returned in this case.\n\nThis will return
@@ -8543,6 +8543,13 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: Body is required
+                Invalid body supplied for sms message:
+                  value:
+                    type: error.list
+                    request_id: d7997515-65af-4860-9bf5-777852f8b24f
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid SMS message body
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
@@ -8620,6 +8627,17 @@ paths:
                     id: 6762f2391bb69f9f2193bc19
                   message_type: conversation
                   body: heyy
+              admin_sms_message_created:
+                summary: admin sms message created
+                value:
+                  from:
+                    type: admin
+                    id: '991267817'
+                  to:
+                    type: user
+                    id: 6762f23a1bb69f9f2193bc1a
+                  message_type: sms
+                  body: heyy
               no_body_supplied_for_message:
                 summary: No body supplied for message
                 value:
@@ -8655,6 +8673,17 @@ paths:
                   message_type: email
                   body:
                   subject: heyy
+              invalid_body_supplied_for_sms_message:
+                summary: Invalid body supplied for sms message
+                value:
+                  from:
+                    type: admin
+                    id: '991267821'
+                  to:
+                    type: user
+                    id: 6762f23b1bb69f9f2193bc1d
+                  message_type: sms
+                  body:heyy https://picsum.photos/200/300
   "/news/news_items":
     get:
       summary: List all news items
@@ -15773,10 +15802,11 @@ components:
       properties:
         message_type:
           type: string
-          description: 'The kind of message being created. Values: `in_app` or `email`.'
+          description: 'The kind of message being created. Values: `in_app`, `email` or `sms`.'
           enum:
           - in_app
           - email
+          - sms
           example: in_app
         subject:
           type: string
@@ -15849,6 +15879,12 @@ components:
         - from
         - to
       - title: 'message_type: `inapp`.'
+        required:
+        - message_type
+        - body
+        - from
+        - to
+      - title: 'message_type: `sms`.'
         required:
         - message_type
         - body
@@ -17417,8 +17453,9 @@ components:
           - inapp
           - facebook
           - twitter
+          - sms
           description: The type of message that was sent. Can be email, inapp, facebook
-            or twitter.
+            ,twitter or sms.
           example: inapp
         conversation_id:
           type: string
