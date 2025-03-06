@@ -7355,8 +7355,10 @@ paths:
                 successful:
                   value:
                     id: '22'
-                    type: object_type_identifier_1
-                    custom_attributes: {}
+                    type: Order
+                    custom_attributes:
+                      order_number: ORDER-12345
+                      total_amount: 99.99
                     external_id: '123'
                     external_created_at: 1392036272
                     external_updated_at: 1392036272
@@ -7365,19 +7367,9 @@ paths:
               schema:
                 "$ref": "#/components/schemas/custom_object_instance"
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 12a938a3-314e-4939-b773-5cd45738bd21
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/TypeNotFound"
       requestBody:
         content:
           application/json:
@@ -7390,6 +7382,9 @@ paths:
                   external_id: '123'
                   external_created_at: 1392036272
                   external_updated_at: 1392036272
+                  custom_attributes:
+                    order_number: ORDER-12345
+                    total_amount: 99.99
     get:
       summary: Get Custom Object Instance by External ID
       parameters:
@@ -7398,25 +7393,15 @@ paths:
         style: form
         required: true
         schema:
-          type: object
-          oneOf:
-          - description: The Intercom defined id representing the custom object instance.
-            title: Find by id
-            properties:
-              external_id:
-                type: string
-            required:
-            - external_id
-            additionalProperties: false
-          - description: The unique identifier for the instance in the external system
-              it originated from.
-            title: Find by external_id
-            properties:
-              external_id:
-                type: string
-            required:
-            - external_id
-            additionalProperties: false
+          type: string
+          description: The unique identifier for the instance in the external system
+            it originated from.
+          title: Find by external_id
+          properties:
+            external_id:
+              type: string
+          required:
+          - external_id
       - name: Intercom-Version
         in: header
         schema:
@@ -7433,8 +7418,10 @@ paths:
                 successful:
                   value:
                     id: '24'
-                    type: object_type_identifier_4
-                    custom_attributes: {}
+                    type: Order
+                    custom_attributes:
+                      order_number: ORDER-12345
+                      total_amount: 99.99
                     external_id: '123'
                     external_created_at:
                     external_updated_at:
@@ -7443,19 +7430,50 @@ paths:
               schema:
                 "$ref": "#/components/schemas/custom_object_instance"
         '401':
-          description: Unauthorized
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/ObjectNotFound"
+    delete:
+      summary: Delete a Custom Object Instance by External ID
+      parameters:
+      - name: external_id
+        in: query
+        style: form
+        required: true
+        schema:
+          type: string
+          description: The unique identifier for the instance in the external system
+            it originated from.
+          title: Find by external_id
+          properties:
+            external_id:
+              type: string
+          required:
+          - external_id
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Custom Object Instances
+      description: Delete a single Custom Object instance by external_id.
+      responses:
+        '200':
+          description: successful
           content:
             application/json:
               examples:
-                Unauthorized:
+                successful:
                   value:
-                    type: error.list
-                    request_id: dae27fda-0f84-43b2-be25-f97697c229af
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
+                    id: '26'
+                    object: Order
+                    deleted: true
               schema:
-                "$ref": "#/components/schemas/error"
+                "$ref": "#/components/schemas/custom_object_instance_deleted"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/ObjectNotFound"
   "/custom_object_instances/{custom_object_type_identifier}/{id}":
     parameters:
     - name: custom_object_type_identifier
@@ -7491,8 +7509,10 @@ paths:
                 successful:
                   value:
                     id: '25'
-                    type: object_type_identifier_6
-                    custom_attributes: {}
+                    type: Order
+                    custom_attributes:
+                      order_number: ORDER-12345
+                      total_amount: 99.99
                     external_id: '123'
                     external_created_at:
                     external_updated_at:
@@ -7501,21 +7521,11 @@ paths:
               schema:
                 "$ref": "#/components/schemas/custom_object_instance"
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 40038755-5b64-4d2b-b71b-48471c1dc79f
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/ObjectNotFound"
     delete:
-      summary: Delete a Custom Object Instance
+      summary: Delete a Custom Object Instance by ID
       parameters:
       - name: id
         in: path
@@ -7540,24 +7550,14 @@ paths:
                 successful:
                   value:
                     id: '26'
-                    object: object_type_identifier_8
+                    object: Order
                     deleted: true
               schema:
                 "$ref": "#/components/schemas/custom_object_instance_deleted"
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: b25664a7-86cc-4725-8c95-d9ea339b12b7
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: "#/components/responses/ObjectNotFound"
   "/data_attributes":
     get:
       summary: List all data attributes
@@ -15802,11 +15802,10 @@ components:
       properties:
         message_type:
           type: string
-          description: 'The kind of message being created. Values: `in_app`, `email` or `sms`.'
+          description: 'The kind of message being created. Values: `in_app` or `email`.'
           enum:
           - in_app
           - email
-          - sms
           example: in_app
         subject:
           type: string
@@ -15969,6 +15968,8 @@ components:
           type: object
           nullable: true
           description: The custom attributes which are set for the Custom Object instance.
+          additionalProperties:
+            type: string
     create_or_update_tag_request:
       description: You can create or update an existing tag.
       type: object
@@ -16049,7 +16050,6 @@ components:
           example:
           - id: '1234'
         conversation_to_link_id:
-          required: false
           type: string
           description: "The ID of the conversation you want to link to the ticket.
             Here are the valid ways of linking two tickets:\n
@@ -16240,11 +16240,35 @@ components:
         id:
           type: string
           description: The Intercom defined id representing the custom object instance.
-          example: 5a7a19e9f59ae20001d1c1e6
+          example: 16032025
         external_id:
           type: string
           description: The id you have defined for the custom object instance.
           example: 0001d1c1e65a7a19e9f59ae2
+        external_created_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The time when the Custom Object instance was created in the
+            external system it originated from.
+          example: 1571672154
+        external_updated_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The time when the Custom Object instance was last updated in
+            the external system it originated from.
+          example: 1571672154
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the attribute was created as a UTC Unix timestamp
+          example: 1671028894
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time the attribute was last updated as a UTC Unix timestamp
+          example: 1671028894
         type:
           type: string
           description: The identifier of the custom object type that defines the structure
@@ -19767,6 +19791,49 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          examples:
+            Unauthorized:
+              value:
+                type: error.list
+                request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                errors:
+                - code: unauthorized
+                  message: Access Token Invalid
+          schema:
+            "$ref": "#/components/schemas/error"
+    TypeNotFound:
+      description: Not Found
+      content:
+        application/json:
+          examples:
+            TypeNotFound:
+              value:
+                type: error.list
+                request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                errors:
+                - code: not_found
+                  message: Custom object type `undefined` not found
+          schema:
+            "$ref": "#/components/schemas/error"
+    ObjectNotFound:
+      description: Not Found
+      content:
+        application/json:
+          examples:
+            ObjectNotFound:
+              value:
+                type: error.list
+                request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                errors:
+                - code: not_found
+                  message: Custom object instance not found
+          schema:
+            "$ref": "#/components/schemas/error"
 servers:
 - url: https://api.intercom.io
   description: The production API server
