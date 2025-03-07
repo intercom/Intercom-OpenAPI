@@ -3750,8 +3750,16 @@ paths:
           type: string
       tags:
       - Contacts
+      - Custom Object Instances
       operationId: UpdateContact
-      description: You can update an existing contact (ie. user or lead).
+      description: |
+        You can update an existing contact (ie. user or lead).
+        
+        {% admonition type="info" %}
+          This endpoint handles both **contact updates** and **custom object associations**.
+          
+          See _`update a contact with an association to a custom object instance`_ in the request/response examples to see the custom object association format.
+        {% /admonition %}
       responses:
         '200':
           description: successful
@@ -3847,6 +3855,106 @@ paths:
                     utm_term:
                     referrer:
                     enabled_push_messaging:
+                update a contact with an association to a custom object instance:
+                  value:
+                    type: contact
+                    id: 6762f0cd1bb69f9f2193bb7c
+                    workspace_id: this_is_an_id279_that_should_be_at_least_
+                    external_id: '70'
+                    role: user
+                    email: joebloggs@intercom.io
+                    phone:
+                    formatted_phone:
+                    name: joe bloggs
+                    avatar:
+                    owner_id:
+                    social_profiles:
+                      type: list
+                      data: []
+                    has_hard_bounced: false
+                    marked_email_as_spam: false
+                    unsubscribed_from_emails: false
+                    created_at: 1734537421
+                    updated_at: 1734537422
+                    signed_up_at: 1734537421
+                    last_seen_at:
+                    last_replied_at:
+                    last_contacted_at:
+                    last_email_opened_at:
+                    last_email_clicked_at:
+                    language_override:
+                    browser:
+                    browser_version:
+                    browser_language:
+                    os:
+                    location:
+                      type: location
+                      country:
+                      region:
+                      city:
+                      country_code:
+                      continent_code:
+                    android_app_name:
+                    android_app_version:
+                    android_device:
+                    android_os_version:
+                    android_sdk_version:
+                    android_last_seen_at:
+                    ios_app_name:
+                    ios_app_version:
+                    ios_device:
+                    ios_os_version:
+                    ios_sdk_version:
+                    ios_last_seen_at:
+                    custom_attributes:
+                      order:
+                        type: Order.list
+                        instances:
+                        - id: '21'
+                          external_id: '123'
+                          external_created_at: 1392036272
+                          external_updated_at: 1392036272
+                          custom_attributes:
+                            order_number: ORDER-12345
+                            total_amount: 99.99
+                          type: Order
+                    tags:
+                      type: list
+                      data: []
+                      url: "/contacts/6762f0cd1bb69f9f2193bb7c/tags"
+                      total_count: 0
+                      has_more: false
+                    notes:
+                      type: list
+                      data: []
+                      url: "/contacts/6762f0cd1bb69f9f2193bb7c/notes"
+                      total_count: 0
+                      has_more: false
+                    companies:
+                      type: list
+                      data: []
+                      url: "/contacts/6762f0cd1bb69f9f2193bb7c/companies"
+                      total_count: 0
+                      has_more: false
+                    opted_out_subscription_types:
+                      type: list
+                      data: []
+                      url: "/contacts/6762f0cd1bb69f9f2193bb7c/subscriptions"
+                      total_count: 0
+                      has_more: false
+                    opted_in_subscription_types:
+                      type: list
+                      data: []
+                      url: "/contacts/6762f0cd1bb69f9f2193bb7c/subscriptions"
+                      total_count: 0
+                      has_more: false
+                    utm_campaign:
+                    utm_content:
+                    utm_medium:
+                    utm_source:
+                    utm_term:
+                    referrer:
+                    enabled_push_messaging:
               schema:
                 allOf:
                 - "$ref": "#/components/schemas/contact"
@@ -3882,6 +3990,13 @@ paths:
                 value:
                   email: joebloggs@intercom.io
                   name: joe bloggs
+              update_a_contact_with_an_association_to_a_custom_object_instance:
+                summary: update a contact with an association to a custom object
+                  instance
+                value:
+                  custom_attributes:
+                    order:
+                    - '21'
     get:
       summary: Get a contact
       parameters:
@@ -5454,6 +5569,7 @@ paths:
           type: string
       tags:
       - Conversations
+      - Custom Object Instances
       operationId: updateConversation
       description: |2+
 
@@ -5461,6 +5577,12 @@ paths:
 
         {% admonition type="info" name="Replying and other actions" %}
         If you want to reply to a coveration or take an action such as assign, unassign, open, close or snooze, take a look at the reply and manage endpoints.
+        {% /admonition %}
+
+        {% admonition type="info" %}
+          This endpoint handles both **conversation updates** and **custom object associations**.
+          
+          See _`update a conversation with an association to a custom object instance`_ in the request/response examples to see the custom object association format.
         {% /admonition %}
 
       responses:
@@ -5610,11 +5732,16 @@ paths:
                     title:
                     custom_attributes:
                       order:
-                        type: order.list
+                        type: Order.list
                         instances:
                         - id: '21'
-                          custom_attributes: {}
-                          type: order
+                          external_id: '123'
+                          external_created_at: 1392036272
+                          external_updated_at: 1392036272
+                          custom_attributes:
+                            order_number: ORDER-12345
+                            total_amount: 99.99
+                          type: Order
                     topics: {}
                     ticket:
                     linked_objects:
@@ -7345,6 +7472,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
+      operationId: createCustomObjectInstances
       description: Create or update a custom object instance
       responses:
         '200':
@@ -7408,6 +7536,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
+      operationId: getCustomObjectInstancesByExternalId
       description: Fetch a Custom Object Instance by external_id.
       responses:
         '200':
@@ -7456,6 +7585,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
+      operationId: deleteCustomObjectInstancesById
       description: Delete a single Custom Object instance by external_id.
       responses:
         '200':
@@ -7499,6 +7629,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
+      operationId: getCustomObjectInstancesById
       description: Fetch a Custom Object Instance by id.
       responses:
         '200':
@@ -7539,6 +7670,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
+      operationId: deleteCustomObjectInstancesByExternalId
       description: Delete a single Custom Object instance using the Intercom defined
         id.
       responses:
@@ -19873,7 +20005,11 @@ tags:
     description: What is a conversation?
     url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
 - name: Custom Object Instances
-  description: Everything about your Custom Object instances.
+  description: | 
+    Everything about your Custom Object instances.
+    {% admonition type="warning" name="Permission Requirements" %}
+      From now on, to access this endpoint, you need additional permissions. Please head over to the [Developer Hub](https://app.intercom.com/a/apps/_/developer-hub) app package authentication settings to configure the required permissions.
+    {% /admonition %}
 - name: Data Attributes
   description: Everything about your Data Attributes
 - name: Data Events
