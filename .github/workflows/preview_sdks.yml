@@ -1,0 +1,34 @@
+name: Preview SDKs
+
+on:
+  pull_request:
+    paths:
+      - 'fern/**'
+
+jobs:
+  preview-typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+
+      - name: Download Fern
+        run: npm install -g fern-api
+
+      - name: Generate Preview
+        env:
+          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
+        run: |
+          fern generate --group ts-sdk --preview --log-level debug
+
+      - name: Compile
+        env:
+          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd fern/.preview/fern-typescript-node-sdk
+          yarn install
+          yarn build
