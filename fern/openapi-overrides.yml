@@ -1391,11 +1391,6 @@ components:
             type:
               enum:
                 - avatar
-    conversation_teammates:
-      properties:
-        type:
-          enum:
-            - admin.list
     create_article_request:
       properties:
         parent_type:
@@ -1444,6 +1439,38 @@ components:
         type:
           enum:
             - visitor
+
+    # change teammates.teammates to teammates.admins
+    conversation_teammates:
+      properties:
+        type:
+          enum:
+            - admin.list
+        teammates: null
+        admins:
+          type: array
+          description: The list of teammates who participated in the conversation
+            (wrote at least one conversation part).
+          items:
+            "$ref": "#/components/schemas/reference"
+      required:
+        - type
+        - admins
+
+    # changing Record<string, string> to Record<string, unknown> wherever possible
+    company:
+      properties:
+        custom_attributes:
+          additionalProperties: true
+    create_or_update_company_request:
+      properties:
+        custom_attributes:
+          additionalProperties: true
+    visitor:
+      properties:
+        custom_attributes:
+          additionalProperties: true
+
   securitySchemes:
     bearerAuth:
       x-fern-bearer:
