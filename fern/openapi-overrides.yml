@@ -788,20 +788,75 @@ components:
       x-fern-ignore: true
     single_filter_search_request:
       properties:
+        operator: null
+        value: null
+        filter:
+          description: Filter with operator determining the valid value type
+          type: object
+          oneOf:
+            - "$ref": '#/components/schemas/equality_filter'
+            - "$ref": '#/components/schemas/collection_filter'
+            - "$ref": '#/components/schemas/string_filter'
+            - "$ref": '#/components/schemas/comparison_filter'
+
+    # equality operators (=, !=) can work with strings or integers
+    equality_filter:
+      type: object
+      properties:
         operator:
+          type: string
+          enum:
+            - "="
+            - "!="
           x-fern-enum:
             "=":
               name: Equals
             "!=":
               name: NotEquals
+        value:
+          oneOf:
+            - type: string
+            - type: integer
+      required:
+        - operator
+        - value
+
+    # collection operators (IN, NIN) require arrays
+    collection_filter:
+      type: object
+      properties:
+        operator:
+          type: string
+          enum:
+            - IN
+            - NIN
+          x-fern-enum:
             IN:
               name: In
             NIN:
               name: NotIn
-            "<":
-              name: LessThan
-            ">":
-              name: GreaterThan
+        value:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - type: integer
+      required:
+        - operator
+        - value
+
+    # string matching operators (~, !~, ^, $) require string values
+    string_filter:
+      type: object
+      properties:
+        operator:
+          type: string
+          enum:
+            - "~"
+            - "!~"
+            - "^"
+            - "$"
+          x-fern-enum:
             "~":
               name: Contains
             "!~":
@@ -810,6 +865,34 @@ components:
               name: StartsWith
             "$":
               name: EndsWith
+        value:
+          type: string
+      required:
+        - operator
+        - value
+
+    # comparison operators (<, >) work with integers or strings (dates)
+    comparison_filter:
+      type: object
+      properties:
+        operator:
+          type: string
+          enum:
+            - "<"
+            - ">"
+          x-fern-enum:
+            "<":
+              name: LessThan
+            ">":
+              name: GreaterThan
+        value:
+          oneOf:
+            - type: string
+            - type: integer
+      required:
+        - operator
+        - value
+
     create_contact_request:
       properties: null
       anyOf:
@@ -1436,6 +1519,8 @@ components:
             - section
     visitor:
       properties:
+        custom_attributes:
+          additionalProperties: true
         type:
           enum:
             - visitor
@@ -1463,10 +1548,6 @@ components:
         custom_attributes:
           additionalProperties: true
     create_or_update_company_request:
-      properties:
-        custom_attributes:
-          additionalProperties: true
-    visitor:
       properties:
         custom_attributes:
           additionalProperties: true
