@@ -1379,6 +1379,8 @@ components:
       title: Custom atttributes
       type: object
       description: Custom data set for this data.
+
+    # change teammates.teammates to teammates.admins
     conversation_teammates:
       properties:
         teammates: null
@@ -1391,6 +1393,20 @@ components:
       required:
         - type
         - admins
+
+    # changing Record<string, string> to Record<string, unknown> wherever possible
+    company:
+      properties:
+        custom_attributes:
+          additionalProperties: true
+    create_or_update_company_request:
+      properties:
+        custom_attributes:
+          additionalProperties: true
+    visitor:
+      properties:
+        custom_attributes:
+          additionalProperties: true
   securitySchemes:
     bearerAuth:
       x-fern-bearer:
