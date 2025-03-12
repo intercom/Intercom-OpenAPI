@@ -799,7 +799,7 @@ components:
             - "$ref": '#/components/schemas/string_filter'
             - "$ref": '#/components/schemas/comparison_filter'
 
-    # equality operators (=, !=) can work with strings or integers
+    # equality operators (=, !=) can work with any type
     equality_filter:
       type: object
       properties:
@@ -817,6 +817,11 @@ components:
           oneOf:
             - type: string
             - type: integer
+            - type: array
+              items:
+                oneOf:
+                  - type: string
+                  - type: integer
       required:
         - operator
         - value
