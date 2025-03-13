@@ -3754,10 +3754,10 @@ paths:
       operationId: UpdateContact
       description: |
         You can update an existing contact (ie. user or lead).
-        
+
         {% admonition type="info" %}
           This endpoint handles both **contact updates** and **custom object associations**.
-          
+
           See _`update a contact with an association to a custom object instance`_ in the request/response examples to see the custom object association format.
         {% /admonition %}
       responses:
@@ -5432,6 +5432,7 @@ paths:
                             id: '123456'
                             name: Test tag
                         event_details:
+                        app_package_code: null
                       - type: conversation_part
                         id: 2
                         part_type: custom_action_started
@@ -5454,6 +5455,7 @@ paths:
                         event_details:
                           action:
                             name: Jira Create Issue
+                        app_package_code: test-integration
                       - type: conversation_part
                         id: 3
                         part_type: conversation_attribute_updated_by_admin
@@ -5478,6 +5480,7 @@ paths:
                             name: jira_issue_key
                           value:
                             name: PROJ-007
+                        app_package_code: null
                       - type: conversation_part
                         id: 4
                         part_type: custom_action_finished
@@ -5501,6 +5504,7 @@ paths:
                           action:
                             name: Jira Create Issue
                             result: success
+                        app_package_code: null
                       total_count: 4
               schema:
                 "$ref": "#/components/schemas/conversation"
@@ -5581,7 +5585,7 @@ paths:
 
         {% admonition type="info" %}
           This endpoint handles both **conversation updates** and **custom object associations**.
-          
+
           See _`update a conversation with an association to a custom object instance`_ in the request/response examples to see the custom object association format.
         {% /admonition %}
 
@@ -5668,6 +5672,7 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
+                        app_package_code: null
                       - type: conversation_part
                         id: '130'
                         part_type: conversation_attribute_updated_by_admin
@@ -5686,6 +5691,7 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
+                        app_package_code: null
                       total_count: 2
                 update a conversation with an association to a custom object instance:
                   value:
@@ -6187,6 +6193,7 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
+                        app_package_code: null
                       total_count: 1
                 Admin note reply:
                   value:
@@ -6274,6 +6281,7 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
+                        app_package_code: null
                       total_count: 1
                 Admin quick_reply reply:
                   value:
@@ -6349,6 +6357,7 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
+                        app_package_code: null
                       total_count: 1
                 User last conversation reply:
                   value:
@@ -6427,6 +6436,7 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
+                        app_package_code: null
                       total_count: 1
               schema:
                 "$ref": "#/components/schemas/conversation"
@@ -6624,6 +6634,7 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
+                        app_package_code: null
                       total_count: 1
                 Snooze a conversation:
                   value:
@@ -6699,6 +6710,7 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
+                        app_package_code: null
                       total_count: 1
                 Open a conversation:
                   value:
@@ -6774,6 +6786,7 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
+                        app_package_code: null
                       total_count: 1
                 Assign a conversation:
                   value:
@@ -6851,6 +6864,7 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
+                        app_package_code: null
                       total_count: 1
               schema:
                 "$ref": "#/components/schemas/conversation"
@@ -7275,6 +7289,7 @@ paths:
                         redacted: true
                         metadata: {}
                         email_message_metadata:
+                        app_package_code: null
                       total_count: 1
               schema:
                 "$ref": "#/components/schemas/conversation"
@@ -7402,6 +7417,7 @@ paths:
                           email: joe@bloggs.com
                         attachments: []
                         redacted: false
+                        app_package_code: test-integration
                       - type: ticket_part
                         id: '152'
                         part_type: ticket_state_updated_by_admin
@@ -7416,6 +7432,7 @@ paths:
                           email: operator+this_is_an_id442_that_should_be_at_least_@intercom.io
                         attachments: []
                         redacted: false
+                        app_package_code: test-integration
                       total_count: 2
                     open: true
                     linked_objects:
@@ -11044,6 +11061,7 @@ paths:
                       email: admin419@email.com
                     attachments: []
                     redacted: false
+                    app_package_code: test-integration
                 Admin quick_reply reply:
                   value:
                     type: ticket_part
@@ -11637,6 +11655,7 @@ paths:
                           email: operator+this_is_an_id692_that_should_be_at_least_@intercom.io
                         attachments: []
                         redacted: false
+                        app_package_code: test-integration
                       - type: ticket_part
                         id: '180'
                         part_type: assignment
@@ -11879,6 +11898,7 @@ paths:
                           email: admin509@email.com
                         attachments: []
                         redacted: false
+                        app_package_code: test-integration
                       total_count: 1
                     open: true
                     linked_objects:
@@ -15132,6 +15152,11 @@ components:
         event_details:
           "$ref": "#/components/schemas/event_details"
           nullable: true
+        app_package_code:
+          type: string
+          nullable: true
+          example: "test-integraion"
+          description: The app package code if this part was created via API. null if the part was not created via API.
     conversation_part_author:
       title: Conversation part author
       type: object
@@ -15180,7 +15205,7 @@ components:
         total_count:
           type: integer
           description: ''
-          example: 2
+          example: 1
     conversation_rating:
       title: Conversation Rating
       type: object
@@ -18767,6 +18792,11 @@ components:
           type: boolean
           description: Whether or not the ticket part has been redacted.
           example: false
+        app_package_code:
+          type: string
+          nullable: false
+          example: text-integration
+          description: The app package code if this part was created via API. Note this field won't show if the part was not created via API.
     ticket_part_author:
       title: Ticket part author
       type: object
@@ -20011,7 +20041,7 @@ tags:
     description: What is a conversation?
     url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
 - name: Custom Object Instances
-  description: | 
+  description: |
     Everything about your Custom Object instances.
     {% admonition type="warning" name="Permission Requirements" %}
       From now on, to access this endpoint, you need additional permissions. Please head over to the [Developer Hub](https://app.intercom.com/a/apps/_/developer-hub) app package authentication settings to configure the required permissions.
