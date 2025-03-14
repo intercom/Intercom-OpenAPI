@@ -32,3 +32,31 @@ jobs:
           cd fern/.preview/fern-typescript-node-sdk
           yarn install
           yarn build
+
+  preview-java:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: "11"
+          architecture: x64
+
+      - name: Download Fern
+        run: npm install -g fern-api
+
+      - name: Generate Preview
+        env:
+          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
+        run: |
+          fern generate --group java-sdk --preview --log-level debug
+
+      - name: Build
+        env:
+          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
+        run: |
+          cd fern/.preview/fern-java-sdk
+          ./gradlew assemble
