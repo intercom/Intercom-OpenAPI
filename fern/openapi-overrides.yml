@@ -1383,10 +1383,11 @@ components:
           enum:
             - contact
         avatar:
-          properties:
-            type:
-              enum:
-                - avatar
+          properties: null
+          type: string
+          format: uri
+          description: An image URL containing the avatar of a contact.
+          example: https://example.org/128Wash.jpg
     create_article_request:
       properties:
         parent_type:
@@ -1464,6 +1465,51 @@ components:
       properties:
         custom_attributes:
           additionalProperties: true
+
+    # adding offset pages
+    offset_pages:
+      title: Offset based pages
+      type: object
+      properties:
+        type:
+          type: string
+          description: the type of object `offset_pages`
+          example: offset_pages
+          enum:
+            - offset_pages
+        page:
+          type: integer
+          description: The current offset
+          example: 1
+        next:
+          type: string
+          nullable: true
+        per_page:
+          type: integer
+          description: Number of results per page
+          example: 2
+        total_pages:
+          type: integer
+          description: Total number of pages
+          example: 13
+      required:
+        - type
+    collection_list:
+      properties:
+        pages:
+          "$ref": "#/components/schemas/offset_pages"
+    article_list:
+      properties:
+        pages:
+          "$ref": "#components/schemas/offset_pages"
+    company_list:
+      properties:
+        pages:
+          "$ref": "#/components/schemas/offset_pages"
+    note_list:
+      properties:
+        pages:
+          "$ref": "#/components/schemas/offset_pages"
 
   securitySchemes:
     bearerAuth:
