@@ -11503,78 +11503,78 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
-                    "/tickets/enqueue":
-                      post:
-                        summary: Enqueues ticket creation and returns the enqueue status. We recommend using this endpoint if you'd like to create tickets without waiting for immediate processing.
-                        parameters:
-                        - name: Intercom-Version
-                          in: header
-                          schema:
-                            "$ref": "#/components/schemas/intercom_version"
-                        tags:
-                        - Tickets
-                        description: You can enqueue a job to create a new ticket.
-                        operationId: enqueueCreateTicket
-                        responses:
-                          '200':
-                            description: Successful response
-                            content:
-                              application/json:
-                                examples:
-                                  Successful response:
-                                    value:
-                                      type: enqueue_status
-                                      status: success
-                                      job_id: 20
-                                      job_url: https://api.intercom.io/jobs/status/20
-                                schema:
-                                  "$ref": "#/components/schemas/enqueue_status"
-                          '401':
-                            description: Unauthorized
-                            content:
-                              application/json:
-                                examples:
-                                  Unauthorized:
-                                    value:
-                                      type: error.list
-                                      request_id: c7bf358f-135e-48d7-8286-a4988a8a1d9b
-                                      errors:
-                                      - code: unauthorized
-                                        message: Access Token Invalid
-                                schema:
-                                  "$ref": "#/components/schemas/error"
-                          '400':
-                            description: Bad Request
-                            content:
-                              application/json:
-                              examples:
-                                Bad Request:
-                                  value:
-                                    type: error.list
-                                    request_id: c7bf358f-135e-48d7-8286-a4988a8a1456
-                                    errors:
-                                    - code: parameter_invalid
-                                      message: "Missing required ticket }/attributes"
-                              schema:
-                                "$ref": "#/components/schemas/error"
-                        requestBody:
-                          content:
-                            application/json:
-                              schema:
-                                allOf:
-                                - "$ref": "#/components/schemas/create_ticket_request"
-                                properties:
-                                  skip_notifications:
-                                    type: boolean
-                                    description: Option to disable notifications when a Ticket is created.
-                                    example: true
-                              examples:
-                                successful_response:
-                                  summary: Successful response
-                                  value:
-                                    status: success
-                                    job_id: 20
-                                    job_url: https://api.intercom.io/jobs/status/20
+    "/tickets/enqueue":
+      post:
+        summary: Enqueues ticket creation and returns the enqueue status. We recommend using this endpoint if you'd like to create tickets without waiting for immediate processing.
+        parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            "$ref": "#/components/schemas/intercom_version"
+        tags:
+        - Tickets
+        description: You can enqueue a job to create a new ticket.
+        operationId: enqueueCreateTicket
+        responses:
+          '200':
+            description: Successful response
+            content:
+              application/json:
+                examples:
+                  Successful response:
+                    value:
+                      type: enqueue_status
+                      status: success
+                      job_id: 20
+                      job_url: https://api.intercom.io/jobs/status/20
+                schema:
+                  "$ref": "#/components/schemas/enqueue_status"
+          '401':
+            description: Unauthorized
+            content:
+              application/json:
+                examples:
+                  Unauthorized:
+                    value:
+                      type: error.list
+                      request_id: c7bf358f-135e-48d7-8286-a4988a8a1d9b
+                      errors:
+                      - code: unauthorized
+                        message: Access Token Invalid
+                schema:
+                  "$ref": "#/components/schemas/error"
+          '400':
+            description: Bad Request
+            content:
+              application/json:
+              examples:
+                Bad Request:
+                  value:
+                    type: error.list
+                    request_id: c7bf358f-135e-48d7-8286-a4988a8a1456
+                    errors:
+                    - code: parameter_invalid
+                      message: "Missing required ticket }/attributes"
+              schema:
+                "$ref": "#/components/schemas/error"
+        requestBody:
+          content:
+            application/json:
+              schema:
+                allOf:
+                - "$ref": "#/components/schemas/create_ticket_request"
+                properties:
+                  skip_notifications:
+                    type: boolean
+                    description: Option to disable notifications when a Ticket is created.
+                    example: true
+              examples:
+                successful_response:
+                  summary: Successful response
+                  value:
+                    status: success
+                    job_id: 20
+                    job_url: https://api.intercom.io/jobs/status/20
   "/tickets/{id}":
     put:
       summary: Update a ticket
