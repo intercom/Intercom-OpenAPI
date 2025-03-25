@@ -12591,6 +12591,15 @@ paths:
                   type: user
 components:
   schemas:
+    datetime:
+      oneOf:
+        - title: string
+          type: string
+          format: date-time
+          description: A date and time following the ISO8601 notation.
+        - title: integer
+          type: integer
+          description: A date and time as UNIX timestamp notation.
     activity_log:
       title: Activity Log
       type: object
@@ -16389,7 +16398,15 @@ components:
       additionalProperties:
         anyOf:
         - type: string
+        - type: integer
+        - $ref: "#/components/schemas/datetime"
         - "$ref": "#/components/schemas/custom_object_instance_list"
+      example:
+        paid_subscriber: true
+        monthly_spend: 155.5
+        team_mates: 9
+        start_date_iso8601: "2023-03-04T09:46:14Z"
+        end_date_timestamp: 1677923174
     custom_object_instance:
       title: Custom Object Instance
       type: object
