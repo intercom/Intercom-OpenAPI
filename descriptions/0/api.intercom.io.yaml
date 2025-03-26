@@ -8616,6 +8616,68 @@ paths:
       responses:
         '200':
           description: successful
+  "/jobs/status/{id}":
+    get:
+      summary: Retrieve job status
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the job which is given by Intercom
+        schema:
+          type: string
+    tags:
+    - Jobs
+    operationId: jobsStatus
+    description: Retrieve the status of job execution.
+    responses:
+      '200':
+        description: Job execution status
+        content:
+          application/json:
+            examples:
+              job status retrieved:
+                value:
+                  type: job
+                  id: '2'
+                  status: success
+                  resource_type: ticket
+                  resource_id: '20'
+                  resource_url: 'https://api.intercom.io/tickets/20'
+            schema:
+              "$ref": "#/components/schemas/jobs"
+      '404':
+        description: Job not found
+        content:
+          application/json:
+            examples:
+              Job not found:
+                value:
+                  type: error.list
+                  request_id: 123e4567-e89b-12d3-a456-426614174000
+                  errors:
+                  - code: job_not_found
+                    message: Job Not Found
+            schema:
+              "$ref": "#/components/schemas/error"
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            examples:
+              Unauthorized:
+                value:
+                  type: error.list
+                  request_id: 2c8a20ee-ed09-42c0-a31d-a1b4f5d2742d
+                  errors:
+                  - code: unauthorized
+                    message: Access Token Invalid
+            schema:
+              "$ref": "#/components/schemas/error"
   "/messages":
     post:
       summary: Create a message
@@ -11503,7 +11565,7 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
-    "/tickets/enqueue":
+  "/tickets/enqueue":
     post:
       summary: Enqueue create ticket
       description: Enqueues ticket creation for asynchronous processing, returning if the job was enqueued successfully to be processed. We attempt to perform a best-effort validation on inputs before tasks are enqueued. If the given parameters are incorrect, we won't enqueue the job.
@@ -17622,6 +17684,44 @@ components:
           description: An array of Help Center objects
           items:
             "$ref": "#/components/schemas/help_center"
+    jobs:
+      title: Jobs
+      type: object
+      x-tags:
+      - Jobs
+      description: Jobs are tasks that are processed asynchronously by the Intercom system after being enqueued via the API. This allows for efficient handling of operations that may take time to complete, such as data imports or exports. You can check the status of your jobs to monitor their progress and ensure they are completed successfully.
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - job
+          example: job
+        id:
+          type: string
+          description: The id of the job that's currently being processed or has completed.
+          example: success
+        status:
+          type: string
+          description: The status of the job execution.
+          enum:
+          - pending
+          - success
+          - failed
+        resource_type:
+          type: string
+          description: The type of resource created during job execution.
+          example: ticket
+        resource_id:
+          type: string
+          description: The id of the resource created during job execution (e.g. ticket id)
+          example: 20
+        resource_url:
+          type: string
+          description: The url of the resource created during job exeuction. Use this url to fetch the resource.
+          example: http://api.intercom.io/tickets/20
+      required:
+      - id
     intercom_version:
       description: Intercom API version.</br>By default, it's equal to the version
         set in the app package.
@@ -20168,6 +20268,8 @@ tags:
   description: Everything about your Data Exports
 - name: Help Center
   description: Everything about your Help Center
+- name: Jobs
+  description: Everything about jobs
 - name: Messages
   description: Everything about your messages
 - name: News
