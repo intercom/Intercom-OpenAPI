@@ -11606,12 +11606,13 @@ paths:
               examples:
                 Successful response:
                   value:
-                    type: enqueue_status
-                    status: success
-                    job_id: 20
-                    job_url: https://api.intercom.io/jobs/status/20
+                    type: job
+                    id: "20"
+                    status: pending
+                    url: https://api.intercom.io/jobs/status/20
+                    resource_type: ticket
               schema:
-                "$ref": "#/components/schemas/enqueue_status"
+                "$ref": "#/components/schemas/jobs"
         '401':
           description: Unauthorized
           content:
@@ -17306,23 +17307,6 @@ components:
       required:
       - type
       - errors
-    enqueue_status:
-      title: Enqueue status
-      type: object
-      description: Details of the job that was enqueued.
-      properties:
-        status:
-          type: string
-          description: Indicates if the job was successfully enqueued. The status can be either 'success' or 'failed'.
-          example: success
-        job_id:
-          type: string
-          description: Id of the job that was enqueued.
-          example: 20
-        job_url:
-          type: string
-          description: API endpoint URL to check the job status.
-          example: https://api.intercom.io/jobs/status/20
     external_page:
       title: External Page
       type: object
@@ -17700,7 +17684,11 @@ components:
         id:
           type: string
           description: The id of the job that's currently being processed or has completed.
-          example: success
+          example: 20
+        url:
+          type: string
+          description: API endpoint URL to check the job status.
+          example: https://api.intercom.io/jobs/status/20
         status:
           type: string
           description: The status of the job execution.
