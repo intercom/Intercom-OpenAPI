@@ -3750,16 +3750,8 @@ paths:
           type: string
       tags:
       - Contacts
-      - Custom Object Instances
       operationId: UpdateContact
-      description: |
-        You can update an existing contact (ie. user or lead).
-
-        {% admonition type="info" %}
-          This endpoint handles both **contact updates** and **custom object associations**.
-
-          See _`update a contact with an association to a custom object instance`_ in the request/response examples to see the custom object association format.
-        {% /admonition %}
+      description: You can update an existing contact (ie. user or lead).
       responses:
         '200':
           description: successful
@@ -3855,106 +3847,6 @@ paths:
                     utm_term:
                     referrer:
                     enabled_push_messaging:
-                update a contact with an association to a custom object instance:
-                  value:
-                    type: contact
-                    id: 6762f0cd1bb69f9f2193bb7c
-                    workspace_id: this_is_an_id279_that_should_be_at_least_
-                    external_id: '70'
-                    role: user
-                    email: joebloggs@intercom.io
-                    phone:
-                    formatted_phone:
-                    name: joe bloggs
-                    avatar:
-                    owner_id:
-                    social_profiles:
-                      type: list
-                      data: []
-                    has_hard_bounced: false
-                    marked_email_as_spam: false
-                    unsubscribed_from_emails: false
-                    created_at: 1734537421
-                    updated_at: 1734537422
-                    signed_up_at: 1734537421
-                    last_seen_at:
-                    last_replied_at:
-                    last_contacted_at:
-                    last_email_opened_at:
-                    last_email_clicked_at:
-                    language_override:
-                    browser:
-                    browser_version:
-                    browser_language:
-                    os:
-                    location:
-                      type: location
-                      country:
-                      region:
-                      city:
-                      country_code:
-                      continent_code:
-                    android_app_name:
-                    android_app_version:
-                    android_device:
-                    android_os_version:
-                    android_sdk_version:
-                    android_last_seen_at:
-                    ios_app_name:
-                    ios_app_version:
-                    ios_device:
-                    ios_os_version:
-                    ios_sdk_version:
-                    ios_last_seen_at:
-                    custom_attributes:
-                      order:
-                        type: Order.list
-                        instances:
-                        - id: '21'
-                          external_id: '123'
-                          external_created_at: 1392036272
-                          external_updated_at: 1392036272
-                          custom_attributes:
-                            order_number: ORDER-12345
-                            total_amount: 99.99
-                          type: Order
-                    tags:
-                      type: list
-                      data: []
-                      url: "/contacts/6762f0cd1bb69f9f2193bb7c/tags"
-                      total_count: 0
-                      has_more: false
-                    notes:
-                      type: list
-                      data: []
-                      url: "/contacts/6762f0cd1bb69f9f2193bb7c/notes"
-                      total_count: 0
-                      has_more: false
-                    companies:
-                      type: list
-                      data: []
-                      url: "/contacts/6762f0cd1bb69f9f2193bb7c/companies"
-                      total_count: 0
-                      has_more: false
-                    opted_out_subscription_types:
-                      type: list
-                      data: []
-                      url: "/contacts/6762f0cd1bb69f9f2193bb7c/subscriptions"
-                      total_count: 0
-                      has_more: false
-                    opted_in_subscription_types:
-                      type: list
-                      data: []
-                      url: "/contacts/6762f0cd1bb69f9f2193bb7c/subscriptions"
-                      total_count: 0
-                      has_more: false
-                    utm_campaign:
-                    utm_content:
-                    utm_medium:
-                    utm_source:
-                    utm_term:
-                    referrer:
-                    enabled_push_messaging:
               schema:
                 allOf:
                 - "$ref": "#/components/schemas/contact"
@@ -3990,13 +3882,6 @@ paths:
                 value:
                   email: joebloggs@intercom.io
                   name: joe bloggs
-              update_a_contact_with_an_association_to_a_custom_object_instance:
-                summary: update a contact with an association to a custom object
-                  instance
-                value:
-                  custom_attributes:
-                    order:
-                    - '21'
     get:
       summary: Get a contact
       parameters:
@@ -4155,6 +4040,13 @@ paths:
           description: successful
           content:
             application/json:
+              examples:
+                successful:
+                  value:
+                    id: 6762f0d21bb69f9f2193bb7e
+                    external_id: '70'
+                    type: contact
+                    deleted: true
               schema:
                 "$ref": "#/components/schemas/contact_deleted"
         '401':
@@ -4825,6 +4717,13 @@ paths:
           description: successful
           content:
             application/json:
+              examples:
+                successful:
+                  value:
+                    id: 6762f0e21bb69f9f2193bb86
+                    external_id: '70'
+                    type: contact
+                    archived: true
               schema:
                 "$ref": "#/components/schemas/contact_archived"
   "/contacts/{id}/unarchive":
@@ -4851,34 +4750,15 @@ paths:
           description: successful
           content:
             application/json:
+              examples:
+                successful:
+                  value:
+                    id: 6762f0e31bb69f9f2193bb87
+                    external_id: '70'
+                    type: contact
+                    archived: false
               schema:
                 "$ref": "#/components/schemas/contact_unarchived"
-  "/contacts/{id}/block":
-    post:
-      summary: Block contact
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: id
-        in: path
-        description: id
-        example: 63a07ddf05a32042dffac965
-        required: true
-        schema:
-          type: string
-      tags:
-      - Contacts
-      operationId: BlockContact
-      description: Block a single contact.<br>**Note:** conversations of the contact will also be archived during the process.<br>More details in [FAQ How do I block Inbox spam?](https://www.intercom.com/help/en/articles/8838656-inbox-faqs)
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/contact_blocked"
   "/conversations/{conversation_id}/tags":
     post:
       summary: Add tag to a conversation
@@ -5174,7 +5054,7 @@ paths:
                       ai_agent:
                       ai_agent_participated: false
               schema:
-                "$ref": "#/components/schemas/conversation_list"
+                "$ref": "#/components/schemas/paginated_response"
         '401':
           description: Unauthorized
           content:
@@ -5380,14 +5260,7 @@ paths:
                     read: false
                     tags:
                       type: tag.list
-                      tags:
-                      - type: tag
-                        id: '123456'
-                        name: Test tag
-                        applied_at: 1663597223
-                        applied_by:
-                          type: contact
-                          id: '1a2b3c'
+                      tags: []
                     priority: not_priority
                     sla_applied:
                     statistics:
@@ -5406,106 +5279,8 @@ paths:
                     ai_agent_participated: false
                     conversation_parts:
                       type: conversation_part.list
-                      conversation_parts:
-                      - type: conversation_part
-                        id: 1
-                        part_type: comment
-                        body: <p>Okay!</p>
-                        created_at: 1663597223
-                        updated_at: 1663597260
-                        notified_at: 1663597260
-                        assigned_to:
-                          type: contact
-                          id: '1a2b3c'
-                        author:
-                          type: admin
-                          id: '274'
-                          name: Operator
-                          email: operator+abcd1234@intercom.io
-                        attachments: []
-                        external_id: 'abcd1234'
-                        redacted: false
-                        email_message_metadata: null
-                        state: open
-                        tags:
-                          - type: tag
-                            id: '123456'
-                            name: Test tag
-                        event_details:
-                        app_package_code: null
-                      - type: conversation_part
-                        id: 2
-                        part_type: custom_action_started
-                        body:
-                        created_at: 1740141842
-                        updated_at: 1740141842
-                        notified_at: 1740141842
-                        assigned_to:
-                        author:
-                          type: admin
-                          id: '274'
-                          name: Jamie Oliver
-                          email: jamie+abcd1234@intercom.io
-                        attachments: []
-                        external_id:
-                        redacted: false
-                        email_message_metadata: null
-                        state: open
-                        tags: []
-                        event_details:
-                          action:
-                            name: Jira Create Issue
-                        app_package_code: test-integration
-                      - type: conversation_part
-                        id: 3
-                        part_type: conversation_attribute_updated_by_admin
-                        body:
-                        created_at: 1740141851
-                        updated_at: 1740141851
-                        notified_at: 1740141851
-                        assigned_to:
-                        author:
-                          type: bot
-                          id: '278'
-                          name: Fin
-                          email: operator+abcd1234@intercom.io
-                        attachments: []
-                        external_id:
-                        redacted: false
-                        email_message_metadata: null
-                        state: open
-                        tags: []
-                        event_details:
-                          attribute:
-                            name: jira_issue_key
-                          value:
-                            name: PROJ-007
-                        app_package_code: null
-                      - type: conversation_part
-                        id: 4
-                        part_type: custom_action_finished
-                        body:
-                        created_at: 1740141857
-                        updated_at: 1740141857
-                        notified_at: 1740141857
-                        assigned_to:
-                        author:
-                          type: admin
-                          id: '274'
-                          name: Jamie Oliver
-                          email: jamie+abcd1234@intercom.io
-                        attachments: []
-                        external_id:
-                        redacted: false
-                        email_message_metadata: null
-                        state: closed
-                        tags: []
-                        event_details:
-                          action:
-                            name: Jira Create Issue
-                            result: success
-                        app_package_code: null
-                      total_count: 4
+                      conversation_parts: []
+                      total_count: 0
               schema:
                 "$ref": "#/components/schemas/conversation"
         '404':
@@ -5573,7 +5348,6 @@ paths:
           type: string
       tags:
       - Conversations
-      - Custom Object Instances
       operationId: updateConversation
       description: |2+
 
@@ -5581,12 +5355,6 @@ paths:
 
         {% admonition type="info" name="Replying and other actions" %}
         If you want to reply to a coveration or take an action such as assign, unassign, open, close or snooze, take a look at the reply and manage endpoints.
-        {% /admonition %}
-
-        {% admonition type="info" %}
-          This endpoint handles both **conversation updates** and **custom object associations**.
-
-          See _`update a conversation with an association to a custom object instance`_ in the request/response examples to see the custom object association format.
         {% /admonition %}
 
       responses:
@@ -5672,7 +5440,6 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
-                        app_package_code: null
                       - type: conversation_part
                         id: '130'
                         part_type: conversation_attribute_updated_by_admin
@@ -5691,7 +5458,6 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
-                        app_package_code: null
                       total_count: 2
                 update a conversation with an association to a custom object instance:
                   value:
@@ -5738,16 +5504,11 @@ paths:
                     title:
                     custom_attributes:
                       order:
-                        type: Order.list
+                        type: order.list
                         instances:
                         - id: '21'
-                          external_id: '123'
-                          external_created_at: 1392036272
-                          external_updated_at: 1392036272
-                          custom_attributes:
-                            order_number: ORDER-12345
-                            total_amount: 99.99
-                          type: Order
+                          custom_attributes: {}
+                          type: order
                     topics: {}
                     ticket:
                     linked_objects:
@@ -5815,7 +5576,6 @@ paths:
                 summary: conversation found
                 value:
                   read: true
-                  title: new conversation title
                   custom_attributes:
                     issue_type: Billing
                     priority: High
@@ -5830,7 +5590,6 @@ paths:
                 summary: Not found
                 value:
                   read: true
-                  title: new conversation title
                   custom_attributes:
                     issue_type: Billing
                     priority: High
@@ -5925,8 +5684,7 @@ paths:
 
         ### Accepted Fields
 
-        Most keys listed in the conversation model are searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `"foorbar"`).
-        The `source.body` field is unique as the search will not be performed against the entire value, but instead against every element of the value separately. For example, when searching for a conversation with a `"I need support"` body - the query should contain a `=` operator with the value `"support"` for such conversation to be returned. A query with a `=` operator and a `"need support"` value will not yield a result.
+        Most keys listed as part of the The conversation model is searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `"foorbar"`).
 
         | Field                                     | Type                                                                                                                                                   |
         | :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -6193,7 +5951,6 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
-                        app_package_code: null
                       total_count: 1
                 Admin note reply:
                   value:
@@ -6281,7 +6038,6 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
-                        app_package_code: null
                       total_count: 1
                 Admin quick_reply reply:
                   value:
@@ -6357,7 +6113,6 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
-                        app_package_code: null
                       total_count: 1
                 User last conversation reply:
                   value:
@@ -6436,7 +6191,6 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
-                        app_package_code: null
                       total_count: 1
               schema:
                 "$ref": "#/components/schemas/conversation"
@@ -6634,7 +6388,6 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
-                        app_package_code: null
                       total_count: 1
                 Snooze a conversation:
                   value:
@@ -6710,7 +6463,6 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
-                        app_package_code: null
                       total_count: 1
                 Open a conversation:
                   value:
@@ -6786,7 +6538,6 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
-                        app_package_code: null
                       total_count: 1
                 Assign a conversation:
                   value:
@@ -6864,7 +6615,6 @@ paths:
                         redacted: false
                         metadata: {}
                         email_message_metadata:
-                        app_package_code: null
                       total_count: 1
               schema:
                 "$ref": "#/components/schemas/conversation"
@@ -6952,6 +6702,156 @@ paths:
                   type: admin
                   admin_id: 991267717
                   body: Goodbye :)
+  "/conversations/{id}/run_assignment_rules":
+    post:
+      summary: Run Assignment Rules on a conversation
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The identifier for the conversation as given by Intercom.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: autoAssignConversation
+      description: |
+        You can let a conversation be automatically assigned following assignment rules.
+        {% admonition type="warning" name="When using workflows" %}
+        It is not possible to use this endpoint with Workflows.
+        {% /admonition %}
+      responses:
+        '200':
+          description: Assign a conversation using assignment rules
+          content:
+            application/json:
+              examples:
+                Assign a conversation using assignment rules:
+                  value:
+                    type: conversation
+                    id: '546'
+                    created_at: 1734537616
+                    updated_at: 1734537617
+                    waiting_since:
+                    snoozed_until:
+                    source:
+                      type: conversation
+                      id: '403918365'
+                      delivered_as: admin_initiated
+                      subject: ''
+                      body: "<p>this is the message body</p>"
+                      author:
+                        type: admin
+                        id: '991267723'
+                        name: Ciaran227 Lee
+                        email: admin227@email.com
+                      attachments: []
+                      url:
+                      redacted: false
+                    contacts:
+                      type: contact.list
+                      contacts:
+                      - type: contact
+                        id: 6762f18f1bb69f9f2193bbd0
+                        external_id: '70'
+                    first_contact_reply:
+                    admin_assignee_id:
+                    team_assignee_id:
+                    open: false
+                    state: closed
+                    read: false
+                    tags:
+                      type: tag.list
+                      tags: []
+                    priority: not_priority
+                    sla_applied:
+                    statistics:
+                    conversation_rating:
+                    teammates:
+                    title:
+                    custom_attributes: {}
+                    topics: {}
+                    ticket:
+                    linked_objects:
+                      type: list
+                      data: []
+                      total_count: 0
+                      has_more: false
+                    ai_agent:
+                    ai_agent_participated: false
+                    conversation_parts:
+                      type: conversation_part.list
+                      conversation_parts:
+                      - type: conversation_part
+                        id: '141'
+                        part_type: default_assignment
+                        body:
+                        created_at: 1734537617
+                        updated_at: 1734537617
+                        notified_at: 1734537617
+                        assigned_to:
+                          type: nobody_admin
+                          id:
+                        author:
+                          id: '991267724'
+                          type: bot
+                          name: Fin
+                          email: operator+this_is_an_id402_that_should_be_at_least_@intercom.io
+                        attachments: []
+                        external_id:
+                        redacted: false
+                        metadata: {}
+                        email_message_metadata:
+                      total_count: 1
+              schema:
+                "$ref": "#/components/schemas/conversation"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id: b55c4cc0-7511-44cd-965a-2751f3559ba9
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: c9fa3789-8f00-4a85-b15b-c9e968d3edac
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: c1d71d2a-a0fb-43df-82cc-495c051cb1c1
+                    errors:
+                    - code: api_plan_restricted
+                      message: Active subscription needed.
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/{id}/customers":
     post:
       summary: Attach a contact to a conversation
@@ -7289,7 +7189,6 @@ paths:
                         redacted: true
                         metadata: {}
                         email_message_metadata:
-                        app_package_code: null
                       total_count: 1
               schema:
                 "$ref": "#/components/schemas/conversation"
@@ -7417,7 +7316,6 @@ paths:
                           email: joe@bloggs.com
                         attachments: []
                         redacted: false
-                        app_package_code: test-integration
                       - type: ticket_part
                         id: '152'
                         part_type: ticket_state_updated_by_admin
@@ -7432,7 +7330,6 @@ paths:
                           email: operator+this_is_an_id442_that_should_be_at_least_@intercom.io
                         attachments: []
                         redacted: false
-                        app_package_code: test-integration
                       total_count: 2
                     open: true
                     linked_objects:
@@ -7491,7 +7388,6 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
-      operationId: createCustomObjectInstances
       description: Create or update a custom object instance
       responses:
         '200':
@@ -7502,10 +7398,8 @@ paths:
                 successful:
                   value:
                     id: '22'
-                    type: Order
-                    custom_attributes:
-                      order_number: ORDER-12345
-                      total_amount: 99.99
+                    type: object_type_identifier_1
+                    custom_attributes: {}
                     external_id: '123'
                     external_created_at: 1392036272
                     external_updated_at: 1392036272
@@ -7514,9 +7408,19 @@ paths:
               schema:
                 "$ref": "#/components/schemas/custom_object_instance"
         '401':
-          $ref: "#/components/responses/Unauthorized"
-        '404':
-          $ref: "#/components/responses/TypeNotFound"
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
@@ -7529,9 +7433,6 @@ paths:
                   external_id: '123'
                   external_created_at: 1392036272
                   external_updated_at: 1392036272
-                  custom_attributes:
-                    order_number: ORDER-12345
-                    total_amount: 99.99
     get:
       summary: Get Custom Object Instance by External ID
       parameters:
@@ -7540,22 +7441,31 @@ paths:
         style: form
         required: true
         schema:
-          type: string
-          description: The unique identifier for the instance in the external system
-            it originated from.
-          title: Find by external_id
-          properties:
-            external_id:
-              type: string
-          required:
-          - external_id
+          type: object
+          oneOf:
+          - description: The Intercom defined id representing the custom object instance.
+            title: Find by id
+            properties:
+              external_id:
+                type: string
+            required:
+            - external_id
+            additionalProperties: false
+          - description: The unique identifier for the instance in the external system
+              it originated from.
+            title: Find by external_id
+            properties:
+              external_id:
+                type: string
+            required:
+            - external_id
+            additionalProperties: false
       - name: Intercom-Version
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
-      operationId: getCustomObjectInstancesByExternalId
       description: Fetch a Custom Object Instance by external_id.
       responses:
         '200':
@@ -7566,10 +7476,8 @@ paths:
                 successful:
                   value:
                     id: '24'
-                    type: Order
-                    custom_attributes:
-                      order_number: ORDER-12345
-                      total_amount: 99.99
+                    type: object_type_identifier_4
+                    custom_attributes: {}
                     external_id: '123'
                     external_created_at:
                     external_updated_at:
@@ -7578,51 +7486,19 @@ paths:
               schema:
                 "$ref": "#/components/schemas/custom_object_instance"
         '401':
-          $ref: "#/components/responses/Unauthorized"
-        '404':
-          $ref: "#/components/responses/ObjectNotFound"
-    delete:
-      summary: Delete a Custom Object Instance by External ID
-      parameters:
-      - name: external_id
-        in: query
-        style: form
-        required: true
-        schema:
-          type: string
-          description: The unique identifier for the instance in the external system
-            it originated from.
-          title: Find by external_id
-          properties:
-            external_id:
-              type: string
-          required:
-          - external_id
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      tags:
-      - Custom Object Instances
-      operationId: deleteCustomObjectInstancesById
-      description: Delete a single Custom Object instance by external_id.
-      responses:
-        '200':
-          description: successful
+          description: Unauthorized
           content:
             application/json:
               examples:
-                successful:
+                Unauthorized:
                   value:
-                    id: '26'
-                    object: Order
-                    deleted: true
+                    type: error.list
+                    request_id: dae27fda-0f84-43b2-be25-f97697c229af
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
               schema:
-                "$ref": "#/components/schemas/custom_object_instance_deleted"
-        '401':
-          $ref: "#/components/responses/Unauthorized"
-        '404':
-          $ref: "#/components/responses/ObjectNotFound"
+                "$ref": "#/components/schemas/error"
   "/custom_object_instances/{custom_object_type_identifier}/{id}":
     parameters:
     - name: custom_object_type_identifier
@@ -7648,7 +7524,6 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
-      operationId: getCustomObjectInstancesById
       description: Fetch a Custom Object Instance by id.
       responses:
         '200':
@@ -7659,10 +7534,8 @@ paths:
                 successful:
                   value:
                     id: '25'
-                    type: Order
-                    custom_attributes:
-                      order_number: ORDER-12345
-                      total_amount: 99.99
+                    type: object_type_identifier_6
+                    custom_attributes: {}
                     external_id: '123'
                     external_created_at:
                     external_updated_at:
@@ -7671,11 +7544,21 @@ paths:
               schema:
                 "$ref": "#/components/schemas/custom_object_instance"
         '401':
-          $ref: "#/components/responses/Unauthorized"
-        '404':
-          $ref: "#/components/responses/ObjectNotFound"
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 40038755-5b64-4d2b-b71b-48471c1dc79f
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
     delete:
-      summary: Delete a Custom Object Instance by ID
+      summary: Delete a Custom Object Instance
       parameters:
       - name: id
         in: path
@@ -7689,7 +7572,6 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
-      operationId: deleteCustomObjectInstancesByExternalId
       description: Delete a single Custom Object instance using the Intercom defined
         id.
       responses:
@@ -7701,14 +7583,24 @@ paths:
                 successful:
                   value:
                     id: '26'
-                    object: Order
+                    object: object_type_identifier_8
                     deleted: true
               schema:
                 "$ref": "#/components/schemas/custom_object_instance_deleted"
         '401':
-          $ref: "#/components/responses/Unauthorized"
-        '404':
-          $ref: "#/components/responses/ObjectNotFound"
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b25664a7-86cc-4725-8c95-d9ea339b12b7
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/data_attributes":
     get:
       summary: List all data attributes
@@ -8616,68 +8508,6 @@ paths:
       responses:
         '200':
           description: successful
-  "/jobs/status/{id}":
-    get:
-      summary: Retrieve job status
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: id
-        in: path
-        required: true
-        description: The unique identifier for the job which is given by Intercom
-        schema:
-          type: string
-      tags:
-      - Jobs
-      operationId: jobsStatus
-      description: Retrieve the status of job execution.
-      responses:
-        '200':
-          description: Job execution status
-          content:
-            application/json:
-              examples:
-                job status retrieved:
-                  value:
-                    type: job
-                    id: '2'
-                    status: success
-                    resource_type: ticket
-                    resource_id: '20'
-                    resource_url: 'https://api.intercom.io/tickets/20'
-              schema:
-                "$ref": "#/components/schemas/jobs"
-        '404':
-          description: Job not found
-          content:
-            application/json:
-              examples:
-                Job not found:
-                  value:
-                    type: error.list
-                    request_id: 123e4567-e89b-12d3-a456-426614174000
-                    errors:
-                    - code: job_not_found
-                      message: Job Not Found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 2c8a20ee-ed09-42c0-a31d-a1b4f5d2742d
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
   "/messages":
     post:
       summary: Create a message
@@ -8690,7 +8520,7 @@ paths:
       - Messages
       operationId: createMessage
       description: "You can create a message that has been initiated by an admin.
-        The conversation can be either an in-app message, an email or sms.\n\n> \U0001F6A7
+        The conversation can be either an in-app message or an email.\n\n> \U0001F6A7
         Sending for visitors\n>\n> There can be a short delay between when a contact
         is created and when a contact becomes available to be messaged through the
         API. A 404 Not Found error will be returned in this case.\n\nThis will return
@@ -8756,13 +8586,6 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: Body is required
-                Invalid body supplied for sms message:
-                  value:
-                    type: error.list
-                    request_id: d7997515-65af-4860-9bf5-777852f8b24f
-                    errors:
-                    - code: parameter_invalid
-                      message: Invalid SMS message body
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
@@ -8840,17 +8663,6 @@ paths:
                     id: 6762f2391bb69f9f2193bc19
                   message_type: conversation
                   body: heyy
-              admin_sms_message_created:
-                summary: admin sms message created
-                value:
-                  from:
-                    type: admin
-                    id: '991267817'
-                  to:
-                    type: user
-                    id: 6762f23a1bb69f9f2193bc1a
-                  message_type: sms
-                  body: heyy
               no_body_supplied_for_message:
                 summary: No body supplied for message
                 value:
@@ -8886,17 +8698,6 @@ paths:
                   message_type: email
                   body:
                   subject: heyy
-              invalid_body_supplied_for_sms_message:
-                summary: Invalid body supplied for sms message
-                value:
-                  from:
-                    type: admin
-                    id: '991267821'
-                  to:
-                    type: user
-                    id: 6762f23b1bb69f9f2193bc1d
-                  message_type: sms
-                  body: heyy https://picsum.photos/200/300
   "/news/news_items":
     get:
       summary: List all news items
@@ -11123,7 +10924,6 @@ paths:
                       email: admin419@email.com
                     attachments: []
                     redacted: false
-                    app_package_code: test-integration
                 Admin quick_reply reply:
                   value:
                     type: ticket_part
@@ -11565,84 +11365,6 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
-  "/tickets/enqueue":
-    post:
-      summary: Enqueue create ticket
-      description: Enqueues ticket creation for asynchronous processing, returning if the job was enqueued successfully to be processed. We attempt to perform a best-effort validation on inputs before tasks are enqueued. If the given parameters are incorrect, we won't enqueue the job.
-      operationId: enqueueCreateTicket
-      tags:
-      - Tickets
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              allOf:
-              - "$ref": "#/components/schemas/create_ticket_request"
-              properties:
-                skip_notifications:
-                  type: boolean
-                  description: Option to disable notifications when a Ticket is created.
-                  example: true
-            examples:
-              successful_response:
-                summary: Successful response
-                value:
-                  ticket_type_id: 88
-                  contacts:
-                  - id: 6762f2d81bb69f9f2193bc54
-                  ticket_attributes:
-                    _default_title_: example
-                    _default_description_: there is a problem
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              examples:
-                Successful response:
-                  value:
-                    type: job
-                    id: "20"
-                    status: pending
-                    url: https://api.intercom.io/jobs/status/20
-                    resource_type: ticket
-                    resource_id: null
-                    resource_url: null
-              schema:
-                "$ref": "#/components/schemas/jobs"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: c7bf358f-135e-48d7-8286-a4988a8a1d9b
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              examples:
-                Bad Request:
-                  value:
-                    type: error.list
-                    request_id: c7bf358f-135e-48d7-8286-a4988a8a1456
-                    errors:
-                    - code: parameter_invalid
-                      message: "Missing required ticket attributes"
-              schema:
-                "$ref": "#/components/schemas/error"
   "/tickets/{id}":
     put:
       summary: Update a ticket
@@ -11795,7 +11517,6 @@ paths:
                           email: operator+this_is_an_id692_that_should_be_at_least_@intercom.io
                         attachments: []
                         redacted: false
-                        app_package_code: test-integration
                       - type: ticket_part
                         id: '180'
                         part_type: assignment
@@ -11894,9 +11615,8 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
-                  assignment:
-                    admin_id: '991268011'
-                    assignee_id: '991268013'
+                  admin_id: 991268011
+                  assignee_id: 991268013
                   open: true
                   snoozed_until: 1673609604
                   ticket_state_id: 8498
@@ -11906,9 +11626,8 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
-                  assignment:
-                    admin_id: '123'
-                    assignee_id: '991268021'
+                  admin_id: 123
+                  assignee_id: 991268021
                   ticket_state_id: 8506
               assignee_not_found:
                 summary: Assignee not found
@@ -11916,9 +11635,8 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
-                  assignment:
-                    admin_id: '991268027'
-                    assignee_id: '456'
+                  admin_id: 991268027
+                  assignee_id: 456
                   ticket_state_id: 8514
               ticket_state_id_is_not_valid_or_is_not_associated_with_the_ticket_type:
                 summary: Ticket state id is not valid or is not associated with the
@@ -12038,7 +11756,6 @@ paths:
                           email: admin509@email.com
                         attachments: []
                         redacted: false
-                        app_package_code: test-integration
                       total_count: 1
                     open: true
                     linked_objects:
@@ -12204,7 +11921,6 @@ paths:
         ### Accepted Fields
 
         Most keys listed as part of the Ticket model are searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `"foobar"`).
-        The `source.body` field is unique as the search will not be performed against the entire value, but instead against every element of the value separately. For example, when searching for a conversation with a `"I need support"` body - the query should contain a `=` operator with the value `"support"` for such conversation to be returned. A query with a `=` operator and a `"need support"` value will not yield a result.
 
         | Field                                     | Type                                                                                     |
         | :---------------------------------------- | :--------------------------------------------------------------------------------------- |
@@ -12731,15 +12447,6 @@ paths:
                   type: user
 components:
   schemas:
-    datetime:
-      oneOf:
-        - title: string
-          type: string
-          format: date-time
-          description: A date and time following the ISO8601 notation.
-        - title: integer
-          type: integer
-          description: A date and time as UNIX timestamp notation.
     activity_log:
       title: Activity Log
       type: object
@@ -14443,6 +14150,31 @@ components:
           "$ref": "#/components/schemas/contact_location"
         social_profiles:
           "$ref": "#/components/schemas/contact_social_profiles"
+    contact_archived:
+      title: Contact Archived
+      type: object
+      description: archived contact object
+      properties:
+        type:
+          type: string
+          description: always contact
+          enum:
+          - contact
+          example: contact
+        id:
+          type: string
+          description: The unique identifier for the contact which is given by Intercom.
+          example: 5ba682d23d7cf92bef87bfd4
+        external_id:
+          type: string
+          nullable: true
+          description: The unique identifier for the contact which is provided by
+            the Client.
+          example: f3b87a2e09d514c6c2e79b9a
+        archived:
+          type: boolean
+          description: Whether the contact is archived or not.
+          example: true
     contact_attached_companies:
       title: Contact Attached Companies
       type: object
@@ -14469,13 +14201,9 @@ components:
       title: Contact companies
       type: object
       nullable: false
-      description: An object with metadata about companies attached to a contact . Up to 10 will be displayed here. Use the url to get more.
+      description: An object containing companies meta data about the companies that
+        a contact has. Up to 10 will be displayed here. Use the url to get more.
       properties:
-        data:
-          type: array
-          description: An array of company data objects attached to the contact.
-          items:
-            "$ref": "#/components/schemas/company_data"
         url:
           type: string
           format: uri
@@ -14483,7 +14211,7 @@ components:
           example: "/contacts/5ba682d23d7cf92bef87bfd4/companies"
         total_count:
           type: integer
-          description: Integer representing the total number of companies attached to
+          description: Int representing the total number of companyies attached to
             this contact
           example: 100
         has_more:
@@ -14491,32 +14219,27 @@ components:
           description: Whether there's more Addressable Objects to be viewed. If true,
             use the url to view all
           example: true
-    company_data:
-      title: Company Data
-      type: object
-      description: An object containing data about the companies that a contact is associated with.
-      properties:
-        id:
-          type: string
-          description: The unique identifier for the company which is given by Intercom.
-          example: 5ba682d23d7cf92bef87bfd4
-        type:
-          type: string
-          description: The type of the object. Always company.
-          enum:
-          - company
-          example: company
-        url:
-          type: string
-          format: uri
-          description: The relative URL of the company.
-          example: "/companies/5ba682d23d7cf92bef87bfd4"
     contact_deleted:
       title: Contact Deleted
+      type: object
       description: deleted contact object
-      allOf:
-      - "$ref": "#/components/schemas/contact_reference"
       properties:
+        type:
+          type: string
+          description: always contact
+          enum:
+          - contact
+          example: contact
+        id:
+          type: string
+          description: The unique identifier for the contact which is given by Intercom.
+          example: 5ba682d23d7cf92bef87bfd4
+        external_id:
+          type: string
+          nullable: true
+          description: The unique identifier for the contact which is provided by
+            the Client.
+          example: f3b87a2e09d514c6c2e79b9a
         deleted:
           type: boolean
           description: Whether the contact is deleted or not.
@@ -14616,7 +14339,7 @@ components:
           nullable: true
           description: The unique identifier for the contact which is provided by
             the Client.
-          example: "70"
+          example: f3b87a2e09d514c6c2e79b9a
     contact_reply_base_request:
       title: Contact Reply Base Object
       type: object
@@ -14838,37 +14561,31 @@ components:
           description: Whether there's more Addressable Objects to be viewed. If true,
             use the url to view all
           example: true
-    contact_archived:
-      title: Contact Archived
-      description: archived contact object
-      allOf:
-      - "$ref": "#/components/schemas/contact_reference"
-      properties:
-        archived:
-          type: boolean
-          description: Whether the contact is archived or not.
-          example: true
     contact_unarchived:
       title: Contact Unarchived
+      type: object
       description: unarchived contact object
-      allOf:
-      - "$ref": "#/components/schemas/contact_reference"
       properties:
+        type:
+          type: string
+          description: always contact
+          enum:
+          - contact
+          example: contact
+        id:
+          type: string
+          description: The unique identifier for the contact which is given by Intercom.
+          example: 5ba682d23d7cf92bef87bfd4
+        external_id:
+          type: string
+          nullable: true
+          description: The unique identifier for the contact which is provided by
+            the Client.
+          example: f3b87a2e09d514c6c2e79b9a
         archived:
           type: boolean
           description: Whether the contact is archived or not.
           example: false
-    contact_blocked:
-      title: Contact Blocked
-      type: object
-      description: blocked contact object
-      allOf:
-      - "$ref": "#/components/schemas/contact_reference"
-      properties:
-        blocked:
-          type: boolean
-          description: Always true.
-          example: true
     content_import_source:
       title: Content Import Source
       type: object
@@ -15284,28 +15001,6 @@ components:
         email_message_metadata:
           "$ref": "#/components/schemas/email_message_metadata"
           nullable: true
-        state:
-          type: string
-          enum:
-            - open
-            - closed
-            - snoozed
-          description: Indicates the current state of conversation when the conversation part was created.
-          example: open
-        tags:
-          type: array
-          description: A list of tags objects associated with the conversation part.
-          items:
-            "$ref": "#/components/schemas/tag_basic"
-          nullable: true
-        event_details:
-          "$ref": "#/components/schemas/event_details"
-          nullable: true
-        app_package_code:
-          type: string
-          nullable: true
-          example: "test-integration"
-          description: The app package code if this part was created via API. null if the part was not created via API.
     conversation_part_author:
       title: Conversation part author
       type: object
@@ -15354,7 +15049,7 @@ components:
         total_count:
           type: integer
           description: ''
-          example: 1
+          example: 2
     conversation_rating:
       title: Conversation Rating
       type: object
@@ -15402,24 +15097,14 @@ components:
     conversation_source:
       title: Conversation source
       type: object
-      description: The type of the conversation part that started this conversation. Can be Contact, Admin, Campaign, Automated or Operator initiated.
+      description: The Conversation Part that originated this conversation, which
+        can be Contact, Admin, Campaign, Automated or Operator initiated.
       properties:
         type:
           type: string
           description: This includes conversation, email, facebook, instagram, phone_call,
             phone_switch, push, sms, twitter and whatsapp.
           example: conversation
-          enum:
-          - conversation
-          - email
-          - facebook
-          - instagram
-          - phone_call
-          - phone_switch
-          - push
-          - sms
-          - twitter
-          - whatsapp
         id:
           type: string
           description: The id representing the message.
@@ -15876,11 +15561,6 @@ components:
           type: string
           description: The content of the message. HTML is not supported.
           example: Hello
-        created_at:
-          type: integer
-          format: date-time
-          description: The time the conversation was created as a UTC Unix timestamp. If not provided, the current time will be used. This field is only recommneded for migrating past conversations from another source into Intercom.
-          example: 1671028894
       required:
       - from
       - body
@@ -16191,12 +15871,6 @@ components:
         - body
         - from
         - to
-      - title: 'message_type: `sms`.'
-        required:
-        - message_type
-        - body
-        - from
-        - to
     create_or_update_company_request:
       type: object
       title: Create Or Update Company Request Payload
@@ -16276,8 +15950,6 @@ components:
           type: object
           nullable: true
           description: The custom attributes which are set for the Custom Object instance.
-          additionalProperties:
-            type: string
     create_or_update_tag_request:
       description: You can create or update an existing tag.
       type: object
@@ -16358,6 +16030,7 @@ components:
           example:
           - id: '1234'
         conversation_to_link_id:
+          required: false
           type: string
           description: "The ID of the conversation you want to link to the ticket.
             Here are the valid ways of linking two tickets:\n
@@ -16378,19 +16051,6 @@ components:
           example: 1590000000
         ticket_attributes:
           "$ref": "#/components/schemas/ticket_request_custom_attributes"
-        assignment:
-          type: object
-          properties:
-            admin_assignee_id:
-              type: string
-              description: The ID of the admin to which the ticket is assigned.
-                If not provided, the ticket will be unassigned.
-              example: '123'
-            team_assignee_id:
-              type: string
-              description: The ID of the team to which the ticket is assigned.
-                If not provided, the ticket will be unassigned.
-              example: '8'
       required:
       - ticket_type_id
       - contacts
@@ -16538,15 +16198,7 @@ components:
       additionalProperties:
         anyOf:
         - type: string
-        - type: integer
-        - $ref: "#/components/schemas/datetime"
         - "$ref": "#/components/schemas/custom_object_instance_list"
-      example:
-        paid_subscriber: true
-        monthly_spend: 155.5
-        team_mates: 9
-        start_date_iso8601: "2023-03-04T09:46:14Z"
-        end_date_timestamp: 1677923174
     custom_object_instance:
       title: Custom Object Instance
       type: object
@@ -16561,35 +16213,11 @@ components:
         id:
           type: string
           description: The Intercom defined id representing the custom object instance.
-          example: 16032025
+          example: 5a7a19e9f59ae20001d1c1e6
         external_id:
           type: string
           description: The id you have defined for the custom object instance.
           example: 0001d1c1e65a7a19e9f59ae2
-        external_created_at:
-          type: integer
-          format: date-time
-          nullable: true
-          description: The time when the Custom Object instance was created in the
-            external system it originated from.
-          example: 1571672154
-        external_updated_at:
-          type: integer
-          format: date-time
-          nullable: true
-          description: The time when the Custom Object instance was last updated in
-            the external system it originated from.
-          example: 1571672154
-        created_at:
-          type: integer
-          format: date-time
-          description: The time the attribute was created as a UTC Unix timestamp
-          example: 1671028894
-        updated_at:
-          type: integer
-          format: date-time
-          description: The time the attribute was last updated as a UTC Unix timestamp
-          example: 1671028894
         type:
           type: string
           description: The identifier of the custom object type that defines the structure
@@ -17159,114 +16787,6 @@ components:
           description: A list of an email address headers.
           items:
             "$ref": "#/components/schemas/email_address_header"
-    conversation_attribute_updated_by_workflow:
-      title: Part type - conversation_attribute_updated_by_workflow
-      type: object
-      description: Contains details about the workflow that was triggered and any Custom Data Attributes (CDAs) that were modified during the workflow execution for conversation part type <code>conversation_attribute_updated_by_workflow</code>.
-      properties:
-        workflow:
-          type: object
-          properties:
-            name:
-              type: string
-              description: Name of the workflow
-              example: Workflow 1
-        attribute:
-          type: object
-          properties:
-            name:
-              type: string
-              description: Name of the CDA updated
-              example: flight_category
-        value:
-          type: object
-          properties:
-            name:
-              type: string
-              description: Value of the CDA updated
-              example: vip_status
-    conversation_attribute_updated_by_admin:
-      title: Part type - conversation_attribute_updated_by_admin
-      type: object
-      description: Contains details about Custom Data Attributes (CDAs) that were modified by an admin (operator) for conversation part type <code>conversation_attribute_updated_by_admin</code>.
-      properties:
-        attribute:
-          type: object
-          properties:
-            name:
-              type: string
-              description: Name of the CDA updated
-              example: jira_issue_key
-        value:
-          type: object
-          properties:
-            name:
-              type: string
-              description: Value of the CDA updated
-              example: PROJ-007
-    custom_action_started:
-      title: Part type - custom_action_started
-      type: object
-      description: Contains details about name of the action that was initiated for conversation part type <code>custom_action_started</code>.
-      properties:
-        action:
-          type: object
-          properties:
-            name:
-              type: string
-              description: Name of the action
-              example: Jira Create Issue
-    custom_action_finished:
-      title: Part type - custom_action_finished
-      type: object
-      description: Contains details about final status of the completed action for conversation part type <code>custom_action_finished</code>.
-      properties:
-        action:
-          type: object
-          properties:
-            name:
-              type: string
-              description: Name of the action
-              example: Jira Create Issue
-            result:
-              type: string
-              description: Status of the action
-              enum:
-                - success
-                - failed
-              example: success
-    operator_workflow_event:
-      title: Part type - operator_workflow_event
-      type: object
-      description: Contains details about name of the workflow for conversation part type <code>operator_workflow_event</code>.
-      properties:
-        workflow:
-          type: object
-          properties:
-            name:
-              type: string
-              description: The name of the workflow
-              example: Custom Bot 1
-        event:
-          type: object
-          properties:
-            type:
-              type: string
-              description: Type of the workflow event initiated
-              example: wait_finished
-            result:
-              type: string
-              description: Result of the workflow event
-              example: Finsihed waiting
-    event_details:
-      title: Event details of Workflow & actions
-      type: object
-      anyOf:
-        - "$ref": "#/components/schemas/conversation_attribute_updated_by_workflow"
-        - "$ref": "#/components/schemas/conversation_attribute_updated_by_admin"
-        - "$ref": "#/components/schemas/custom_action_started"
-        - "$ref": "#/components/schemas/custom_action_finished"
-        - "$ref": "#/components/schemas/operator_workflow_event"
     error:
       type: object
       title: Error
@@ -17670,49 +17190,6 @@ components:
           description: An array of Help Center objects
           items:
             "$ref": "#/components/schemas/help_center"
-    jobs:
-      title: Jobs
-      type: object
-      x-tags:
-      - Jobs
-      description: Jobs are tasks that are processed asynchronously by the Intercom system after being enqueued via the API. This allows for efficient handling of operations that may take time to complete, such as data imports or exports. You can check the status of your jobs to monitor their progress and ensure they are completed successfully.
-      properties:
-        type:
-          type: string
-          description: The type of the object
-          enum:
-          - job
-        id:
-          type: string
-          description: The id of the job that's currently being processed or has completed.
-          example: 20
-        url:
-          type: string
-          description: API endpoint URL to check the job status.
-          example: https://api.intercom.io/jobs/status/20
-        status:
-          type: string
-          description: The status of the job execution.
-          enum:
-          - pending
-          - success
-          - failed
-        resource_type:
-          type: string
-          description: The type of resource created during job execution.
-          example: ticket
-        resource_id:
-          type: string
-          description: The id of the resource created during job execution (e.g. ticket id)
-          example: 123
-          nullable: true
-        resource_url:
-          type: string
-          description: The url of the resource created during job exeuction. Use this url to fetch the resource.
-          example: http://api.intercom.io/tickets/123
-          nullable: true
-      required:
-      - id
     intercom_version:
       description: Intercom API version.</br>By default, it's equal to the version
         set in the app package.
@@ -17841,9 +17318,8 @@ components:
           - inapp
           - facebook
           - twitter
-          - sms
           description: The type of message that was sent. Can be email, inapp, facebook
-            ,twitter or sms.
+            or twitter.
           example: inapp
         conversation_id:
           type: string
@@ -18434,17 +17910,9 @@ components:
             search for the value.
           example: ">"
         value:
-          oneOf:
-          - type: string
-          - type: integer
-          - type: array
-            items:
-              oneOf:
-              - type: string
-              - type: integer
+          type: string
           description: The value that you want to search on.
           example: '73732934'
-          nullable: true
     sla_applied:
       title: Applied SLA
       type: object
@@ -18625,26 +18093,6 @@ components:
           example: 1663597223
         applied_by:
           "$ref": "#/components/schemas/reference"
-    tag_basic:
-      title: Tag
-      type: object
-      x-tags:
-      - Tags
-      description: A tag allows you to label your contacts, companies, and conversations
-        and list them using that tag.
-      properties:
-        type:
-          type: string
-          description: value is "tag"
-          example: tag
-        id:
-          type: string
-          description: The id of the tag
-          example: '123456'
-        name:
-          type: string
-          description: The name of the tag
-          example: Test tag
     tag_company_request:
       description: You can tag a single company or a list of companies.
       type: object
@@ -18997,11 +18445,6 @@ components:
           type: boolean
           description: Whether or not the ticket part has been redacted.
           example: false
-        app_package_code:
-          type: string
-          nullable: false
-          example: text-integration
-          description: The app package code if this part was created via API. Note this field won't show if the part was not created via API.
     ticket_part_author:
       title: Ticket part author
       type: object
@@ -19634,10 +19077,6 @@ components:
           type: boolean
           description: Mark a conversation as read within Intercom.
           example: true
-        title:
-          type: string
-          description: The title given to the conversation
-          example: Conversation Title
         custom_attributes:
           "$ref": "#/components/schemas/custom_attributes"
     update_data_attribute_request:
@@ -19733,11 +19172,6 @@ components:
           type: string
           description: The ID of the ticket state associated with the ticket type.
           example: '123'
-        company_id:
-          type: string
-          description: The ID of the company that the ticket is associated with. The
-            unique identifier for the company which is given by Intercom. Set to nil to remove company.
-          example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
         open:
           type: boolean
           description: Specify if a ticket is open. Set to false to close a ticket.
@@ -19752,18 +19186,16 @@ components:
           format: timestamp
           description: The time you want the ticket to reopen.
           example: 1673609604
-        assignment:
-          type: object
-          properties:
-            admin_id:
-              type: string
-              description: The ID of the admin performing the action.
-              example: '123'
-            assignee_id:
-              type: string
-              description: The ID of the admin or team to which the ticket is assigned.
-                Set this 0 to unassign it.
-              example: '123'
+        admin_id:
+          type: integer
+          description: The ID of the admin performing ticket update. Needed for workflows
+            execution and attributing actions to specific admins.
+          example: 123
+        assignee_id:
+          type: string
+          description: The ID of the admin or team to which the ticket is assigned.
+            Set this 0 to unassign it.
+          example: '123'
     update_ticket_type_attribute_request:
       description: You can update a Ticket Type Attribute
       type: object
@@ -20164,49 +19596,6 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-  responses:
-    Unauthorized:
-      description: Unauthorized
-      content:
-        application/json:
-          examples:
-            Unauthorized:
-              value:
-                type: error.list
-                request_id: 12a938a3-314e-4939-b773-5cd45738bd21
-                errors:
-                - code: unauthorized
-                  message: Access Token Invalid
-          schema:
-            "$ref": "#/components/schemas/error"
-    TypeNotFound:
-      description: Not Found
-      content:
-        application/json:
-          examples:
-            TypeNotFound:
-              value:
-                type: error.list
-                request_id: 12a938a3-314e-4939-b773-5cd45738bd21
-                errors:
-                - code: not_found
-                  message: Custom object type `undefined` not found
-          schema:
-            "$ref": "#/components/schemas/error"
-    ObjectNotFound:
-      description: Not Found
-      content:
-        application/json:
-          examples:
-            ObjectNotFound:
-              value:
-                type: error.list
-                request_id: 12a938a3-314e-4939-b773-5cd45738bd21
-                errors:
-                - code: not_found
-                  message: Custom object instance not found
-          schema:
-            "$ref": "#/components/schemas/error"
 servers:
 - url: https://api.intercom.io
   description: The production API server
@@ -20246,11 +19635,7 @@ tags:
     description: What is a conversation?
     url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
 - name: Custom Object Instances
-  description: |
-    Everything about your Custom Object instances.
-    {% admonition type="warning" name="Permission Requirements" %}
-      From now on, to access this endpoint, you need additional permissions. Please head over to the [Developer Hub](https://app.intercom.com/a/apps/_/developer-hub) app package authentication settings to configure the required permissions.
-    {% /admonition %}
+  description: Everything about your Custom Object instances.
 - name: Data Attributes
   description: Everything about your Data Attributes
 - name: Data Events
@@ -20259,8 +19644,6 @@ tags:
   description: Everything about your Data Exports
 - name: Help Center
   description: Everything about your Help Center
-- name: Jobs
-  description: Everything about jobs
 - name: Messages
   description: Everything about your messages
 - name: News
