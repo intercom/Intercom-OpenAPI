@@ -1443,6 +1443,29 @@ paths:
                         message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/away_status_reasons":
+    get:
+      summary: List all away status reasons
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Away Status Reasons
+      operationId: listAwayStatusReasons
+      description: "Returns a list of all away status reasons configured for the workspace, including deleted ones."
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/away_status_reason"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/help_center/collections":
     get:
       summary: List all collections
@@ -13549,7 +13572,7 @@ components:
                 customer:
                   "$ref": "#/components/schemas/customer_request"
               required:
-                - intercom_user_id
+              - intercom_user_id
             - title: User ID
               properties:
                 user_id:
@@ -13560,7 +13583,7 @@ components:
                 customer:
                   "$ref": "#/components/schemas/customer_request"
               required:
-                - user_id
+              - user_id
             - title: Email
               properties:
                 email:
@@ -13571,7 +13594,40 @@ components:
                 customer:
                   "$ref": "#/components/schemas/customer_request"
               required:
-                - email
+              - email
+    away_status_reason:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "away_status_reason"
+        id:
+          type: string
+          description: "The unique identifier for the away status reason"
+        label:
+          type: string
+          description: "The display text for the away status reason"
+          example: "On a break"
+        emoji:
+          type: string
+          description: "The emoji associated with the status reason"
+          example: "☕"
+        order:
+          type: integer
+          description: "The display order of the status reason"
+          example: 1
+        deleted:
+          type: boolean
+          description: "Whether the status reason has been soft deleted"
+          example: false
+        created_at:
+          type: integer
+          description: "The Unix timestamp when the status reason was created"
+          example: 1734537243
+        updated_at:
+          type: integer
+          description: "The Unix timestamp when the status reason was last updated"
+          example: 1734537243 
     close_conversation_request:
       title: Close Conversation Request
       type: object
@@ -19607,24 +19663,26 @@ security:
   - bearerAuth: []
 tags:
   - name: Admins
-    description: Everything about your Admins
+  description: Everything about your Admins
   - name: AI Content
     description: |
       With the AI Content APIs, you can create and manage External Pages and Content Import Sources for your Fin Content Library.
-      
+
       &nbsp;
-      
+
       *External Pages* are pages that you want Fin to be able to answer questions about. The API for External Pages is a great way to ingest into your Fin Content Library pages that are not publicly accessible and hence can't be crawled by Intercom.
-      
+
       &nbsp;
-      
+
       *Content Import Sources* are the sources of those pages, and they are used to determine the default audience for the pages (configured via the UI). You should create a Content Import Source for each source of External Pages that you want to ingest into your Fin Content Library.
-      
+
       &nbsp;
-      
+
       You can then iterate through the content from that source via its API and POST it to the External Pages endpoint. That endpoint has an *external_id* parameter which allows you to specify the identifier from the source. The endpoint will then either create a new External Page or update an existing one as appropriate.",
   - name: Articles
     description: Everything about your Articles
+  - name: Away Status Reasons
+    description: Everything about your Away Status Reasons
   - name: Companies
     description: Everything about your Companies
   - name: Contacts
@@ -19635,7 +19693,11 @@ tags:
       description: What is a conversation?
       url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
   - name: Custom Object Instances
-    description: Everything about your Custom Object instances.
+    description: |
+      Everything about your Custom Object instances.
+      {% admonition type="warning" name="Permission Requirements" %}
+        From now on, to access this endpoint, you need additional permissions. Please head over to the [Developer Hub](https://app.intercom.com/a/apps/_/developer-hub) app package authentication settings to configure the required permissions.
+      {% /admonition %}
   - name: Data Attributes
     description: Everything about your Data Attributes
   - name: Data Events
@@ -19644,6 +19706,8 @@ tags:
     description: Everything about your Data Exports
   - name: Help Center
     description: Everything about your Help Center
+  - name: Jobs
+    description: Everything about jobs
   - name: Messages
     description: Everything about your messages
   - name: News
