@@ -1443,6 +1443,29 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/away_status_reasons":
+    get:
+      summary: List all away status reasons
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Away Status Reasons
+      operationId: listAwayStatusReasons
+      description: "Returns a list of all away status reasons configured for the workspace, including deleted ones."
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/away_status_reason"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/help_center/collections":
     get:
       summary: List all collections
@@ -13865,6 +13888,39 @@ components:
                 "$ref": "#/components/schemas/customer_request"
             required:
             - email
+    away_status_reason:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "away_status_reason"
+        id:
+          type: string
+          description: "The unique identifier for the away status reason"
+        label:
+          type: string
+          description: "The display text for the away status reason"
+          example: "On a break"
+        emoji:
+          type: string
+          description: "The emoji associated with the status reason"
+          example: "☕"
+        order:
+          type: integer
+          description: "The display order of the status reason"
+          example: 1
+        deleted:
+          type: boolean
+          description: "Whether the status reason has been soft deleted"
+          example: false
+        created_at:
+          type: integer
+          description: "The Unix timestamp when the status reason was created"
+          example: 1734537243
+        updated_at:
+          type: integer
+          description: "The Unix timestamp when the status reason was last updated"
+          example: 1734537243    
     close_conversation_request:
       title: Close Conversation Request
       type: object
@@ -20236,6 +20292,8 @@ tags:
     You can then iterate through the content from that source via its API and POST it to the External Pages endpoint. That endpoint has an *external_id* parameter which allows you to specify the identifier from the source. The endpoint will then either create a new External Page or update an existing one as appropriate.",
 - name: Articles
   description: Everything about your Articles
+- name: Away Status Reasons
+  description: Everything about your Away Status Reasons
 - name: Companies
   description: Everything about your Companies
 - name: Contacts
