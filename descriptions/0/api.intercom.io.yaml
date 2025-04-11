@@ -11917,9 +11917,8 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
-                  assignment:
-                    admin_id: '991268011'
-                    assignee_id: '991268013'
+                  admin_id: 991268011
+                  assignee_id: 991268013
                   open: true
                   snoozed_until: 1673609604
                   ticket_state_id: 8498
@@ -11929,9 +11928,8 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
-                  assignment:
-                    admin_id: '123'
-                    assignee_id: '991268021'
+                  admin_id: 991268011
+                  assignee_id: 991268013
                   ticket_state_id: 8506
               assignee_not_found:
                 summary: Assignee not found
@@ -11939,9 +11937,8 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
-                  assignment:
-                    admin_id: '991268027'
-                    assignee_id: '456'
+                  admin_id: 991268011
+                  assignee_id: 991268013
                   ticket_state_id: 8514
               ticket_state_id_is_not_valid_or_is_not_associated_with_the_ticket_type:
                 summary: Ticket state id is not valid or is not associated with the
@@ -19808,18 +19805,16 @@ components:
           format: timestamp
           description: The time you want the ticket to reopen.
           example: 1673609604
-        assignment:
-          type: object
-          properties:
-            admin_id:
-              type: string
-              description: The ID of the admin performing the action.
-              example: '123'
-            assignee_id:
-              type: string
-              description: The ID of the admin or team to which the ticket is assigned.
-                Set this 0 to unassign it.
-              example: '123'
+        admin_id:
+          type: integer
+          description: The ID of the admin performing ticket update. Needed for workflows
+            execution and attributing actions to specific admins.
+          example: 123
+        assignee_id:
+          type: string
+          description: The ID of the admin or team to which the ticket is assigned.
+            Set this 0 to unassign it.
+          example: '123'
     update_ticket_type_attribute_request:
       description: You can update a Ticket Type Attribute
       type: object
