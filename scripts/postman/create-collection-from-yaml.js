@@ -4,12 +4,12 @@ const YAML = require('yaml');
 const OpenAPI = require('./open-api');
 
 module.exports = async function createCollectionFromYaml(filePath) {
-  // Get version from the directory containing the YAML file
   const pathParts = filePath.split('/');
-  const versionNumber = pathParts[pathParts.length - 2]; // Get second-to-last part before the yaml file
+  const versionNumber = pathParts[pathParts.length - 2];
 
-  // Use relative paths from the project root
-  const versionFolder = `postman/${versionNumber}`;
+  // version 0 means the Unstable version
+  const folderName = versionNumber === '0' ? 'Unstable' : versionNumber;
+  const versionFolder = `postman/${folderName}`;
 
   if (!fs.existsSync('postman')) {
     fs.mkdirSync('postman');
@@ -60,9 +60,9 @@ module.exports = async function createCollectionFromYaml(filePath) {
   );
 
   // Create a README for the version
-  const readmeContent = `# Intercom API ${versionNumber} Postman Collection
+  const readmeContent = `# Intercom API ${folderName} Postman Collection
 
-This directory contains the Postman collection for Intercom API version ${versionNumber}.
+This directory contains the Postman collection for Intercom API version ${folderName}.
 
 ## Files
 - \`intercom-api.postman_collection.json\`: The main Postman collection

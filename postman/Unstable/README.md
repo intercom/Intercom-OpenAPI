@@ -1,6 +1,6 @@
-# Intercom API 0 Postman Collection
+# Intercom API Unstable Postman Collection
 
-This directory contains the Postman collection for Intercom API version 0.
+This directory contains the Postman collection for Intercom API version Unstable.
 
 ## Files
 - `intercom-api.postman_collection.json`: The main Postman collection
@@ -12,4 +12,4 @@ This directory contains the Postman collection for Intercom API version 0.
 3. Set your access token in the environment variables
 4. Start making API calls!
 
-Last updated: 2025-04-15T08:55:48.043Z
+Last updated: 2025-04-15T14:40:02.148Z
