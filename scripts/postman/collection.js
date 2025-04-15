@@ -7,6 +7,9 @@ const { resolve } = require('path');
 const { uniq } = require('lodash');
 const Example = require('./example');
 const VERB_PRIORITY = ['GET', 'POST', 'PUT', 'DELETE'];
+const createCollectionFromYaml = require('./create-collection-from-yaml');
+const fs = require('fs');
+const path = require('path');
 
 const byName = (a, b) => {
   if (a.name < b.name) {
@@ -20,6 +23,8 @@ const byName = (a, b) => {
 module.exports = class Collection {
   constructor(openapi) {
     this.openapi = openapi;
+    this.folders = []; // Initialize folders array
+    this.tags = {}; // Initialize tags object
   }
 
   async createCompleteCollection() {
@@ -111,23 +116,51 @@ module.exports = class Collection {
   }
 
   insertEndpoints() {
-    const paths = Object.keys(this.openapi.paths);
-    paths.forEach((path) => {
-      const endpoints = this.openapi.paths[path];
-      const verbs = Object.keys(endpoints);
-      verbs.forEach((verb) => this.insertEndpoint(verb, path, endpoints[verb]));
+    Object.entries(this.openapi.paths).forEach(([path, methods]) => {
+      Object.entries(methods).forEach(([method, endpoint]) => {
+        if (method !== 'parameters') {
+          // Skip global parameters
+          this.insertEndpoint({
+            name: endpoint.summary || path,
+            request: {
+              method: method.toUpperCase(),
+              url: {
+                raw: path,
+                path: path.split('/').filter((p) => p),
+              },
+              description: endpoint.description || '',
+              header: [], // Initialize headers array
+              body: {}, // Initialize body object
+            },
+            response: [], // Initialize responses array
+          });
+        }
+      });
     });
   }
 
-  insertEndpoint(verb, path, endpoint) {
-    const item = {
-      id: uuid.v4(),
-      name: endpoint.summary,
-      description: endpoint.description,
-      request: this.request(verb, path, endpoint),
-    };
-    const parent = this.findFolder(endpoint);
-    parent.push(item);
+  insertEndpoint(endpoint) {
+    try {
+      // Get folder name from tags or default to 'General'
+      const folderName = endpoint.tags && endpoint.tags.length > 0 ? endpoint.tags[0] : 'General';
+
+      const folder = this.findFolder(folderName);
+      if (!folder.item) {
+        folder.item = []; // Ensure item is an array
+      }
+      folder.item.push(endpoint);
+    } catch (err) {
+      console.warn(
+        `Warning: Could not insert endpoint ${endpoint.name || 'unknown'}:`,
+        err.message,
+      );
+      // Add to General folder as fallback
+      const generalFolder = this.findFolder('General');
+      if (!generalFolder.item) {
+        generalFolder.item = [];
+      }
+      generalFolder.item.push(endpoint);
+    }
   }
 
   request(verb, path, endpoint) {
@@ -289,20 +322,23 @@ module.exports = class Collection {
     }
     return param.name;
   }
-  /**
-   * Finds a folder instance for a given reference category ID
-   */
-  findFolder(endpoint) {
-    try {
-      const currentTag = endpoint.tags[0];
-      // first find the folder name
-      const folderName = this.openapi.tags.filter((tag) => tag.name === currentTag)[0].name;
-      // return the first folder to match this name
-      return this.folders.filter((folder) => folder.name === folderName)[0].item;
-    } catch (e) {
-      console.error("Couldn't find folder for endpoint", e);
-      return this.folders.filter((folder) => folder.name === 'Uncategorized')[0].item;
+
+  findFolder(folderName) {
+    // Handle case where folderName is undefined or null
+    if (!folderName) {
+      folderName = 'General';
     }
+
+    // Find existing folder or create new one
+    let folder = this.folders.find((f) => f.name === folderName);
+    if (!folder) {
+      folder = {
+        name: folderName,
+        item: [], // Initialize item as array
+      };
+      this.folders.push(folder);
+    }
+    return folder;
   }
 
   pruneEmptyFolders() {
