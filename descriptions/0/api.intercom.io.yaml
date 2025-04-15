@@ -89,6 +89,7 @@ paths:
                     away_mode_enabled: true
                     away_mode_reassign: true
                     has_inbox_seat: true
+                    away_status_reason_id: '12345'
                     team_ids: []
               schema:
                 "$ref": "#/components/schemas/admin"
@@ -106,6 +107,25 @@ paths:
                       message: Admin for admin_id not found
               schema:
                 "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                parameter_invalid:
+                  summary: "Example of an invalid away_status_reason_id"
+                  value:
+                    type: error.list
+                    errors:
+                      - code: parameter_invalid
+                        message: "Away status reason is deleted"
+                away_status_reason_mandatory:
+                  summary: "Example of a missing away_status_reason_id when away reasons are mandatory"
+                  value:
+                    type: error.list
+                    errors:
+                      - code: away_status_reason_mandatory
+                        message: "Away status reason is mandatory"
         '401':
           description: Unauthorized
           content:
@@ -141,12 +161,17 @@ paths:
                     to your default inbox.
                   example: false
                   default: false
+                away_status_reason_id:
+                  type: integer
+                  description: The unique identifier of the away status reason
+                  example: 12345
             examples:
               successful_response:
                 summary: Successful response
                 value:
                   away_mode_enabled: true
                   away_mode_reassign: true
+                  away_status_reason_id: 12345
               admin_not_found:
                 summary: Admin not found
                 value:
