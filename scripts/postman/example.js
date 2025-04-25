@@ -29,7 +29,7 @@ module.exports = class Example {
     } else if (prop.type === 'string' && prop.enum) {
       return prop.enum[0];
     } else {
-      console.warn('Could not parse an example for:', prop);
+      return prop.name || '';
     }
   }
 };
