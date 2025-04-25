@@ -159,7 +159,6 @@ module.exports = class Collection {
   }
 
   url(path, endpoint) {
-    // Always use the production URL
     const baseUrl = 'https://api.intercom.io';
 
     // Ensure path starts with a slash if it doesn't already
