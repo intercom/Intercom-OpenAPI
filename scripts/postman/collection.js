@@ -48,24 +48,16 @@ module.exports = class Collection {
   }
 
   getVariables() {
-    let variables = uniq(
-      Object.values(this.openapi.servers).map((host) => ({
+    // Only include the bearer token variable
+    return [
+      {
         id: uuid.v4(),
-        key: host.url,
-        value: host.url,
+        key: 'bearerToken',
+        value: '{{bearerToken}}',
         type: 'string',
-        description: host.description,
-      })),
-    );
-    let tokenInfo = {
-      id: uuid.v4(),
-      key: 'bearerToken',
-      value: '{{bearerToken}}',
-      type: 'string',
-      description: 'bearertokenvalue',
-    };
-    variables.push(tokenInfo);
-    return variables;
+        description: 'bearertokenvalue',
+      },
+    ];
   }
 
   defaultAuth() {
@@ -119,19 +111,11 @@ module.exports = class Collection {
     Object.entries(this.openapi.paths).forEach(([path, methods]) => {
       Object.entries(methods).forEach(([method, endpoint]) => {
         if (method !== 'parameters') {
-          // Skip global parameters
+          const request = this.request(method, path, endpoint);
           this.insertEndpoint({
             name: endpoint.summary || path,
-            request: {
-              method: method.toUpperCase(),
-              url: {
-                raw: path,
-                path: path.split('/').filter((p) => p),
-              },
-              description: endpoint.description || '',
-              header: [], // Initialize headers array
-              body: {}, // Initialize body object
-            },
+            tags: endpoint.tags || [], // Include the tags from the OpenAPI spec
+            request: request,
             response: [], // Initialize responses array
           });
         }
@@ -175,11 +159,17 @@ module.exports = class Collection {
   }
 
   url(path, endpoint) {
-    const server = new URL('https://api.intercom.io');
+    // Always use the production URL
+    const baseUrl = 'https://api.intercom.io';
+
+    // Ensure path starts with a slash if it doesn't already
+    const formattedPath = path.startsWith('/') ? path : `/${path}`;
+
     return {
+      raw: `${baseUrl}${formattedPath}`,
       protocol: 'https',
-      host: server.host || server.hostname,
-      path: this.path(server, path),
+      host: ['api.intercom.io'],
+      path: formattedPath.split('/').filter((p) => p),
       query: this.query(endpoint),
       variable: this.variable(endpoint),
     };
