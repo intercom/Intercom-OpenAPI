@@ -6244,7 +6244,7 @@ paths:
                         email_message_metadata:
                         app_package_code: null
                       total_count: 1
-                Admin note reply:
+                Admin Reply with a Note:
                   value:
                     type: conversation
                     id: '525'
@@ -6332,7 +6332,7 @@ paths:
                         email_message_metadata:
                         app_package_code: null
                       total_count: 1
-                Admin quick_reply reply:
+                Admin Reply to send Quick Reply Options:
                   value:
                     type: conversation
                     id: '526'
@@ -6545,7 +6545,7 @@ paths:
                   intercom_user_id: 6762f1571bb69f9f2193bbbb
                   body: Thanks again :)
               admin_note_reply:
-                summary: Admin note reply
+                summary: Admin Reply with a Note
                 value:
                   message_type: note
                   type: admin
@@ -6555,7 +6555,7 @@ paths:
                     \ <ol>   <li>Coffee</li>   <li>Tea</li>   <li>Milk</li> </ol>
                     \  </body> </html>"
               admin_quick_reply_reply:
-                summary: Admin quick_reply reply
+                summary: Admin Reply to send Quick Reply Options
                 value:
                   message_type: quick_reply
                   type: admin
@@ -6565,15 +6565,17 @@ paths:
                     uuid: a5e1c524-5ddd-4c3e-9328-6bca5d6e3edb
                   - text: 'No'
                     uuid: f4a98af1-be56-4948-a57e-e1a83f8484c6
-              user_last_conversation_reply:
-                summary: User last conversation reply
+              contact_quick_reply_reply:
+                summary: User reply with quick reply selection
                 value:
-                  message_type: comment
+                  message_type: quick_reply
                   type: user
                   intercom_user_id: 6762f1621bb69f9f2193bbbe
-                  body: Thanks again :)
-              not_found:
-                summary: Not found
+                  reply_options:
+                  - text: 'Yes'
+                    uuid: a5e1c524-5ddd-4c3e-9328-6bca5d6e3edb
+              user_last_conversation_reply:
+                summary: User last conversation reply
                 value:
                   message_type: comment
                   type: user
@@ -11141,7 +11143,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '200':
-          description: Admin quick_reply reply
+          description: Admin Reply to send Quick Reply Options
           content:
             application/json:
               examples:
@@ -13124,24 +13126,10 @@ components:
         reply_options:
           title: Quick Reply Options
           type: array
-          description: The quick reply options to display. Must be present for quick_reply
+          description: The quick reply options to display to the end user. Must be present for quick_reply
             message types.
           items:
-            title: Quick Reply Option
-            type: object
-            properties:
-              text:
-                type: string
-                description: The text to display in this quick reply option.
-              uuid:
-                type: string
-                format: uuid
-                description: A unique identifier for this quick reply option. This
-                  value will be available within the metadata of the comment conversation
-                  part that is created when a user clicks on this reply option.
-            required:
-            - text
-            - uuid
+            "$ref": "#/components/schemas/quick_reply_option"
         attachment_urls:
           type: array
           description: A list of image URLs that will be added as attachments. You
@@ -14730,6 +14718,25 @@ components:
             type: string
             format: uri
           maxItems: 10
+        reply_options:
+          title: Contact Quick Reply
+          type: array
+          description: The quick reply selection the contact wishes to respond with.
+            These map to buttons displayed in the Messenger UI if sent by a bot, or the reply options sent by an Admin via the API.
+          items:
+            title: Quick Reply Option
+            type: object
+            properties:
+              text:
+                type: string
+                description: The text of the chosen reply option.
+              uuid:
+                type: string
+                format: uuid
+                description: The unique identifier for the quick reply option selected.
+            required:
+            - text
+            - uuid
       required:
       - message_type
       - type
@@ -15368,6 +15375,9 @@ components:
         email_message_metadata:
           "$ref": "#/components/schemas/email_message_metadata"
           nullable: true
+        metadata:
+          "$ref": "#/components/schemas/conversation_part_metadata"
+          nullable: true
         state:
           type: string
           enum:
@@ -15414,6 +15424,14 @@ components:
           format: email
           description: The email of the author
           example: operator+abcd1234@intercom.io
+        from_ai_agent:
+          type: boolean
+          description: If this conversation part was sent by the AI Agent
+          example: true
+        is_ai_answer:
+          type: boolean
+          description: If this conversation part body was generated by the AI Agent
+          example: false
     conversation_parts:
       title: Conversation Parts
       type: object
@@ -15439,6 +15457,28 @@ components:
           type: integer
           description: ''
           example: 1
+    conversation_part_metadata:
+      title: Conversation Part Metadata
+      description: Metadata for a conversation part
+      type: object
+      properties:
+        quick_reply_options:
+          type: array
+          description: The quick reply options sent by the Admin or bot, presented in this conversation part.
+          items:
+            allOf:
+            - "$ref": "#/components/schemas/quick_reply_option"
+            properties:
+              translations:
+                type: object
+                nullable: true
+                description: The translations for the quick reply option.
+                example: { "en": "Hello", "fr": "Bonjour" }
+        quick_reply_uuid:
+          type: string
+          format: uuid
+          description: The unique identifier for the quick reply option that was clicked by the end user.
+          example: '123e4567-e89b-12d3-a456-426614174000'
     conversation_rating:
       title: Conversation Rating
       type: object
@@ -17243,6 +17283,8 @@ components:
           description: A list of an email address headers.
           items:
             "$ref": "#/components/schemas/email_address_header"
+    metadata:
+          "$ref": "#/components/schemas/conversation_part_metadata"
     conversation_attribute_updated_by_workflow:
       title: Part type - conversation_attribute_updated_by_workflow
       type: object
@@ -18349,6 +18391,22 @@ components:
           description: Phone number in E.164 format, that has received the SMS to
             continue the conversation in the Messenger.
           example: "+1 1234567890"
+    quick_reply_option:
+      title: Quick Reply Option
+      type: object
+      properties:
+        text:
+          type: string
+          description: The text to display in this quick reply option.
+        uuid:
+          type: string
+          format: uuid
+          description: A unique identifier for this quick reply option. This
+            value will be available within the metadata of the comment conversation
+            part that is created when a user clicks on this reply option.
+      required:
+      - text
+      - uuid
     redact_conversation_request:
       oneOf:
       - title: Redact Conversation Part Request
