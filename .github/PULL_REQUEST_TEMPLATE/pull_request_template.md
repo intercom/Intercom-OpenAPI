@@ -1,3 +1,14 @@
-Thank you for contributing to [intercom/Intercom-OpenAPI](https://github.com/intercom/Intercom-OpenAPI)!
+# API Changes Description
 
-**Please note that we cannot accept pull requests that directly modify the descriptions in this repo.** If you have identified a problem with the descriptions, [consider opening an issue instead](https://github.com/intercom/Intercom-OpenAPI/issues/new?template=schema-inaccuracy.md) :bow:
+## What Changed
+
+Please provide a clear description of the changes made in this PR.
+
+
+## API Versions Affected
+
+List all API versions that are affected by these changes.
+For example:
+- v2.0
+- v2.13
+- Unstable
