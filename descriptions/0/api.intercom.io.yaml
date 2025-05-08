@@ -8887,8 +8887,20 @@ paths:
                     type: admin
                     id: '991267816'
                   to:
-                    type: user
-                    id: 6762f2391bb69f9f2193bc19
+                    - type: user
+                      id: 6762f2391bb69f9f2193bc19
+                    - type: lead
+                      id: 6762f23c1bb69f9f2193bc1b
+                    - type: user
+                      id: 6762f23d1bb69f9f2193bc1c
+                  cc:
+                    - type: user
+                      id: 6762f23e1bb69f9f2193bc1d
+                    - type: user
+                      id: 6762f23f1bb69f9f2193bc1e
+                  bcc:
+                    - type: user
+                      id: 6762f23e1bb69f9f2193bc2f
                   message_type: conversation
                   body: heyy
               admin_sms_message_created:
@@ -13936,7 +13948,7 @@ components:
         updated_at:
           type: integer
           description: "The Unix timestamp when the status reason was last updated"
-          example: 1734537243    
+          example: 1734537243
     close_conversation_request:
       title: Close Conversation Request
       type: object
@@ -16271,24 +16283,37 @@ components:
           - type
           - id
         to:
-          type: object
-          description: The sender of the message. If not provided, the default sender
-            will be used.
-          properties:
-            type:
-              type: string
-              description: The role associated to the contact - `user` or `lead`.
-              enum:
-              - user
-              - lead
-              example: user
-            id:
-              type: string
-              description: The identifier for the contact which is given by Intercom.
-              example: 536e564f316c83104c000020
-          required:
-          - type
-          - id
+          oneOf:
+            - $ref: '#/components/schemas/recipient'
+            - type: array
+              description: The recipients of the message.
+              items:
+                $ref: '#/components/schemas/recipient'
+              example:
+                - type: user
+                  id: 536e564f316c83104c000020
+                - type: lead
+                  id: 536e564f316c83104c000021
+        cc:
+          oneOf:
+            - $ref: '#/components/schemas/recipient'
+            - type: array
+              description: The CC recipients of the message.
+              items:
+                $ref: '#/components/schemas/recipient'
+              example:
+                - type: user
+                  id: 536e564f316c83104c000023
+        bcc:
+          oneOf:
+            - $ref: '#/components/schemas/recipient'
+            - type: array
+              description: The BCC recipients of the message.
+              items:
+                $ref: '#/components/schemas/recipient'
+              example:
+                - type: user
+                  id: 536e564f316c83104c000022
         created_at:
           type: integer
           description: The time the message was created. If not provided, the current
@@ -16321,6 +16346,25 @@ components:
         - body
         - from
         - to
+    recipient:
+      type: object
+      title: Recipient
+      description: A recipient of a message
+      properties:
+        type:
+          type: string
+          description: The role associated to the contact - `user` or `lead`.
+          enum:
+          - user
+          - lead
+          example: user
+        id:
+          type: string
+          description: The identifier for the contact which is given by Intercom.
+          example: 536e564f316c83104c000020
+      required:
+      - type
+      - id
     create_or_update_company_request:
       type: object
       title: Create Or Update Company Request Payload
