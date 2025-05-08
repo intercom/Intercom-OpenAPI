@@ -16305,13 +16305,15 @@ components:
                 - type: user
                   id: 536e564f316c83104c000023
         bcc:
-          type: array
-          description: The BCC recipients of the message.
-          items:
-            $ref: '#/components/schemas/recipient'
-          example:
-            - type: user
-              id: 536e564f316c83104c000022
+          oneOf:
+            - $ref: '#/components/schemas/recipient'
+            - type: array
+              description: The BCC recipients of the message.
+              items:
+                $ref: '#/components/schemas/recipient'
+              example:
+                - type: user
+                  id: 536e564f316c83104c000022
         created_at:
           type: integer
           description: The time the message was created. If not provided, the current
