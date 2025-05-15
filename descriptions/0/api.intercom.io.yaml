@@ -8962,7 +8962,7 @@ paths:
                   body: heyy https://picsum.photos/200/300
   "/messages/status":
     get:
-      summary: Get WhatsApp message status
+      summary: Get statuses of all messages sent based on the specified ruleset_id
       parameters:
       - name: Intercom-Version
         in: header
@@ -8971,7 +8971,7 @@ paths:
       - name: ruleset_id
         in: query
         required: true
-        description: The unique identifier for the set of WhatsApp messages to check status for
+        description: The unique identifier for the set of messages to check status for
         schema:
           type: string
       - name: per_page
@@ -8993,14 +8993,11 @@ paths:
       - WhatsApp
       operationId: getWhatsAppMessageStatus
       description: |
-        Retrieves the status of outbound WhatsApp messages based on a ruleset ID.
+        Retrieves statuses of messages sent from the Outbound module. Currently, this API only supports WhatsApp messages.
         
-        This endpoint returns paginated status events for WhatsApp messages, providing
+        
+        This endpoint returns paginated status events for WhatsApp messages sent via the Outbound module, providing
         information about delivery state and related message details.
-        
-        > 🚧 Feature Flag Required
-        >
-        > This endpoint requires the "team-channels-whatsapp-outbound-api" feature to be enabled.
       responses:
         '200':
           description: Successful response
@@ -9009,10 +9006,10 @@ paths:
               examples:
                 Successful response:
                   value:
-                    type: "list"
-                    ruleset_id: "12345"
+                    type: list
+                    ruleset_id: 12345
                     pages:
-                      type: "pages"
+                      type: pages
                       per_page: 50
                       total_pages: 3
                       next:
@@ -9021,6 +9018,7 @@ paths:
                     events:
                       - id: "event_1"
                         conversation_id: "conv_123"
+                        user_id: "user_123"
                         status: "delivered"
                         type: "broadcast_outbound"
                         created_at: 1734537980
@@ -9029,6 +9027,7 @@ paths:
                         template_name: "appointment_reminder"
                       - id: "event_2"
                         conversation_id: "conv_456"
+                        user_id: "user_456"
                         status: "sent"
                         type: "broadcast_outbound"
                         created_at: 1734537970
@@ -9036,86 +9035,7 @@ paths:
                         whatsapp_message_id: "wamid_456"
                         template_name: "order_update"
               schema:
-                type: object
-                required:
-                  - type
-                  - ruleset_id
-                  - pages
-                  - total_count
-                  - events
-                properties:
-                  type:
-                    type: string
-                    enum: ["list"]
-                  ruleset_id:
-                    type: string
-                    description: The provided ruleset ID
-                  pages:
-                    type: object
-                    required:
-                      - type
-                      - per_page
-                      - total_pages
-                    properties:
-                      type:
-                        type: string
-                        enum: ["pages"]
-                      per_page:
-                        type: integer
-                        description: Number of results per page
-                      total_pages:
-                        type: integer
-                        description: Total number of pages
-                      next:
-                        type: object
-                        nullable: true
-                        description: Information for fetching next page (null if no more pages)
-                        properties:
-                          starting_after:
-                            type: string
-                            description: Cursor for the next page
-                  total_count:
-                    type: integer
-                    description: Total number of events
-                  events:
-                    type: array
-                    items:
-                      type: object
-                      required:
-                        - id
-                        - conversation_id
-                        - status
-                        - type
-                        - created_at
-                        - updated_at
-                        - whatsapp_message_id
-                      properties:
-                        id:
-                          type: string
-                          description: Event ID
-                        conversation_id:
-                          type: string
-                          description: ID of the conversation
-                        status:
-                          type: string
-                          description: Current status of the message
-                          enum: ["queued", "sent", "delivered", "read", "failed"]
-                        type:
-                          type: string
-                          description: Event type
-                          enum: ["broadcast_outbound"]
-                        created_at:
-                          type: integer
-                          description: Creation timestamp
-                        updated_at:
-                          type: integer
-                          description: Last update timestamp
-                        whatsapp_message_id:
-                          type: string
-                          description: WhatsApp's message identifier
-                        template_name:
-                          type: string
-                          description: Name of the WhatsApp template used
+                "$ref": "#/components/schemas/whatsapp_message_status_list"
         '400':
           description: Bad request - missing required parameters
           content:
@@ -9126,22 +9046,48 @@ paths:
                     type: error
                     request_id: "req_123"
                     message: "Missing required parameter: ruleset_id"
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
             application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: d7997515-cd92-4fe4-966c-cb1f4bdda1d4
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
               schema:
-                "$ref": "#/components/schemas/authentication_error"
+                "$ref": "#/components/schemas/error"
         '403':
-          description: Forbidden - feature flag not enabled
+          description: API plan restricted
           content:
             application/json:
               examples:
-                feature not enabled:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b0
+                    errors:
+                    - code: api_plan_restricted
+                      message: Active subscription needed.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              examples:
+                server error:
                   value:
                     type: error
-                    request_id: "req_456"
-                    message: "Feature 'team-channels-whatsapp-outbound-api' is not enabled for this workspace"
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b2
+                    message: "An error occurred while processing your request"
+              schema:
+                "$ref": "#/components/schemas/error"
   "/news/news_items":
     get:
       summary: List all news items
@@ -18207,6 +18153,87 @@ components:
       - created_at
       - body
       - message_type
+    whatsapp_message_status_list:
+      type: object
+      required:
+        - type
+        - ruleset_id
+        - pages
+        - total_count
+        - events
+      properties:
+        type:
+          type: string
+          enum: ["list"]
+        ruleset_id:
+          type: string
+          description: The provided ruleset ID
+        pages:
+          type: object
+          required:
+            - type
+            - per_page
+            - total_pages
+          properties:
+            type:
+              type: string
+              enum: ["pages"]
+            per_page:
+              type: integer
+              description: Number of results per page
+            total_pages:
+              type: integer
+              description: Total number of pages
+            next:
+              type: object
+              nullable: true
+              description: Information for fetching next page (null if no more pages)
+              properties:
+                starting_after:
+                  type: string
+                  description: Cursor for the next page
+        total_count:
+          type: integer
+          description: Total number of events
+        events:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - conversation_id
+              - status
+              - type
+              - created_at
+              - updated_at
+              - whatsapp_message_id
+            properties:
+              id:
+                type: string
+                description: Event ID
+              conversation_id:
+                type: string
+                description: ID of the conversation
+              status:
+                type: string
+                description: Current status of the message
+                enum: ["queued", "sent", "delivered", "read", "failed"]
+              type:
+                type: string
+                description: Event type
+                enum: ["broadcast_outbound"]
+              created_at:
+                type: integer
+                description: Creation timestamp
+              updated_at:
+                type: integer
+                description: Last update timestamp
+              whatsapp_message_id:
+                type: string
+                description: WhatsApp's message identifier
+              template_name:
+                type: string
+                description: Name of the WhatsApp template used
     multiple_filter_search_request:
       title: Multiple Filter Search Request
       description: Search using Intercoms Search APIs with more than one filter.
