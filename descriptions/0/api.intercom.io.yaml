@@ -7523,6 +7523,206 @@ paths:
                 summary: Bad request
                 value:
                   ticket_type_id: '54'
+  "/custom_channel_events/new_conversation":
+    post:
+      summary: Notify Intercom of a new conversation created in a custom channel
+      tags:
+        - Custom Channel Events
+      operationId: notifyNewConversation
+      description: |
+        Notifies Intercom that a new conversation was created in your custom channel/platform. This triggers conversation creation and workflow automations within Intercom for your custom channel integration.
+        > **Note:** This endpoint is restricted to customers with access to the closed beta for "Fin over API".
+      parameters:
+        - name: Intercom-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/intercom_version_unstable'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/custom_channel_base_event'
+            examples:
+              example-1:
+                summary: Example request
+                value:
+                  event_id: "evt_12345"
+                  conversation_id: "conv_67890"
+                  contact:
+                    type: "user"
+                    external_id: "user_001"
+                    name: "Jane Doe"
+                    email: "jane.doe@example.com"
+      responses:
+        '204':
+          description: Successfully notified Intercom of the new conversation.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: '#/components/responses/ObjectNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /custom_channel_events/message:
+    post:
+      summary: Notify Intercom of a new message in a custom channel conversation
+      tags:
+        - Custom Channel Events
+      operationId: notifyNewMessage
+      description: |
+        Notifies Intercom that a new message was sent in a conversation on your custom channel/platform. This allows Intercom to process the message and trigger any relevant workflow automations.
+        > **Note:** This endpoint is restricted to customers with access to the closed beta for "Fin over API".
+      parameters:
+        - name: Intercom-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/intercom_version_unstable'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/custom_channel_base_event'
+                - type: object
+                  properties:
+                    body:
+                      type: string
+                      description: The message content sent by the user.
+                  required:
+                    - body
+            examples:
+              example-1:
+                summary: Example request
+                value:
+                  event_id: "evt_54321"
+                  conversation_id: "conv_98765"
+                  contact:
+                    type: "user"
+                    external_id: "user_002"
+                    name: "John Smith"
+                    email: "john.smith@example.com"
+                  body: "Hello, I need help with my order."
+      responses:
+        '204':
+          description: Successfully notified Intercom of the new message.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: '#/components/responses/ObjectNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /custom_channel_events/quick_reply_response:
+    post:
+      summary: Notify Intercom of a quick reply response in a custom channel conversation
+      tags:
+        - Custom Channel Events
+      operationId: notifyQuickReplyResponse
+      description: |
+        Notifies Intercom that a user selected a quick reply option in your custom channel/platform. This allows Intercom to process the response and trigger any relevant workflow automations.
+        > **Note:** This endpoint is restricted to customers with access to the closed beta for "Fin over API".
+      parameters:
+        - name: Intercom-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/intercom_version_unstable'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/custom_channel_base_event'
+                - type: object
+                  properties:
+                    quick_reply_option_uuid:
+                      type: string
+                      description: UUID of the selected quick reply option.
+                  required:
+                    - quick_reply_option_uuid
+            examples:
+              example-1:
+                summary: Example request
+                value:
+                  event_id: "evt_67890"
+                  conversation_id: "conv_13579"
+                  contact:
+                    type: "user"
+                    external_id: "user_003"
+                    name: "Alice Example"
+                    email: "alice@example.com"
+                  quick_reply_option_uuid: "b7e6a2c4-8f3a-4d2e-9c1a-2f6b7e8a9c3d"
+      responses:
+        '204':
+          description: Successfully notified Intercom of the quick reply response.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: '#/components/responses/ObjectNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /custom_channel_events/attribute_collector_response:
+    post:
+      summary: Notify Intercom of an attribute collector response in a custom channel conversation
+      tags:
+        - Custom Channel Events
+      operationId: notifyAttributeCollectorResponse
+      description: |
+        Notifies Intercom that a user provided a response to an attribute collector in your custom channel/platform. This allows Intercom to process the attribute and trigger any relevant workflow automations.
+        > **Note:** This endpoint is restricted to customers with access to the closed beta for "Fin over API".
+      parameters:
+        - name: Intercom-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/intercom_version_unstable'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/custom_channel_base_event'
+                - type: object
+                  properties:
+                    attribute:
+                      $ref: '#/components/schemas/custom_channel_attribute'
+                  required:
+                    - attribute
+            examples:
+              example-1:
+                summary: Example request
+                value:
+                  event_id: "evt_24680"
+                  conversation_id: "conv_11223"
+                  contact:
+                    type: "user"
+                    external_id: "user_004"
+                    name: "Bob Example"
+                    email: "bob@example.com"
+                  attribute:
+                    id: "shipping_address"
+                    value: "123 Main St, Springfield"
+      responses:
+        '204':
+          description: Successfully notified Intercom of the attribute collector response.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '404':
+          $ref: '#/components/responses/ObjectNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
   "/custom_object_instances/{custom_object_type_identifier}":
     parameters:
     - name: custom_object_type_identifier
@@ -17514,6 +17714,58 @@ components:
               type: string
               description: Name of the action
               example: Jira Create Issue
+    custom_channel_attribute:
+      title: Custom Channel - Attribute
+      type: object
+      required:
+        - id
+        - value
+      properties:
+        id:
+          type: string
+          description: Identifier for the attribute being collected.
+        value:
+          type: string
+          description: Value provided by the user for the attribute.
+    custom_channel_base_event:
+      title: Custom Channel - Base Event
+      type: object
+      properties:
+        event_id:
+          type: string
+          description: Unique identifier for the event.
+        conversation_id:
+          type: string
+          description: Identifier for the conversation in your system.
+        contact:
+          $ref: '#/components/schemas/custom_channel_contact'
+      required:
+        - event_id
+        - conversation_id
+        - contact
+    custom_channel_contact:
+      title: Custom Channel - Simplified Contact
+      type: object
+      required:
+        - type
+        - external_id
+        - name
+        - email
+      properties:
+        type:
+          type: string
+          enum: [user, lead]
+          description: Type of contact, must be "user" or "lead".
+        external_id:
+          type: string
+          description: External identifier for the contact. Intercom will take care of the mapping of your external_id with our internal ones so you don't have to worry about it.
+        name:
+          type: string
+          description: Name of the contact.
+        email:
+          type: string
+          format: email
+          description: Email address of the contact.
     custom_action_finished:
       title: Part type - custom_action_finished
       type: object
@@ -18062,6 +18314,13 @@ components:
           -
           example: Customer
           nullable: true
+    intercom_version_unstable:
+      description: Unstable Intercom API version. Used for closed beta endpoints.
+      type: string
+      example: unstable
+      default: unstable
+      enum:
+        - unstable
     linked_object_list:
       title: Linked Objects
       type: object
@@ -20597,7 +20856,49 @@ components:
                 request_id: 12a938a3-314e-4939-b773-5cd45738bd21
                 errors:
                 - code: not_found
+                  message: Object not found
+            CustomObjectNotFound:
+              value:
+                type: error.list
+                request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                errors:
+                - code: not_found
                   message: Custom object instance not found
+            IntegrationNotFound:
+              value:
+                type: error.list
+                request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                errors:
+                  - code: data_invalid
+                    message: Integration not found
+          schema:
+            "$ref": "#/components/schemas/error"
+    ValidationError:
+      description: Validation Error
+      content:
+        application/json:
+          examples:
+            ValidationError:
+              value:
+                type: error.list
+                request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                errors:
+                  - code: data_invalid
+                    message: Invalid or duplicated record reference
+          schema:
+            "$ref": "#/components/schemas/error"
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          examples:
+            BadRequest:
+              value:
+                type: error.list
+                request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                errors:
+                  - code: data_invalid
+                    message: Contact not found or could not be created
           schema:
             "$ref": "#/components/schemas/error"
 servers:
@@ -20640,6 +20941,13 @@ tags:
   externalDocs:
     description: What is a conversation?
     url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
+- name: Custom Channel Events
+  description: |
+    With the **closed beta** "Custom Channel" integration, you can bring Fin and Intercom capabilities to your own platform via API, enabling powerful custom integrations.
+
+    Intercom treats your integration like any other Intercom channel, allowing your application and Intercom to exchange events seamlessly. This makes it possible, for example, for your users to interact with Fin directly within your own application’s UI.
+
+    > **Note:** If you are interested in joining our closed beta and have a use case to integrate with "Fin over API", please reach out to your account manager or our support team for further information.
 - name: Custom Object Instances
   description: |
     Everything about your Custom Object instances.
