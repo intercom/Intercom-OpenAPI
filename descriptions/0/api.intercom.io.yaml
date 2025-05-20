@@ -7523,7 +7523,7 @@ paths:
                 summary: Bad request
                 value:
                   ticket_type_id: '54'
-  "/custom_channel_events/new_conversation":
+  "/custom_channel_events/notify_new_conversation":
     post:
       summary: Notify Intercom of a new conversation created in a custom channel
       tags:
@@ -7566,7 +7566,7 @@ paths:
           $ref: '#/components/responses/ObjectNotFound'
         '422':
           $ref: '#/components/responses/ValidationError'
-  /custom_channel_events/message:
+  "/custom_channel_events/notify_new_message":
     post:
       summary: Notify Intercom of a new message in a custom channel conversation
       tags:
@@ -7618,12 +7618,12 @@ paths:
           $ref: '#/components/responses/ObjectNotFound'
         '422':
           $ref: '#/components/responses/ValidationError'
-  /custom_channel_events/quick_reply_response:
+  "/custom_channel_events/notify_quick_reply_selected":
     post:
       summary: Notify Intercom of a quick reply response in a custom channel conversation
       tags:
         - Custom Channel Events
-      operationId: notifyQuickReplyResponse
+      operationId: notifyQuickReplySelected
       description: |
         Notifies Intercom that a user selected a quick reply option in your custom channel/platform. This allows Intercom to process the response and trigger any relevant workflow automations.
         > **Note:** This endpoint is restricted to customers with access to the closed beta for "Fin over API".
@@ -7642,11 +7642,11 @@ paths:
                 - $ref: '#/components/schemas/custom_channel_base_event'
                 - type: object
                   properties:
-                    quick_reply_option_uuid:
+                    quick_reply_option_id:
                       type: string
-                      description: UUID of the selected quick reply option.
+                      description: Id of the selected quick reply option.
                   required:
-                    - quick_reply_option_uuid
+                    - quick_reply_option_id
             examples:
               example-1:
                 summary: Example request
@@ -7658,7 +7658,7 @@ paths:
                     external_id: "user_003"
                     name: "Alice Example"
                     email: "alice@example.com"
-                  quick_reply_option_uuid: "b7e6a2c4-8f3a-4d2e-9c1a-2f6b7e8a9c3d"
+                  quick_reply_option_id: "1234"
       responses:
         '204':
           description: Successfully notified Intercom of the quick reply response.
@@ -7670,12 +7670,12 @@ paths:
           $ref: '#/components/responses/ObjectNotFound'
         '422':
           $ref: '#/components/responses/ValidationError'
-  /custom_channel_events/attribute_collector_response:
+  "/custom_channel_events/notify_attribute_collected":
     post:
       summary: Notify Intercom of an attribute collector response in a custom channel conversation
       tags:
         - Custom Channel Events
-      operationId: notifyAttributeCollectorResponse
+      operationId: notifyAttributeCollected
       description: |
         Notifies Intercom that a user provided a response to an attribute collector in your custom channel/platform. This allows Intercom to process the attribute and trigger any relevant workflow automations.
         > **Note:** This endpoint is restricted to customers with access to the closed beta for "Fin over API".
