@@ -4,9 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "The version of the SDKs that you would like to release"
+        description: 'The version of the SDKs that you would like to release'
         required: true
         type: string
+  push:
+    branches:
+      - main
+    paths:
+      - 'fern/**'
 
 jobs:
   release:
@@ -21,9 +26,20 @@ jobs:
       - name: Download Fern
         run: npm install -g fern-api
 
+      - name: Determine version
+        id: bump
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            chmod +x ./scripts/fern/bump.sh
+            VERSION=$(./scripts/fern/bump.sh --from HEAD~1 --group ts-sdk)
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
       - name: Release SDKs
         env:
           FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
           FERN_NPM_TOKEN: ${{ secrets.FERN_NPM_TOKEN }}
         run: |
-          fern generate --group ts-sdk --version ${{ inputs.version }} --log-level debug
+          fern generate --group ts-sdk --version ${{ steps.bump.outputs.version }} --log-level debug
