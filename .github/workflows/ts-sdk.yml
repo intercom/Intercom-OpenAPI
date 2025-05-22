@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Setup node
         uses: actions/setup-node@v4
@@ -42,4 +44,5 @@ jobs:
           FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
           FERN_NPM_TOKEN: ${{ secrets.FERN_NPM_TOKEN }}
         run: |
+          echo "Releasing SDK version: ${{ steps.bump.outputs.version }}"
           fern generate --group ts-sdk --version ${{ steps.bump.outputs.version }} --log-level debug
