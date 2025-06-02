@@ -1,0 +1,60 @@
+paths:
+  '/articles':
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateArticleRequestBody'
+  '/companies':
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrUpdateCompanyRequestBody'
+  '/phone_call_redirects':
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePhoneSwitchRequestBody'
+  '/ticket_types':
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTicketTypeRequestBody'
+  '/messages/status':
+    get:
+      responses:
+        '500':
+          content:
+            application/json:
+              examples: null
+
+components:
+  schemas:
+    custom_attributes:
+      example:
+        monthly_spend: '155.5'
+    create_ticket_request:
+      x-fern-type-name: CreateTicketRequestBody
+    reply_conversation_request:
+      x-fern-type-name: ReplyConversationRequestBody
+    update_article_request:
+      x-fern-type-name: UpdateArticleRequestBody
+    update_ticket_type_request:
+      x-fern-type-name: UpdateTicketTypeRequestBody
+    single_filter_search_request:
+      properties:
+        operator:
+          enum:
+            - '='
+            - '!='
+            - IN
+            - NIN
+            - '<'
+            - '>'
