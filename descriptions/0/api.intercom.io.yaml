@@ -7556,8 +7556,8 @@ paths:
                     name: "Jane Doe"
                     email: "jane.doe@example.com"
       responses:
-        '204':
-          description: Successfully notified Intercom of the new conversation.
+        '200':
+          $ref: '#/components/responses/CustomChannelNotificationSuccess'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -7608,8 +7608,8 @@ paths:
                     email: "john.smith@example.com"
                   body: "Hello, I need help with my order."
       responses:
-        '204':
-          description: Successfully notified Intercom of the new message.
+        '200':
+          $ref: '#/components/responses/CustomChannelNotificationSuccess'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -7660,8 +7660,8 @@ paths:
                     email: "alice@example.com"
                   quick_reply_option_id: "1234"
       responses:
-        '204':
-          description: Successfully notified Intercom of the quick reply response.
+        '200':
+          $ref: '#/components/responses/CustomChannelNotificationSuccess'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -7713,8 +7713,8 @@ paths:
                     id: "shipping_address"
                     value: "123 Main St, Springfield"
       responses:
-        '204':
-          description: Successfully notified Intercom of the attribute collector response.
+        '200':
+          $ref: '#/components/responses/CustomChannelNotificationSuccess'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -17766,6 +17766,26 @@ components:
           type: string
           format: email
           description: Email address of the contact.
+    custom_channel_notification_response:
+      type: object
+      required:
+        - external_conversation_id
+        - conversation_id
+        - external_contact_id
+        - contact_id
+      properties:
+        external_conversation_id:
+          type: string
+          description: The external conversation ID provided in the notification request
+        conversation_id:
+          type: string
+          description: The Intercom conversation ID mapped to the external conversation ID
+        external_contact_id:
+          type: string
+          description: The external contact ID provided in the notification request
+        contact_id:
+          type: string
+          description: The Intercom contact ID mapped to the external contact ID
     custom_action_finished:
       title: Part type - custom_action_finished
       type: object
@@ -20901,6 +20921,19 @@ components:
                     message: Contact not found or could not be created
           schema:
             "$ref": "#/components/schemas/error"
+    CustomChannelNotificationSuccess:
+      description: Successfully notified Intercom
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/custom_channel_notification_response'
+          examples:
+            NotificationSuccess:
+              value:
+                external_conversation_id: "customer_conversation_id_12"
+                conversation_id: "intercom_conversation_id_34"
+                external_contact_id: "customer_contact_id_56"
+                contact_id: "intercom_contact_id_79"
 servers:
 - url: https://api.intercom.io
   description: The production API server
