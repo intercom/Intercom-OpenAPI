@@ -12442,6 +12442,15 @@ paths:
                           email: operator+this_is_an_id692_that_should_be_at_least_@intercom.io
                         attachments: []
                         redacted: false
+                        updated_attribute_data:
+                          attribute:
+                            type: "attribute"
+                            id: "10"
+                            label: "Photo"
+                          value:
+                            type: "value"
+                            id: [2]
+                            label: ["photo.png"]
                       - type: ticket_part
                         id: '178'
                         part_type: ticket_attribute_updated_by_admin
@@ -12454,6 +12463,15 @@ paths:
                           email: operator+this_is_an_id692_that_should_be_at_least_@intercom.io
                         attachments: []
                         redacted: false
+                        updated_attribute_data:
+                          attribute:
+                            type: "attribute"
+                            id: "7"
+                            label: "Progress"
+                          value:
+                            type: "value"
+                            id: "Fast"
+                            label: "Fast"
                       - type: ticket_part
                         id: '179'
                         part_type: ticket_state_updated_by_admin
@@ -19958,6 +19976,72 @@ components:
           nullable: false
           example: text-integration
           description: The app package code if this part was created via API. Note this field won't show if the part was not created via API.
+        updated_attribute_data:
+          title: Updated Attribute
+          type: object
+          description: The updated attribute data of the ticket part. Only present for attribute update parts.
+          nullable: true
+          properties:
+            attribute:
+              type: object
+              description: Information about the attribute that was updated.
+              properties:
+                type:
+                  type: string
+                  description: The type of the object. Always 'attribute'.
+                  enum:
+                    - attribute
+                  example: attribute
+                id:
+                  type: string
+                  description: The unique identifier of the attribute.
+                  example: "7"
+                label:
+                  type: string
+                  description: The human-readable name of the attribute.
+                  example: "Progress"
+              required:
+                - type
+                - id
+                - label
+            value:
+              type: object
+              description: The new value of the attribute.
+              properties:
+                type:
+                  type: string
+                  description: The type of the object. Always 'value'.
+                  enum:
+                    - value
+                  example: value
+                id:
+                  oneOf:
+                    - type: string
+                      description: The value for text/number/decimal/boolean/date attributes, or the ID of the list option for list attributes.
+                      nullable: true
+                      example: "Fast"
+                    - type: array
+                      description: Array of file IDs for file attributes.
+                      items:
+                        type: integer
+                      example: [2]
+                label:
+                  oneOf:
+                    - type: string
+                      description: The display value for text/number/decimal/boolean/date/list attributes.
+                      example: "Fast"
+                    - type: array
+                      description: Array of file names for file attributes.
+                      items:
+                        type: string
+                      example: ["photo.png"]
+              required:
+                - type
+                - id
+                - label
+          required:
+            - attribute
+            - value
     ticket_part_author:
       title: Ticket part author
       type: object
