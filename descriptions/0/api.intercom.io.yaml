@@ -1492,6 +1492,288 @@ paths:
                   $ref: "#/components/schemas/away_status_reason"
         '401':
           "$ref": "#/components/responses/Unauthorized"
+  "/export/reporting_data/enqueue":
+    post:
+      summary: Enqueue a new reporting data export job
+      tags: [Export]
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [dataset_id, attribute_ids, start_time, end_time]
+              properties:
+                dataset_id:
+                  type: string
+                  example: conversation
+                attribute_ids:
+                  type: array
+                  items:
+                    type: string
+                  example: [conversation.id, conversation.first_user_conversation_part_created_at]
+                start_time:
+                  type: integer
+                  format: int64
+                  example: 1717490000
+                end_time:
+                  type: integer
+                  format: int64
+                  example: 1717510000
+      responses:
+        '200':
+          description: Job enqueued successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_identifier:
+                    type: string
+                    example: job1
+                  status:
+                    type: string
+                    example: pending
+                  download_url:
+                    type: string
+                  download_expires_at:
+                    type: string
+        '400':
+          description: Bad request (e.g. validation errors)
+          content:
+            application/json:
+              examples:
+                No dataset_id:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: "'dataset_id' is a required parameter"
+                Invalid dataset_id:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: imaginary is not a valid dataset_id
+                No attribute_ids:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: "'attribute_ids' is a required parameter"
+                Empty attribute_ids:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: attribute_ids must contain at least one attribute_id
+                Non array attribute_ids:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: "'attribute_ids' not an array must be of type Array"
+                Invalid attribute_ids:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: "attribute_ids invalid for conversation dataset: non_existent"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '429':
+          description: Too many jobs in progress
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: rate_limit_exceeded
+                      message: Exceeded rate limit of 5 pending reporting dataset export jobs
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/export/reporting_data/{job_identifier}":
+    get:
+      summary: Get export job status
+      tags: [Export]
+      parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            "$ref": "#/components/schemas/intercom_version"
+        - name: app_id
+          in: query
+          description: The Intercom defined code of the workspace the company is associated
+            to.
+          required: true
+          schema:
+            type: string
+        - name: client_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: job_identifier
+          description: Unique identifier of the job.
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Job status returned successfully
+          content:
+            application/json:
+              examples:
+                With complete status:
+                  value:
+                    job_identifier: job1
+                    status: complete
+                    download_url: ''
+                    download_expires_at: ''
+                With failed status:
+                  value:
+                    job_identifier: job1
+                    status: failed
+                    download_url: ''
+                    download_expires_at: ''
+              schema:
+                type: object
+                properties:
+                  job_identifier:
+                    type: string
+                  status:
+                    type: string
+                  download_url:
+                    type: string
+                  download_expires_at:
+                    type: string
+        '404':
+          description: When job not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: not_found
+                      message: "Export job not found for identifier: job1"
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/export/reporting_data/get_datasets":
+    get:
+      summary: List available datasets and attributes
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags: [Export]
+      responses:
+        '200':
+          description: List of datasets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: list
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: conversation
+                        name:
+                          type: string
+                          example: Conversation
+                        description:
+                          type: string
+                          example: "Conversation-level details: status, channel, assignee."
+                        default_time_attribute_id:
+                          type: string
+                          example: conversation.first_user_conversation_part_created_at
+                        attributes:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: conversation.id
+                              name:
+                                type: string
+                                example: Conversation ID
+  "/download/reporting_data/{job_identifier}":
+    get:
+      summary: Download completed export job data
+      tags: [Export]
+      parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            "$ref": "#/components/schemas/intercom_version"
+        - name: app_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: job_identifier
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Export file downloaded
+        '404':
+          description: When job not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: not_found
+                      message: "Export job not found for identifier: job1"
+              schema:
+                "$ref": "#/components/schemas/error"
   "/help_center/collections":
     get:
       summary: List all collections
@@ -7556,8 +7838,8 @@ paths:
                     name: "Jane Doe"
                     email: "jane.doe@example.com"
       responses:
-        '204':
-          description: Successfully notified Intercom of the new conversation.
+        '200':
+          $ref: '#/components/responses/CustomChannelNotificationSuccess'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -7608,8 +7890,8 @@ paths:
                     email: "john.smith@example.com"
                   body: "Hello, I need help with my order."
       responses:
-        '204':
-          description: Successfully notified Intercom of the new message.
+        '200':
+          $ref: '#/components/responses/CustomChannelNotificationSuccess'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -7660,8 +7942,8 @@ paths:
                     email: "alice@example.com"
                   quick_reply_option_id: "1234"
       responses:
-        '204':
-          description: Successfully notified Intercom of the quick reply response.
+        '200':
+          $ref: '#/components/responses/CustomChannelNotificationSuccess'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -7713,8 +7995,8 @@ paths:
                     id: "shipping_address"
                     value: "123 Main St, Springfield"
       responses:
-        '204':
-          description: Successfully notified Intercom of the attribute collector response.
+        '200':
+          $ref: '#/components/responses/CustomChannelNotificationSuccess'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -9194,8 +9476,8 @@ paths:
       operationId: getWhatsAppMessageStatus
       description: |
         Retrieves statuses of messages sent from the Outbound module. Currently, this API only supports WhatsApp messages.
-        
-        
+
+
         This endpoint returns paginated status events for WhatsApp messages sent via the Outbound module, providing
         information about delivery state and related message details.
       responses:
@@ -12160,6 +12442,15 @@ paths:
                           email: operator+this_is_an_id692_that_should_be_at_least_@intercom.io
                         attachments: []
                         redacted: false
+                        updated_attribute_data:
+                          attribute:
+                            type: "attribute"
+                            id: "10"
+                            label: "Photo"
+                          value:
+                            type: "value"
+                            id: [2]
+                            label: ["photo.png"]
                       - type: ticket_part
                         id: '178'
                         part_type: ticket_attribute_updated_by_admin
@@ -12172,6 +12463,15 @@ paths:
                           email: operator+this_is_an_id692_that_should_be_at_least_@intercom.io
                         attachments: []
                         redacted: false
+                        updated_attribute_data:
+                          attribute:
+                            type: "attribute"
+                            id: "7"
+                            label: "Progress"
+                          value:
+                            type: "value"
+                            id: "Fast"
+                            label: "Fast"
                       - type: ticket_part
                         id: '179'
                         part_type: ticket_state_updated_by_admin
@@ -17766,6 +18066,26 @@ components:
           type: string
           format: email
           description: Email address of the contact.
+    custom_channel_notification_response:
+      type: object
+      required:
+        - external_conversation_id
+        - conversation_id
+        - external_contact_id
+        - contact_id
+      properties:
+        external_conversation_id:
+          type: string
+          description: The external conversation ID provided in the notification request
+        conversation_id:
+          type: string
+          description: The Intercom conversation ID mapped to the external conversation ID
+        external_contact_id:
+          type: string
+          description: The external contact ID provided in the notification request
+        contact_id:
+          type: string
+          description: The Intercom contact ID mapped to the external contact ID
     custom_action_finished:
       title: Part type - custom_action_finished
       type: object
@@ -19656,6 +19976,72 @@ components:
           nullable: false
           example: text-integration
           description: The app package code if this part was created via API. Note this field won't show if the part was not created via API.
+        updated_attribute_data:
+          title: Updated Attribute
+          type: object
+          description: The updated attribute data of the ticket part. Only present for attribute update parts.
+          nullable: true
+          properties:
+            attribute:
+              type: object
+              description: Information about the attribute that was updated.
+              properties:
+                type:
+                  type: string
+                  description: The type of the object. Always 'attribute'.
+                  enum:
+                    - attribute
+                  example: attribute
+                id:
+                  type: string
+                  description: The unique identifier of the attribute.
+                  example: "7"
+                label:
+                  type: string
+                  description: The human-readable name of the attribute.
+                  example: "Progress"
+              required:
+                - type
+                - id
+                - label
+            value:
+              type: object
+              description: The new value of the attribute.
+              properties:
+                type:
+                  type: string
+                  description: The type of the object. Always 'value'.
+                  enum:
+                    - value
+                  example: value
+                id:
+                  oneOf:
+                    - type: string
+                      description: The value for text/number/decimal/boolean/date attributes, or the ID of the list option for list attributes.
+                      nullable: true
+                      example: "Fast"
+                    - type: array
+                      description: Array of file IDs for file attributes.
+                      items:
+                        type: integer
+                      example: [2]
+                label:
+                  oneOf:
+                    - type: string
+                      description: The display value for text/number/decimal/boolean/date/list attributes.
+                      example: "Fast"
+                    - type: array
+                      description: Array of file names for file attributes.
+                      items:
+                        type: string
+                      example: ["photo.png"]
+              required:
+                - type
+                - id
+                - label
+          required:
+            - attribute
+            - value
     ticket_part_author:
       title: Ticket part author
       type: object
@@ -20901,6 +21287,19 @@ components:
                     message: Contact not found or could not be created
           schema:
             "$ref": "#/components/schemas/error"
+    CustomChannelNotificationSuccess:
+      description: Successfully notified Intercom
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/custom_channel_notification_response'
+          examples:
+            NotificationSuccess:
+              value:
+                external_conversation_id: "customer_conversation_id_12"
+                conversation_id: "intercom_conversation_id_34"
+                external_contact_id: "customer_contact_id_56"
+                contact_id: "intercom_contact_id_79"
 servers:
 - url: https://api.intercom.io
   description: The production API server
