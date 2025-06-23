@@ -6,6 +6,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateArticleRequestBody'
+  '/articles/{id}':
+    put: null
+  '/tickets':
+    post: null
+  '/ticket_types/{id}':
+    put: null
   '/companies':
     post:
       requestBody:
@@ -61,6 +67,30 @@ paths:
           content:
             application/json:
               examples: null
+  '/custom_channel_events/notify_attribute_collected':
+    post:
+      x-fern-sdk-group-name:
+        - customChannelEvents
+      x-fern-sdk-method-name: notifyAttributeCollected
+      x-fern-request-name: NotifyAttributeCollectedRequest
+  '/custom_channel_events/notify_new_message':
+    post:
+      x-fern-sdk-group-name:
+        - customChannelEvents
+      x-fern-sdk-method-name: notifyNewMessage
+      x-fern-request-name: NotifyNewMessageRequest
+  '/custom_channel_events/notify_new_conversation':
+    post:
+      x-fern-sdk-group-name:
+        - customChannelEvents
+      x-fern-sdk-method-name: notifyNewConversation
+      x-fern-request-name: NotifyNewConversationRequest
+  '/custom_channel_events/notify_quick_reply_selected':
+    post:
+      x-fern-sdk-group-name:
+        - customChannelEvents
+      x-fern-sdk-method-name: notifyQuickReplySelected
+      x-fern-request-name: NotifyQuickReplySelectedRequest
 
 components:
   schemas:
@@ -69,6 +99,8 @@ components:
         monthly_spend: '155.5'
     create_ticket_request:
       x-fern-type-name: CreateTicketRequestBody
+      properties:
+        ticket_attributes: null
     reply_conversation_request:
       x-fern-type-name: ReplyConversationRequestBody
     update_article_request:
