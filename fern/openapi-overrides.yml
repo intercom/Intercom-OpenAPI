@@ -442,30 +442,6 @@ paths:
         - conversations
       x-fern-sdk-method-name: redactConversationPart
       x-fern-request-name: RedactConversationPartRequest
-  /custom_channel_events/notify_attribute_collected:
-    post:
-      x-fern-sdk-group-name:
-        - customChannelEvents
-      x-fern-sdk-method-name: notifyAttributeCollected
-      x-fern-request-name: NotifyAttributeCollectedRequest
-  /custom_channel_events/notify_new_message:
-    post:
-      x-fern-sdk-group-name:
-        - customChannelEvents
-      x-fern-sdk-method-name: notifyNewMessage
-      x-fern-request-name: NotifyNewMessageRequest
-  /custom_channel_events/notify_new_conversation:
-    post:
-      x-fern-sdk-group-name:
-        - customChannelEvents
-      x-fern-sdk-method-name: notifyNewConversation
-      x-fern-request-name: NotifyNewConversationRequest
-  /custom_channel_events/notify_quick_reply_selected:
-    post:
-      x-fern-sdk-group-name:
-        - customChannelEvents
-      x-fern-sdk-method-name: notifyQuickReplySelected
-      x-fern-request-name: NotifyQuickReplySelectedRequest
   /data_attributes:
     get:
       x-fern-sdk-group-name:
@@ -1452,6 +1428,11 @@ components:
         type:
           enum:
             - tag
+      # The spec incorrectly labels applied_at and applied_by as required
+      required:
+        - type
+        - id
+        - name
     ticket_custom_attributes:
       x-fern-type: map<string, unknown>
     ticket_request_custom_attributes:
@@ -1503,6 +1484,17 @@ components:
       properties:
         custom_attributes:
           additionalProperties: true
+      # The spec incorrectly labels last_request_at, remote_created_at, size, website, and industry as required
+      required:
+        - company_id
+        - id
+        - app_id
+        - name
+        - created_at
+        - updated_at
+        - monthly_spend
+        - session_count
+        - user_count
     create_or_update_company_request:
       properties:
         custom_attributes:
@@ -1551,7 +1543,65 @@ components:
     note_list:
       properties:
         pages:
-          "$ref": "#/components/schemas/offset_pages"
+    # The spec incorrectly labels job_title as required
+    admin:
+      required:
+        - id
+        - name
+        - email
+        - away_mode_enabled
+        - away_mode_reassign
+        - has_inbox_seat
+        - team_ids
+    # The spec incorrectly labels default_locale and translated_content as required
+    article_list_item:
+      required:
+        - id
+        - workspace_id
+        - title
+        - description
+        - body
+        - author_id
+        - state
+        - created_at
+        - updated_at
+        - url
+        - parent_id
+        - parent_type
+        - statistics
+
+    # The spec incorrectly labels conversions as required
+    article_statistics:
+      required:
+        - type
+        - views
+        - reactions
+        - happy_reaction_percentage
+        - neutral_reaction_percentage
+        - sad_reaction_percentage
+
+    # The spec incorrectly labels description as required
+    data_attribute:
+      required:
+        - type
+        - name
+        - full_name
+        - label
+        - data_type
+
+    # The spec incorrectly labels type, email, intercom_user_id, and user_id as required
+    data_event_summary:
+      required:
+        - events
+
+    # The spec incorrectly labels default_locale as required
+    collection:
+      required:
+        - id
+        - workspace_id
+        - name
+        - created_at
+        - order
 
   securitySchemes:
     bearerAuth:
