@@ -1,0 +1,28 @@
+name: Release Php SDK
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version of the SDK that you would like to release"
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+
+      - name: Download Fern
+        run: npm install -g fern-api
+
+      - name: Release SDKs
+        env:
+          FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
+        run: |
+          fern generate --group php-sdk --version ${{ inputs.version }} --log-level debug
