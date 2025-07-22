@@ -17,10 +17,10 @@ groups:
     generators:
       - name: fernapi/fern-typescript-node-sdk
         version: 0.51.7
-        output:
-          location: npm
-          package-name: intercom-client
-          token: ${FERN_NPM_TOKEN}
+        # output:
+        #   location: npm
+        #   package-name: intercom-client
+        #   token: ${FERN_NPM_TOKEN}
         github:
           repository: intercom/intercom-node
           mode: pull-request
@@ -86,19 +86,23 @@ groups:
   php-sdk:
     generators:
       - name: fernapi/fern-php-sdk
-        # version: 1.16.5
-        version: 123.0.0
-        # github:
-        #   mode: pull-request
-        #   repository: intercom/intercom-php
+        version: 1.16.6
+        github:
+          mode: pull-request
+          repository: intercom/intercom-php
         smart-casing: true
         config:
           namespace: Intercom
-          client-class-name: IntercomPhp
+          clientName: IntercomClient
+          packageName: intercom/intercom-php
+          propertyAccess: private
+          inlinePathParameters: true
+          composerJson:
+            description: Intercom API client.
+            author:
+              name: Intercom Platform Team
+              url: https://www.intercom.com
+            homepage: https://developers.intercom.com/docs
         output:
           location: local-file-system
           path: /Volumes/git/Intercom-OpenAPI/fern/.preview/fern-php-sdk-local
-          # TODO: fix output target
-          # location: npm
-          # package-name: intercom/intercom-php
-          # token: ${FERN_PACKAGIST_TOKEN}
