@@ -18702,6 +18702,77 @@ components:
           description: An array containing the linked conversations and linked tickets.
           items:
             "$ref": "#/components/schemas/linked_object"
+    macro:
+      title: Macro
+      type: object
+      x-tags:
+        - Unstable
+      description: A macro is a pre-defined response template (saved reply) that can be used to quickly reply to conversations.
+      nullable: true
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `macro`.
+          enum:
+            - macro
+          example: macro
+        id:
+          type: string
+          description: The unique identifier for the macro.
+          example: "123"
+        name:
+          type: string
+          description: The name of the macro.
+          example: "Order Status Update"
+        body:
+          type: string
+          description: The body of the macro in HTML format with placeholders transformed to XML-like format.
+          example: "<p>Hi <attribute key=\"user.name\" default=\"there\"/>, your order is ready!</p>"
+        body_text:
+          type: string
+          description: The plain text version of the macro body.
+          example: "Hi there, your order is ready!"
+        created_at:
+          type: integer
+          format: int64
+          description: The time the macro was created as a Unix timestamp.
+          example: 1719474966
+        updated_at:
+          type: integer
+          format: int64
+          description: The time the macro was last updated as a Unix timestamp.
+          example: 1719493757
+        visible_to:
+          type: string
+          description: Who can view this macro.
+          enum:
+            - everyone
+            - specific_teams
+          example: everyone
+        visible_to_team_ids:
+          type: array
+          description: The team IDs that can view this macro when visible_to is set to specific_teams.
+          items:
+            type: string
+          example: ["456", "789"]
+        available_on:
+          type: array
+          description: Where the macro is available for use.
+          items:
+            type: string
+            enum:
+              - inbox
+              - messenger
+          example: ["inbox", "messenger"]
+      required:
+        - type
+        - id
+        - name
+        - body
+        - created_at
+        - updated_at
+        - visible_to
+        - available_on
     merge_contacts_request:
       description: Merge contact data.
       type: object
