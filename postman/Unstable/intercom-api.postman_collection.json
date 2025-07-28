@@ -5394,6 +5394,408 @@
       ]
     },
     {
+      "name": "Macros",
+      "description": "Programmatic access to saved replies (macros) in Intercom. Use these endpoints to retrieve pre-written responses for integration with third-party tools and workflows.\n\n**OAuth Scope Required**: `READ_CONVERSATIONS`\n\n**Key Features**:\n- Cursor-based pagination for efficient data retrieval\n- Automatic placeholder transformation (Intercom format → XML attributes)\n- Filtering by update timestamp\n- Respects team visibility settings",
+      "item": [
+        {
+          "name": "List all macros",
+          "tags": [
+            "Macros"
+          ],
+          "request": {
+            "url": {
+              "raw": "https://api.intercom.io/macros?per_page=25",
+              "protocol": "https",
+              "host": [
+                "api.intercom.io"
+              ],
+              "path": [
+                "macros"
+              ],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "25",
+                  "description": "Number of macros to return per page (max 150)"
+                }
+              ],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "bearerToken",
+                  "value": "{{bearerToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "tokenType",
+                  "value": "bearer",
+                  "type": "string"
+                },
+                {
+                  "key": "addTokenTo",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "description": "Retrieves a paginated list of all macros available to the authenticated user. Returns up to 25 macros per page.\n\n**Response includes**:\n- Macro details (id, name, body with transformed placeholders)\n- Visibility settings and team assignments\n- Channel availability (inbox/messenger)\n- Pagination cursor for retrieving additional pages",
+            "header": [
+              {
+                "key": "Intercom-Version",
+                "value": "Unstable"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": [
+            {
+              "name": "Successful response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"type\": \"list\",\n  \"data\": [\n    {\n      \"type\": \"macro\",\n      \"id\": \"123\",\n      \"name\": \"Welcome Message\",\n      \"body\": \"<p>Hi <attribute key=\\\"user.name\\\" default=\\\"there\\\"/>, welcome to our service!</p>\",\n      \"body_text\": \"Hi there, welcome to our service!\",\n      \"created_at\": 1719474966,\n      \"updated_at\": 1719493757,\n      \"visible_to\": \"everyone\",\n      \"visible_to_team_ids\": [],\n      \"available_on\": [\"inbox\", \"messenger\"]\n    }\n  ],\n  \"pages\": {\n    \"type\": \"pages\",\n    \"per_page\": 25,\n    \"next\": {\n      \"starting_after\": \"WzE3MTk0OTM3NTcuMCwgIjEyMyJd\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List macros (with pagination)",
+          "tags": [
+            "Macros"
+          ],
+          "request": {
+            "url": {
+              "raw": "https://api.intercom.io/macros?per_page=50&starting_after=WzE3MTk0OTM3NTcuMCwgIjEyMyJd",
+              "protocol": "https",
+              "host": [
+                "api.intercom.io"
+              ],
+              "path": [
+                "macros"
+              ],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "50",
+                  "description": "Number of macros to return per page (max 150)"
+                },
+                {
+                  "key": "starting_after",
+                  "value": "WzE3MTk0OTM3NTcuMCwgIjEyMyJd",
+                  "description": "Cursor from previous response's pages.next.starting_after"
+                }
+              ],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "bearerToken",
+                  "value": "{{bearerToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "tokenType",
+                  "value": "bearer",
+                  "type": "string"
+                },
+                {
+                  "key": "addTokenTo",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "description": "Demonstrates cursor-based pagination. Use the `starting_after` cursor from a previous response to retrieve the next page of results.\n\n**Important**: The cursor encodes `[updated_at, id]` to ensure stable ordering even as macros are modified.",
+            "header": [
+              {
+                "key": "Intercom-Version",
+                "value": "Unstable"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "List macros (updated since)",
+          "tags": [
+            "Macros"
+          ],
+          "request": {
+            "url": {
+              "raw": "https://api.intercom.io/macros?updated_since=1719474966",
+              "protocol": "https",
+              "host": [
+                "api.intercom.io"
+              ],
+              "path": [
+                "macros"
+              ],
+              "query": [
+                {
+                  "key": "updated_since",
+                  "value": "1719474966",
+                  "description": "Unix timestamp - only return macros updated after this time"
+                }
+              ],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "bearerToken",
+                  "value": "{{bearerToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "tokenType",
+                  "value": "bearer",
+                  "type": "string"
+                },
+                {
+                  "key": "addTokenTo",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "description": "Efficiently sync recently modified macros by filtering with the `updated_since` parameter. Useful for:\n- Incremental synchronization with external systems\n- Tracking macro changes over time\n- Reducing API calls for large macro libraries",
+            "header": [
+              {
+                "key": "Intercom-Version",
+                "value": "Unstable"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "List macros (complex example)",
+          "tags": [
+            "Macros"
+          ],
+          "request": {
+            "url": {
+              "raw": "https://api.intercom.io/macros?per_page=100&updated_since=1719474966&starting_after=WzE3MTk0OTM3NTcuMCwgIjQ1NiJd",
+              "protocol": "https",
+              "host": [
+                "api.intercom.io"
+              ],
+              "path": [
+                "macros"
+              ],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "100",
+                  "description": "Retrieve up to 100 macros per request"
+                },
+                {
+                  "key": "updated_since",
+                  "value": "1719474966",
+                  "description": "Filter to macros updated after this timestamp"
+                },
+                {
+                  "key": "starting_after",
+                  "value": "WzE3MTk0OTM3NTcuMCwgIjQ1NiJd",
+                  "description": "Continue pagination from previous request"
+                }
+              ],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "bearerToken",
+                  "value": "{{bearerToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "tokenType",
+                  "value": "bearer",
+                  "type": "string"
+                },
+                {
+                  "key": "addTokenTo",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "description": "Combines multiple parameters for advanced use cases:\n- Large batch retrieval (100 items)\n- Filtered by update time\n- With pagination continuation\n\nThis pattern is ideal for initial sync followed by incremental updates.",
+            "header": [
+              {
+                "key": "Intercom-Version",
+                "value": "Unstable"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "Get a macro",
+          "tags": [
+            "Macros"
+          ],
+          "request": {
+            "url": {
+              "raw": "https://api.intercom.io/macros/:id",
+              "protocol": "https",
+              "host": [
+                "api.intercom.io"
+              ],
+              "path": [
+                "macros",
+                ":id"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "123",
+                  "disabled": false,
+                  "description": "The ID of the macro to retrieve"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "bearerToken",
+                  "value": "{{bearerToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "tokenType",
+                  "value": "bearer",
+                  "type": "string"
+                },
+                {
+                  "key": "addTokenTo",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "description": "Retrieves a single macro by its ID. Use this endpoint when you need:\n- Full details of a specific macro\n- To verify a macro still exists\n- To check for updates to a known macro\n\n**Note**: Returns 404 if the macro doesn't exist or isn't visible to the authenticated user.",
+            "header": [
+              {
+                "key": "Intercom-Version",
+                "value": "Unstable"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": [
+            {
+              "name": "Successful response",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"type\": \"macro\",\n  \"id\": \"123\",\n  \"name\": \"Order Confirmation\",\n  \"body\": \"<p>Thank you for your order, <attribute key=\\\"user.name\\\" default=\\\"valued customer\\\"/>!</p><p>Order #<attribute key=\\\"conversation.custom_attributes.order_id\\\"/> has been confirmed.</p>\",\n  \"body_text\": \"Thank you for your order, valued customer!\\n\\nOrder # has been confirmed.\",\n  \"created_at\": 1719474966,\n  \"updated_at\": 1719493757,\n  \"visible_to\": \"selected_teams\",\n  \"visible_to_team_ids\": [456, 789],\n  \"available_on\": [\"inbox\"]\n}"
+            },
+            {
+              "name": "Not found",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"type\": \"error.list\",\n  \"errors\": [\n    {\n      \"code\": \"not_found\",\n      \"message\": \"Macro not found\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Ensure Intercom-Version header is set for Unstable API",
+              "pm.request.headers.add({",
+              "    key: 'Intercom-Version',",
+              "    value: 'Unstable'",
+              "});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Example test for List all macros",
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has correct structure\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('type', 'list');",
+              "    pm.expect(jsonData).to.have.property('data');",
+              "    pm.expect(jsonData).to.have.property('pages');",
+              "});",
+              "",
+              "pm.test(\"Macros have transformed placeholders\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.data && jsonData.data.length > 0) {",
+              "        var macro = jsonData.data[0];",
+              "        if (macro.body && macro.body.includes('{{')) {",
+              "            pm.expect(macro.body).to.include('<attribute key=');",
+              "        }",
+              "    }",
+              "});",
+              "",
+              "// Save pagination cursor for next request",
+              "var jsonData = pm.response.json();",
+              "if (jsonData.pages && jsonData.pages.next) {",
+              "    pm.collectionVariables.set(\"next_cursor\", jsonData.pages.next.starting_after);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Messages",
       "item": [
         {
