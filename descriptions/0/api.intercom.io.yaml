@@ -18773,6 +18773,56 @@ components:
         - updated_at
         - visible_to
         - available_on
+    macro_list:
+      title: Macro List
+      type: object
+      x-tags:
+        - Unstable
+      description: A paginated list of macros (saved replies) in the workspace.
+      properties:
+        type:
+          type: string
+          description: Always list
+          enum:
+            - list
+          example: list
+        data:
+          type: array
+          description: The list of macro objects
+          items:
+            "$ref": "#/components/schemas/macro"
+        pages:
+          type: object
+          description: Pagination information
+          properties:
+            type:
+              type: string
+              description: The type of pagination
+              enum:
+                - pages
+              example: pages
+            per_page:
+              type: integer
+              description: Number of results per page
+              example: 50
+            next:
+              type: object
+              nullable: true
+              description: Cursor for the next page
+              properties:
+                starting_after:
+                  type: string
+                  description: Base64-encoded cursor containing [updated_at, id] for pagination
+                  example: "WzE3MTk0OTM3NTcuMCwgIjEyMyJd"
+              required:
+                - starting_after
+          required:
+            - type
+            - per_page
+      required:
+        - type
+        - data
+        - pages
     merge_contacts_request:
       description: Merge contact data.
       type: object
