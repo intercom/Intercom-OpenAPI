@@ -9211,6 +9211,210 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/macros":
+    get:
+      summary: List all macros
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 150
+          default: 50
+        description: The number of results per page
+        example: 50
+      - name: starting_after
+        in: query
+        schema:
+          type: string
+        description: Base64-encoded cursor containing [updated_at, id] for pagination
+        example: "WzE3MTk0OTM3NTcuMCwgIjEyMyJd"
+      - name: updated_since
+        in: query
+        schema:
+          type: integer
+          format: int64
+        description: Unix timestamp to filter macros updated after this time
+        example: 1719474966
+      tags:
+      - Macros
+      operationId: listMacros
+      description: |
+        You can fetch a list of all macros (saved replies) in your workspace for use in automating responses.
+        
+        The macros are returned in descending order by updated_at. 
+        
+        **Pagination**
+        
+        This endpoint uses cursor-based pagination via the `starting_after` parameter. The cursor is a Base64-encoded JSON array containing `[updated_at, id]` of the last item from the previous page.
+        
+        **Placeholder Transformation**
+        
+        The API transforms Intercom placeholders to a more standard XML-like format:
+        - From: `{{user.name | fallback: 'there'}}`
+        - To: `<attribute key="user.name" default="there"/>`
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - type: macro
+                      id: "123"
+                      name: "Order Status Update"
+                      body: "<p>Hi <attribute key=\"user.name\" default=\"there\"/>, your order #<attribute key=\"order.number\"/> is ready!</p>"
+                      body_text: "Hi there, your order is ready!"
+                      created_at: 1719474966
+                      updated_at: 1719493757
+                      visible_to: "everyone"
+                      visible_to_team_ids: []
+                      available_on: ["inbox", "messenger"]
+                    pages:
+                      type: pages
+                      per_page: 50
+                      next:
+                        starting_after: "WzE3MTk0OTM3NTcuMCwgIjEyMyJd"
+              schema:
+                "$ref": "#/components/schemas/macro_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid parameter:
+                  value:
+                    type: error.list
+                    request_id: bc300b1a-492a-405f-924e-a5881cb72e3a
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid updated_since timestamp
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden - missing required OAuth scope
+          content:
+            application/json:
+              examples:
+                Missing scope:
+                  value:
+                    type: error.list
+                    request_id: f097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: forbidden
+                      message: Token does not have the required 'read_conversations' scope
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/macros/{id}":
+    get:
+      summary: Retrieve a macro
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The ID of the macro to retrieve
+        schema:
+          type: string
+        example: "123"
+      tags:
+      - Macros
+      operationId: getMacro
+      description: |
+        You can fetch a single macro by its ID.
+        
+        **Placeholder Transformation**
+        
+        The API transforms Intercom placeholders to a more standard XML-like format:
+        - From: `{{user.name | fallback: 'there'}}`
+        - To: `<attribute key="user.name" default="there"/>`
+      responses:
+        '200':
+          description: Macro found
+          content:
+            application/json:
+              examples:
+                Macro found:
+                  value:
+                    type: macro
+                    id: "123"
+                    name: "Order Status Update"
+                    body: "<p>Hi <attribute key=\"user.name\" default=\"there\"/>, your order #<attribute key=\"order.number\"/> is ready!</p>"
+                    body_text: "Hi there, your order is ready!"
+                    created_at: 1719474966
+                    updated_at: 1719493757
+                    visible_to: "everyone"
+                    visible_to_team_ids: []
+                    available_on: ["inbox", "messenger"]
+              schema:
+                "$ref": "#/components/schemas/macro"
+        '404':
+          description: Macro not found
+          content:
+            application/json:
+              examples:
+                Macro not found:
+                  value:
+                    type: error.list
+                    request_id: bc300b1a-492a-405f-924e-a5881cb72e3a
+                    errors:
+                    - code: not_found
+                      message: Macro not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden - missing required OAuth scope
+          content:
+            application/json:
+              examples:
+                Missing scope:
+                  value:
+                    type: error.list
+                    request_id: f097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: forbidden
+                      message: Token does not have the required 'read_conversations' scope
+              schema:
+                "$ref": "#/components/schemas/error"
   "/messages":
     post:
       summary: Create a message
@@ -21526,6 +21730,8 @@ tags:
   description: Everything about your Help Center
 - name: Jobs
   description: Everything about jobs
+- name: Macros
+  description: Everything about your Macros (Saved Replies)
 - name: Messages
   description: Everything about your messages
 - name: News
