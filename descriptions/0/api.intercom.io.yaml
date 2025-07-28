@@ -9338,7 +9338,7 @@ paths:
       - name: id
         in: path
         required: true
-        description: The ID of the macro to retrieve
+        description: The unique identifier of the macro
         schema:
           type: string
         example: "123"
@@ -9346,26 +9346,60 @@ paths:
       - Macros
       operationId: getMacro
       description: |
-        You can fetch a single macro by its ID.
+        You can fetch a single macro (saved reply) by its ID. The macro will only be returned if it is visible to the authenticated user based on its visibility settings.
+        
+        **Visibility Rules**
+        
+        A macro is returned based on its `visible_to` setting:
+        - `everyone`: Always visible to all team members
+        - `specific_teams`: Only visible if the authenticated user belongs to one of the teams specified in `visible_to_team_ids`
+        
+        If a macro exists but is not visible to the authenticated user, a 404 error is returned.
         
         **Placeholder Transformation**
         
-        The API transforms Intercom placeholders to a more standard XML-like format:
+        The API transforms Intercom placeholders to a more standard XML-like format in the `body` field:
         - From: `{{user.name | fallback: 'there'}}`
         - To: `<attribute key="user.name" default="there"/>`
+        
+        Default values in placeholders are HTML-escaped for security.
       responses:
         '200':
           description: Macro found
           content:
             application/json:
               examples:
-                Macro found:
+                Macro visible to everyone:
                   value:
                     type: macro
                     id: "123"
                     name: "Order Status Update"
-                    body: "<p>Hi <attribute key=\"user.name\" default=\"there\"/>, your order #<attribute key=\"order.number\"/> is ready!</p>"
-                    body_text: "Hi there, your order is ready!"
+                    body: "<p>Hi <attribute key=\"user.name\" default=\"there\"/>, your order #<attribute key=\"order.number\"/> is ready for pickup!</p>"
+                    body_text: "Hi there, your order is ready for pickup!"
+                    created_at: 1719474966
+                    updated_at: 1719493757
+                    visible_to: "everyone"
+                    visible_to_team_ids: []
+                    available_on: ["inbox", "messenger"]
+                Macro with team restrictions:
+                  value:
+                    type: macro
+                    id: "456"
+                    name: "VIP Customer Support"
+                    body: "<p>Dear <attribute key=\"user.name\" default=\"valued customer\"/>, we appreciate your VIP status. Your dedicated support team is here to help.</p>"
+                    body_text: "Dear valued customer, we appreciate your VIP status. Your dedicated support team is here to help."
+                    created_at: 1719474966
+                    updated_at: 1719493757
+                    visible_to: "specific_teams"
+                    visible_to_team_ids: ["789", "012"]
+                    available_on: ["inbox"]
+                Macro with complex placeholders:
+                  value:
+                    type: macro
+                    id: "789"
+                    name: "Account Summary"
+                    body: "<p>Hello <attribute key=\"user.name\" default=\"there\"/>!</p><p>Your account balance is <attribute key=\"account.balance\" default=\"not available\"/>.</p><p>Last login: <attribute key=\"user.last_login\" default=\"never\"/></p>"
+                    body_text: "Hello there! Your account balance is not available. Last login: never"
                     created_at: 1719474966
                     updated_at: 1719493757
                     visible_to: "everyone"
@@ -9373,20 +9407,6 @@ paths:
                     available_on: ["inbox", "messenger"]
               schema:
                 "$ref": "#/components/schemas/macro"
-        '404':
-          description: Macro not found
-          content:
-            application/json:
-              examples:
-                Macro not found:
-                  value:
-                    type: error.list
-                    request_id: bc300b1a-492a-405f-924e-a5881cb72e3a
-                    errors:
-                    - code: not_found
-                      message: Macro not found
-              schema:
-                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -9413,6 +9433,20 @@ paths:
                     errors:
                     - code: forbidden
                       message: Token does not have the required 'read_conversations' scope
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Macro not found or not accessible
+          content:
+            application/json:
+              examples:
+                Macro not found:
+                  value:
+                    type: error.list
+                    request_id: bc300b1a-492a-405f-924e-a5881cb72e3a
+                    errors:
+                    - code: not_found
+                      message: Macro not found
               schema:
                 "$ref": "#/components/schemas/error"
   "/messages":
