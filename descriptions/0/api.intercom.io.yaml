@@ -9255,28 +9255,125 @@ paths:
         
         **Placeholder Transformation**
         
-        The API transforms Intercom placeholders in the `body` field to a more standard XML-like format:
+        The API transforms Intercom placeholders to a more standard XML-like format:
         - From: `{{user.name | fallback: 'there'}}`
         - To: `<attribute key="user.name" default="there"/>`
-        
-        Note: The `body_text` field retains the original Intercom placeholder format.
+      x-code-samples:
+        - lang: 'cURL'
+          source: |
+            curl -X GET 'https://api.intercom.io/macros?per_page=25&starting_after=WzE3MTk0OTM3NTcuMCwgIjEyMyJd' \
+              -H 'Authorization: Bearer <YOUR_ACCESS_TOKEN>' \
+              -H 'Accept: application/json' \
+              -H 'Intercom-Version: @Unstable'
+        - lang: 'Node.js'
+          source: |
+            const response = await fetch('https://api.intercom.io/macros?per_page=25&starting_after=WzE3MTk0OTM3NTcuMCwgIjEyMyJd', {
+              headers: {
+                'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
+                'Accept': 'application/json',
+                'Intercom-Version': '@Unstable'
+              }
+            });
+            const macros = await response.json();
+        - lang: 'Python'
+          source: |
+            import requests
+            
+            headers = {
+                'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
+                'Accept': 'application/json',
+                'Intercom-Version': '@Unstable'
+            }
+            
+            params = {
+                'per_page': 25,
+                'starting_after': 'WzE3MTk0OTM3NTcuMCwgIjEyMyJd'
+            }
+            
+            response = requests.get('https://api.intercom.io/macros', 
+                                  headers=headers, 
+                                  params=params)
+            macros = response.json()
+        - lang: 'Ruby'
+          source: |
+            require 'net/http'
+            require 'json'
+            
+            uri = URI('https://api.intercom.io/macros')
+            params = {
+              per_page: 25,
+              starting_after: 'WzE3MTk0OTM3NTcuMCwgIjEyMyJd'
+            }
+            uri.query = URI.encode_www_form(params)
+            
+            http = Net::HTTP.new(uri.host, uri.port)
+            http.use_ssl = true
+            
+            request = Net::HTTP::Get.new(uri)
+            request['Authorization'] = 'Bearer <YOUR_ACCESS_TOKEN>'
+            request['Accept'] = 'application/json'
+            request['Intercom-Version'] = '@Unstable'
+            
+            response = http.request(request)
+            macros = JSON.parse(response.body)
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               examples:
-                Successful response:
+                basic_list:
+                  summary: Basic list of macros
                   value:
                     type: list
                     data:
                     - type: macro
                       id: "123"
                       name: "Order Status Update"
-                      body: "<p>Hi <attribute key=\"user.name\" default=\"there\"/>, your order #<attribute key=\"order.number\"/> is ready!</p>"
-                      body_text: "Hi {{user.name|fallback:\"there\"}}, your order is ready!"
+                      body: "<p>Hi <attribute key=\"user.name\" default=\"there\"/>, your order #<attribute key=\"order.number\"/> is ready for pickup!</p>"
+                      body_text: "Hi {{user.name|fallback:\"there\"}}, your order #{{order.number}} is ready for pickup!"
                       created_at: "2025-07-17T11:18:08.000Z"
                       updated_at: "2025-07-17T15:30:24.000Z"
+                      visible_to: "everyone"
+                      visible_to_team_ids: []
+                      available_on: ["inbox", "messenger"]
+                    - type: macro
+                      id: "456"
+                      name: "Welcome Message"
+                      body: "<p>Welcome to our support! I'm <attribute key=\"teammate.name\"/>. How can I help you today?</p>"
+                      body_text: "Welcome to our support! I'm {{teammate.name}}. How can I help you today?"
+                      created_at: "2025-07-21T14:44:35.000Z"
+                      updated_at: "2025-07-21T14:44:35.000Z"
+                      visible_to: "specific_teams"
+                      visible_to_team_ids: ["789", "101"]
+                      available_on: ["inbox"]
+                    pages:
+                      type: pages
+                      per_page: 50
+                      next:
+                        starting_after: "WzE3MTk0OTM3NTcuMCwgIjEyMyJd"
+                pagination_with_cursor:
+                  summary: Paginated response using starting_after cursor
+                  value:
+                    type: list
+                    data:
+                    - type: macro
+                      id: "789"
+                      name: "Refund Process"
+                      body: "<p>I understand you'd like a refund for order #<attribute key=\"conversation.custom_attributes.order_number\"/>. The refund will be processed within 3-5 business days.</p>"
+                      body_text: "I understand you'd like a refund for order #{{conversation.custom_attributes.order_number}}. The refund will be processed within 3-5 business days."
+                      created_at: "2025-07-21T07:15:34.000Z"
+                      updated_at: "2025-07-21T07:15:34.000Z"
+                      visible_to: "everyone"
+                      visible_to_team_ids: []
+                      available_on: ["inbox", "messenger"]
+                    - type: macro
+                      id: "101"
+                      name: "Product Inquiry Response"
+                      body: "<p>Thank you for your interest in <attribute key=\"product.name\" default=\"our products\"/>. I'd be happy to provide more information!</p>"
+                      body_text: "Thank you for your interest in {{product.name|fallback:\"our products\"}}. I'd be happy to provide more information!"
+                      created_at: "2025-07-20T05:33:20.000Z"
+                      updated_at: "2025-07-21T10:00:00.000Z"
                       visible_to: "everyone"
                       visible_to_team_ids: []
                       available_on: ["inbox", "messenger"]
@@ -9284,7 +9381,75 @@ paths:
                       type: pages
                       per_page: 50
                       next:
-                        starting_after: "WzE3MTk0OTM3NTcuMCwgIjEyMyJd"
+                        starting_after: "WzE3MTk0MDAwMDAuMCwgIjEwMSJd"
+                filtered_by_timestamp:
+                  summary: Macros filtered by updated_since parameter
+                  value:
+                    type: list
+                    data:
+                    - type: macro
+                      id: "234"
+                      name: "Shipping Update Template"
+                      body: "<p>Your order has been shipped via <attribute key=\"shipping.carrier\" default=\"our shipping partner\"/>. Tracking number: <attribute key=\"shipping.tracking_number\"/></p>"
+                      body_text: "Your order has been shipped via {{shipping.carrier|fallback:\"our shipping partner\"}}. Tracking number: {{shipping.tracking_number}}"
+                      created_at: "2025-07-22T05:31:01.000Z"
+                      updated_at: "2025-07-22T18:45:12.000Z"
+                      visible_to: "everyone"
+                      visible_to_team_ids: []
+                      available_on: ["inbox"]
+                    pages:
+                      type: pages
+                      per_page: 50
+                      next: null
+                complex_placeholders:
+                  summary: Macros with various placeholder formats
+                  value:
+                    type: list
+                    data:
+                    - type: macro
+                      id: "567"
+                      name: "Account Status Review"
+                      body: "<p>Hi <attribute key=\"user.first_name\" default=\"there\"/>,</p><p>Your account status: <attribute key=\"user.custom_attributes.account_status\" default=\"pending review\"/></p><p>Last activity: <attribute key=\"user.last_seen_at\"/></p>"
+                      body_text: "Hi {{user.first_name|fallback:\"there\"}},\n\nYour account status: {{user.custom_attributes.account_status|fallback:\"pending review\"}}\n\nLast activity: {{user.last_seen_at}}"
+                      created_at: "2025-07-21T09:00:00.000Z"
+                      updated_at: "2025-07-21T09:00:00.000Z"
+                      visible_to: "specific_teams"
+                      visible_to_team_ids: ["security_team"]
+                      available_on: ["inbox"]
+                    pages:
+                      type: pages
+                      per_page: 50
+                      next: null
+                empty_result:
+                  summary: Empty macro list (no macros or all filtered out)
+                  value:
+                    type: list
+                    data: []
+                    pages:
+                      type: pages
+                      per_page: 50
+                      next: null
+                large_list_preview:
+                  summary: Large list with performance optimization
+                  value:
+                    type: list
+                    data:
+                    - type: macro
+                      id: "1001"
+                      name: "Quick Response 1"
+                      body: null
+                      body_text: null
+                      created_at: "2025-07-22T11:08:20.000Z"
+                      updated_at: "2025-07-23T11:08:20.000Z"
+                      visible_to: "everyone"
+                      visible_to_team_ids: []
+                      available_on: ["inbox"]
+                    # Note: When returning 30+ macros, body rendering may be skipped for performance
+                    pages:
+                      type: pages
+                      per_page: 50
+                      next:
+                        starting_after: "WzE3MTk0OTAxMDAuMCwgIjEwMDIiXQ=="
               schema:
                 "$ref": "#/components/schemas/macro_list"
         '400':
@@ -9320,13 +9485,14 @@ paths:
           content:
             application/json:
               examples:
-                Missing scope:
+                Missing required scope:
+                  summary: OAuth token lacks read_conversations scope
                   value:
                     type: error.list
                     request_id: f097e446-9ae6-44a8-8e13-2bf3008b87ef
                     errors:
                     - code: forbidden
-                      message: Token does not have the required 'read_conversations' scope
+                      message: You do not have the required scope (read_conversations) to access this resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/macros/{id}":
@@ -9360,49 +9526,111 @@ paths:
         
         **Placeholder Transformation**
         
-        The API transforms Intercom placeholders in the `body` field to a more standard XML-like format:
+        The API transforms Intercom placeholders to a more standard XML-like format in the `body` field:
         - From: `{{user.name | fallback: 'there'}}`
         - To: `<attribute key="user.name" default="there"/>`
         
-        Note: The `body_text` field retains the original Intercom placeholder format.
         Default values in placeholders are HTML-escaped for security.
+      x-code-samples:
+        - lang: 'cURL'
+          source: |
+            curl -X GET 'https://api.intercom.io/macros/123' \
+              -H 'Authorization: Bearer <YOUR_ACCESS_TOKEN>' \
+              -H 'Accept: application/json' \
+              -H 'Intercom-Version: @Unstable'
+        - lang: 'Node.js'
+          source: |
+            const response = await fetch('https://api.intercom.io/macros/123', {
+              headers: {
+                'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
+                'Accept': 'application/json',
+                'Intercom-Version': '@Unstable'
+              }
+            });
+            const macro = await response.json();
+        - lang: 'Python'
+          source: |
+            import requests
+            
+            headers = {
+                'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
+                'Accept': 'application/json',
+                'Intercom-Version': '@Unstable'
+            }
+            
+            response = requests.get('https://api.intercom.io/macros/123', 
+                                  headers=headers)
+            macro = response.json()
+        - lang: 'Ruby'
+          source: |
+            require 'net/http'
+            require 'json'
+            
+            uri = URI('https://api.intercom.io/macros/123')
+            
+            http = Net::HTTP.new(uri.host, uri.port)
+            http.use_ssl = true
+            
+            request = Net::HTTP::Get.new(uri)
+            request['Authorization'] = 'Bearer <YOUR_ACCESS_TOKEN>'
+            request['Accept'] = 'application/json'
+            request['Intercom-Version'] = '@Unstable'
+            
+            response = http.request(request)
+            macro = JSON.parse(response.body)
       responses:
         '200':
           description: Macro found
           content:
             application/json:
               examples:
-                Macro visible to everyone:
-                  value:
-                    type: macro
-                    id: "123"
-                    name: "Order Status Update"
-                    body: "<p>Hi <attribute key=\"user.name\" default=\"there\"/>, your order #<attribute key=\"order.number\"/> is ready for pickup!</p>"
-                    body_text: "Hi {{user.name|fallback:\"there\"}}, your order is ready for pickup!"
-                    created_at: "2025-07-17T11:18:08.000Z"
-                    updated_at: "2025-07-17T15:30:24.000Z"
-                    visible_to: "everyone"
-                    visible_to_team_ids: []
-                    available_on: ["inbox", "messenger"]
-                Macro with team restrictions:
-                  value:
-                    type: macro
-                    id: "456"
-                    name: "VIP Customer Support"
-                    body: "<p>Dear <attribute key=\"user.name\" default=\"valued customer\"/>, we appreciate your VIP status. Your dedicated support team is here to help.</p>"
-                    body_text: "Dear {{user.name|fallback:\"valued customer\"}}, we appreciate your VIP status. Your dedicated support team is here to help."
-                    created_at: "2025-07-17T11:18:08.000Z"
-                    updated_at: "2025-07-17T15:30:24.000Z"
-                    visible_to: "specific_teams"
-                    visible_to_team_ids: ["789", "012"]
-                    available_on: ["inbox"]
-                Macro with complex placeholders:
+                support_macro:
+                  summary: Customer support macro with placeholders
                   value:
                     type: macro
                     id: "789"
-                    name: "Account Summary"
-                    body: "<p>Hello <attribute key=\"user.name\" default=\"there\"/>!</p><p>Your account balance is <attribute key=\"account.balance\" default=\"not available\"/>.</p><p>Last login: <attribute key=\"user.last_login\" default=\"never\"/></p>"
-                    body_text: "Hello {{user.name|fallback:\"there\"}}! Your account balance is {{account.balance|fallback:\"not available\"}}. Last login: {{user.last_login|fallback:\"never\"}}"
+                    name: "Refund Process Explanation"
+                    body: "<p>Hi <attribute key=\"user.first_name\" default=\"there\"/>,</p><p>I understand you'd like a refund for order #<attribute key=\"conversation.custom_attributes.order_number\"/>. The refund will be processed within 3-5 business days to your <attribute key=\"user.custom_attributes.payment_method\" default=\"original payment method\"/>.</p><p>Is there anything else I can help you with?</p>"
+                    body_text: "Hi {{user.first_name|fallback:\"there\"}},\n\nI understand you'd like a refund for order #{{conversation.custom_attributes.order_number}}. The refund will be processed within 3-5 business days to your {{user.custom_attributes.payment_method|fallback:\"original payment method\"}}.\n\nIs there anything else I can help you with?"
+                    created_at: "2025-07-21T14:44:35.000Z"
+                    updated_at: "2025-07-21T14:44:35.000Z"
+                    visible_to: "specific_teams"
+                    visible_to_team_ids: ["support_team_1", "support_team_2"]
+                    available_on: ["inbox", "messenger"]
+                sales_macro:
+                  summary: Sales team macro for product inquiries
+                  value:
+                    type: macro
+                    id: "456"
+                    name: "Product Demo Request"
+                    body: "<p>Hello <attribute key=\"user.name\" default=\"valued customer\"/>,</p><p>Thank you for your interest in <attribute key=\"product.name\" default=\"our products\"/>! I'd love to schedule a personalized demo for your team at <attribute key=\"company.name\" default=\"your company\"/>.</p><p>Would <attribute key=\"suggested_time\" default=\"next Tuesday at 2 PM EST\"/> work for you?</p>"
+                    body_text: "Hello {{user.name|fallback:\"valued customer\"}},\n\nThank you for your interest in {{product.name|fallback:\"our products\"}}! I'd love to schedule a personalized demo for your team at {{company.name|fallback:\"your company\"}}.\n\nWould {{suggested_time|fallback:\"next Tuesday at 2 PM EST\"}} work for you?"
+                    created_at: "2025-07-22T11:06:40.000Z"
+                    updated_at: "2025-07-23T00:00:00.000Z"
+                    visible_to: "specific_teams"
+                    visible_to_team_ids: ["sales_team_us", "sales_team_eu"]
+                    available_on: ["messenger"]
+                technical_support:
+                  summary: Technical support macro with nested attributes
+                  value:
+                    type: macro
+                    id: "890"
+                    name: "API Integration Help"
+                    body: "<p>Hi <attribute key=\"user.name\"/>,</p><p>I see you're having trouble with the <attribute key=\"conversation.custom_attributes.api_endpoint\" default=\"API\"/> integration. Your API key for app <attribute key=\"app.id\"/> is configured correctly.</p><p>Error code: <attribute key=\"conversation.custom_attributes.error_code\" default=\"unknown\"/></p><p>Let me help you resolve this issue.</p>"
+                    body_text: "Hi {{user.name}},\n\nI see you're having trouble with the {{conversation.custom_attributes.api_endpoint|fallback:\"API\"}} integration. Your API key for app {{app.id}} is configured correctly.\n\nError code: {{conversation.custom_attributes.error_code|fallback:\"unknown\"}}\n\nLet me help you resolve this issue."
+                    created_at: "2025-07-18T09:15:00.000Z"
+                    updated_at: "2025-07-18T09:15:00.000Z"
+                    visible_to: "everyone"
+                    visible_to_team_ids: []
+                    available_on: ["inbox"]
+                simple_greeting:
+                  summary: Simple macro without placeholders
+                  value:
+                    type: macro
+                    id: "123"
+                    name: "Thank You Response"
+                    body: "<p>Thank you for reaching out! We appreciate your message and will get back to you as soon as possible.</p>"
+                    body_text: "Thank you for reaching out! We appreciate your message and will get back to you as soon as possible."
                     created_at: "2025-07-17T11:18:08.000Z"
                     updated_at: "2025-07-17T15:30:24.000Z"
                     visible_to: "everyone"
@@ -9429,13 +9657,14 @@ paths:
           content:
             application/json:
               examples:
-                Missing scope:
+                Missing required scope:
+                  summary: OAuth token lacks read_conversations scope
                   value:
                     type: error.list
                     request_id: f097e446-9ae6-44a8-8e13-2bf3008b87ef
                     errors:
                     - code: forbidden
-                      message: Token does not have the required 'read_conversations' scope
+                      message: You do not have the required scope (read_conversations) to access this resource
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -18947,7 +19176,7 @@ components:
       title: Macro
       type: object
       x-tags:
-        - Unstable
+        - Macros
       description: A macro is a pre-defined response template (saved reply) that can be used to quickly reply to conversations.
       nullable: true
       properties:
@@ -19020,7 +19249,7 @@ components:
       title: Macro List
       type: object
       x-tags:
-        - Unstable
+        - Macros
       description: A paginated list of macros (saved replies) in the workspace.
       properties:
         type:
@@ -21770,7 +21999,8 @@ tags:
 - name: Jobs
   description: Everything about jobs
 - name: Macros
-  description: Everything about your Macros (Saved Replies)
+  description: Operations related to saved replies (macros) in conversations
+  x-displayName: Macros
 - name: Messages
   description: Everything about your messages
 - name: News
