@@ -9255,9 +9255,11 @@ paths:
         
         **Placeholder Transformation**
         
-        The API transforms Intercom placeholders to a more standard XML-like format:
+        The API transforms Intercom placeholders in the `body` field to a more standard XML-like format:
         - From: `{{user.name | fallback: 'there'}}`
         - To: `<attribute key="user.name" default="there"/>`
+        
+        Note: The `body_text` field retains the original Intercom placeholder format.
       responses:
         '200':
           description: Successful response
@@ -9272,9 +9274,9 @@ paths:
                       id: "123"
                       name: "Order Status Update"
                       body: "<p>Hi <attribute key=\"user.name\" default=\"there\"/>, your order #<attribute key=\"order.number\"/> is ready!</p>"
-                      body_text: "Hi there, your order is ready!"
-                      created_at: 1719474966
-                      updated_at: 1719493757
+                      body_text: "Hi {{user.name|fallback:\"there\"}}, your order is ready!"
+                      created_at: "2025-07-17T11:18:08.000Z"
+                      updated_at: "2025-07-17T15:30:24.000Z"
                       visible_to: "everyone"
                       visible_to_team_ids: []
                       available_on: ["inbox", "messenger"]
@@ -9358,10 +9360,11 @@ paths:
         
         **Placeholder Transformation**
         
-        The API transforms Intercom placeholders to a more standard XML-like format in the `body` field:
+        The API transforms Intercom placeholders in the `body` field to a more standard XML-like format:
         - From: `{{user.name | fallback: 'there'}}`
         - To: `<attribute key="user.name" default="there"/>`
         
+        Note: The `body_text` field retains the original Intercom placeholder format.
         Default values in placeholders are HTML-escaped for security.
       responses:
         '200':
@@ -9375,9 +9378,9 @@ paths:
                     id: "123"
                     name: "Order Status Update"
                     body: "<p>Hi <attribute key=\"user.name\" default=\"there\"/>, your order #<attribute key=\"order.number\"/> is ready for pickup!</p>"
-                    body_text: "Hi there, your order is ready for pickup!"
-                    created_at: 1719474966
-                    updated_at: 1719493757
+                    body_text: "Hi {{user.name|fallback:\"there\"}}, your order is ready for pickup!"
+                    created_at: "2025-07-17T11:18:08.000Z"
+                    updated_at: "2025-07-17T15:30:24.000Z"
                     visible_to: "everyone"
                     visible_to_team_ids: []
                     available_on: ["inbox", "messenger"]
@@ -9387,9 +9390,9 @@ paths:
                     id: "456"
                     name: "VIP Customer Support"
                     body: "<p>Dear <attribute key=\"user.name\" default=\"valued customer\"/>, we appreciate your VIP status. Your dedicated support team is here to help.</p>"
-                    body_text: "Dear valued customer, we appreciate your VIP status. Your dedicated support team is here to help."
-                    created_at: 1719474966
-                    updated_at: 1719493757
+                    body_text: "Dear {{user.name|fallback:\"valued customer\"}}, we appreciate your VIP status. Your dedicated support team is here to help."
+                    created_at: "2025-07-17T11:18:08.000Z"
+                    updated_at: "2025-07-17T15:30:24.000Z"
                     visible_to: "specific_teams"
                     visible_to_team_ids: ["789", "012"]
                     available_on: ["inbox"]
@@ -9399,9 +9402,9 @@ paths:
                     id: "789"
                     name: "Account Summary"
                     body: "<p>Hello <attribute key=\"user.name\" default=\"there\"/>!</p><p>Your account balance is <attribute key=\"account.balance\" default=\"not available\"/>.</p><p>Last login: <attribute key=\"user.last_login\" default=\"never\"/></p>"
-                    body_text: "Hello there! Your account balance is not available. Last login: never"
-                    created_at: 1719474966
-                    updated_at: 1719493757
+                    body_text: "Hello {{user.name|fallback:\"there\"}}! Your account balance is {{account.balance|fallback:\"not available\"}}. Last login: {{user.last_login|fallback:\"never\"}}"
+                    created_at: "2025-07-17T11:18:08.000Z"
+                    updated_at: "2025-07-17T15:30:24.000Z"
                     visible_to: "everyone"
                     visible_to_team_ids: []
                     available_on: ["inbox", "messenger"]
@@ -18968,18 +18971,18 @@ components:
           example: "<p>Hi <attribute key=\"user.name\" default=\"there\"/>, your order is ready!</p>"
         body_text:
           type: string
-          description: The plain text version of the macro body.
-          example: "Hi there, your order is ready!"
+          description: The plain text version of the macro body with original Intercom placeholder format.
+          example: "Hi {{user.name|fallback:\"there\"}}, your order is ready!"
         created_at:
-          type: integer
-          format: int64
-          description: The time the macro was created as a Unix timestamp.
-          example: 1719474966
+          type: string
+          format: date-time
+          description: The time the macro was created in ISO 8601 format.
+          example: "2025-07-17T11:18:08.000Z"
         updated_at:
-          type: integer
-          format: int64
-          description: The time the macro was last updated as a Unix timestamp.
-          example: 1719493757
+          type: string
+          format: date-time
+          description: The time the macro was last updated in ISO 8601 format.
+          example: "2025-07-17T15:30:24.000Z"
         visible_to:
           type: string
           description: Who can view this macro.
@@ -19007,9 +19010,11 @@ components:
         - id
         - name
         - body
+        - body_text
         - created_at
         - updated_at
         - visible_to
+        - visible_to_team_ids
         - available_on
     macro_list:
       title: Macro List
