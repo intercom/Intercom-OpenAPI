@@ -11180,6 +11180,107 @@ paths:
                       message: Not Found
               schema:
                 "$ref": "#/components/schemas/error"
+  "/calls/search":
+    post:
+      summary: List calls with transcripts
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Calls
+      operationId: listCallsWithTranscripts
+      description: |
+        Retrieve calls by a list of conversation ids and include transcripts when available.
+        A maximum of 20 `conversation_ids` can be provided. If none are provided or more than 20 are provided, a 400 error is returned.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - conversation_ids
+              properties:
+                conversation_ids:
+                  type: array
+                  description: A list of conversation ids to fetch calls for. Maximum 20.
+                  minItems: 1
+                  maxItems: 20
+                  items:
+                    type: string
+            examples:
+              example:
+                value:
+                  conversation_ids:
+                  - "64619700005694"
+                  - "64619700005695"
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: call
+                      id: "123"
+                      conversation_id: "64619700005694"
+                      transcript:
+                      - {}
+                      transcript_status: completed
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: list
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                      - "$ref": "#/components/schemas/call"
+                      - type: object
+                        properties:
+                          transcript:
+                            type: array
+                            description: The call transcript if available, otherwise an empty array.
+                            items:
+                              type: object
+                              additionalProperties: true
+                          transcript_status:
+                            type: string
+                            nullable: true
+                            description: The status of the transcript if available.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                too_many_ids:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: conversation_id_limit_exceeded
+                      message: "A list of up to 20 conversation IDs is required"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
