@@ -9246,15 +9246,15 @@ paths:
       operationId: listMacros
       description: |
         You can fetch a list of all macros (saved replies) in your workspace for use in automating responses.
-        
-        The macros are returned in descending order by updated_at. 
-        
+
+        The macros are returned in descending order by updated_at.
+
         **Pagination**
-        
+
         This endpoint uses cursor-based pagination via the `starting_after` parameter. The cursor is a Base64-encoded JSON array containing `[updated_at, id]` of the last item from the previous page.
-        
+
         **Placeholder Transformation**
-        
+
         The API transforms Intercom placeholders to a more standard XML-like format:
         - From: `{{user.name | fallback: 'there'}}`
         - To: `<attribute key="user.name" default="there"/>`
@@ -9278,42 +9278,42 @@ paths:
         - lang: 'Python'
           source: |
             import requests
-            
+
             headers = {
                 'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
                 'Accept': 'application/json',
                 'Intercom-Version': '@Unstable'
             }
-            
+
             params = {
                 'per_page': 25,
                 'starting_after': 'WzE3MTk0OTM3NTcuMCwgIjEyMyJd'
             }
-            
-            response = requests.get('https://api.intercom.io/macros', 
-                                  headers=headers, 
+
+            response = requests.get('https://api.intercom.io/macros',
+                                  headers=headers,
                                   params=params)
             macros = response.json()
         - lang: 'Ruby'
           source: |
             require 'net/http'
             require 'json'
-            
+
             uri = URI('https://api.intercom.io/macros')
             params = {
               per_page: 25,
               starting_after: 'WzE3MTk0OTM3NTcuMCwgIjEyMyJd'
             }
             uri.query = URI.encode_www_form(params)
-            
+
             http = Net::HTTP.new(uri.host, uri.port)
             http.use_ssl = true
-            
+
             request = Net::HTTP::Get.new(uri)
             request['Authorization'] = 'Bearer <YOUR_ACCESS_TOKEN>'
             request['Accept'] = 'application/json'
             request['Intercom-Version'] = '@Unstable'
-            
+
             response = http.request(request)
             macros = JSON.parse(response.body)
       responses:
@@ -9515,21 +9515,21 @@ paths:
       operationId: getMacro
       description: |
         You can fetch a single macro (saved reply) by its ID. The macro will only be returned if it is visible to the authenticated user based on its visibility settings.
-        
+
         **Visibility Rules**
-        
+
         A macro is returned based on its `visible_to` setting:
         - `everyone`: Always visible to all team members
         - `specific_teams`: Only visible if the authenticated user belongs to one of the teams specified in `visible_to_team_ids`
-        
+
         If a macro exists but is not visible to the authenticated user, a 404 error is returned.
-        
+
         **Placeholder Transformation**
-        
+
         The API transforms Intercom placeholders to a more standard XML-like format in the `body` field:
         - From: `{{user.name | fallback: 'there'}}`
         - To: `<attribute key="user.name" default="there"/>`
-        
+
         Default values in placeholders are HTML-escaped for security.
       x-code-samples:
         - lang: 'cURL'
@@ -9551,31 +9551,31 @@ paths:
         - lang: 'Python'
           source: |
             import requests
-            
+
             headers = {
                 'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
                 'Accept': 'application/json',
                 'Intercom-Version': '@Unstable'
             }
-            
-            response = requests.get('https://api.intercom.io/macros/123', 
+
+            response = requests.get('https://api.intercom.io/macros/123',
                                   headers=headers)
             macro = response.json()
         - lang: 'Ruby'
           source: |
             require 'net/http'
             require 'json'
-            
+
             uri = URI('https://api.intercom.io/macros/123')
-            
+
             http = Net::HTTP.new(uri.host, uri.port)
             http.use_ssl = true
-            
+
             request = Net::HTTP::Get.new(uri)
             request['Authorization'] = 'Bearer <YOUR_ACCESS_TOKEN>'
             request['Accept'] = 'application/json'
             request['Intercom-Version'] = '@Unstable'
-            
+
             response = http.request(request)
             macro = JSON.parse(response.body)
       responses:
@@ -10945,6 +10945,255 @@ paths:
                   custom_attributes:
                     issue_type: Billing
                     priority: High
+  "/calls":
+    get:
+      summary: List all calls
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 25. Max 25.
+        example: 25
+        schema:
+          type: integer
+      tags:
+      - Calls
+      operationId: listCalls
+      description: |
+        Retrieve a paginated list of calls.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data: []
+                    total_count: 0
+                    pages:
+                      type: pages
+                      page: 1
+                      per_page: 25
+                      total_pages: 0
+              schema:
+                "$ref": "#/components/schemas/call_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/calls/{id}":
+    get:
+      summary: Get a call
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The id of the call to retrieve
+        schema:
+          type: string
+      tags:
+      - Calls
+      operationId: showCall
+      description: Retrieve a single call by id.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: call
+                    id: "123"
+                    conversation_id: "456"
+                    admin_id: "789"
+                    contact_id: "6762f0dd1bb69f9f2193bb83"
+                    state: completed
+                    initiated_at: 1734537437
+                    answered_at: 1734537440
+                    ended_at: 1734537530
+                    created_at: 1734537437
+                    updated_at: 1734537531
+                    recording_url: "https://api.intercom.io/calls/123/recording"
+                    call_type: phone
+                    direction: outbound
+                    ended_reason: answered
+                    phone: "+15551234567"
+                    fin_recording_url: "https://api.intercom.io/calls/124/recording"
+                    fin_transcription_url: "https://api.intercom.io/calls/124/transcript"
+              schema:
+                "$ref": "#/components/schemas/call"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                Not Found:
+                  value:
+                    type: error.list
+                    request_id: 9bc4fc62-7cdf-4f72-a56e-02af4836d499
+                    errors:
+                    - code: not_found
+                      message: Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/calls/{id}/recording":
+    get:
+      summary: Get call recording by call id
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The id of the call
+        schema:
+          type: string
+      tags:
+      - Calls
+      operationId: showCallRecording
+      description: Redirects to a signed URL for the call's recording if it exists.
+      responses:
+        '302':
+          description: Redirect to signed recording URL
+          headers:
+            Location:
+              description: The signed recording URL
+              schema:
+                type: string
+                format: uri
+        '404':
+          description: Recording not found
+          content:
+            application/json:
+              examples:
+                Not Found:
+                  value:
+                    type: error.list
+                    request_id: 9bc4fc62-7cdf-4f72-a56e-02af4836d499
+                    errors:
+                    - code: not_found
+                      message: Recording Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/calls/{id}/transcript":
+    get:
+      summary: Get call transcript by call id
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The id of the call
+        schema:
+          type: string
+      tags:
+      - Calls
+      operationId: showCallTranscript
+      description: |
+        Returns the transcript for the specified call. If no transcript exists, an array with a single empty object is returned: `[{}]`.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                no_transcript:
+                  value:
+                    - {}
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                Not Found:
+                  value:
+                    type: error.list
+                    request_id: 9bc4fc62-7cdf-4f72-a56e-02af4836d499
+                    errors:
+                    - code: not_found
+                      message: Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/tags":
     get:
       summary: List all tags
@@ -16318,7 +16567,7 @@ components:
           example: '5017691'
         company_id:
           type: string
-          description: The ID of the company that the conversation is associated with. 
+          description: The ID of the company that the conversation is associated with.
             The unique identifier for the company which is given by Intercom.
           example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
         tags:
@@ -17833,6 +18082,104 @@ components:
           type: integer
           description: Total number of pages
           example: 13
+    call:
+      title: Call
+      type: object
+      x-tags:
+      - Calls
+      description: Represents a phone call in Intercom
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `call`.
+          example: call
+        id:
+          type: string
+          description: The id of the call.
+          example: "123"
+        conversation_id:
+          type: string
+          nullable: true
+          description: The id of the conversation associated with the call, if any.
+          example: "456"
+        admin_id:
+          type: string
+          nullable: true
+          description: The id of the admin associated with the call, if any.
+          example: "789"
+        contact_id:
+          type: string
+          nullable: true
+          description: The id of the contact associated with the call, if any.
+          example: "6762f0dd1bb69f9f2193bb83"
+        state:
+          type: string
+          description: The current state of the call.
+          example: completed
+        initiated_at:
+          "$ref": "#/components/schemas/datetime"
+        answered_at:
+          "$ref": "#/components/schemas/datetime"
+        ended_at:
+          "$ref": "#/components/schemas/datetime"
+        created_at:
+          "$ref": "#/components/schemas/datetime"
+        updated_at:
+          "$ref": "#/components/schemas/datetime"
+        recording_url:
+          type: string
+          format: uri
+          nullable: true
+          description: API URL to download or redirect to the call recording if available.
+          example: "https://api.intercom.io/calls/123/recording"
+        call_type:
+          type: string
+          description: The type of call.
+          example: phone
+        direction:
+          type: string
+          description: The direction of the call.
+          example: outbound
+        ended_reason:
+          type: string
+          nullable: true
+          description: The reason for the call end, if applicable.
+          example: completed
+        phone:
+          type: string
+          nullable: true
+          description: The phone number involved in the call, in E.164 format.
+          example: "+15551234567"
+        fin_recording_url:
+          type: string
+          format: uri
+          nullable: true
+          description: API URL to the AI Agent (Fin) call recording if available.
+        fin_transcription_url:
+          type: string
+          format: uri
+          nullable: true
+          description: API URL to the AI Agent (Fin) call transcript if available.
+    call_list:
+      title: Calls
+      type: object
+      description: A paginated list of calls.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `list`.
+          example: list
+        data:
+          type: array
+          description: A list of calls.
+          items:
+            "$ref": "#/components/schemas/call"
+        total_count:
+          type: integer
+          description: Total number of items available.
+          example: 0
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
     custom_attributes:
       title: Custom Attributes
       type: object
@@ -21292,7 +21639,7 @@ components:
           "$ref": "#/components/schemas/custom_attributes"
         company_id:
           type: string
-          description: The ID of the company that the conversation is associated with. 
+          description: The ID of the company that the conversation is associated with.
             The unique identifier for the company which is given by Intercom. Set to nil to remove company.
           example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
     update_data_attribute_request:
