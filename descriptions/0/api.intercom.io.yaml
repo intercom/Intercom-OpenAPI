@@ -11151,21 +11151,33 @@ paths:
       - Calls
       operationId: showCallTranscript
       description: |
-        Returns the transcript for the specified call. If no transcript exists, an array with a single empty object is returned: `[{}]`.
+        Returns the transcript for the specified call as a downloadable text file.
       responses:
         '200':
           description: successful
-          content:
-            application/json:
-              examples:
-                no_transcript:
-                  value:
-                    - {}
+          headers:
+            Content-Disposition:
+              description: File attachment directive and suggested filename for the transcript
               schema:
-                type: array
-                items:
-                  type: object
-                  additionalProperties: true
+                type: string
+                example: "attachment; filename=transcription_data-2025-07-17.txt"
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: Transcript text
+              examples:
+                transcript_txt:
+                  value: |-
+                    [00:00:03] Teammate 1: "Hello, thanks for calling. How can I help today?"
+                    [00:00:09] User: "I need help recovering access to my account."
+                    [00:00:15] Teammate 1: "I can help with that. For security, I’ll ask a few generic verification questions."
+                    [00:00:22] User: "Okay."
+                    [00:00:28] Teammate 1: "Please confirm general details on the account (no sensitive data over this call)."
+                    [00:00:35] User: "I can provide non-sensitive info."
+                    [00:00:41] Teammate 1: "Thank you. I’ll initiate a standard account recovery process and send the next steps."
+                    [00:00:48] User: "Great, thanks."
+                    [00:00:53] Teammate 1: "You should receive a message shortly with instructions to complete recovery."
         '404':
           description: Not Found
           content:
