@@ -14,6 +14,29 @@ Please note that this project is released with a [Contributor Code of Conduct][c
 
 **We don't currently accept pull requests that directly modify the description artifacts found in this repository.** If you have feedback on the descriptions or have found a mismatch between the behavior that is described in this repo and the runtime behavior of the API, please [open an issue](https://github.com/intercom/Intercom-OpenAPI/issues/new).
 
+### Using Fern
+Our SDKs are generated from our OpenAPI spec using (Fern)[https://buildwithfern.com/learn/sdks/overview/introduction].
+If you making changes to the OpenAPI spec, you can use the Fern CLI to validate your changes and preview the impact on the generated SDKs. Here are some useful commands
+
+Install fern: `npm install -g fern-api`
+
+Validate the spec: `fern check`
+
+Preview an sdk: `fern generate --preview --group`
+
+  You can find the appropriate group name in the (generators.yml)[./fern/generators.yml] file. For example `python-sdk` is the group name for the python sdk.
+
+- Generate the Fern definition from the OpenAPI spec
+
+  `fern write-definition`
+
+For more details on how to use the Fern CLI, refer to the Fern docs site or use the help commands integrated into the CLI.
+
+`fern help`
+
+`fern generate help`
+
+
 ## Contributions to other files in the repository
 
 We will gladly accept pull requests for contributions to other files in this repository.
