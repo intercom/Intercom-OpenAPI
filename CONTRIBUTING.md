@@ -14,6 +14,72 @@ Please note that this project is released with a [Contributor Code of Conduct][c
 
 **We don't currently accept pull requests that directly modify the description artifacts found in this repository.** If you have feedback on the descriptions or have found a mismatch between the behavior that is described in this repo and the runtime behavior of the API, please [open an issue](https://github.com/intercom/Intercom-OpenAPI/issues/new).
 
+### Using Fern
+
+Our SDKs are generated from our OpenAPI spec using [Fern](https://buildwithfern.com/learn/sdks/overview/introduction).
+
+If you're making changes to the OpenAPI spec, you can use the Fern CLI to validate your changes and preview the impact on the generated SDKs.
+
+#### Installation
+
+```bash
+npm install -g fern-api
+```
+
+#### Common Commands
+
+**Validate the spec:**
+```bash
+fern check
+```
+
+**Preview an SDK:**
+```bash
+fern generate --preview --group <group-name>
+```
+
+#### ⚠️ Important Warning
+
+**Be careful not to run `fern generate` without the `--preview` flag in your local development environment!**
+
+Running `fern generate` without the preview flag will automatically submit pull requests to the SDK's GitHub repository. This command is intended for use in CI/CD pipelines only.
+
+**❌ Don't do this locally:**
+```bash
+fern generate --group <group-name>
+```
+
+**✅ Always use preview mode for local development:**
+```bash
+fern generate --preview --group <group-name>
+```
+
+> **Note:** You can find the appropriate group name in the [`generators.yml`](./fern/generators.yml) file. For example, `python-sdk` is the group name for the Python SDK.
+
+**Generate the Fern definition from the OpenAPI spec:**
+```bash
+fern write-definition
+```
+
+#### Help Commands
+
+Get general help:
+```bash
+fern help
+```
+
+Get help for the generate command:
+```bash
+fern generate help
+```
+
+#### Additional Resources
+
+For more details on how to use Fern, refer to the documentation for:
+- [Fern CLI](https://buildwithfern.com/learn/cli-api-reference/cli-reference/overview)
+- [Fern SDK](https://buildwithfern.com/learn/sdks/overview/introduction)
+
+
 ## Contributions to other files in the repository
 
 We will gladly accept pull requests for contributions to other files in this repository.
