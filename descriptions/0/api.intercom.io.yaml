@@ -15227,6 +15227,18 @@ components:
           description: The customer satisfaction rating remark given to AI Agent.
           example: Very helpful!
           nullable: true
+        created_at:
+          type: integer
+          format: date-time
+          description: The time when the AI agent rating was created.
+          example: 1663597260
+          nullable: true
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time when the AI agent rating was last updated.
+          example: 1663597260
+          nullable: true
         content_sources:
           "$ref": "#/components/schemas/content_sources_list"
     app:
@@ -17496,6 +17508,11 @@ components:
           description: The time the rating was requested in the conversation being
             rated.
           example: 1671028894
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time the rating was last updated.
+          example: 1671028894
         contact:
           "$ref": "#/components/schemas/contact_reference"
         teammate:
@@ -18045,38 +18062,48 @@ components:
           - contact
           - company
           example: contact
-        data_type:
-          type: string
-          description: The type of data stored for this attribute.
-          enum:
-          - string
-          - integer
-          - float
-          - boolean
-          - datetime
-          - date
-          example: string
         description:
           type: string
           description: The readable description you see in the UI for the attribute.
           example: My Data Attribute Description
-        options:
-          type: array
-          description: To create list attributes. Provide a set of hashes with `value`
-            as the key of the options you want to make. `data_type` must be `string`.
-          items:
-            type: string
-          example:
-          - option1
-          - option2
         messenger_writable:
           type: boolean
           description: Can this attribute be updated by the Messenger
           example: false
       required:
-      - name
-      - model
-      - data_type
+        - name
+        - model
+        - data_type
+      oneOf:
+        - properties:
+            data_type:
+              enum:
+                - options
+            options:
+              type: array
+              description: Array of objects representing the options of the list, with `value` as the key and the option as the value. At least
+                two options are required.
+              items:
+                type: object
+                properties:
+                  value:
+                    type: string
+              example:
+                - value: 1-10
+                - value: 11-50
+          required:
+            - options
+          title: 'list attribute'
+        - properties:
+            data_type:
+              enum:
+                - string
+                - integer
+                - float
+                - boolean
+                - datetime
+                - date
+          title: 'other type'
     create_data_event_request:
       description: ''
       type: object
@@ -22329,19 +22356,28 @@ components:
           type: string
           description: The readable description you see in the UI for the attribute.
           example: My Data Attribute Description
-        options:
-          type: array
-          description: To create list attributes. Provide a set of hashes with `value`
-            as the key of the options you want to make. `data_type` must be `string`.
-          items:
-            type: string
-          example:
-          - option1
-          - option2
         messenger_writable:
           type: boolean
           description: Can this attribute be updated by the Messenger
           example: false
+      oneOf:
+        - properties:
+            options:
+              type: array
+              description: Array of objects representing the options of the list, with `value` as the key and the option as the value. At least
+                two options are required.
+              items:
+                type: object
+                properties:
+                  value:
+                    type: string
+              example:
+                - value: 1-10
+                - value: 11-50
+          required:
+            - options
+          title: 'list attribute'
+        - title: 'other type'
     update_external_page_request:
       title: Update External Page Payload
       type: object
