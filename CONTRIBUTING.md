@@ -30,7 +30,9 @@ Preview an sdk: `fern generate --preview --group`
 
   `fern write-definition`
 
-For more details on how to use the Fern CLI, refer to the Fern docs site or use the help commands integrated into the CLI.
+For more details on how to use Fern, refer to the docs for the [Fern CLI](https://buildwithfern.com/learn/cli-api-reference/cli-reference/overview) or [Fern SDK](https://buildwithfern.com/learn/sdks/overview/introduction) products.
+
+You can also use help commands within the cli to see available commands and options.
 
 `fern help`
 
