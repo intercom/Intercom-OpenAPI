@@ -10076,7 +10076,7 @@ paths:
       - Messages
       operationId: createMessage
       description: "You can create a message that has been initiated by an admin.
-        The conversation can be either an in-app message, an email, sms or whatsapp.\n\n> \U0001F6A7
+        The conversation can be either an in-app message, an email or sms.\n\n> \U0001F6A7
         Sending for visitors\n>\n> There can be a short delay between when a contact
         is created and when a contact becomes available to be messaged through the
         API. A 404 Not Found error will be returned in this case.\n\nThis will return
@@ -10249,23 +10249,6 @@ paths:
                     id: 6762f23a1bb69f9f2193bc1a
                   message_type: sms
                   body: heyy
-              admin_whatsapp_message_created:
-                summary: admin whatsapp message created
-                value:
-                  from:
-                    type: admin
-                    id: '991267817'
-                  to:
-                    phone: +5547999998888
-                    name: John Doe
-                  message_type: whatsapp
-                  components:
-                    - type: BODY
-                      parameters:
-                        - type: text
-                          text: Username 123
-                  template: keep_live
-                  locale: en
               no_body_supplied_for_message:
                 summary: No body supplied for message
                 value:
@@ -18269,12 +18252,11 @@ components:
       properties:
         message_type:
           type: string
-          description: 'The kind of message being created. Values: `in_app`, `email`, `sms` or `whatsapp`.'
+          description: 'The kind of message being created. Values: `in_app`, `email`, `sms`.'
           enum:
           - in_app
           - email
           - sms
-          - whatsapp
           example: in_app
         subject:
           type: string
@@ -18369,13 +18351,6 @@ components:
         required:
         - message_type
         - body
-        - from
-        - to
-      - title: 'message_type: `whatsapp`.'
-        required:
-        - message_type
-        - template
-        - components
         - from
         - to
     recipient:
@@ -20342,9 +20317,8 @@ components:
           - facebook
           - twitter
           - sms
-          - whatsapp
           description: The type of message that was sent. Can be email, inapp, facebook,
-            twitter, sms or whatsapp.
+            twitter or sms.
           example: inapp
         conversation_id:
           type: string
