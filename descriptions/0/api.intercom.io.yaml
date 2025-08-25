@@ -14649,6 +14649,216 @@ paths:
                   user:
                     email: foo@bar.com
                   type: user
+  "/brands":
+    get:
+      summary: List all brands
+      tags:
+        - Brands
+      operationId: listBrands
+      description: Retrieves all brands for the workspace, including the default brand
+      parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            $ref: "#/components/schemas/intercom_version"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/brand_list"
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                      - type: brand
+                        id: "2"
+                        name: "Default Brand"
+                        is_default: true
+                        created_at: 1673778600
+                        updated_at: 1711031100
+                        help_center_id: "11"
+                        default_address_settings_id: "13"
+                      - type: brand
+                        id: "3"
+                        name: "Premium Brand"
+                        is_default: false
+                        created_at: 1686387300
+                        updated_at: 1709229600
+                        help_center_id: "10"
+                        default_address_settings_id: "15"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  "/brands/{id}":
+    get:
+      summary: Retrieve a brand
+      tags:
+        - Brands
+      operationId: retrieveBrand
+      description: Fetches a specific brand by its unique identifier
+      parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            $ref: "#/components/schemas/intercom_version"
+        - name: id
+          in: path
+          required: true
+          description: The unique identifier of the brand
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/brand"
+              examples:
+                Successful response:
+                  value:
+                    type: brand
+                    id: "15"
+                    name: "Premium Brand"
+                    is_default: false
+                    created_at: 1686387300
+                    updated_at: 1709229600
+                    help_center_id: "20"
+                    default_address_settings_id: "15"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        '404':
+          description: Brand not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              examples:
+                Brand not found:
+                  value:
+                    type: error.list
+                    request_id: "req_12345"
+                    errors:
+                      - code: not_found
+                        message: Brand not found
+  "/emails":
+    get:
+      summary: List all email settings
+      tags:
+        - Emails
+      operationId: listEmails
+      description: Lists all sender email address settings for the workspace
+      parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            $ref: "#/components/schemas/intercom_version"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/email_list"
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                      - type: email_setting
+                        id: "1"
+                        email: "support@company.com"
+                        verified: true
+                        domain: "company.com"
+                        brand_id: "9"
+                        forwarding_enabled: true
+                        forwarded_email_last_received_at: 1710498600
+                        created_at: 1692530400
+                        updated_at: 1710498600
+                      - type: email_setting
+                        id: "2"
+                        email: "hello@company.com"
+                        verified: true
+                        domain: "company.com"
+                        brand_id: "10"
+                        forwarding_enabled: false
+                        forwarded_email_last_received_at: null
+                        created_at: 1683729000
+                        updated_at: 1701424500
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  "/emails/{id}":
+    get:
+      summary: Retrieve an email setting
+      tags:
+        - Emails
+      operationId: retrieveEmail
+      description: Fetches a specific email setting by its unique identifier
+      parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            $ref: "#/components/schemas/intercom_version"
+        - name: id
+          in: path
+          required: true
+          description: The unique identifier of the email setting
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/email_setting"
+              examples:
+                Successful response:
+                  value:
+                    type: email_setting
+                    id: "10"
+                    email: "support@company.com"
+                    verified: true
+                    domain: "company.com"
+                    brand_id: "15"
+                    forwarding_enabled: true
+                    forwarded_email_last_received_at: 1710498600
+                    created_at: 1692530400
+                    updated_at: 1710498600
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        '404':
+          description: Email setting not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+              examples:
+                Email setting not found:
+                  value:
+                    type: error.list
+                    request_id: "req_12345"
+                    errors:
+                      - code: not_found
+                        message: Email setting not found
 components:
   schemas:
     datetime:
@@ -16067,6 +16277,62 @@ components:
           description: An array of collection objects
           items:
             "$ref": "#/components/schemas/collection"
+    brand:
+      type: object
+      title: Brand
+      description: Represents a branding configuration for the workspace
+      x-tags:
+        - Brands
+      properties:
+        type:
+          type: string
+          description: The type of object
+          example: brand
+        id:
+          type: string
+          description: Unique brand identifier. For default brand, matches the workspace ID
+          example: "10"
+        name:
+          type: string
+          description: Display name of the brand
+          example: "Default Brand"
+        is_default:
+          type: boolean
+          description: Whether this is the workspace's default brand
+          example: true
+        created_at:
+          type: integer
+          format: date-time
+          description: Unix timestamp of brand creation
+          example: 1673778600
+        updated_at:
+          type: integer
+          format: date-time
+          description: Unix timestamp of last modification
+          example: 1711031100
+        help_center_id:
+          type: string
+          description: Associated help center identifier
+          example: "10"
+        default_address_settings_id:
+          type: string
+          description: Default email settings ID for this brand
+          example: "15"
+    brand_list:
+      type: object
+      title: Brand List
+      description: A list of brands
+      x-tags:
+        - Brands
+      properties:
+        type:
+          type: string
+          description: The type of object
+          example: list
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/brand"
     company:
       title: Company
       type: object
@@ -19670,6 +19936,72 @@ components:
         - "$ref": "#/components/schemas/custom_action_started"
         - "$ref": "#/components/schemas/custom_action_finished"
         - "$ref": "#/components/schemas/operator_workflow_event"
+    email_setting:
+      type: object
+      title: Email Setting
+      description: Represents a sender email address configuration
+      x-tags:
+        - Emails
+      properties:
+        type:
+          type: string
+          description: The type of object
+          example: email_setting
+        id:
+          type: string
+          description: Unique email setting identifier
+          example: "10"
+        email:
+          type: string
+          description: Full sender email address
+          example: "support@company.com"
+        verified:
+          type: boolean
+          description: Whether the email address has been verified
+          example: true
+        domain:
+          type: string
+          description: Domain portion of the email address
+          example: "company.com"
+        brand_id:
+          type: string
+          description: Associated brand identifier
+          example: "10"
+        forwarding_enabled:
+          type: boolean
+          description: Whether email forwarding is active
+          example: true
+        forwarded_email_last_received_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: Unix timestamp of last forwarded email received (null if never)
+          example: 1710498600
+        created_at:
+          type: integer
+          format: date-time
+          description: Unix timestamp of creation
+          example: 1692530400
+        updated_at:
+          type: integer
+          format: date-time
+          description: Unix timestamp of last modification
+          example: 1710498600
+    email_list:
+      type: object
+      title: Email List
+      description: A list of email settings
+      x-tags:
+        - Emails
+      properties:
+        type:
+          type: string
+          description: The type of object
+          example: list
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/email_setting"
     error:
       type: object
       title: Error
@@ -23001,6 +23333,8 @@ tags:
     You can then iterate through the content from that source via its API and POST it to the External Pages endpoint. That endpoint has an *external_id* parameter which allows you to specify the identifier from the source. The endpoint will then either create a new External Page or update an existing one as appropriate.",
 - name: Articles
   description: Everything about your Articles
+- name: Brands
+  description: Everything about your Brands
 - name: Away Status Reasons
   description: Everything about your Away Status Reasons
 - name: Companies
@@ -23031,6 +23365,8 @@ tags:
   description: Everything about your Data Events
 - name: Data Export
   description: Everything about your Data Exports
+- name: Emails
+  description: Everything about your Emails
 - name: Help Center
   description: Everything about your Help Center
 - name: Internal Articles
