@@ -1,0 +1,216 @@
+types:
+  DataExport:
+    docs: >-
+      The data export api is used to view all message sent & viewed in a given
+      timeframe.
+    properties:
+      download_expires_at:
+        docs: The time after which you will not be able to access the data.
+        type: optional<string>
+      download_url:
+        docs: The location where you can download your data.
+        type: optional<string>
+      job_identfier:
+        docs: The identifier for your job.
+        type: optional<string>
+      status:
+        docs: The current state of your job.
+        type: optional<DataExportStatus>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  DataExportStatus:
+    docs: The current state of your job.
+    enum:
+      - pending
+      - in_progress
+      - failed
+      - completed
+      - no_data
+      - canceled
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+docs: Everything about your Data Exports
+service:
+  auth: false
+  base-path: ''
+  display-name: Data Export
+  endpoints:
+    cancel:
+      auth: true
+      display-name: Cancel content data export
+      docs: You can cancel your job
+      examples:
+        - name: successful
+          path-parameters:
+            job_identifier: job_identifier
+          response:
+            body:
+              download_expires_at: ''
+              download_url: ''
+              job_identfier: orzzsbd7hk67xyu
+              status: canceled
+      method: POST
+      path: /export/cancel/{job_identifier}
+      request:
+        name: CancelDataExportRequest
+        path-parameters:
+          job_identifier:
+            docs: job_identifier
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: DataExport
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    create:
+      auth: true
+      display-name: Create content data export
+      docs: >
+        To create your export job, you need to send a `POST` request to the
+        export endpoint `https://api.intercom.io/export/content/data`.
+
+
+        The only parameters you need to provide are the range of dates that you
+        want exported.
+
+
+        >🚧 Limit of one active job
+
+        >
+
+        > You can only have one active job per workspace. You will receive a
+        HTTP status code of 429 with the message Exceeded rate limit of 1
+        pending message data export jobs if you attempt to create a second
+        concurrent job.
+
+
+        >❗️ Updated_at not included
+
+        >
+
+        > It should be noted that the timeframe only includes messages sent
+        during the time period and not messages that were only updated during
+        this period. For example, if a message was updated yesterday but sent
+        two days ago, you would need to set the created_at_after date before the
+        message was sent to include that in your retrieval job.
+
+
+        >📘 Date ranges are inclusive
+
+        >
+
+        > Requesting data for 2018-06-01 until 2018-06-30 will get all data for
+        those days including those specified - e.g. 2018-06-01 00:00:00 until
+        2018-06-30 23:59:99.
+      examples:
+        - name: successful
+          request:
+            created_at_after: 1734519776
+            created_at_before: 1734537776
+          response:
+            body:
+              download_expires_at: ''
+              download_url: ''
+              job_identfier: orzzsbd7hk67xyu
+              status: pending
+      method: POST
+      path: /export/content/data
+      request:
+        body:
+          properties:
+            created_at_after:
+              docs: >-
+                The start date that you request data for. It must be formatted
+                as a unix timestamp.
+              type: integer
+            created_at_before:
+              docs: >-
+                The end date that you request data for. It must be formatted as
+                a unix timestamp.
+              type: integer
+        content-type: application/json
+        name: CreateDataExportRequest
+      response:
+        docs: successful
+        status-code: 200
+        type: DataExport
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    download:
+      auth: true
+      display-name: Download content data export
+      docs: >
+        When a job has a status of complete, and thus a filled download_url, you
+        can download your data by hitting that provided URL, formatted like so:
+        https://api.intercom.io/download/content/data/xyz1234.
+
+
+        Your exported message data will be streamed continuously back down to
+        you in a gzipped CSV format.
+
+
+        > 📘 Octet header required
+
+        >
+
+        > You will have to specify the header Accept: `application/octet-stream`
+        when hitting this endpoint.
+      examples:
+        - path-parameters:
+            job_identifier: job_identifier
+      method: GET
+      path: /download/content/data/{job_identifier}
+      request:
+        name: DownloadDataExportRequest
+        path-parameters:
+          job_identifier:
+            docs: job_identifier
+            type: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    find:
+      auth: true
+      display-name: Show content data export
+      docs: >
+        You can view the status of your job by sending a `GET` request to the
+        URL
+
+        `https://api.intercom.io/export/content/data/{job_identifier}` - the
+        `{job_identifier}` is the value returned in the response when you first
+        created the export job. More on it can be seen in the Export Job Model.
+
+
+        > 🚧 Jobs expire after two days
+
+        > All jobs that have completed processing (and are thus available to
+        download from the provided URL) will have an expiry limit of two days
+        from when the export ob completed. After this, the data will no longer
+        be available.
+      examples:
+        - name: successful
+          path-parameters:
+            job_identifier: job_identifier
+          response:
+            body:
+              download_expires_at: ''
+              download_url: ''
+              job_identfier: orzzsbd7hk67xyu
+              status: pending
+      method: GET
+      path: /export/content/data/{job_identifier}
+      request:
+        name: FindDataExportRequest
+        path-parameters:
+          job_identifier:
+            docs: job_identifier
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: DataExport
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/2.14/api.intercom.io.yaml

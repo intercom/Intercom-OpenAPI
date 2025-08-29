@@ -1,0 +1,56 @@
+imports:
+  helpCenter: helpCenter.yml
+  root: __package__.yml
+service:
+  auth: false
+  base-path: ''
+  endpoints:
+    find:
+      auth: true
+      examples:
+        - path-parameters:
+            help_center_id: help_center_id
+      method: GET
+      path: /help_center/help_centers/{help_center_id}
+      request:
+        name: FindHelpCenterRequest
+        path-parameters:
+          help_center_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    list:
+      auth: true
+      display-name: List all Help Centers
+      docs: >-
+        You can list all Help Centers by making a GET request to
+        `https://api.intercom.io/help_center/help_centers`.
+      errors:
+        - root.UnauthorizedError
+      examples:
+        - name: Help Centers found
+          response:
+            body:
+              data:
+                - created_at: 1672928359
+                  custom_domain: help.mycompany.com
+                  display_name: Intercom Help Center
+                  id: '123'
+                  identifier: intercom
+                  updated_at: 1672928610
+                  url: https://help.mycompany.com
+                  website_turned_on: true
+                  workspace_id: hfi1bx4l
+              type: list
+      method: GET
+      pagination:
+        offset: $request.page
+        results: $response.data
+      path: /help_center/help_centers
+      response:
+        docs: Help Centers found
+        status-code: 200
+        type: helpCenter.HelpCenterList
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/2.14/api.intercom.io.yaml

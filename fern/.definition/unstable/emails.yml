@@ -1,0 +1,132 @@
+imports:
+  unstableRoot: __package__.yml
+types:
+  EmailList:
+    docs: A list of email settings
+    properties:
+      data:
+        type: optional<list<EmailSetting>>
+      type:
+        docs: The type of object
+        type: optional<string>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  EmailSetting:
+    docs: Represents a sender email address configuration
+    properties:
+      brand_id:
+        docs: Associated brand identifier
+        type: optional<string>
+      created_at:
+        docs: Unix timestamp of creation
+        type: optional<integer>
+      domain:
+        docs: Domain portion of the email address
+        type: optional<string>
+      email:
+        docs: Full sender email address
+        type: optional<string>
+      forwarded_email_last_received_at:
+        docs: Unix timestamp of last forwarded email received (null if never)
+        type: optional<integer>
+      forwarding_enabled:
+        docs: Whether email forwarding is active
+        type: optional<boolean>
+      id:
+        docs: Unique email setting identifier
+        type: optional<string>
+      type:
+        docs: The type of object
+        type: optional<string>
+      updated_at:
+        docs: Unix timestamp of last modification
+        type: optional<integer>
+      verified:
+        docs: Whether the email address has been verified
+        type: optional<boolean>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+docs: Everything about your Emails
+service:
+  auth: false
+  base-path: ''
+  display-name: Emails
+  endpoints:
+    listEmails:
+      auth: true
+      display-name: List all email settings
+      docs: Lists all sender email address settings for the workspace
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: Successful response
+          response:
+            body:
+              data:
+                - brand_id: '9'
+                  created_at: 1692530400
+                  domain: company.com
+                  email: support@company.com
+                  forwarded_email_last_received_at: 1710498600
+                  forwarding_enabled: true
+                  id: '1'
+                  type: email_setting
+                  updated_at: 1710498600
+                  verified: true
+                - brand_id: '10'
+                  created_at: 1683729000
+                  domain: company.com
+                  email: hello@company.com
+                  forwarding_enabled: false
+                  id: '2'
+                  type: email_setting
+                  updated_at: 1701424500
+                  verified: true
+              type: list
+      method: GET
+      path: /emails
+      response:
+        docs: Successful response
+        status-code: 200
+        type: EmailList
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    retrieveEmail:
+      auth: true
+      display-name: Retrieve an email setting
+      docs: Fetches a specific email setting by its unique identifier
+      errors:
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+      examples:
+        - name: Successful response
+          path-parameters:
+            id: id
+          response:
+            body:
+              brand_id: '15'
+              created_at: 1692530400
+              domain: company.com
+              email: support@company.com
+              forwarded_email_last_received_at: 1710498600
+              forwarding_enabled: true
+              id: '10'
+              type: email_setting
+              updated_at: 1710498600
+              verified: true
+      method: GET
+      path: /emails/{id}
+      request:
+        name: RetrieveEmailRequest
+        path-parameters:
+          id:
+            docs: The unique identifier of the email setting
+            type: string
+      response:
+        docs: Successful response
+        status-code: 200
+        type: EmailSetting
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/0/api.intercom.io.yaml

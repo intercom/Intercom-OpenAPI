@@ -17,13 +17,13 @@ paths:
         - admins
       x-fern-sdk-method-name: list
       x-fern-request-name: ListAdminsRequest
-  /admins/{admin_id}:
+  /admins/{id}:
     get:
       x-fern-sdk-group-name:
         - admins
       x-fern-sdk-method-name: find
       x-fern-request-name: FindAdminRequest
-  /admins/{admin_id}/away:
+  /admins/{id}/away:
     put:
       x-fern-sdk-group-name:
         - admins
@@ -43,7 +43,7 @@ paths:
         - articles
       x-fern-sdk-method-name: create
       x-fern-request-name: CreateArticleRequest
-  /articles/{article_id}:
+  /articles/{id}:
     get:
       x-fern-sdk-group-name:
         - articles
@@ -81,7 +81,7 @@ paths:
         - collections
       x-fern-sdk-method-name: create
       x-fern-request-name: CreateCollectionRequest
-  /help_center/collections/{collection_id}:
+  /help_center/collections/{id}:
     get:
       x-fern-sdk-group-name:
         - helpCenters
@@ -109,7 +109,7 @@ paths:
         - helpCenters
       x-fern-sdk-method-name: list
       x-fern-request-name: ListHelpCentersRequest
-  /help_center/help_centers/{help_center_id}:
+  /help_center/help_centers/{id}:
     get:
       x-fern-sdk-group-name:
         - helpCenters
@@ -135,7 +135,7 @@ paths:
         - companies
       x-fern-sdk-method-name: createOrUpdate
       x-fern-request-name: CreateOrUpdateCompanyRequest
-  /companies/{company_id}:
+  /companies/{id}:
     get:
       x-fern-sdk-group-name:
         - companies
@@ -151,13 +151,13 @@ paths:
         - companies
       x-fern-sdk-method-name: delete
       x-fern-request-name: DeleteCompanyRequest
-  /companies/{company_id}/contacts:
+  /companies/{id}/contacts:
     get:
       x-fern-sdk-group-name:
         - companies
       x-fern-sdk-method-name: listAttachedContacts
       x-fern-request-name: ListAttachedContactsRequest
-  /companies/{company_id}/segments:
+  /companies/{id}/segments:
     get:
       x-fern-sdk-group-name:
         - companies
@@ -197,7 +197,7 @@ paths:
         - contacts
       x-fern-sdk-method-name: create
       x-fern-request-name: CreateContactRequest
-  /contacts/{contact_id}:
+  /contacts/{id}:
     get:
       x-fern-sdk-group-name:
         - contacts
@@ -213,7 +213,7 @@ paths:
         - contacts
       x-fern-sdk-method-name: delete
       x-fern-request-name: DeleteContactRequest
-  /contacts/{contact_id}/companies:
+  /contacts/{id}/companies:
     get:
       x-fern-pagination:
         offset: $request.page
@@ -234,13 +234,13 @@ paths:
               properties:
                 id:
                   x-fern-property-name: company_id
-  /contacts/{contact_id}/companies/{company_id}:
+  /contacts/{contact_id}/companies/{id}:
     delete:
       x-fern-sdk-group-name:
         - companies
       x-fern-sdk-method-name: detachContact
       x-fern-request-name: DetachContactFromCompanyRequest
-  /contacts/{contact_id}/notes:
+  /contacts/{id}/notes:
     get:
       x-fern-pagination:
         offset: $request.page
@@ -278,7 +278,7 @@ paths:
               properties:
                 id:
                   x-fern-property-name: subscription_id
-  /contacts/{contact_id}/subscriptions/{subscription_id}:
+  /contacts/{contact_id}/subscriptions/{id}:
     delete:
       x-fern-sdk-group-name:
         - contacts
@@ -302,19 +302,19 @@ paths:
               properties:
                 id:
                   x-fern-property-name: tag_id
-  /contacts/{contact_id}/tags/{tag_id}:
+  /contacts/{contact_id}/tags/{id}:
     delete:
       x-fern-sdk-group-name:
         - tags
       x-fern-sdk-method-name: untagContact
       x-fern-request-name: UntagContactRequest
-  /contacts/{contact_id}/archive:
+  /contacts/{id}/archive:
     post:
       x-fern-sdk-group-name:
         - contacts
       x-fern-sdk-method-name: archive
       x-fern-request-name: ArchiveContactRequest
-  /contacts/{contact_id}/unarchive:
+  /contacts/{id}/unarchive:
     post:
       x-fern-sdk-group-name:
         - contacts
@@ -348,7 +348,7 @@ paths:
               properties:
                 id:
                   x-fern-property-name: tag_id
-  /conversations/{conversation_id}/tags/{tag_id}:
+  /conversations/{conversation_id}/tags/{d}:
     delete:
       x-fern-sdk-group-name:
         - tags
@@ -369,7 +369,7 @@ paths:
         - conversations
       x-fern-sdk-method-name: create
       x-fern-request-name: CreateConversationRequest
-  /conversations/{conversation_id}:
+  /conversations/{id}:
     get:
       x-fern-sdk-group-name:
         - conversations
@@ -380,7 +380,7 @@ paths:
         - conversations
       x-fern-sdk-method-name: update
       x-fern-request-name: UpdateConversationRequest
-  /conversations/{conversation_id}/reply:
+  /conversations/{id}/reply:
     post:
       requestBody:
         content:
@@ -396,19 +396,19 @@ paths:
         - conversations
       x-fern-sdk-method-name: reply
       x-fern-request-name: ReplyToConversationRequest
-  /conversations/{conversation_id}/parts:
+  /conversations/{id}/parts:
     post:
       x-fern-sdk-group-name:
         - conversations
       x-fern-sdk-method-name: manage
       x-fern-request-name: ManageConversationPartsRequest
-  /conversations/{conversation_id}/run_assignment_rules:
+  /conversations/{id}/run_assignment_rules:
     post:
       x-fern-sdk-group-name:
         - conversations
       x-fern-sdk-method-name: runAssignmentRules
       x-fern-request-name: AutoAssignConversationRequest
-  /conversations/{conversation_id}/customers:
+  /conversations/{id}/customers:
     post:
       x-fern-sdk-group-name:
         - conversations
@@ -420,7 +420,7 @@ paths:
         - conversations
       x-fern-sdk-method-name: detachContactAsAdmin
       x-fern-request-name: DetachContactFromConversationRequest
-  /conversations/{conversation_id}/convert:
+  /conversations/{id}/convert:
     post:
       x-fern-sdk-group-name:
         - conversations
@@ -453,7 +453,7 @@ paths:
         - dataAttributes
       x-fern-sdk-method-name: create
       x-fern-request-name: CreateDataAttributeRequest
-  /data_attributes/{data_attribute_id}:
+  /data_attributes/{id}:
     put:
       x-fern-sdk-group-name:
         - dataAttributes
@@ -572,7 +572,7 @@ paths:
         - items
       x-fern-sdk-method-name: create
       x-fern-request-name: CreateNewsItemRequest
-  /news/news_items/{news_item_id}:
+  /news/news_items/{id}:
     get:
       x-fern-sdk-group-name:
         - news
@@ -598,21 +598,21 @@ paths:
         - feeds
       x-fern-sdk-method-name: list
       x-fern-request-name: ListNewsFeedsRequest
-  /news/newsfeeds/{newsfeed_id}:
+  /news/newsfeeds/{id}:
     get:
       x-fern-sdk-group-name:
         - news
         - feeds
       x-fern-sdk-method-name: find
       x-fern-request-name: FindNewsFeedRequest
-  /news/newsfeeds/{newsfeed_id}/items:
+  /news/newsfeeds/{id}/items:
     get:
       x-fern-sdk-group-name:
         - news
         - feeds
       x-fern-sdk-method-name: listItems
       x-fern-request-name: ListNewsFeedItemsRequest
-  /notes/{note_id}:
+  /notes/{id}:
     get:
       x-fern-sdk-group-name:
         - notes
@@ -624,7 +624,7 @@ paths:
         - segments
       x-fern-sdk-method-name: list
       x-fern-request-name: ListSegmentsRequest
-  /segments/{segment_id}:
+  /segments/{id}:
     get:
       x-fern-sdk-group-name:
         - segments
@@ -653,7 +653,7 @@ paths:
         - tags
       x-fern-sdk-method-name: create
       x-fern-request-name: CreateTagRequest
-  /tags/{tag_id}:
+  /tags/{id}:
     get:
       x-fern-sdk-group-name:
         - tags
@@ -670,7 +670,7 @@ paths:
         - teams
       x-fern-sdk-method-name: list
       x-fern-request-name: ListTeamsRequest
-  /teams/{team_id}:
+  /teams/{id}:
     get:
       x-fern-sdk-group-name:
         - teams
@@ -687,7 +687,7 @@ paths:
         - ticketTypes
       x-fern-sdk-method-name: create
       x-fern-request-name: CreateTicketTypeRequest
-  /ticket_types/{ticket_type_id}:
+  /ticket_types/{id}:
     get:
       x-fern-sdk-group-name:
         - ticketTypes
@@ -705,7 +705,7 @@ paths:
         - attributes
       x-fern-sdk-method-name: create
       x-fern-request-name: CreateTicketTypeAttributeRequest
-  /ticket_types/{ticket_type_id}/attributes/{attribute_id}:
+  /ticket_types/{ticket_type_id}/attributes/{id}:
     put:
       x-fern-sdk-group-name:
         - ticketTypes
@@ -718,7 +718,7 @@ paths:
         - tickets
       x-fern-sdk-method-name: create
       x-fern-request-name: CreateTicketRequest
-  /tickets/{ticket_id}:
+  /tickets/{id}:
     get:
       x-fern-sdk-group-name:
         - tickets
@@ -729,7 +729,7 @@ paths:
         - tickets
       x-fern-sdk-method-name: update
       x-fern-request-name: UpdateTicketRequest
-  /tickets/{ticket_id}/reply:
+  /tickets/{id}/reply:
     post:
       requestBody:
         content:
@@ -758,7 +758,7 @@ paths:
               properties:
                 id:
                   x-fern-property-name: tag_id
-  /tickets/{ticket_id}/tags/{tag_id}:
+  /tickets/{ticket_id}/tags/{id}:
     delete:
       x-fern-sdk-group-name:
         - tags

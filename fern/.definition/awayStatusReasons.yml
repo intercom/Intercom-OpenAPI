@@ -1,0 +1,37 @@
+imports:
+  root: __package__.yml
+docs: Everything about your Away Status Reasons
+service:
+  auth: false
+  base-path: ''
+  display-name: Away Status Reasons
+  endpoints:
+    listAwayStatusReasons:
+      auth: true
+      display-name: List all away status reasons
+      docs: >-
+        Returns a list of all away status reasons configured for the workspace,
+        including deleted ones.
+      errors:
+        - root.UnauthorizedError
+      examples:
+        - response:
+            body:
+              - created_at: 1734537243
+                deleted: false
+                emoji: ☕
+                id: id
+                label: On a break
+                order: 1
+                type: away_status_reason
+                updated_at: 1734537243
+      method: GET
+      path: /away_status_reasons
+      response:
+        docs: Successful response
+        status-code: 200
+        type: list<root.AwayStatusReason>
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/2.14/api.intercom.io.yaml

@@ -1,0 +1,547 @@
+imports:
+  unstableRoot: __package__.yml
+types:
+  Newsfeed:
+    docs: >
+      A newsfeed is a collection of news items, targeted to a specific audience.
+
+
+      Newsfeeds currently cannot be edited through the API, please refer to
+      [this
+      article](https://www.intercom.com/help/en/articles/6362267-getting-started-with-news)
+      to set up your newsfeeds in Intercom.
+    properties:
+      created_at:
+        docs: Timestamp for when the newsfeed was created.
+        type: optional<integer>
+      id:
+        docs: The unique identifier for the newsfeed which is given by Intercom.
+        type: optional<string>
+      name:
+        docs: >-
+          The name of the newsfeed. This name will never be visible to your
+          users.
+        type: optional<string>
+      updated_at:
+        docs: Timestamp for when the newsfeed was last updated.
+        type: optional<integer>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  NewsfeedAssignment:
+    docs: Assigns a news item to a newsfeed.
+    properties:
+      newsfeed_id:
+        docs: >-
+          The unique identifier for the newsfeed which is given by Intercom.
+          Publish dates cannot be in the future, to schedule news items use the
+          dedicated feature in app (see this article).
+        type: optional<integer>
+      published_at:
+        docs: >-
+          Publish date of the news item on the newsfeed, use this field if you
+          want to set a publish date in the past (e.g. when importing existing
+          news items). On write, this field will be ignored if the news item
+          state is "draft".
+        type: optional<integer>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  NewsItem:
+    docs: >-
+      A News Item is a content type in Intercom enabling you to announce product
+      updates, company news, promotions, events and more with your customers.
+    properties:
+      body:
+        docs: The news item body, which may contain HTML.
+        type: optional<string>
+      cover_image_url:
+        docs: URL of the image used as cover. Must have .jpg or .png extension.
+        type: optional<string>
+        validation:
+          format: uri
+      created_at:
+        docs: Timestamp for when the news item was created.
+        type: optional<integer>
+      deliver_silently:
+        docs: >-
+          When set to true, the news item will appear in the messenger newsfeed
+          without showing a notification badge.
+        type: optional<boolean>
+      id:
+        docs: The unique identifier for the news item which is given by Intercom.
+        type: optional<string>
+      labels:
+        docs: Label names displayed to users to categorize the news item.
+        type: optional<list<optional<string>>>
+      newsfeed_assignments:
+        docs: A list of newsfeed_assignments to assign to the specified newsfeed.
+        type: optional<list<NewsfeedAssignment>>
+      reactions:
+        docs: >-
+          Ordered list of emoji reactions to the news item. When empty,
+          reactions are disabled.
+        type: optional<list<optional<string>>>
+      sender_id:
+        docs: >-
+          The id of the sender of the news item. Must be a teammate on the
+          workspace.
+        type: optional<integer>
+      state:
+        docs: >-
+          News items will not be visible to your users in the assigned newsfeeds
+          until they are set live.
+        type: optional<NewsItemState>
+      title:
+        docs: The title of the news item.
+        type: optional<string>
+      updated_at:
+        docs: Timestamp for when the news item was last updated.
+        type: optional<integer>
+      workspace_id:
+        docs: The id of the workspace which the news item belongs to.
+        type: optional<string>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  NewsItemState:
+    docs: >-
+      News items will not be visible to your users in the assigned newsfeeds
+      until they are set live.
+    enum:
+      - draft
+      - live
+    inline: true
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+docs: Everything about your News
+service:
+  auth: false
+  base-path: ''
+  display-name: News
+  endpoints:
+    createNewsItem:
+      auth: true
+      display-name: Create a news item
+      docs: You can create a news item
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          request:
+            body: <p>New costumes in store for this spooky season</p>
+            deliver_silently: true
+            labels:
+              - Product
+              - Update
+              - New
+            newsfeed_assignments:
+              - newsfeed_id: 53
+                published_at: 1664638214
+            reactions:
+              - 😆
+              - 😅
+            sender_id: 991267834
+            state: live
+            title: Halloween is here!
+          response:
+            body:
+              body: <p>New costumes in store for this spooky season</p>
+              created_at: 1734537797
+              deliver_silently: true
+              id: '33'
+              labels:
+                - New
+                - Product
+                - Update
+              newsfeed_assignments:
+                - newsfeed_id: 53
+                  published_at: 1664638214
+              reactions:
+                - 😆
+                - 😅
+              sender_id: 991267834
+              state: live
+              title: Halloween is here!
+              updated_at: 1734537797
+              workspace_id: this_is_an_id534_that_should_be_at_least_
+      method: POST
+      path: /news/news_items
+      request:
+        body:
+          type: unstableRoot.NewsItemRequest
+        content-type: application/json
+      response:
+        docs: successful
+        status-code: 200
+        type: NewsItem
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    deleteNewsItem:
+      auth: true
+      display-name: Delete a news item
+      docs: You can delete a single news item.
+      errors:
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            id: 1
+          response:
+            body:
+              deleted: true
+              id: '40'
+              object: news-item
+      method: DELETE
+      path: /news/news_items/{id}
+      request:
+        name: DeleteNewsItemRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the news item which is given by
+              Intercom.
+            type: integer
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.DeletedObject
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    listLiveNewsfeedItems:
+      auth: true
+      display-name: List all live newsfeed items
+      docs: You can fetch a list of all news items that are live on a given newsfeed
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          path-parameters:
+            id: '123'
+          response:
+            body:
+              data:
+                - body: >-
+                    We are excited to announce the launch of News Items, a new
+                    content type in Intercom enabling you to announce product
+                    updates, company news, promotions, events and more with your
+                    customers.
+                  cover_image_url: https://example.com/cover.jpg
+                  created_at: 1610589632
+                  deliver_silently: true
+                  id: '141'
+                  labels:
+                    - Product Update
+                  newsfeed_assignments:
+                    - newsfeed_id: 198313
+                      published_at: 1674917488
+                  reactions:
+                    - 👍
+                  sender_id: 123
+                  state: draft
+                  title: 'New feature: News Items'
+                  type: news-item
+                  updated_at: 1610589632
+                  workspace_id: t74hdn32
+              pages:
+                next:
+                  per_page: 2
+                  starting_after: your-cursor-from-response
+                page: 1
+                per_page: 20
+                total_pages: 0
+                type: pages
+              total_count: 0
+              type: list
+      method: GET
+      path: /news/newsfeeds/{id}/items
+      request:
+        name: ListLiveNewsfeedItemsRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the news feed item which is given by
+              Intercom.
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.PaginatedResponse
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    listNewsfeeds:
+      auth: true
+      display-name: List all newsfeeds
+      docs: You can fetch a list of all newsfeeds
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          response:
+            body:
+              data:
+                - created_at: 1674917488
+                  id: '12312'
+                  name: My Newsfeed
+                  type: newsfeed
+                  updated_at: 1674917488
+                - created_at: 1674917488
+                  id: '12312'
+                  name: My Newsfeed
+                  type: newsfeed
+                  updated_at: 1674917488
+              pages:
+                next:
+                  per_page: 2
+                  starting_after: your-cursor-from-response
+                page: 1
+                per_page: 10
+                total_pages: 1
+                type: pages
+              total_count: 2
+              type: list
+      method: GET
+      path: /news/newsfeeds
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.PaginatedResponse
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    listNewsItems:
+      auth: true
+      display-name: List all news items
+      docs: You can fetch a list of all news items
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          response:
+            body:
+              data:
+                - body: >-
+                    We are excited to announce the launch of News Items, a new
+                    content type in Intercom enabling you to announce product
+                    updates, company news, promotions, events and more with your
+                    customers.
+                  cover_image_url: https://example.com/cover.jpg
+                  created_at: 1610589632
+                  deliver_silently: true
+                  id: '141'
+                  labels:
+                    - Product Update
+                  newsfeed_assignments:
+                    - newsfeed_id: 198313
+                      published_at: 1674917488
+                  reactions:
+                    - 👍
+                  sender_id: 123
+                  state: draft
+                  title: 'New feature: News Items'
+                  type: news-item
+                  updated_at: 1610589632
+                  workspace_id: t74hdn32
+                - body: >-
+                    We are excited to announce the launch of News Items, a new
+                    content type in Intercom enabling you to announce product
+                    updates, company news, promotions, events and more with your
+                    customers.
+                  cover_image_url: https://example.com/cover.jpg
+                  created_at: 1610589632
+                  deliver_silently: true
+                  id: '141'
+                  labels:
+                    - Product Update
+                  newsfeed_assignments:
+                    - newsfeed_id: 198313
+                      published_at: 1674917488
+                  reactions:
+                    - 👍
+                  sender_id: 123
+                  state: draft
+                  title: 'New feature: News Items'
+                  type: news-item
+                  updated_at: 1610589632
+                  workspace_id: t74hdn32
+              pages:
+                next:
+                  per_page: 2
+                  starting_after: your-cursor-from-response
+                page: 1
+                per_page: 10
+                total_pages: 1
+                type: pages
+              total_count: 2
+              type: list
+      method: GET
+      path: /news/news_items
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.PaginatedResponse
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    retrieveNewsfeed:
+      auth: true
+      display-name: Retrieve a newsfeed
+      docs: You can fetch the details of a single newsfeed
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          path-parameters:
+            id: '123'
+          response:
+            body:
+              created_at: 1734537815
+              id: '72'
+              name: Visitor Feed
+              updated_at: 1734537815
+      method: GET
+      path: /news/newsfeeds/{id}
+      request:
+        name: RetrieveNewsfeedRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the news feed item which is given by
+              Intercom.
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: Newsfeed
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    retrieveNewsItem:
+      auth: true
+      display-name: Retrieve a news item
+      docs: You can fetch the details of a single news item.
+      errors:
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            id: 1
+          response:
+            body:
+              body: <p>Hello there,</p>
+              created_at: 1734537800
+              deliver_silently: false
+              id: '34'
+              labels:
+                - Product Update
+              newsfeed_assignments:
+                - newsfeed_id: 55
+                  published_at: 1734537800
+              reactions:
+                - 👍
+                - 👍
+                - 👍
+                - 👍
+              sender_id: 991267837
+              state: live
+              title: We have news
+              updated_at: 1734537800
+              workspace_id: this_is_an_id538_that_should_be_at_least_
+      method: GET
+      path: /news/news_items/{id}
+      request:
+        name: RetrieveNewsItemRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the news item which is given by
+              Intercom.
+            type: integer
+      response:
+        docs: successful
+        status-code: 200
+        type: NewsItem
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    updateNewsItem:
+      auth: true
+      display-name: Update a news item
+      errors:
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            id: 1
+          request:
+            body: <p>New gifts in store for the jolly season</p>
+            reactions:
+              - 😝
+              - 😂
+            sender_id: 991267845
+            title: Christmas is here!
+          response:
+            body:
+              body: <p>New gifts in store for the jolly season</p>
+              created_at: 1734537803
+              deliver_silently: false
+              id: '37'
+              labels:
+                - Product Update
+              newsfeed_assignments:
+                - newsfeed_id: 198313
+                  published_at: 1674917488
+              reactions:
+                - 😝
+                - 😂
+              sender_id: 991267845
+              state: live
+              title: Christmas is here!
+              updated_at: 1734537804
+              workspace_id: this_is_an_id544_that_should_be_at_least_
+        - name: News Item Not Found
+          path-parameters:
+            id: 1
+          request:
+            body: <p>New gifts in store for the jolly season</p>
+            reactions:
+              - 😝
+              - 😂
+            sender_id: 991267848
+            title: Christmas is here!
+          response:
+            body:
+              body: <p>New gifts in store for the jolly season</p>
+              created_at: 1734537803
+              deliver_silently: false
+              id: '37'
+              labels:
+                - Product Update
+              newsfeed_assignments:
+                - newsfeed_id: 198313
+                  published_at: 1674917488
+              reactions:
+                - 😝
+                - 😂
+              sender_id: 991267845
+              state: live
+              title: Christmas is here!
+              updated_at: 1734537804
+              workspace_id: this_is_an_id544_that_should_be_at_least_
+      method: PUT
+      path: /news/news_items/{id}
+      request:
+        body:
+          type: unstableRoot.NewsItemRequest
+        content-type: application/json
+        name: UpdateNewsItemRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the news item which is given by
+              Intercom.
+            type: integer
+      response:
+        docs: successful
+        status-code: 200
+        type: NewsItem
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/0/api.intercom.io.yaml

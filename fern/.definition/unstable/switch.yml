@@ -1,0 +1,37 @@
+imports:
+  unstableRoot: __package__.yml
+docs: Everything about Switch
+service:
+  auth: false
+  base-path: ''
+  display-name: Switch
+  endpoints:
+    createPhoneSwitch:
+      auth: true
+      display-name: Create a phone Switch
+      docs: >
+        You can use the API to deflect phone calls to the Intercom Messenger.
+
+        Calling this endpoint will send an SMS with a link to the Messenger to
+        the phone number specified.
+
+
+        If custom attributes are specified, they will be added to the user or
+        lead's custom data attributes.
+      errors:
+        - unstableRoot.BadRequestError
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.UnprocessableEntityError
+      method: POST
+      path: /phone_call_redirects
+      request:
+        body: unknown
+        content-type: application/json
+      response:
+        docs: successful
+        status-code: 200
+        type: optional<unstableRoot.PhoneSwitch>
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/0/api.intercom.io.yaml

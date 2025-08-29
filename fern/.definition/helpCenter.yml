@@ -1,0 +1,770 @@
+imports:
+  root: __package__.yml
+types:
+  Collection:
+    docs: Collections are top level containers for Articles within the Help Center.
+    properties:
+      created_at:
+        docs: >-
+          The time when the article was created (seconds). For multilingual
+          articles, this will be the timestamp of creation of the default
+          language's content.
+        type: integer
+      default_locale:
+        docs: >-
+          The default locale of the help center. This field is only returned for
+          multilingual help centers.
+        type: optional<string>
+      description:
+        docs: >-
+          The description of the collection. For multilingual help centers, this
+          will be the description of the collection for the default language.
+        type: optional<string>
+      help_center_id:
+        docs: The id of the help center the collection is in.
+        type: optional<integer>
+      icon:
+        docs: The icon of the collection.
+        type: optional<string>
+      id:
+        docs: The unique identifier for the collection which is given by Intercom.
+        type: string
+      name:
+        docs: >-
+          The name of the collection. For multilingual collections, this will be
+          the name of the default language's content.
+        type: string
+      order:
+        docs: >-
+          The order of the section in relation to others sections within a
+          collection. Values go from `0` upwards. `0` is the default if there's
+          no order.
+        type: integer
+      parent_id:
+        docs: >-
+          The id of the parent collection. If `null` then it is the first level
+          collection.
+        type: optional<string>
+      translated_content:
+        type: optional<root.GroupTranslatedContent>
+      updated_at:
+        docs: >-
+          The time when the article was last updated (seconds). For multilingual
+          articles, this will be the timestamp of last update of the default
+          language's content.
+        type: optional<integer>
+      url:
+        docs: >-
+          The URL of the collection. For multilingual help centers, this will be
+          the URL of the collection for the default language.
+        type: optional<string>
+      workspace_id:
+        docs: The id of the workspace which the collection belongs to.
+        type: string
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  HelpCenter:
+    docs: Help Centers contain collections
+    properties:
+      created_at:
+        docs: The time when the Help Center was created.
+        type: optional<integer>
+      custom_domain:
+        docs: Custom domain configured for the help center
+        type: optional<string>
+      display_name:
+        docs: The display name of the Help Center only seen by teammates.
+        type: optional<string>
+      id:
+        docs: The unique identifier for the Help Center which is given by Intercom.
+        type: optional<string>
+      identifier:
+        docs: >-
+          The identifier of the Help Center. This is used in the URL of the Help
+          Center.
+        type: optional<string>
+      updated_at:
+        docs: The time when the Help Center was last updated.
+        type: optional<integer>
+      url:
+        docs: >-
+          The URL for the help center, if you have a custom domain then this
+          will show the URL using the custom domain.
+        type: optional<string>
+      website_turned_on:
+        docs: >-
+          Whether the Help Center is turned on or not. This is controlled in
+          your Help Center settings.
+        type: optional<boolean>
+      workspace_id:
+        docs: The id of the workspace which the Help Center belongs to.
+        type: optional<string>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  HelpCenterList:
+    docs: A list of Help Centers belonging to the App
+    properties:
+      data:
+        docs: An array of Help Center objects
+        type: optional<list<HelpCenter>>
+      type:
+        docs: The type of the object - `list`.
+        type: optional<literal<"list">>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+docs: Everything about your Help Center
+service:
+  auth: false
+  base-path: ''
+  display-name: Help Center
+  endpoints:
+    deleteCollection:
+      auth: true
+      display-name: Delete a collection
+      docs: >-
+        You can delete a single collection by making a DELETE request to
+        `https://api.intercom.io/collections/<id>`.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            id: 1
+          response:
+            body:
+              deleted: true
+              id: '182'
+              object: collection
+      method: DELETE
+      path: /help_center/collections/{id}
+      request:
+        name: DeleteCollectionRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the collection which is given by
+              Intercom.
+            type: integer
+      response:
+        docs: successful
+        status-code: 200
+        type: root.DeletedCollectionObject
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    retrieveCollection:
+      auth: true
+      display-name: Retrieve a collection
+      docs: >-
+        You can fetch the details of a single collection by making a GET request
+        to `https://api.intercom.io/help_center/collections/<id>`.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: Collection found
+          path-parameters:
+            id: 1
+          response:
+            body:
+              created_at: 1734537315
+              default_locale: en
+              description: english collection description
+              help_center_id: 84
+              icon: bookmark
+              id: '170'
+              name: English collection title
+              order: 22
+              translated_content:
+                ar:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                bg:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                bs:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ca:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                cs:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                da:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                de:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                el:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                en:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                es:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                et:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                fi:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                fr:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                he:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                hr:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                hu:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                id:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                it:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ja:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ko:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                lt:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                lv:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                mn:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                nb:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                nl:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                pl:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                pt:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                pt-BR:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ro:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ru:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                sl:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                sr:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                sv:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                tr:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                type: group_translated_content
+                vi:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                zh-CN:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                zh-TW:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+              updated_at: 1734537315
+              url: http://help-center.test/myapp-106/collection-22
+              workspace_id: this_is_an_id106_that_should_be_at_least_
+      method: GET
+      path: /help_center/collections/{id}
+      request:
+        name: RetrieveCollectionRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the collection which is given by
+              Intercom.
+            type: integer
+      response:
+        docs: Collection found
+        status-code: 200
+        type: Collection
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    retrieveHelpCenter:
+      auth: true
+      display-name: Retrieve a Help Center
+      docs: >-
+        You can fetch the details of a single Help Center by making a GET
+        request to `https://api.intercom.io/help_center/help_center/<id>`.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: Collection found
+          path-parameters:
+            id: 1
+          response:
+            body:
+              created_at: 1734537325
+              custom_domain: help.mycompany.com
+              display_name: Intercom Help Center
+              id: '93'
+              identifier: help-center-1
+              updated_at: 1734537325
+              url: https://help.mycompany.com
+              website_turned_on: false
+              workspace_id: this_is_an_id124_that_should_be_at_least_
+      method: GET
+      path: /help_center/help_centers/{id}
+      request:
+        name: RetrieveHelpCenterRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the collection which is given by
+              Intercom.
+            type: integer
+      response:
+        docs: Collection found
+        status-code: 200
+        type: HelpCenter
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    updateCollection:
+      auth: true
+      display-name: Update a collection
+      docs: >-
+        You can update the details of a single collection by making a PUT
+        request to `https://api.intercom.io/collections/<id>`.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            id: 1
+          request:
+            name: Update collection name
+          response:
+            body:
+              created_at: 1734537318
+              default_locale: en
+              description: english collection description
+              help_center_id: 87
+              icon: folder
+              id: '176'
+              name: Update collection name
+              order: 25
+              translated_content:
+                ar:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                bg:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                bs:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ca:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                cs:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                da:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                de:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                el:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                en:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                es:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                et:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                fi:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                fr:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                he:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                hr:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                hu:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                id:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                it:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ja:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ko:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                lt:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                lv:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                mn:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                nb:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                nl:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                pl:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                pt:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                pt-BR:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ro:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ru:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                sl:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                sr:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                sv:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                tr:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                type: group_translated_content
+                vi:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                zh-CN:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                zh-TW:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+              updated_at: 1734537319
+              url: http://help-center.test/myapp-112/collection-25
+              workspace_id: this_is_an_id112_that_should_be_at_least_
+        - name: Collection Not Found
+          path-parameters:
+            id: 1
+          request:
+            name: Update collection name
+          response:
+            body:
+              created_at: 1734537318
+              default_locale: en
+              description: english collection description
+              help_center_id: 87
+              icon: folder
+              id: '176'
+              name: Update collection name
+              order: 25
+              translated_content:
+                ar:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                bg:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                bs:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ca:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                cs:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                da:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                de:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                el:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                en:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                es:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                et:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                fi:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                fr:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                he:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                hr:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                hu:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                id:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                it:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ja:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ko:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                lt:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                lv:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                mn:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                nb:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                nl:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                pl:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                pt:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                pt-BR:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ro:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                ru:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                sl:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                sr:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                sv:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                tr:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                type: group_translated_content
+                vi:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                zh-CN:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+                zh-TW:
+                  description: ' Collection description'
+                  name: Collection name
+                  type: group_content
+              updated_at: 1734537319
+              url: http://help-center.test/myapp-112/collection-25
+              workspace_id: this_is_an_id112_that_should_be_at_least_
+      method: PUT
+      path: /help_center/collections/{id}
+      request:
+        body:
+          properties:
+            description:
+              docs: >-
+                The description of the collection. For multilingual collections,
+                this will be the description of the default language's content.
+              type: optional<string>
+            name:
+              docs: >-
+                The name of the collection. For multilingual collections, this
+                will be the name of the default language's content.
+              type: optional<string>
+            parent_id:
+              docs: >-
+                The id of the parent collection. If `null` then it will be
+                updated as the first level collection.
+              type: optional<string>
+            translated_content:
+              type: optional<root.GroupTranslatedContent>
+        content-type: application/json
+        name: UpdateCollectionRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the collection which is given by
+              Intercom.
+            type: integer
+      response:
+        docs: successful
+        status-code: 200
+        type: Collection
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/2.14/api.intercom.io.yaml

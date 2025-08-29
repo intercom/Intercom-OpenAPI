@@ -1,0 +1,357 @@
+imports:
+  unstableArticles: articles.yml
+  unstableRoot: __package__.yml
+types:
+  InternalArticleListItem:
+    docs: The data returned about your internal articles when you list them.
+    properties:
+      author_id:
+        docs: The id of the author of the article.
+        type: optional<integer>
+      body:
+        docs: The body of the article in HTML.
+        type: optional<string>
+      created_at:
+        docs: The time when the article was created.
+        type: optional<integer>
+      id:
+        docs: The unique identifier for the article which is given by Intercom.
+        type: optional<string>
+      locale:
+        docs: The default locale of the article.
+        type: optional<string>
+      owner_id:
+        docs: The id of the owner of the article.
+        type: optional<integer>
+      title:
+        docs: The title of the article.
+        type: optional<string>
+      type:
+        docs: The type of object - `internal_article`.
+        type: optional<literal<"internal_article">>
+      updated_at:
+        docs: The time when the article was last updated.
+        type: optional<integer>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  InternalArticleSearchResponse:
+    docs: The results of an Internal Article search
+    properties:
+      data:
+        docs: An object containing the results of the search.
+        type: optional<InternalArticleSearchResponseData>
+      pages:
+        type: optional<unstableRoot.CursorPages>
+      total_count:
+        docs: The total number of Internal Articles matching the search query
+        type: optional<integer>
+      type:
+        docs: The type of the object - `list`.
+        type: optional<literal<"list">>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  InternalArticleSearchResponseData:
+    docs: An object containing the results of the search.
+    inline: true
+    properties:
+      internal_articles:
+        docs: An array of Internal Article objects
+        type: optional<list<unstableArticles.InternalArticle>>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+docs: Everything about your Internal Articles
+service:
+  auth: false
+  base-path: ''
+  display-name: Internal Articles
+  endpoints:
+    createInternalArticle:
+      auth: true
+      display-name: Create an internal article
+      docs: >-
+        You can create a new internal article by making a POST request to
+        `https://api.intercom.io/internal_articles`.
+      errors:
+        - unstableRoot.BadRequestError
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: internal article created
+          request:
+            author_id: 991266252
+            body: Body of the Article
+            owner_id: 991266252
+            title: Thanks for everything
+          response:
+            body:
+              author_id: 991266252
+              body: Body of the Article
+              created_at: 1672928359
+              id: '42'
+              locale: en
+              owner_id: 991266252
+              title: Thanks for everything
+              type: internal_article
+              updated_at: 1672928610
+        - name: Bad Request
+          request:
+            author_id: 1295
+            body: Body of the Internal Article
+            owner_id: 1295
+            title: Thanks for everything
+          response:
+            body:
+              author_id: 991266252
+              body: Body of the Article
+              created_at: 1672928359
+              id: '42'
+              locale: en
+              owner_id: 991266252
+              title: Thanks for everything
+              type: internal_article
+              updated_at: 1672928610
+      method: POST
+      path: /internal_articles
+      request:
+        body:
+          type: optional<unstableRoot.CreateInternalArticleRequest>
+        content-type: application/json
+      response:
+        docs: internal article created
+        status-code: 200
+        type: unstableArticles.InternalArticle
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    deleteInternalArticle:
+      auth: true
+      display-name: Delete an internal article
+      docs: >-
+        You can delete a single internal article by making a DELETE request to
+        `https://api.intercom.io/internal_articles/<id>`.
+      errors:
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            id: 1
+          response:
+            body:
+              deleted: true
+              id: '51'
+              object: internal_article
+      method: DELETE
+      path: /internal_articles/{id}
+      request:
+        name: DeleteInternalArticleRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the internal article which is given by
+              Intercom.
+            type: integer
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.DeletedInternalArticleObject
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    listInternalArticles:
+      auth: true
+      display-name: List all articles
+      docs: >-
+        You can fetch a list of all internal articles by making a GET request to
+        `https://api.intercom.io/internal_articles`.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          response:
+            body:
+              data:
+                - author_id: 991266252
+                  body: Body of the Article
+                  created_at: 1672928359
+                  id: '39'
+                  locale: en
+                  owner_id: 991266252
+                  title: Thanks for everything
+                  type: internal_article
+                  updated_at: 1672928610
+              pages:
+                next:
+                  per_page: 2
+                  starting_after: your-cursor-from-response
+                page: 1
+                per_page: 25
+                total_pages: 1
+                type: pages
+              total_count: 1
+              type: list
+      method: GET
+      path: /internal_articles
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.InternalArticleList
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    retrieveInternalArticle:
+      auth: true
+      display-name: Retrieve an internal article
+      docs: >-
+        You can fetch the details of a single internal article by making a GET
+        request to `https://api.intercom.io/internal_articles/<id>`.
+      errors:
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+      examples:
+        - name: Internal article found
+          path-parameters:
+            id: 1
+          response:
+            body:
+              author_id: 991266252
+              body: Body of the Article
+              created_at: 1672928359
+              id: '45'
+              locale: en
+              owner_id: 991266252
+              title: title
+              type: internal_article
+              updated_at: 1672928610
+      method: GET
+      path: /internal_articles/{id}
+      request:
+        name: RetrieveInternalArticleRequest
+        path-parameters:
+          id:
+            docs: The unique identifier for the article which is given by Intercom.
+            type: integer
+      response:
+        docs: Internal article found
+        status-code: 200
+        type: unstableArticles.InternalArticle
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    searchInternalArticles:
+      auth: true
+      display-name: Search for internal articles
+      docs: >-
+        You can search for internal articles by making a GET request to
+        `https://api.intercom.io/internal_articles/search`.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: Search successful
+          response:
+            body:
+              data:
+                internal_articles:
+                  - author_id: 991266252
+                    body: Body of the Article
+                    created_at: 1672928359
+                    id: '55'
+                    locale: en
+                    owner_id: 991266252
+                    updated_at: 1672928610
+              pages:
+                next:
+                  per_page: 2
+                  starting_after: your-cursor-from-response
+                page: 1
+                per_page: 10
+                total_pages: 1
+                type: pages
+              total_count: 1
+              type: list
+      method: GET
+      path: /internal_articles/search
+      request:
+        name: SearchInternalArticlesRequest
+        query-parameters:
+          folder_id:
+            docs: The ID of the folder to search in.
+            type: optional<string>
+      response:
+        docs: Search successful
+        status-code: 200
+        type: InternalArticleSearchResponse
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    updateInternalArticle:
+      auth: true
+      display-name: Update an internal article
+      docs: >-
+        You can update the details of a single internal article by making a PUT
+        request to `https://api.intercom.io/internal_articles/<id>`.
+      errors:
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            id: 1
+          request:
+            body: <p>New gifts in store for the jolly season</p>
+            title: Christmas is here!
+          response:
+            body:
+              author_id: 991266252
+              body: Body of the Article
+              created_at: 1672928359
+              id: '48'
+              locale: en
+              owner_id: 991266252
+              title: title
+              type: internal_article
+              updated_at: 1672928610
+        - name: Internal article not found
+          path-parameters:
+            id: 1
+          request:
+            body: <p>New gifts in store for the jolly season</p>
+            title: Christmas is here!
+          response:
+            body:
+              author_id: 991266252
+              body: Body of the Article
+              created_at: 1672928359
+              id: '48'
+              locale: en
+              owner_id: 991266252
+              title: title
+              type: internal_article
+              updated_at: 1672928610
+      method: PUT
+      path: /internal_articles/{id}
+      request:
+        body:
+          properties:
+            author_id:
+              docs: The id of the author of the article.
+              type: optional<integer>
+            body:
+              docs: The content of the article.
+              type: optional<string>
+            owner_id:
+              docs: The id of the author of the article.
+              type: optional<integer>
+            title:
+              docs: The title of the article.
+              type: optional<string>
+        content-type: application/json
+        name: UpdateInternalArticleRequestBody
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the internal article which is given by
+              Intercom.
+            type: integer
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableArticles.InternalArticle
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/0/api.intercom.io.yaml

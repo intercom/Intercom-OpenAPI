@@ -1,0 +1,800 @@
+imports:
+  root: __package__.yml
+types:
+  DataAttribute:
+    docs: >-
+      Data Attributes are metadata used to describe your contact, company and
+      conversation models. These include standard and custom attributes. By
+      using the data attributes endpoint, you can get the global list of
+      attributes for your workspace, as well as create and archive custom
+      attributes.
+    properties:
+      admin_id:
+        docs: Teammate who created the attribute. Only applicable to CDAs
+        type: optional<string>
+      api_writable:
+        docs: Can this attribute be updated through API
+        type: optional<boolean>
+      archived:
+        docs: Is this attribute archived. (Only applicable to CDAs)
+        type: optional<boolean>
+      created_at:
+        docs: The time the attribute was created as a UTC Unix timestamp
+        type: optional<integer>
+      custom:
+        docs: Set to true if this is a CDA
+        type: optional<boolean>
+      data_type:
+        docs: The data type of the attribute.
+        type: DataAttributeDataType
+      description:
+        docs: Readable description of the attribute.
+        type: optional<string>
+      full_name:
+        docs: >-
+          Full name of the attribute. Should match the name unless it's a nested
+          attribute. We can split full_name on `.` to access nested user object
+          values.
+        type: string
+      id:
+        docs: >-
+          The unique identifier for the data attribute which is given by
+          Intercom. Only available for custom attributes.
+        type: optional<integer>
+      label:
+        docs: Readable name of the attribute (i.e. name you see in the UI)
+        type: string
+      messenger_writable:
+        docs: Can this attribute be updated by the Messenger
+        type: optional<boolean>
+      model:
+        docs: >-
+          Value is `contact` for user/lead attributes and `company` for company
+          attributes.
+        type: optional<DataAttributeModel>
+      name:
+        docs: Name of the attribute.
+        type: string
+      options:
+        docs: List of predefined options for attribute value.
+        type: optional<list<string>>
+      type:
+        docs: Value is `data_attribute`.
+        type: literal<"data_attribute">
+      ui_writable:
+        docs: Can this attribute be updated in the UI
+        type: optional<boolean>
+      updated_at:
+        docs: The time the attribute was last updated as a UTC Unix timestamp
+        type: optional<integer>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  DataAttributeDataType:
+    docs: The data type of the attribute.
+    enum:
+      - string
+      - integer
+      - float
+      - boolean
+      - date
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  DataAttributeModel:
+    docs: >-
+      Value is `contact` for user/lead attributes and `company` for company
+      attributes.
+    enum:
+      - contact
+      - company
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  DataAttributesListRequestModel:
+    enum:
+      - contact
+      - company
+      - conversation
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+docs: Everything about your Data Attributes
+service:
+  auth: false
+  base-path: ''
+  display-name: Data Attributes
+  endpoints:
+    create:
+      auth: true
+      display-name: Create a data attribute
+      docs: You can create a data attributes for a `contact` or a `company`.
+      errors:
+        - root.BadRequestError
+        - root.UnauthorizedError
+      examples:
+        - name: Successful
+          request:
+            data_type: string
+          response:
+            body:
+              admin_id: '991267786'
+              api_writable: true
+              archived: false
+              created_at: 1734537756
+              custom: true
+              data_type: string
+              description: Whether the user is a paid subscriber.
+              full_name: custom_attributes.Mithril Shirt
+              id: 37
+              label: Mithril Shirt
+              messenger_writable: false
+              model: company
+              name: Mithril Shirt
+              options:
+                - 'true'
+                - 'false'
+              type: data_attribute
+              ui_writable: false
+              updated_at: 1734537756
+        - name: Same name already exists
+          request:
+            data_type: integer
+          response:
+            body:
+              admin_id: '991267786'
+              api_writable: true
+              archived: false
+              created_at: 1734537756
+              custom: true
+              data_type: string
+              description: Whether the user is a paid subscriber.
+              full_name: custom_attributes.Mithril Shirt
+              id: 37
+              label: Mithril Shirt
+              messenger_writable: false
+              model: company
+              name: Mithril Shirt
+              options:
+                - 'true'
+                - 'false'
+              type: data_attribute
+              ui_writable: false
+              updated_at: 1734537756
+        - name: Invalid name
+          request:
+            data_type: string
+          response:
+            body:
+              admin_id: '991267786'
+              api_writable: true
+              archived: false
+              created_at: 1734537756
+              custom: true
+              data_type: string
+              description: Whether the user is a paid subscriber.
+              full_name: custom_attributes.Mithril Shirt
+              id: 37
+              label: Mithril Shirt
+              messenger_writable: false
+              model: company
+              name: Mithril Shirt
+              options:
+                - 'true'
+                - 'false'
+              type: data_attribute
+              ui_writable: false
+              updated_at: 1734537756
+        - name: Attribute already exists
+          request:
+            data_type: string
+          response:
+            body:
+              admin_id: '991267786'
+              api_writable: true
+              archived: false
+              created_at: 1734537756
+              custom: true
+              data_type: string
+              description: Whether the user is a paid subscriber.
+              full_name: custom_attributes.Mithril Shirt
+              id: 37
+              label: Mithril Shirt
+              messenger_writable: false
+              model: company
+              name: Mithril Shirt
+              options:
+                - 'true'
+                - 'false'
+              type: data_attribute
+              ui_writable: false
+              updated_at: 1734537756
+        - name: Invalid Data Type
+          request:
+            data_type: string
+          response:
+            body:
+              admin_id: '991267786'
+              api_writable: true
+              archived: false
+              created_at: 1734537756
+              custom: true
+              data_type: string
+              description: Whether the user is a paid subscriber.
+              full_name: custom_attributes.Mithril Shirt
+              id: 37
+              label: Mithril Shirt
+              messenger_writable: false
+              model: company
+              name: Mithril Shirt
+              options:
+                - 'true'
+                - 'false'
+              type: data_attribute
+              ui_writable: false
+              updated_at: 1734537756
+        - name: Too few options for list
+          request:
+            options:
+              - value: 1-10
+          response:
+            body:
+              admin_id: '991267786'
+              api_writable: true
+              archived: false
+              created_at: 1734537756
+              custom: true
+              data_type: string
+              description: Whether the user is a paid subscriber.
+              full_name: custom_attributes.Mithril Shirt
+              id: 37
+              label: Mithril Shirt
+              messenger_writable: false
+              model: company
+              name: Mithril Shirt
+              options:
+                - 'true'
+                - 'false'
+              type: data_attribute
+              ui_writable: false
+              updated_at: 1734537756
+      method: POST
+      path: /data_attributes
+      request:
+        body:
+          type: root.CreateDataAttributeRequest
+        content-type: application/json
+      response:
+        docs: Successful
+        status-code: 200
+        type: DataAttribute
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    list:
+      auth: true
+      display-name: List all data attributes
+      docs: >-
+        You can fetch a list of all data attributes belonging to a workspace for
+        contacts, companies or conversations.
+      errors:
+        - root.UnauthorizedError
+      examples:
+        - name: Successful response
+          response:
+            body:
+              data:
+                - admin_id: '5712945'
+                  api_writable: true
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: string
+                  description: The name of a company
+                  full_name: name
+                  id: 12878
+                  label: Company name
+                  messenger_writable: true
+                  model: company
+                  name: name
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: false
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: string
+                  description: A number identifying a company
+                  full_name: company_id
+                  id: 12878
+                  label: Company ID
+                  messenger_writable: true
+                  model: company
+                  name: company_id
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: false
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: date
+                  description: The last day anyone from a company visited your site or app
+                  full_name: last_request_at
+                  id: 12878
+                  label: Company last seen
+                  messenger_writable: true
+                  model: company
+                  name: last_request_at
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: true
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: date
+                  description: The day a company was added to Intercom
+                  full_name: remote_created_at
+                  id: 12878
+                  label: Company created at
+                  messenger_writable: true
+                  model: company
+                  name: remote_created_at
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: false
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: integer
+                  description: The number of people in a company
+                  full_name: user_count
+                  id: 12878
+                  label: People
+                  messenger_writable: true
+                  model: company
+                  name: user_count
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: false
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: integer
+                  description: >-
+                    All visits from anyone in a company to your product's site
+                    or app
+                  full_name: session_count
+                  id: 12878
+                  label: Company web sessions
+                  messenger_writable: true
+                  model: company
+                  name: session_count
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: false
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: string
+                  description: >-
+                    A specific plan or level within your product that companies
+                    have signed up to
+                  full_name: plan.name
+                  id: 12878
+                  label: Plan
+                  messenger_writable: true
+                  model: company
+                  name: name
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: true
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: float
+                  description: The monthly revenue you receive from a company
+                  full_name: monthly_spend
+                  id: 12878
+                  label: Monthly Spend
+                  messenger_writable: true
+                  model: company
+                  name: monthly_spend
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: true
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: integer
+                  description: >-
+                    The number of people employed in this company, expressed as
+                    a single number
+                  full_name: size
+                  id: 12878
+                  label: Company size
+                  messenger_writable: true
+                  model: company
+                  name: size
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: true
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: string
+                  description: >-
+                    The category or domain this company belongs to e.g.
+                    'ecommerce' or 'SaaS'
+                  full_name: industry
+                  id: 12878
+                  label: Company industry
+                  messenger_writable: true
+                  model: company
+                  name: industry
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: true
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: string
+                  description: The web address for the company's primary marketing site
+                  full_name: website
+                  id: 12878
+                  label: Company website
+                  messenger_writable: true
+                  model: company
+                  name: website
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '991267784'
+                  api_writable: true
+                  archived: false
+                  created_at: 1734537753
+                  custom: true
+                  data_type: string
+                  description: >-
+                    One ring to rule them all, one ring to find them, One ring
+                    to bring them all and in the darkness bind them.
+                  full_name: custom_attributes.The One Ring
+                  id: 34
+                  label: The One Ring
+                  messenger_writable: true
+                  model: company
+                  name: The One Ring
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1734537753
+                - admin_id: '5712945'
+                  api_writable: false
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: string
+                  description: The Intercom defined id representing the company
+                  full_name: id
+                  id: 12878
+                  label: ID
+                  messenger_writable: true
+                  model: company
+                  name: id
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: false
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: date
+                  description: The time the company was added to Intercom
+                  full_name: created_at
+                  id: 12878
+                  label: Created at
+                  messenger_writable: true
+                  model: company
+                  name: created_at
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: false
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: date
+                  description: The last time the company was updated
+                  full_name: updated_at
+                  id: 12878
+                  label: Updated at
+                  messenger_writable: true
+                  model: company
+                  name: updated_at
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: false
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: string
+                  description: The Intercom defined id representing the plan
+                  full_name: plan.id
+                  id: 12878
+                  label: Plan ID
+                  messenger_writable: true
+                  model: company
+                  name: id
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+                - admin_id: '5712945'
+                  api_writable: false
+                  archived: false
+                  created_at: 1671028894
+                  custom: false
+                  data_type: string
+                  description: The Intercom defined id representing the app
+                  full_name: app_id
+                  id: 12878
+                  label: App ID
+                  messenger_writable: true
+                  model: company
+                  name: app_id
+                  options:
+                    - 'true'
+                    - 'false'
+                  type: data_attribute
+                  ui_writable: false
+                  updated_at: 1671028894
+              type: list
+      method: GET
+      path: /data_attributes
+      request:
+        name: ListDataAttributesRequest
+        query-parameters:
+          include_archived:
+            docs: >-
+              Include archived attributes in the list. By default we return only
+              non archived data attributes.
+            type: optional<boolean>
+          model:
+            docs: Specify the data attribute model to return.
+            type: optional<DataAttributesListRequestModel>
+      response:
+        docs: Successful response
+        status-code: 200
+        type: root.DataAttributeList
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    update:
+      auth: true
+      examples:
+        - path-parameters:
+            data_attribute_id: data_attribute_id
+      method: PUT
+      path: /data_attributes/{data_attribute_id}
+      request:
+        name: UpdateDataAttributeRequest
+        path-parameters:
+          data_attribute_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    updateDataAttribute:
+      auth: true
+      display-name: Update a data attribute
+      docs: >
+
+        You can update a data attribute.
+
+
+        > 🚧 Updating the data type is not possible
+
+        >
+
+        > It is currently a dangerous action to execute changing a data
+        attribute's type via the API. You will need to update the type via the
+        UI instead.
+      errors:
+        - root.BadRequestError
+        - root.UnauthorizedError
+        - root.NotFoundError
+        - root.UnprocessableEntityError
+      examples:
+        - name: Successful
+          path-parameters:
+            id: 1
+          request:
+            options:
+              - value: 1-10
+              - value: 11-20
+          response:
+            body:
+              admin_id: '991267793'
+              api_writable: true
+              archived: false
+              created_at: 1734537762
+              custom: true
+              data_type: string
+              description: Just a plain old ring
+              full_name: custom_attributes.The One Ring
+              id: 44
+              label: The One Ring
+              messenger_writable: true
+              model: company
+              name: The One Ring
+              options:
+                - 1-10
+                - 11-20
+              type: data_attribute
+              ui_writable: false
+              updated_at: 1734537763
+        - name: Too few options in list
+          path-parameters:
+            id: 1
+          request:
+            options:
+              - value: 1-10
+              - value: 11-50
+          response:
+            body:
+              admin_id: '991267793'
+              api_writable: true
+              archived: false
+              created_at: 1734537762
+              custom: true
+              data_type: string
+              description: Just a plain old ring
+              full_name: custom_attributes.The One Ring
+              id: 44
+              label: The One Ring
+              messenger_writable: true
+              model: company
+              name: The One Ring
+              options:
+                - 1-10
+                - 11-20
+              type: data_attribute
+              ui_writable: false
+              updated_at: 1734537763
+        - name: Attribute Not Found
+          path-parameters:
+            id: 1
+          request:
+            options:
+              - value: 1-10
+              - value: 11-20
+          response:
+            body:
+              admin_id: '991267793'
+              api_writable: true
+              archived: false
+              created_at: 1734537762
+              custom: true
+              data_type: string
+              description: Just a plain old ring
+              full_name: custom_attributes.The One Ring
+              id: 44
+              label: The One Ring
+              messenger_writable: true
+              model: company
+              name: The One Ring
+              options:
+                - 1-10
+                - 11-20
+              type: data_attribute
+              ui_writable: false
+              updated_at: 1734537763
+        - name: Has Dependant Object
+          path-parameters:
+            id: 1
+          request:
+            archived: true
+            description: Trying to archieve
+          response:
+            body:
+              admin_id: '991267793'
+              api_writable: true
+              archived: false
+              created_at: 1734537762
+              custom: true
+              data_type: string
+              description: Just a plain old ring
+              full_name: custom_attributes.The One Ring
+              id: 44
+              label: The One Ring
+              messenger_writable: true
+              model: company
+              name: The One Ring
+              options:
+                - 1-10
+                - 11-20
+              type: data_attribute
+              ui_writable: false
+              updated_at: 1734537763
+      method: PUT
+      path: /data_attributes/{id}
+      request:
+        body:
+          type: root.UpdateDataAttributeRequest
+        content-type: application/json
+        name: UpdateDataAttributeRequest
+        path-parameters:
+          id:
+            docs: The data attribute id
+            type: integer
+      response:
+        docs: Successful
+        status-code: 200
+        type: DataAttribute
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/2.14/api.intercom.io.yaml

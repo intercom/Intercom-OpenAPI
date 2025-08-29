@@ -1,0 +1,214 @@
+imports:
+  unstableRoot: __package__.yml
+service:
+  auth: false
+  base-path: ''
+  endpoints:
+    notifyAttributeCollected:
+      auth: true
+      display-name: >-
+        Notify Intercom of an attribute collector response in a custom channel
+        conversation
+      docs: >
+        Notifies Intercom that a user provided a response to an attribute
+        collector in your custom channel/platform. This allows Intercom to
+        process the attribute and trigger any relevant workflow automations.
+
+        > **Note:** This endpoint is currently under managed availability.
+        Please reach out to your accounts team to discuss access and tailored,
+        hands-on support.
+      errors:
+        - unstableRoot.BadRequestError
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+        - unstableRoot.UnprocessableEntityError
+      examples:
+        - headers: {}
+          name: NotificationSuccess
+          request:
+            attribute:
+              id: shipping_address
+              value: 123 Main St, Springfield
+            contact:
+              email: bob@example.com
+              external_id: user_004
+              name: Bob Example
+              type: user
+            event_id: evt_24680
+            external_conversation_id: conv_11223
+          response:
+            body:
+              contact_id: intercom_contact_id_79
+              conversation_id: intercom_conversation_id_34
+              external_contact_id: customer_contact_id_56
+              external_conversation_id: customer_conversation_id_12
+      method: POST
+      path: /custom_channel_events/notify_attribute_collected
+      request:
+        body:
+          extends:
+            - unstableRoot.CustomChannelBaseEvent
+          properties:
+            attribute:
+              type: unstableRoot.CustomChannelAttribute
+        content-type: application/json
+        name: NotifyAttributeCollectedRequest
+      response:
+        docs: Successfully notified Intercom
+        status-code: 200
+        type: unstableRoot.CustomChannelNotificationResponse
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    notifyNewConversation:
+      auth: true
+      display-name: Notify Intercom of a new conversation created in a custom channel
+      docs: >
+        Notifies Intercom that a new conversation was created in your custom
+        channel/platform. This triggers conversation creation and workflow
+        automations within Intercom for your custom channel integration.
+
+        > **Note:** This endpoint is currently under managed availability.
+        Please reach out to your accounts team to discuss access and tailored,
+        hands-on support.
+      errors:
+        - unstableRoot.BadRequestError
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+        - unstableRoot.UnprocessableEntityError
+      examples:
+        - headers: {}
+          name: NotificationSuccess
+          request:
+            contact:
+              email: jane.doe@example.com
+              external_id: user_001
+              name: Jane Doe
+              type: user
+            event_id: evt_12345
+            external_conversation_id: conv_67890
+          response:
+            body:
+              contact_id: intercom_contact_id_79
+              conversation_id: intercom_conversation_id_34
+              external_contact_id: customer_contact_id_56
+              external_conversation_id: customer_conversation_id_12
+      method: POST
+      path: /custom_channel_events/notify_new_conversation
+      request:
+        body:
+          type: unstableRoot.CustomChannelBaseEvent
+        content-type: application/json
+      response:
+        docs: Successfully notified Intercom
+        status-code: 200
+        type: unstableRoot.CustomChannelNotificationResponse
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    notifyNewMessage:
+      auth: true
+      display-name: Notify Intercom of a new message in a custom channel conversation
+      docs: >
+        Notifies Intercom that a new message was sent in a conversation on your
+        custom channel/platform. This allows Intercom to process the message and
+        trigger any relevant workflow automations.
+
+        > **Note:** This endpoint is currently under managed availability.
+        Please reach out to your accounts team to discuss access and tailored,
+        hands-on support.
+      errors:
+        - unstableRoot.BadRequestError
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+        - unstableRoot.UnprocessableEntityError
+      examples:
+        - headers: {}
+          name: NotificationSuccess
+          request:
+            body: Hello, I need help with my order.
+            contact:
+              email: john.smith@example.com
+              external_id: user_002
+              name: John Smith
+              type: user
+            event_id: evt_54321
+            external_conversation_id: conv_98765
+          response:
+            body:
+              contact_id: intercom_contact_id_79
+              conversation_id: intercom_conversation_id_34
+              external_contact_id: customer_contact_id_56
+              external_conversation_id: customer_conversation_id_12
+      method: POST
+      path: /custom_channel_events/notify_new_message
+      request:
+        body:
+          extends:
+            - unstableRoot.CustomChannelBaseEvent
+          properties:
+            body:
+              docs: The message content sent by the user.
+              type: string
+        content-type: application/json
+        name: NotifyNewMessageRequest
+      response:
+        docs: Successfully notified Intercom
+        status-code: 200
+        type: unstableRoot.CustomChannelNotificationResponse
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    notifyQuickReplySelected:
+      auth: true
+      display-name: >-
+        Notify Intercom of a quick reply response in a custom channel
+        conversation
+      docs: >
+        Notifies Intercom that a user selected a quick reply option in your
+        custom channel/platform. This allows Intercom to process the response
+        and trigger any relevant workflow automations.
+
+        > **Note:** This endpoint is currently under managed availability.
+        Please reach out to your accounts team to discuss access and tailored,
+        hands-on support.
+      errors:
+        - unstableRoot.BadRequestError
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+        - unstableRoot.UnprocessableEntityError
+      examples:
+        - headers: {}
+          name: NotificationSuccess
+          request:
+            contact:
+              email: alice@example.com
+              external_id: user_003
+              name: Alice Example
+              type: user
+            event_id: evt_67890
+            external_conversation_id: conv_13579
+            quick_reply_option_id: '1234'
+          response:
+            body:
+              contact_id: intercom_contact_id_79
+              conversation_id: intercom_conversation_id_34
+              external_contact_id: customer_contact_id_56
+              external_conversation_id: customer_conversation_id_12
+      method: POST
+      path: /custom_channel_events/notify_quick_reply_selected
+      request:
+        body:
+          extends:
+            - unstableRoot.CustomChannelBaseEvent
+          properties:
+            quick_reply_option_id:
+              docs: Id of the selected quick reply option.
+              type: string
+        content-type: application/json
+        name: NotifyQuickReplySelectedRequest
+      response:
+        docs: Successfully notified Intercom
+        status-code: 200
+        type: unstableRoot.CustomChannelNotificationResponse
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/0/api.intercom.io.yaml

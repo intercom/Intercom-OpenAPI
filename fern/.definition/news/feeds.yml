@@ -1,0 +1,73 @@
+imports:
+  root: ../__package__.yml
+service:
+  auth: false
+  base-path: ''
+  endpoints:
+    find:
+      auth: true
+      examples:
+        - path-parameters:
+            newsfeed_id: newsfeed_id
+      method: GET
+      path: /news/newsfeeds/{newsfeed_id}
+      request:
+        name: FindNewsFeedRequest
+        path-parameters:
+          newsfeed_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    list:
+      auth: true
+      display-name: List all newsfeeds
+      docs: You can fetch a list of all newsfeeds
+      errors:
+        - root.UnauthorizedError
+      examples:
+        - name: successful
+          response:
+            body:
+              data:
+                - created_at: 1674917488
+                  id: '12312'
+                  name: My Newsfeed
+                  type: newsfeed
+                  updated_at: 1674917488
+                - created_at: 1674917488
+                  id: '12312'
+                  name: My Newsfeed
+                  type: newsfeed
+                  updated_at: 1674917488
+              pages:
+                next:
+                  per_page: 2
+                  starting_after: your-cursor-from-response
+                page: 1
+                per_page: 10
+                total_pages: 1
+                type: pages
+              total_count: 2
+              type: list
+      method: GET
+      path: /news/newsfeeds
+      response:
+        docs: successful
+        status-code: 200
+        type: root.PaginatedResponse
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    listItems:
+      auth: true
+      examples:
+        - path-parameters:
+            newsfeed_id: newsfeed_id
+      method: GET
+      path: /news/newsfeeds/{newsfeed_id}/items
+      request:
+        name: ListNewsFeedItemsRequest
+        path-parameters:
+          newsfeed_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/2.14/api.intercom.io.yaml

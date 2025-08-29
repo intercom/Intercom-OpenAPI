@@ -1,0 +1,356 @@
+imports:
+  root: ../__package__.yml
+  unstableRoot: __package__.yml
+types:
+  Message:
+    docs: >-
+      Message are how you reach out to contacts in Intercom. They are created
+      when an admin sends an outbound message to a contact.
+    properties:
+      body:
+        docs: The message body, which may contain HTML.
+        type: string
+      conversation_id:
+        docs: The associated conversation_id
+        type: optional<string>
+      created_at:
+        docs: The time the conversation was created.
+        type: integer
+      id:
+        docs: The id representing the message.
+        type: string
+      message_type:
+        docs: >-
+          The type of message that was sent. Can be email, inapp, facebook,
+          twitter, sms or whatsapp.
+        type: MessageMessageType
+      subject:
+        docs: 'The subject of the message. Only present if message_type: email.'
+        type: optional<string>
+      type:
+        docs: The type of the message
+        type: string
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  MessageMessageType:
+    docs: >-
+      The type of message that was sent. Can be email, inapp, facebook, twitter,
+      sms or whatsapp.
+    enum:
+      - email
+      - inapp
+      - facebook
+      - twitter
+      - sms
+      - whatsapp
+    inline: true
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+docs: Everything about your messages
+service:
+  auth: false
+  base-path: ''
+  display-name: Messages
+  endpoints:
+    createMessage:
+      auth: true
+      display-name: Create a message
+      docs: >
+        You can create a message that has been initiated by an admin. The
+        conversation can be either an in-app message, an email, sms or whatsapp.
+
+
+        > 🚧 Sending for visitors
+
+        >
+
+        > There can be a short delay between when a contact is created and when
+        a contact becomes available to be messaged through the API. A 404 Not
+        Found error will be returned in this case.
+
+
+        This will return the Message model that has been created.
+
+
+        > 🚧 Retrieving Associated Conversations
+
+        >
+
+        > As this is a message, there will be no conversation present until the
+        contact responds. Once they do, you will have to search for a contact's
+        conversations with the id of the message.
+      errors:
+        - unstableRoot.BadRequestError
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.ForbiddenError
+        - unstableRoot.UnprocessableEntityError
+      examples:
+        - name: user message created
+          request:
+            body: heyy
+            from:
+              id: 6762f2341bb69f9f2193bc17
+              type: user
+            referer: https://twitter.com/bob
+          response:
+            body:
+              body: heyy
+              conversation_id: '613'
+              created_at: 1734537780
+              id: '403918396'
+              message_type: inapp
+              subject: Greetings
+              type: user_message
+        - name: lead message created
+          request:
+            body: heyy
+            from:
+              id: 6762f2371bb69f9f2193bc18
+              type: lead
+            referer: https://twitter.com/bob
+          response:
+            body:
+              body: heyy
+              conversation_id: '614'
+              created_at: 1734537783
+              id: '403918397'
+              message_type: inapp
+              subject: Greetings
+              type: user_message
+        - name: admin message created
+          request:
+            bcc:
+              - id: 6762f23e1bb69f9f2193bc2f
+                type: user
+            body: heyy
+            cc:
+              - id: 6762f23e1bb69f9f2193bc1d
+                type: user
+              - id: 6762f23f1bb69f9f2193bc1e
+                type: user
+            from:
+              id: '991267816'
+              type: admin
+            message_type: conversation
+            to:
+              - id: 6762f2391bb69f9f2193bc19
+                type: user
+              - id: 6762f23c1bb69f9f2193bc1b
+                type: lead
+              - id: 6762f23d1bb69f9f2193bc1c
+                type: user
+          response:
+            body:
+              body: heyy
+              conversation_id: '64619700005570'
+              created_at: 1734537786
+              id: '19'
+              message_type: inapp
+              subject: heyy
+              type: admin_message
+        - name: admin sms message created
+          request:
+            body: heyy
+            from:
+              id: '991267817'
+              type: admin
+            message_type: sms
+            to:
+              id: 6762f23a1bb69f9f2193bc1a
+              type: user
+          response:
+            body:
+              body: heyy
+              conversation_id: '613'
+              created_at: 1734537780
+              id: '403918396'
+              message_type: inapp
+              subject: Greetings
+              type: user_message
+        - name: admin whatsapp message created
+          request:
+            components:
+              - parameters:
+                  - text: Username 123
+                    type: text
+                type: BODY
+            from:
+              id: '991267817'
+              type: admin
+            locale: en
+            message_type: whatsapp
+            template: keep_live
+            to:
+              name: John Doe
+              phone: 5547999998888
+          response:
+            body:
+              body: heyy
+              conversation_id: '613'
+              created_at: 1734537780
+              id: '403918396'
+              message_type: inapp
+              subject: Greetings
+              type: user_message
+        - name: No body supplied for message
+          request:
+            from:
+              id: '991267818'
+              type: admin
+            message_type: inapp
+            subject: heyy
+            to:
+              id: 6762f23b1bb69f9f2193bc1a
+              type: user
+          response:
+            body:
+              body: heyy
+              conversation_id: '613'
+              created_at: 1734537780
+              id: '403918396'
+              message_type: inapp
+              subject: Greetings
+              type: user_message
+        - name: No subject supplied for email message
+          request:
+            body: hey there
+            from:
+              id: '991267819'
+              type: admin
+            message_type: email
+            to:
+              type: user
+              user_id: '70'
+          response:
+            body:
+              body: heyy
+              conversation_id: '613'
+              created_at: 1734537780
+              id: '403918396'
+              message_type: inapp
+              subject: Greetings
+              type: user_message
+        - name: No body supplied for email message
+          request:
+            from:
+              id: '991267820'
+              type: admin
+            message_type: email
+            subject: heyy
+            to:
+              id: 6762f23d1bb69f9f2193bc1c
+              type: user
+          response:
+            body:
+              body: heyy
+              conversation_id: '613'
+              created_at: 1734537780
+              id: '403918396'
+              message_type: inapp
+              subject: Greetings
+              type: user_message
+        - name: Invalid body supplied for sms message
+          request:
+            body: heyy https://picsum.photos/200/300
+            from:
+              id: '991267821'
+              type: admin
+            message_type: sms
+            to:
+              id: 6762f23b1bb69f9f2193bc1d
+              type: user
+          response:
+            body:
+              body: heyy
+              conversation_id: '613'
+              created_at: 1734537780
+              id: '403918396'
+              message_type: inapp
+              subject: Greetings
+              type: user_message
+      method: POST
+      path: /messages
+      request:
+        body: root.CreateMessageRequestThree
+        content-type: application/json
+      response:
+        docs: admin message created
+        status-code: 200
+        type: Message
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    getWhatsAppMessageStatus:
+      auth: true
+      display-name: Get statuses of all messages sent based on the specified ruleset_id
+      docs: >
+        Retrieves statuses of messages sent from the Outbound module. Currently,
+        this API only supports WhatsApp messages.
+
+
+
+        This endpoint returns paginated status events for WhatsApp messages sent
+        via the Outbound module, providing
+
+        information about delivery state and related message details.
+      errors:
+        - unstableRoot.BadRequestError
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.ForbiddenError
+        - unstableRoot.InternalServerError
+      examples:
+        - name: Successful response
+          query-parameters:
+            ruleset_id: ruleset_id
+          response:
+            body:
+              events:
+                - conversation_id: conv_123
+                  created_at: 1734537980
+                  id: event_1
+                  status: delivered
+                  template_name: appointment_reminder
+                  type: broadcast_outbound
+                  updated_at: 1734538000
+                  whatsapp_message_id: wamid_123
+                - conversation_id: conv_456
+                  created_at: 1734537970
+                  id: event_2
+                  status: sent
+                  template_name: order_update
+                  type: broadcast_outbound
+                  updated_at: 1734538010
+                  whatsapp_message_id: wamid_456
+              pages:
+                next:
+                  starting_after: abc123
+                per_page: 50
+                total_pages: 3
+                type: pages
+              ruleset_id: ruleset_id
+              total_count: 125
+              type: list
+      method: GET
+      path: /messages/status
+      request:
+        name: GetWhatsAppMessageStatusRequest
+        query-parameters:
+          per_page:
+            default: 50
+            docs: Number of results per page (default 50, max 100)
+            type: optional<integer>
+            validation:
+              max: 100
+          ruleset_id:
+            docs: The unique identifier for the set of messages to check status for
+            type: string
+          starting_after:
+            docs: Cursor for pagination, used to fetch the next page of results
+            type: optional<string>
+      response:
+        docs: Successful response
+        status-code: 200
+        type: unstableRoot.WhatsappMessageStatusList
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/0/api.intercom.io.yaml

@@ -1,0 +1,2120 @@
+imports:
+  jobs: jobs.yml
+  root: __package__.yml
+types:
+  DeleteTicketResponse:
+    docs: Response when a ticket is deleted.
+    properties:
+      deleted:
+        docs: Whether the ticket is deleted or not.
+        type: optional<boolean>
+      id:
+        docs: The unique identifier for the ticket.
+        type: optional<string>
+      object:
+        docs: always ticket
+        type: optional<literal<"ticket">>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  ReplyTicketRequestBody:
+    discriminated: false
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+    union:
+      - type: root.ContactReplyTicketRequest
+      - type: root.AdminReplyTicketRequest
+  Ticket:
+    docs: Tickets are how you track requests from your users.
+    properties:
+      admin_assignee_id:
+        docs: The id representing the admin assigned to the ticket.
+        type: optional<string>
+      category:
+        docs: Category of the Ticket.
+        type: optional<TicketCategory>
+      contacts:
+        type: optional<TicketContacts>
+      created_at:
+        docs: The time the ticket was created as a UTC Unix timestamp.
+        type: optional<integer>
+      id:
+        docs: The unique identifier for the ticket which is given by Intercom.
+        type: optional<string>
+      is_shared:
+        docs: Whether or not the ticket is shared with the customer.
+        type: optional<boolean>
+      linked_objects:
+        type: optional<root.LinkedObjectList>
+      open:
+        docs: Whether or not the ticket is open. If false, the ticket is closed.
+        type: optional<boolean>
+      snoozed_until:
+        docs: >-
+          The time the ticket will be snoozed until as a UTC Unix timestamp. If
+          null, the ticket is not currently snoozed.
+        type: optional<integer>
+      team_assignee_id:
+        docs: The id representing the team assigned to the ticket.
+        type: optional<string>
+      ticket_attributes:
+        type: optional<root.TicketCustomAttributes>
+      ticket_id:
+        docs: >-
+          The ID of the Ticket used in the Intercom Inbox and Messenger. Do not
+          use ticket_id for API queries.
+        type: optional<string>
+      ticket_parts:
+        type: optional<root.TicketParts>
+      ticket_state:
+        type: optional<TicketState>
+      ticket_type:
+        type: optional<TicketType>
+      type:
+        docs: Always ticket
+        type: optional<literal<"ticket">>
+      updated_at:
+        docs: The last time the ticket was updated as a UTC Unix timestamp.
+        type: optional<integer>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketCategory:
+    docs: Category of the Ticket.
+    enum:
+      - Customer
+      - name: BackOffice
+        value: Back-office
+      - Tracker
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketContacts:
+    docs: The list of contacts affected by a ticket.
+    properties:
+      contacts:
+        docs: The list of contacts affected by this ticket.
+        type: optional<list<root.ContactReference>>
+      type:
+        docs: always contact.list
+        type: optional<literal<"contact.list">>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketPart:
+    docs: A Ticket Part represents a message in the ticket.
+    properties:
+      app_package_code:
+        docs: >-
+          The app package code if this part was created via API. Note this field
+          won't show if the part was not created via API.
+        type: optional<string>
+      assigned_to:
+        docs: >-
+          The id of the admin that was assigned the ticket by this ticket_part
+          (null if there has been no change in assignment.)
+        type: optional<root.Reference>
+      attachments:
+        docs: A list of attachments for the part.
+        type: optional<list<root.PartAttachment>>
+      author:
+        type: optional<root.TicketPartAuthor>
+      body:
+        docs: The message body, which may contain HTML.
+        type: optional<string>
+      created_at:
+        docs: The time the ticket part was created.
+        type: optional<integer>
+      external_id:
+        docs: The external id of the ticket part
+        type: optional<string>
+      id:
+        docs: The id representing the ticket part.
+        type: optional<string>
+      part_type:
+        docs: The type of ticket part.
+        type: optional<string>
+      previous_ticket_state:
+        docs: The previous state of the ticket.
+        type: optional<TicketPartPreviousTicketState>
+      redacted:
+        docs: Whether or not the ticket part has been redacted.
+        type: optional<boolean>
+      ticket_state:
+        docs: The state of the ticket.
+        type: optional<TicketPartTicketState>
+      type:
+        docs: Always ticket_part
+        type: optional<string>
+      updated_at:
+        docs: The last time the ticket part was updated.
+        type: optional<integer>
+      updated_attribute_data:
+        docs: >-
+          The updated attribute data of the ticket part. Only present for
+          attribute update parts.
+        type: optional<TicketPartUpdatedAttributeData>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketPartPreviousTicketState:
+    docs: The previous state of the ticket.
+    enum:
+      - submitted
+      - in_progress
+      - waiting_on_customer
+      - resolved
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketPartTicketState:
+    docs: The state of the ticket.
+    enum:
+      - submitted
+      - in_progress
+      - waiting_on_customer
+      - resolved
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketPartUpdatedAttributeData:
+    docs: >-
+      The updated attribute data of the ticket part. Only present for attribute
+      update parts.
+    inline: true
+    properties:
+      attribute:
+        docs: Information about the attribute that was updated.
+        type: TicketPartUpdatedAttributeDataAttribute
+      value:
+        docs: The new value of the attribute.
+        type: TicketPartUpdatedAttributeDataValue
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketPartUpdatedAttributeDataAttribute:
+    docs: Information about the attribute that was updated.
+    inline: true
+    properties:
+      id:
+        docs: The unique identifier of the attribute.
+        type: string
+      label:
+        docs: The human-readable name of the attribute.
+        type: string
+      type:
+        docs: The type of the object. Always 'attribute'.
+        type: literal<"attribute">
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketPartUpdatedAttributeDataValue:
+    docs: The new value of the attribute.
+    inline: true
+    properties:
+      id: TicketPartUpdatedAttributeDataValueId
+      label: TicketPartUpdatedAttributeDataValueLabel
+      type:
+        docs: The type of the object. Always 'value'.
+        type: literal<"value">
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketPartUpdatedAttributeDataValueId:
+    discriminated: false
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+    union:
+      - docs: >-
+          The value for text/number/decimal/boolean/date attributes, or the ID
+          of the list option for list attributes.
+        type: optional<string>
+      - docs: Array of file IDs for file attributes.
+        type: list<integer>
+  TicketPartUpdatedAttributeDataValueLabel:
+    discriminated: false
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+    union:
+      - docs: >-
+          The display value for text/number/decimal/boolean/date/list
+          attributes.
+        type: string
+      - docs: Array of file names for file attributes.
+        type: list<string>
+  TicketState:
+    docs: A ticket state, used to define the state of a ticket.
+    properties:
+      category:
+        docs: The category of the ticket state
+        type: optional<TicketStateCategory>
+      external_label:
+        docs: >-
+          The state the ticket is currently in, in a human readable form -
+          visible to customers, in the messenger, email and tickets portal.
+        type: optional<string>
+      id:
+        docs: The id of the ticket state
+        type: optional<string>
+      internal_label:
+        docs: >-
+          The state the ticket is currently in, in a human readable form -
+          visible in Intercom
+        type: optional<string>
+      type:
+        docs: >-
+          String representing the object's type. Always has the value
+          `ticket_state`.
+        type: optional<string>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketStateCategory:
+    docs: The category of the ticket state
+    enum:
+      - submitted
+      - in_progress
+      - waiting_on_customer
+      - resolved
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketStateDetailed:
+    docs: A ticket state, used to define the state of a ticket.
+    properties:
+      archived:
+        docs: Whether the ticket state is archived
+        type: optional<boolean>
+      category:
+        docs: The category of the ticket state
+        type: optional<TicketStateDetailedCategory>
+      external_label:
+        docs: >-
+          The state the ticket is currently in, in a human readable form -
+          visible to customers, in the messenger, email and tickets portal.
+        type: optional<string>
+      id:
+        docs: The id of the ticket state
+        type: optional<string>
+      internal_label:
+        docs: >-
+          The state the ticket is currently in, in a human readable form -
+          visible in Intercom
+        type: optional<string>
+      ticket_types:
+        docs: A list of ticket types associated with a given ticket state.
+        type: optional<TicketStateDetailedTicketTypes>
+      type:
+        docs: >-
+          String representing the object's type. Always has the value
+          `ticket_state`.
+        type: optional<string>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketStateDetailedCategory:
+    docs: The category of the ticket state
+    enum:
+      - submitted
+      - in_progress
+      - waiting_on_customer
+      - resolved
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketStateDetailedTicketTypes:
+    docs: A list of ticket types associated with a given ticket state.
+    inline: true
+    properties:
+      data:
+        docs: A list of ticket type attributes associated with a given ticket type.
+        type: optional<list<optional<TicketType>>>
+      type:
+        docs: String representing the object's type. Always has the value `list`.
+        type: optional<string>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketType:
+    docs: A ticket type, used to define the data fields to be captured in a ticket.
+    properties:
+      archived:
+        docs: Whether the ticket type is archived or not.
+        type: optional<boolean>
+      category:
+        docs: Category of the Ticket Type.
+        type: optional<TicketTypeCategory>
+      created_at:
+        docs: The date and time the ticket type was created.
+        type: optional<integer>
+      description:
+        docs: The description of the ticket type
+        type: optional<string>
+      icon:
+        docs: The icon of the ticket type
+        type: optional<string>
+      id:
+        docs: The id representing the ticket type.
+        type: optional<string>
+      name:
+        docs: The name of the ticket type
+        type: optional<string>
+      ticket_states:
+        docs: A list of ticket states associated with a given ticket type.
+        type: optional<TicketTypeTicketStates>
+      ticket_type_attributes:
+        type: optional<root.TicketTypeAttributeList>
+      type:
+        docs: >-
+          String representing the object's type. Always has the value
+          `ticket_type`.
+        type: optional<string>
+      updated_at:
+        docs: The date and time the ticket type was last updated.
+        type: optional<integer>
+      workspace_id:
+        docs: The id of the workspace that the ticket type belongs to.
+        type: optional<string>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketTypeCategory:
+    docs: Category of the Ticket Type.
+    enum:
+      - Customer
+      - name: BackOffice
+        value: Back-office
+      - Tracker
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TicketTypeTicketStates:
+    docs: A list of ticket states associated with a given ticket type.
+    inline: true
+    properties:
+      data:
+        docs: A list of ticket states associated with a given ticket type.
+        type: optional<list<optional<TicketState>>>
+      type:
+        docs: String representing the object's type. Always has the value `list`.
+        type: optional<string>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+docs: Everything about your tickets
+service:
+  auth: false
+  base-path: ''
+  display-name: Tickets
+  endpoints:
+    create:
+      auth: true
+      display-name: Create a ticket
+      docs: You can create a new ticket.
+      errors:
+        - root.UnauthorizedError
+      examples:
+        - name: Successful response
+          request:
+            contacts:
+              - id: 6762f2d81bb69f9f2193bc54
+            ticket_attributes:
+              _default_description_: there is a problem
+              _default_title_: example
+            ticket_type_id: '1234'
+          response:
+            body:
+              admin_assignee_id: '0'
+              category: Back-office
+              contacts:
+                contacts:
+                  - external_id: '70'
+                    id: 6762f2d81bb69f9f2193bc54
+                    type: contact
+                type: contact.list
+              created_at: 1734537944
+              id: '626'
+              is_shared: false
+              linked_objects:
+                data:
+                  - id: '7583'
+                has_more: false
+                total_count: 0
+                type: list
+              open: true
+              snoozed_until: 1663597260
+              team_assignee_id: '0'
+              ticket_attributes:
+                _default_description_: there is a problem
+                _default_title_: example
+              ticket_id: '33'
+              ticket_parts:
+                ticket_parts:
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id688_that_should_be_at_least_@intercom.io
+                      id: '991267999'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537945
+                    id: '175'
+                    part_type: ticket_state_updated_by_admin
+                    previous_ticket_state: submitted
+                    redacted: false
+                    ticket_state: submitted
+                    type: ticket_part
+                    updated_at: 1734537945
+                total_count: 1
+                type: ticket_part.list
+              ticket_state:
+                category: submitted
+                external_label: Submitted
+                id: '8481'
+                internal_label: Submitted
+                type: ticket_state
+              ticket_type:
+                archived: false
+                category: Back-office
+                created_at: 1734537943
+                description: my ticket type description is awesome.
+                icon: 🦁
+                id: '88'
+                name: my-ticket-type-23
+                ticket_states:
+                  type: list
+                ticket_type_attributes:
+                  type: list
+                type: ticket_type
+                updated_at: 1734537943
+                workspace_id: this_is_an_id688_that_should_be_at_least_
+              type: ticket
+              updated_at: 1734537946
+      method: POST
+      path: /tickets
+      request:
+        body:
+          extends:
+            - root.CreateTicketRequest
+          properties:
+            skip_notifications:
+              docs: Option to disable notifications when a Ticket is created.
+              type: optional<boolean>
+        content-type: application/json
+        name: CreateTicketRequest
+      response:
+        docs: Successful response
+        status-code: 200
+        type: optional<Ticket>
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    deleteTicket:
+      auth: true
+      display-name: Delete a ticket
+      docs: You can delete a ticket using the Intercom provided ID.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            id: id
+          response:
+            body:
+              deleted: true
+              id: '632'
+              object: ticket
+      method: DELETE
+      path: /tickets/{id}
+      request:
+        name: DeleteTicketRequest
+        path-parameters:
+          id:
+            docs: The unique identifier for the ticket which is given by Intercom.
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: DeleteTicketResponse
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    enqueueCreateTicket:
+      auth: true
+      display-name: Enqueue create ticket
+      docs: >-
+        Enqueues ticket creation for asynchronous processing, returning if the
+        job was enqueued successfully to be processed. We attempt to perform a
+        best-effort validation on inputs before tasks are enqueued. If the given
+        parameters are incorrect, we won't enqueue the job.
+      errors:
+        - root.BadRequestError
+        - root.UnauthorizedError
+      examples:
+        - name: Successful response
+          request:
+            contacts:
+              - id: 6762f2d81bb69f9f2193bc54
+            ticket_attributes:
+              _default_description_: there is a problem
+              _default_title_: example
+            ticket_type_id: '1234'
+          response:
+            body:
+              id: '20'
+              resource_type: ticket
+              status: pending
+              type: job
+              url: https://api.intercom.io/jobs/status/20
+      method: POST
+      path: /tickets/enqueue
+      request:
+        body:
+          extends:
+            - root.CreateTicketRequest
+          properties:
+            skip_notifications:
+              docs: Option to disable notifications when a Ticket is created.
+              type: optional<boolean>
+        content-type: application/json
+        name: EnqueueCreateTicketRequest
+      response:
+        docs: Successful response
+        status-code: 200
+        type: jobs.Jobs
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    get:
+      auth: true
+      examples:
+        - path-parameters:
+            ticket_id: ticket_id
+      method: GET
+      path: /tickets/{ticket_id}
+      request:
+        name: FindTicketRequest
+        path-parameters:
+          ticket_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    getTicket:
+      auth: true
+      display-name: Retrieve a ticket
+      docs: You can fetch the details of a single ticket.
+      errors:
+        - root.UnauthorizedError
+      examples:
+        - name: Ticket found
+          path-parameters:
+            id: id
+          response:
+            body:
+              admin_assignee_id: '0'
+              category: Back-office
+              contacts:
+                contacts:
+                  - external_id: b16afa36-2637-4880-adee-a46d145bc27f
+                    id: 6762f2f61bb69f9f2193bc59
+                    type: contact
+                type: contact.list
+              created_at: 1734537974
+              id: '631'
+              is_shared: false
+              linked_objects:
+                data:
+                  - id: '7583'
+                has_more: false
+                total_count: 0
+                type: list
+              open: true
+              snoozed_until: 1663597260
+              team_assignee_id: '0'
+              ticket_attributes:
+                _default_description_:
+                  key: value
+                _default_title_: attribute_value
+              ticket_id: '38'
+              ticket_parts:
+                ticket_parts:
+                  - app_package_code: test-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: admin509@email.com
+                      id: '991268047'
+                      name: Ciaran509 Lee
+                      type: admin
+                    created_at: 1734537975
+                    id: '185'
+                    part_type: ticket_state_updated_by_admin
+                    previous_ticket_state: submitted
+                    redacted: false
+                    ticket_state: submitted
+                    type: ticket_part
+                    updated_at: 1734537975
+                total_count: 1
+                type: ticket_part.list
+              ticket_state:
+                category: submitted
+                external_label: Submitted
+                id: '8537'
+                internal_label: Submitted
+                type: ticket_state
+              ticket_type:
+                archived: false
+                category: Back-office
+                created_at: 1734537973
+                description: my ticket type description is awesome.
+                icon: 🦁
+                id: '95'
+                name: my-ticket-type-30
+                ticket_states:
+                  type: list
+                ticket_type_attributes:
+                  type: list
+                type: ticket_type
+                updated_at: 1734537973
+                workspace_id: this_is_an_id702_that_should_be_at_least_
+              type: ticket
+              updated_at: 1734537976
+      method: GET
+      path: /tickets/{id}
+      request:
+        name: GetTicketRequest
+        path-parameters:
+          id:
+            docs: The unique identifier for the ticket which is given by Intercom.
+            type: string
+      response:
+        docs: Ticket found
+        status-code: 200
+        type: optional<Ticket>
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    reply:
+      auth: true
+      method: POST
+      path: /tickets/{ticket_id}/reply
+      request:
+        body: unknown
+        content-type: application/json
+        name: ReplyToTicketRequest
+        path-parameters:
+          ticket_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    replyTicket:
+      auth: true
+      display-name: Reply to a ticket
+      docs: >-
+        You can reply to a ticket with a message from an admin or on behalf of a
+        contact, or with a note for admins.
+      errors:
+        - root.BadRequestError
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: User reply
+          path-parameters:
+            id: '123'
+          request:
+            body: Thanks again :)
+            intercom_user_id: 6762f2971bb69f9f2193bc49
+            message_type: comment
+            type: user
+          response:
+            body:
+              attachments:
+                - content_type: image/png
+                  filesize: 100
+                  height: 100
+                  name: example.png
+                  type: upload
+                  url: https://picsum.photos/200/300
+                  width: 100
+              author:
+                email: admin419@email.com
+                id: '991267943'
+                name: Ciaran419 Lee
+                type: admin
+              body: |-
+                <h2>An Unordered HTML List</h2>
+                <ul>
+                <li>Coffee</li>
+                <li>Tea</li>
+                <li>Milk</li>
+                </ul>
+                <h2>An Ordered HTML List</h2>
+                <ol>
+                <li>Coffee</li>
+                <li>Tea</li>
+                <li>Milk</li>
+                </ol>
+              created_at: 1734537884
+              id: '156'
+              part_type: note
+              redacted: false
+              type: ticket_part
+              updated_at: 1734537884
+        - name: Admin note reply
+          path-parameters:
+            id: '123'
+          request:
+            admin_id: '3156780'
+            body: >-
+              <html> <body>  <h2>An Unordered HTML List</h2>  <ul>  
+              <li>Coffee</li>   <li>Tea</li>   <li>Milk</li> </ul>    <h2>An
+              Ordered HTML List</h2>  <ol>   <li>Coffee</li>   <li>Tea</li>  
+              <li>Milk</li> </ol>   </body> </html>
+            message_type: note
+            type: admin
+          response:
+            body:
+              attachments:
+                - content_type: image/png
+                  filesize: 100
+                  height: 100
+                  name: example.png
+                  type: upload
+                  url: https://picsum.photos/200/300
+                  width: 100
+              author:
+                email: admin419@email.com
+                id: '991267943'
+                name: Ciaran419 Lee
+                type: admin
+              body: |-
+                <h2>An Unordered HTML List</h2>
+                <ul>
+                <li>Coffee</li>
+                <li>Tea</li>
+                <li>Milk</li>
+                </ul>
+                <h2>An Ordered HTML List</h2>
+                <ol>
+                <li>Coffee</li>
+                <li>Tea</li>
+                <li>Milk</li>
+                </ol>
+              created_at: 1734537884
+              id: '156'
+              part_type: note
+              redacted: false
+              type: ticket_part
+              updated_at: 1734537884
+        - name: Admin quick_reply reply
+          path-parameters:
+            id: '123'
+          request:
+            admin_id: '3156780'
+            message_type: quick_reply
+            reply_options:
+              - text: 'Yes'
+                uuid: 0df48b85-9a93-4c66-a167-753eff0baaec
+              - text: 'No'
+                uuid: 4f0b5145-4193-4b4f-8cad-ce19478a3938
+            type: admin
+          response:
+            body:
+              attachments:
+                - content_type: image/png
+                  filesize: 100
+                  height: 100
+                  name: example.png
+                  type: upload
+                  url: https://picsum.photos/200/300
+                  width: 100
+              author:
+                email: admin423@email.com
+                id: '991267948'
+                name: Ciaran423 Lee
+                type: admin
+              body: <p>Okay!</p>
+              created_at: 1734537890
+              id: '158'
+              part_type: quick_reply
+              redacted: false
+              type: ticket_part
+              updated_at: 1734537890
+        - name: Not found
+          path-parameters:
+            id: '123'
+          request:
+            body: Thanks again :)
+            intercom_user_id: 6762f2a41bb69f9f2193bc4c
+            message_type: comment
+            type: user
+          response:
+            body:
+              attachments:
+                - content_type: image/png
+                  filesize: 100
+                  height: 100
+                  name: example.png
+                  type: upload
+                  url: https://picsum.photos/200/300
+                  width: 100
+              author:
+                email: admin419@email.com
+                id: '991267943'
+                name: Ciaran419 Lee
+                type: admin
+              body: |-
+                <h2>An Unordered HTML List</h2>
+                <ul>
+                <li>Coffee</li>
+                <li>Tea</li>
+                <li>Milk</li>
+                </ul>
+                <h2>An Ordered HTML List</h2>
+                <ol>
+                <li>Coffee</li>
+                <li>Tea</li>
+                <li>Milk</li>
+                </ol>
+              created_at: 1734537884
+              id: '156'
+              part_type: note
+              redacted: false
+              type: ticket_part
+              updated_at: 1734537884
+      method: POST
+      path: /tickets/{id}/reply
+      request:
+        body: ReplyTicketRequestBody
+        content-type: application/json
+        name: ReplyTicketRequest
+        path-parameters:
+          id: string
+      response:
+        docs: Admin Reply to send Quick Reply Options
+        status-code: 200
+        type: root.TicketReply
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    search:
+      auth: true
+      display-name: Search tickets
+      docs: >
+        You can search for multiple tickets by the value of their attributes in
+        order to fetch exactly which ones you want.
+
+
+        To search for tickets, you send a `POST` request to
+        `https://api.intercom.io/tickets/search`.
+
+
+        This will accept a query object in the body which will define your
+        filters.
+
+        {% admonition type="warning" name="Optimizing search queries" %}
+          Search queries can be complex, so optimizing them can help the performance of your search.
+          Use the `AND` and `OR` operators to combine multiple filters to get the exact results you need and utilize
+          pagination to limit the number of results returned. The default is `20` results per page.
+          See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#example-search-conversations-request) for more details on how to use the `starting_after` param.
+        {% /admonition %}
+
+
+        ### Nesting & Limitations
+
+
+        You can nest these filters in order to get even more granular insights
+        that pinpoint exactly what you need. Example: (1 OR 2) AND (3 OR 4).
+
+        There are some limitations to the amount of multiples there can be:
+
+        - There's a limit of max 2 nested filters
+
+        - There's a limit of max 15 filters for each AND or OR group
+
+
+        ### Accepted Fields
+
+
+        Most keys listed as part of the Ticket model are searchable, whether
+        writeable or not. The value you search for has to match the accepted
+        type, otherwise the query will fail (ie. as `created_at` accepts a date,
+        the `value` cannot be a string such as `"foobar"`).
+
+        The `source.body` field is unique as the search will not be performed
+        against the entire value, but instead against every element of the value
+        separately. For example, when searching for a conversation with a `"I
+        need support"` body - the query should contain a `=` operator with the
+        value `"support"` for such conversation to be returned. A query with a
+        `=` operator and a `"need support"` value will not yield a result.
+
+
+        | Field                                     |
+        Type                                                                                    
+        |
+
+        | :---------------------------------------- |
+        :---------------------------------------------------------------------------------------
+        |
+
+        | id                                        |
+        String                                                                                  
+        |
+
+        | created_at                                | Date (UNIX
+        timestamp)                                                                   
+        |
+
+        | updated_at                                | Date (UNIX
+        timestamp)                                                                   
+        |
+
+        | _default_title_                           |
+        String                                                                                  
+        |
+
+        | _default_description_                     |
+        String                                                                                  
+        |
+
+        | category                                  |
+        String                                                                                  
+        |
+
+        | ticket_type_id                            |
+        String                                                                                  
+        |
+
+        | contact_ids                               |
+        String                                                                                  
+        |
+
+        | teammate_ids                              |
+        String                                                                                  
+        |
+
+        | admin_assignee_id                         |
+        String                                                                                  
+        |
+
+        | team_assignee_id                          |
+        String                                                                                  
+        |
+
+        | open                                      |
+        Boolean                                                                                 
+        |
+
+        | state                                     |
+        String                                                                                  
+        |
+
+        | snoozed_until                             | Date (UNIX
+        timestamp)                                                                   
+        |
+
+        | ticket_attribute.{id}                     | String or Boolean or Date
+        (UNIX timestamp) or Float or Integer                           |
+
+
+        {% admonition type="info" name="Searching by Category" %}
+
+        When searching for tickets by the **`category`** field, specific terms
+        must be used instead of the category names:
+
+        * For **Customer** category tickets, use the term `request`.
+
+        * For **Back-office** category tickets, use the term `task`.
+
+        * For **Tracker** category tickets, use the term `tracker`.
+
+        {% /admonition %}
+
+
+        ### Accepted Operators
+
+
+        {% admonition type="info" name="Searching based on `created_at`" %}
+          You may use the `<=` or `>=` operators to search by `created_at`.
+        {% /admonition %}
+
+
+        The table below shows the operators you can use to define how you want
+        to search for the value.  The operator should be put in as a string
+        (`"="`). The operator has to be compatible with the field's type  (eg.
+        you cannot search with `>` for a given string value as it's only
+        compatible for integer's and dates).
+
+
+        | Operator | Valid Types                    |
+        Description                                                  |
+
+        | :------- | :----------------------------- |
+        :----------------------------------------------------------- |
+
+        | =        | All                            |
+        Equals                                                       |
+
+        | !=       | All                            | Doesn't
+        Equal                                                |
+
+        | IN       | All                            | In  Shortcut for `OR`
+        queries  Values most be in Array       |
+
+        | NIN      | All                            | Not In  Shortcut for `OR
+        !` queries  Values must be in Array |
+
+        | >        | Integer  Date (UNIX Timestamp) | Greater (or equal)
+        than                                      |
+
+        | <       | Integer  Date (UNIX Timestamp) | Lower (or equal)
+        than                                        |
+
+        | ~        | String                         |
+        Contains                                                     |
+
+        | !~       | String                         | Doesn't
+        Contain                                              |
+
+        | ^        | String                         | Starts
+        With                                                  |
+
+        | $        | String                         | Ends
+        With                                                    |
+      examples:
+        - name: successful
+          request:
+            pagination:
+              per_page: 5
+            query:
+              operator: AND
+              value:
+                - field: created_at
+                  operator: '>'
+                  value: '1306054154'
+          response:
+            body:
+              pages:
+                next:
+                  per_page: 2
+                  starting_after: your-cursor-from-response
+                page: 1
+                per_page: 5
+                total_pages: 1
+                type: pages
+              tickets:
+                - admin_assignee_id: '0'
+                  category: Back-office
+                  contacts:
+                    contacts:
+                      - external_id: 9b913927-c084-4391-b1db-098341b5ffe3
+                        id: 6762f3061bb69f9f2193bc5b
+                        type: contact
+                    type: contact.list
+                  created_at: 1734537990
+                  id: '633'
+                  is_shared: false
+                  linked_objects:
+                    data:
+                      - id: '7583'
+                    has_more: false
+                    total_count: 0
+                    type: list
+                  open: true
+                  snoozed_until: 1663597260
+                  team_assignee_id: '0'
+                  ticket_attributes:
+                    _default_title_: attribute_value
+                  ticket_id: '40'
+                  ticket_parts:
+                    ticket_parts:
+                      - app_package_code: text-integration
+                        attachments:
+                          - content_type: image/png
+                            filesize: 100
+                            height: 100
+                            name: example.png
+                            type: upload
+                            url: https://picsum.photos/200/300
+                            width: 100
+                        author:
+                          email: admin539@email.com
+                          id: '991268079'
+                          name: Ciaran539 Lee
+                          type: admin
+                        created_at: 1734537991
+                        id: '188'
+                        part_type: ticket_state_updated_by_admin
+                        previous_ticket_state: submitted
+                        redacted: false
+                        ticket_state: submitted
+                        type: ticket_part
+                        updated_at: 1734537991
+                    total_count: 1
+                    type: ticket_part.list
+                  ticket_state:
+                    category: submitted
+                    external_label: Submitted
+                    id: '8577'
+                    internal_label: Submitted
+                    type: ticket_state
+                  ticket_type:
+                    archived: false
+                    category: Back-office
+                    created_at: 1734537989
+                    description: my ticket type description is awesome.
+                    icon: 🦁
+                    id: '100'
+                    name: my-ticket-type-35
+                    ticket_type_attributes:
+                      type: list
+                    type: ticket_type
+                    updated_at: 1734537989
+                    workspace_id: this_is_an_id712_that_should_be_at_least_
+                  type: ticket
+                  updated_at: 1734537992
+              total_count: 1
+              type: ticket.list
+      method: POST
+      pagination:
+        cursor: $request.pagination.starting_after
+        next_cursor: $response.pages.next.starting_after
+        results: $response.tickets
+      path: /tickets/search
+      request:
+        body:
+          type: root.SearchRequest
+        content-type: application/json
+      response:
+        docs: successful
+        status-code: 200
+        type: root.TicketList
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    update:
+      auth: true
+      examples:
+        - path-parameters:
+            ticket_id: ticket_id
+      method: PUT
+      path: /tickets/{ticket_id}
+      request:
+        name: UpdateTicketRequest
+        path-parameters:
+          ticket_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    updateTicket:
+      auth: true
+      display-name: Update a ticket
+      docs: You can update a ticket.
+      errors:
+        - root.BadRequestError
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: Successful response
+          path-parameters:
+            id: id
+          request:
+            admin_id: 991268011
+            assignee_id: '123'
+            open: true
+            snoozed_until: 1673609604
+            ticket_attributes:
+              _default_description_: there is a problem
+              _default_title_: example
+            ticket_state_id: '123'
+          response:
+            body:
+              admin_assignee_id: '991268013'
+              category: Back-office
+              contacts:
+                contacts:
+                  - external_id: 8df1fa21-b41d-4621-9229-d6f7a3a590ce
+                    id: 6762f2dd1bb69f9f2193bc55
+                    type: contact
+                type: contact.list
+              created_at: 1734537950
+              id: '627'
+              is_shared: false
+              linked_objects:
+                data:
+                  - id: '7583'
+                has_more: false
+                total_count: 0
+                type: list
+              open: true
+              snoozed_until: 1734627600
+              team_assignee_id: '0'
+              ticket_attributes:
+                _default_description_: there is a problem
+                _default_title_: example
+              ticket_id: '34'
+              ticket_parts:
+                ticket_parts:
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: admin477@email.com
+                      id: '991268011'
+                      name: Ciaran477 Lee
+                      type: admin
+                    created_at: 1734537951
+                    id: '176'
+                    part_type: ticket_state_updated_by_admin
+                    previous_ticket_state: submitted
+                    redacted: false
+                    ticket_state: submitted
+                    type: ticket_part
+                    updated_at: 1734537951
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537953
+                    id: '177'
+                    part_type: ticket_attribute_updated_by_admin
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537953
+                    updated_attribute_data:
+                      attribute:
+                        id: '10'
+                        label: Photo
+                        type: attribute
+                      value:
+                        id:
+                          - 2
+                        label:
+                          - photo.png
+                        type: value
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537953
+                    id: '178'
+                    part_type: ticket_attribute_updated_by_admin
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537953
+                    updated_attribute_data:
+                      attribute:
+                        id: '7'
+                        label: Progress
+                        type: attribute
+                      value:
+                        id: Fast
+                        label: Fast
+                        type: value
+                  - app_package_code: test-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537954
+                    id: '179'
+                    part_type: ticket_state_updated_by_admin
+                    previous_ticket_state: submitted
+                    redacted: false
+                    ticket_state: in_progress
+                    type: ticket_part
+                    updated_at: 1734537954
+                  - app_package_code: text-integration
+                    assigned_to:
+                      id: '991268013'
+                      type: admin
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: admin477@email.com
+                      id: '991268011'
+                      name: Ciaran477 Lee
+                      type: admin
+                    created_at: 1734537954
+                    id: '180'
+                    part_type: assignment
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537954
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537955
+                    id: '181'
+                    part_type: snoozed
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537955
+                total_count: 6
+                type: ticket_part.list
+              ticket_state:
+                category: in_progress
+                external_label: In progress
+                id: '8498'
+                internal_label: In progress
+                type: ticket_state
+              ticket_type:
+                archived: false
+                category: Back-office
+                created_at: 1734537948
+                description: my ticket type description is awesome.
+                icon: 🦁
+                id: '90'
+                name: my-ticket-type-25
+                ticket_states:
+                  type: list
+                ticket_type_attributes:
+                  type: list
+                type: ticket_type
+                updated_at: 1734537948
+                workspace_id: this_is_an_id692_that_should_be_at_least_
+              type: ticket
+              updated_at: 1734537955
+        - name: Admin not found
+          path-parameters:
+            id: id
+          request:
+            admin_id: 991268011
+            assignee_id: '123'
+            ticket_attributes:
+              _default_description_: there is a problem
+              _default_title_: example
+            ticket_state_id: '123'
+          response:
+            body:
+              admin_assignee_id: '991268013'
+              category: Back-office
+              contacts:
+                contacts:
+                  - external_id: 8df1fa21-b41d-4621-9229-d6f7a3a590ce
+                    id: 6762f2dd1bb69f9f2193bc55
+                    type: contact
+                type: contact.list
+              created_at: 1734537950
+              id: '627'
+              is_shared: false
+              linked_objects:
+                data:
+                  - id: '7583'
+                has_more: false
+                total_count: 0
+                type: list
+              open: true
+              snoozed_until: 1734627600
+              team_assignee_id: '0'
+              ticket_attributes:
+                _default_description_: there is a problem
+                _default_title_: example
+              ticket_id: '34'
+              ticket_parts:
+                ticket_parts:
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: admin477@email.com
+                      id: '991268011'
+                      name: Ciaran477 Lee
+                      type: admin
+                    created_at: 1734537951
+                    id: '176'
+                    part_type: ticket_state_updated_by_admin
+                    previous_ticket_state: submitted
+                    redacted: false
+                    ticket_state: submitted
+                    type: ticket_part
+                    updated_at: 1734537951
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537953
+                    id: '177'
+                    part_type: ticket_attribute_updated_by_admin
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537953
+                    updated_attribute_data:
+                      attribute:
+                        id: '10'
+                        label: Photo
+                        type: attribute
+                      value:
+                        id:
+                          - 2
+                        label:
+                          - photo.png
+                        type: value
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537953
+                    id: '178'
+                    part_type: ticket_attribute_updated_by_admin
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537953
+                    updated_attribute_data:
+                      attribute:
+                        id: '7'
+                        label: Progress
+                        type: attribute
+                      value:
+                        id: Fast
+                        label: Fast
+                        type: value
+                  - app_package_code: test-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537954
+                    id: '179'
+                    part_type: ticket_state_updated_by_admin
+                    previous_ticket_state: submitted
+                    redacted: false
+                    ticket_state: in_progress
+                    type: ticket_part
+                    updated_at: 1734537954
+                  - app_package_code: text-integration
+                    assigned_to:
+                      id: '991268013'
+                      type: admin
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: admin477@email.com
+                      id: '991268011'
+                      name: Ciaran477 Lee
+                      type: admin
+                    created_at: 1734537954
+                    id: '180'
+                    part_type: assignment
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537954
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537955
+                    id: '181'
+                    part_type: snoozed
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537955
+                total_count: 6
+                type: ticket_part.list
+              ticket_state:
+                category: in_progress
+                external_label: In progress
+                id: '8498'
+                internal_label: In progress
+                type: ticket_state
+              ticket_type:
+                archived: false
+                category: Back-office
+                created_at: 1734537948
+                description: my ticket type description is awesome.
+                icon: 🦁
+                id: '90'
+                name: my-ticket-type-25
+                ticket_states:
+                  type: list
+                ticket_type_attributes:
+                  type: list
+                type: ticket_type
+                updated_at: 1734537948
+                workspace_id: this_is_an_id692_that_should_be_at_least_
+              type: ticket
+              updated_at: 1734537955
+        - name: Assignee not found
+          path-parameters:
+            id: id
+          request:
+            admin_id: 991268011
+            assignee_id: '123'
+            ticket_attributes:
+              _default_description_: there is a problem
+              _default_title_: example
+            ticket_state_id: '123'
+          response:
+            body:
+              admin_assignee_id: '991268013'
+              category: Back-office
+              contacts:
+                contacts:
+                  - external_id: 8df1fa21-b41d-4621-9229-d6f7a3a590ce
+                    id: 6762f2dd1bb69f9f2193bc55
+                    type: contact
+                type: contact.list
+              created_at: 1734537950
+              id: '627'
+              is_shared: false
+              linked_objects:
+                data:
+                  - id: '7583'
+                has_more: false
+                total_count: 0
+                type: list
+              open: true
+              snoozed_until: 1734627600
+              team_assignee_id: '0'
+              ticket_attributes:
+                _default_description_: there is a problem
+                _default_title_: example
+              ticket_id: '34'
+              ticket_parts:
+                ticket_parts:
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: admin477@email.com
+                      id: '991268011'
+                      name: Ciaran477 Lee
+                      type: admin
+                    created_at: 1734537951
+                    id: '176'
+                    part_type: ticket_state_updated_by_admin
+                    previous_ticket_state: submitted
+                    redacted: false
+                    ticket_state: submitted
+                    type: ticket_part
+                    updated_at: 1734537951
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537953
+                    id: '177'
+                    part_type: ticket_attribute_updated_by_admin
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537953
+                    updated_attribute_data:
+                      attribute:
+                        id: '10'
+                        label: Photo
+                        type: attribute
+                      value:
+                        id:
+                          - 2
+                        label:
+                          - photo.png
+                        type: value
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537953
+                    id: '178'
+                    part_type: ticket_attribute_updated_by_admin
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537953
+                    updated_attribute_data:
+                      attribute:
+                        id: '7'
+                        label: Progress
+                        type: attribute
+                      value:
+                        id: Fast
+                        label: Fast
+                        type: value
+                  - app_package_code: test-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537954
+                    id: '179'
+                    part_type: ticket_state_updated_by_admin
+                    previous_ticket_state: submitted
+                    redacted: false
+                    ticket_state: in_progress
+                    type: ticket_part
+                    updated_at: 1734537954
+                  - app_package_code: text-integration
+                    assigned_to:
+                      id: '991268013'
+                      type: admin
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: admin477@email.com
+                      id: '991268011'
+                      name: Ciaran477 Lee
+                      type: admin
+                    created_at: 1734537954
+                    id: '180'
+                    part_type: assignment
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537954
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537955
+                    id: '181'
+                    part_type: snoozed
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537955
+                total_count: 6
+                type: ticket_part.list
+              ticket_state:
+                category: in_progress
+                external_label: In progress
+                id: '8498'
+                internal_label: In progress
+                type: ticket_state
+              ticket_type:
+                archived: false
+                category: Back-office
+                created_at: 1734537948
+                description: my ticket type description is awesome.
+                icon: 🦁
+                id: '90'
+                name: my-ticket-type-25
+                ticket_states:
+                  type: list
+                ticket_type_attributes:
+                  type: list
+                type: ticket_type
+                updated_at: 1734537948
+                workspace_id: this_is_an_id692_that_should_be_at_least_
+              type: ticket
+              updated_at: 1734537955
+        - name: >-
+            Ticket state id is not valid or is not associated with the ticket
+            type.
+          path-parameters:
+            id: id
+          request:
+            ticket_state_id: '123'
+          response:
+            body:
+              admin_assignee_id: '991268013'
+              category: Back-office
+              contacts:
+                contacts:
+                  - external_id: 8df1fa21-b41d-4621-9229-d6f7a3a590ce
+                    id: 6762f2dd1bb69f9f2193bc55
+                    type: contact
+                type: contact.list
+              created_at: 1734537950
+              id: '627'
+              is_shared: false
+              linked_objects:
+                data:
+                  - id: '7583'
+                has_more: false
+                total_count: 0
+                type: list
+              open: true
+              snoozed_until: 1734627600
+              team_assignee_id: '0'
+              ticket_attributes:
+                _default_description_: there is a problem
+                _default_title_: example
+              ticket_id: '34'
+              ticket_parts:
+                ticket_parts:
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: admin477@email.com
+                      id: '991268011'
+                      name: Ciaran477 Lee
+                      type: admin
+                    created_at: 1734537951
+                    id: '176'
+                    part_type: ticket_state_updated_by_admin
+                    previous_ticket_state: submitted
+                    redacted: false
+                    ticket_state: submitted
+                    type: ticket_part
+                    updated_at: 1734537951
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537953
+                    id: '177'
+                    part_type: ticket_attribute_updated_by_admin
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537953
+                    updated_attribute_data:
+                      attribute:
+                        id: '10'
+                        label: Photo
+                        type: attribute
+                      value:
+                        id:
+                          - 2
+                        label:
+                          - photo.png
+                        type: value
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537953
+                    id: '178'
+                    part_type: ticket_attribute_updated_by_admin
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537953
+                    updated_attribute_data:
+                      attribute:
+                        id: '7'
+                        label: Progress
+                        type: attribute
+                      value:
+                        id: Fast
+                        label: Fast
+                        type: value
+                  - app_package_code: test-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537954
+                    id: '179'
+                    part_type: ticket_state_updated_by_admin
+                    previous_ticket_state: submitted
+                    redacted: false
+                    ticket_state: in_progress
+                    type: ticket_part
+                    updated_at: 1734537954
+                  - app_package_code: text-integration
+                    assigned_to:
+                      id: '991268013'
+                      type: admin
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: admin477@email.com
+                      id: '991268011'
+                      name: Ciaran477 Lee
+                      type: admin
+                    created_at: 1734537954
+                    id: '180'
+                    part_type: assignment
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537954
+                  - app_package_code: text-integration
+                    attachments:
+                      - content_type: image/png
+                        filesize: 100
+                        height: 100
+                        name: example.png
+                        type: upload
+                        url: https://picsum.photos/200/300
+                        width: 100
+                    author:
+                      email: >-
+                        operator+this_is_an_id692_that_should_be_at_least_@intercom.io
+                      id: '991268012'
+                      name: Fin
+                      type: bot
+                    created_at: 1734537955
+                    id: '181'
+                    part_type: snoozed
+                    redacted: false
+                    type: ticket_part
+                    updated_at: 1734537955
+                total_count: 6
+                type: ticket_part.list
+              ticket_state:
+                category: in_progress
+                external_label: In progress
+                id: '8498'
+                internal_label: In progress
+                type: ticket_state
+              ticket_type:
+                archived: false
+                category: Back-office
+                created_at: 1734537948
+                description: my ticket type description is awesome.
+                icon: 🦁
+                id: '90'
+                name: my-ticket-type-25
+                ticket_states:
+                  type: list
+                ticket_type_attributes:
+                  type: list
+                type: ticket_type
+                updated_at: 1734537948
+                workspace_id: this_is_an_id692_that_should_be_at_least_
+              type: ticket
+              updated_at: 1734537955
+      method: PUT
+      path: /tickets/{id}
+      request:
+        body:
+          properties:
+            admin_id:
+              docs: >-
+                The ID of the admin performing ticket update. Needed for
+                workflows execution and attributing actions to specific admins.
+              type: optional<integer>
+            assignee_id:
+              docs: >-
+                The ID of the admin or team to which the ticket is assigned. Set
+                this 0 to unassign it.
+              type: optional<string>
+            company_id:
+              docs: >-
+                The ID of the company that the ticket is associated with. The
+                unique identifier for the company which is given by Intercom.
+                Set to nil to remove company.
+              type: optional<string>
+            is_shared:
+              docs: Specify whether the ticket is visible to users.
+              type: optional<boolean>
+            open:
+              docs: >-
+                Specify if a ticket is open. Set to false to close a ticket.
+                Closing a ticket will also unsnooze it.
+              type: optional<boolean>
+            snoozed_until:
+              docs: The time you want the ticket to reopen.
+              type: optional<integer>
+            ticket_attributes:
+              docs: The attributes set on the ticket.
+              type: optional<map<string, unknown>>
+            ticket_state_id:
+              docs: The ID of the ticket state associated with the ticket type.
+              type: optional<string>
+        content-type: application/json
+        name: UpdateTicketRequest
+        path-parameters:
+          id:
+            docs: The unique identifier for the ticket which is given by Intercom
+            type: string
+      response:
+        docs: Successful response
+        status-code: 200
+        type: optional<Ticket>
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/2.14/api.intercom.io.yaml

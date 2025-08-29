@@ -1,0 +1,178 @@
+imports:
+  news: ../news.yml
+  root: ../__package__.yml
+service:
+  auth: false
+  base-path: ''
+  endpoints:
+    create:
+      auth: true
+      display-name: Create a news item
+      docs: You can create a news item
+      errors:
+        - root.UnauthorizedError
+      examples:
+        - name: successful
+          request:
+            body: <p>New costumes in store for this spooky season</p>
+            deliver_silently: true
+            labels:
+              - Product
+              - Update
+              - New
+            newsfeed_assignments:
+              - newsfeed_id: 53
+                published_at: 1664638214
+            reactions:
+              - 😆
+              - 😅
+            sender_id: 991267834
+            state: live
+            title: Halloween is here!
+          response:
+            body:
+              body: <p>New costumes in store for this spooky season</p>
+              created_at: 1734537797
+              deliver_silently: true
+              id: '33'
+              labels:
+                - New
+                - Product
+                - Update
+              newsfeed_assignments:
+                - newsfeed_id: 53
+                  published_at: 1664638214
+              reactions:
+                - 😆
+                - 😅
+              sender_id: 991267834
+              state: live
+              title: Halloween is here!
+              updated_at: 1734537797
+              workspace_id: this_is_an_id534_that_should_be_at_least_
+      method: POST
+      path: /news/news_items
+      request:
+        body:
+          type: root.NewsItemRequest
+        content-type: application/json
+      response:
+        docs: successful
+        status-code: 200
+        type: news.NewsItem
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    delete:
+      auth: true
+      examples:
+        - path-parameters:
+            news_item_id: news_item_id
+      method: DELETE
+      path: /news/news_items/{news_item_id}
+      request:
+        name: DeleteNewsItemRequest
+        path-parameters:
+          news_item_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    find:
+      auth: true
+      examples:
+        - path-parameters:
+            news_item_id: news_item_id
+      method: GET
+      path: /news/news_items/{news_item_id}
+      request:
+        name: FindNewsItemRequest
+        path-parameters:
+          news_item_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    list:
+      auth: true
+      display-name: List all news items
+      docs: You can fetch a list of all news items
+      errors:
+        - root.UnauthorizedError
+      examples:
+        - name: successful
+          response:
+            body:
+              data:
+                - body: >-
+                    We are excited to announce the launch of News Items, a new
+                    content type in Intercom enabling you to announce product
+                    updates, company news, promotions, events and more with your
+                    customers.
+                  cover_image_url: https://example.com/cover.jpg
+                  created_at: 1610589632
+                  deliver_silently: true
+                  id: '141'
+                  labels:
+                    - Product Update
+                  newsfeed_assignments:
+                    - newsfeed_id: 198313
+                      published_at: 1674917488
+                  reactions:
+                    - 👍
+                  sender_id: 123
+                  state: draft
+                  title: 'New feature: News Items'
+                  type: news-item
+                  updated_at: 1610589632
+                  workspace_id: t74hdn32
+                - body: >-
+                    We are excited to announce the launch of News Items, a new
+                    content type in Intercom enabling you to announce product
+                    updates, company news, promotions, events and more with your
+                    customers.
+                  cover_image_url: https://example.com/cover.jpg
+                  created_at: 1610589632
+                  deliver_silently: true
+                  id: '141'
+                  labels:
+                    - Product Update
+                  newsfeed_assignments:
+                    - newsfeed_id: 198313
+                      published_at: 1674917488
+                  reactions:
+                    - 👍
+                  sender_id: 123
+                  state: draft
+                  title: 'New feature: News Items'
+                  type: news-item
+                  updated_at: 1610589632
+                  workspace_id: t74hdn32
+              pages:
+                next:
+                  per_page: 2
+                  starting_after: your-cursor-from-response
+                page: 1
+                per_page: 10
+                total_pages: 1
+                type: pages
+              total_count: 2
+              type: list
+      method: GET
+      path: /news/news_items
+      response:
+        docs: successful
+        status-code: 200
+        type: root.PaginatedResponse
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    update:
+      auth: true
+      examples:
+        - path-parameters:
+            news_item_id: news_item_id
+      method: PUT
+      path: /news/news_items/{news_item_id}
+      request:
+        name: UpdateNewsItemRequest
+        path-parameters:
+          news_item_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/2.14/api.intercom.io.yaml

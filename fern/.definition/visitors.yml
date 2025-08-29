@@ -1,0 +1,435 @@
+imports:
+  contacts: contacts.yml
+  root: __package__.yml
+types:
+  ConvertVisitorRequestUser:
+    discriminated: false
+    docs: The unique identifiers retained after converting or merging.
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+    union:
+      - UserWithId
+      - UserWithUserId
+  ConvertVisitorRequestVisitor:
+    discriminated: false
+    docs: The unique identifiers to convert a single Visitor.
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+    union:
+      - VisitorWithId
+      - VisitorWithUserId
+      - VisitorWithEmail
+  UserWithId:
+    inline: true
+    properties:
+      email:
+        docs: The contact's email, retained by default if one is present.
+        type: optional<string>
+      id:
+        docs: The unique identifier for the contact which is given by Intercom.
+        type: string
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  UserWithUserId:
+    inline: true
+    properties:
+      email:
+        docs: The contact's email, retained by default if one is present.
+        type: optional<string>
+      user_id:
+        docs: A unique identifier for the contact which is given to Intercom.
+        type: string
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  VisitorWithEmail:
+    inline: true
+    properties:
+      email:
+        docs: The visitor's email.
+        type: string
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  VisitorWithId:
+    inline: true
+    properties:
+      id:
+        docs: The unique identifier for the contact which is given by Intercom.
+        type: string
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  VisitorWithUserId:
+    inline: true
+    properties:
+      user_id:
+        docs: A unique identifier for the contact which is given to Intercom.
+        type: string
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+docs: Everything about your Visitors
+service:
+  auth: false
+  base-path: ''
+  display-name: Visitors
+  endpoints:
+    find:
+      auth: true
+      display-name: Retrieve a visitor with User ID
+      docs: You can fetch the details of a single visitor.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: successful
+          query-parameters:
+            user_id: user_id
+          response:
+            body:
+              anonymous: true
+              app_id: this_is_an_id722_that_should_be_at_least_
+              avatar:
+                type: avatar
+              companies:
+                companies:
+                  - app_id: ecahpwf5
+                    company_id: '6'
+                    created_at: 1663597223
+                    custom_attributes:
+                      monthly_spend: 155.5
+                      paid_subscriber: true
+                      team_mates: 9
+                    id: 531ee472cce572a6ec000006
+                    industry: Software
+                    last_request_at: 1663597223
+                    monthly_spend: 100
+                    name: Blue Sun
+                    remote_created_at: 1663597223
+                    session_count: 100
+                    size: 100
+                    updated_at: 1663597223
+                    user_count: 100
+                    website: https://www.intercom.com
+                type: company.list
+              created_at: 1734538000
+              custom_attributes:
+                key: value
+              email: ''
+              has_hard_bounced: false
+              id: 6762f3101bb69f9f2193bc64
+              las_request_at: 1663597260
+              location_data:
+                city_name: Dublin
+                continent_code: EU
+                country_code: IRL
+                country_name: Ireland
+                postal_code: D02 N960
+                region_name: Leinster
+                timezone: Europe/Dublin
+                type: location_data
+              marked_email_as_spam: false
+              remote_created_at: 1734538000
+              segments:
+                segments:
+                  - segments
+                type: segment.list
+              session_count: 0
+              signed_up_at: 1734538000
+              social_profiles:
+                social_profiles:
+                  - social_profiles
+                type: social_profile.list
+              tags:
+                tags:
+                  - id: '8482'
+                    name: tag_name
+                type: tag.list
+              type: visitor
+              unsubscribed_from_emails: false
+              updated_at: 1734538000
+              user_id: 3ecf64d0-9ed1-4e9f-88e1-da7d6e6782f3
+      method: GET
+      path: /visitors
+      request:
+        name: FindVisitorRequest
+        query-parameters:
+          user_id:
+            docs: The user_id of the Visitor you want to retrieve.
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: optional<root.Visitor>
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    mergeToContact:
+      auth: true
+      display-name: Convert a visitor
+      docs: >
+        You can merge a Visitor to a Contact of role type `lead` or `user`.
+
+
+        > 📘 What happens upon a visitor being converted?
+
+        >
+
+        > If the User exists, then the Visitor will be merged into it, the
+        Visitor deleted and the User returned. If the User does not exist, the
+        Visitor will be converted to a User, with the User identifiers replacing
+        it's Visitor identifiers.
+      errors:
+        - root.UnauthorizedError
+      examples:
+        - name: successful
+          request:
+            type: user
+            user:
+              email: foo@bar.com
+              id: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+            visitor:
+              user_id: 3ecf64d0-9ed1-4e9f-88e1-da7d6e6782f3
+          response:
+            body:
+              companies:
+                data:
+                  - id: 5ba682d23d7cf92bef87bfd4
+                    url: /companies/5ba682d23d7cf92bef87bfd4
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f3141bb69f9f2193bc6b/companies
+              created_at: 1734538004
+              custom_attributes:
+                key: value
+              email: foo@bar.com
+              email_domain: example.com
+              has_hard_bounced: false
+              id: 6762f3141bb69f9f2193bc6b
+              location:
+                type: location
+              marked_email_as_spam: false
+              notes:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f3141bb69f9f2193bc6b/notes
+              role: user
+              signed_up_at: 1734538004
+              social_profiles:
+                data:
+                  - name: Facebook
+                    url: http://twitter.com/th1sland
+              tags:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f3141bb69f9f2193bc6b/tags
+              type: contact
+              unsubscribed_from_emails: false
+              updated_at: 1734538005
+              workspace_id: this_is_an_id728_that_should_be_at_least_
+      method: POST
+      path: /visitors/convert
+      request:
+        body:
+          properties:
+            type:
+              docs: >-
+                Represents the role of the Contact model. Accepts `lead` or
+                `user`.
+              type: string
+            user:
+              docs: The unique identifiers retained after converting or merging.
+              type: ConvertVisitorRequestUser
+            visitor:
+              docs: The unique identifiers to convert a single Visitor.
+              type: ConvertVisitorRequestVisitor
+        content-type: application/json
+        name: MergeVisitorToContactRequest
+      response:
+        docs: successful
+        status-code: 200
+        type: contacts.Contact
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    update:
+      auth: true
+      display-name: Update a visitor
+      docs: >
+        Sending a PUT request to `/visitors` will result in an update of an
+        existing Visitor.
+
+
+        **Option 1.** You can update a visitor by passing in the `user_id` of
+        the visitor in the Request body.
+
+
+        **Option 2.** You can update a visitor by passing in the `id` of the
+        visitor in the Request body.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: successful
+          request:
+            id: 6762f30c1bb69f9f2193bc5e
+            name: Gareth Bale
+          response:
+            body:
+              anonymous: true
+              app_id: this_is_an_id716_that_should_be_at_least_
+              avatar:
+                image_url: >-
+                  https://static.intercomassets.com/app/pseudonym_avatars_2019/violet-suitcase.png
+                type: avatar
+              companies:
+                companies:
+                  - app_id: ecahpwf5
+                    company_id: '6'
+                    created_at: 1663597223
+                    custom_attributes:
+                      monthly_spend: 155.5
+                      paid_subscriber: true
+                      team_mates: 9
+                    id: 531ee472cce572a6ec000006
+                    industry: Software
+                    last_request_at: 1663597223
+                    monthly_spend: 100
+                    name: Blue Sun
+                    remote_created_at: 1663597223
+                    session_count: 100
+                    size: 100
+                    updated_at: 1663597223
+                    user_count: 100
+                    website: https://www.intercom.com
+                type: company.list
+              created_at: 1734537996
+              custom_attributes:
+                key: value
+              email: ''
+              has_hard_bounced: false
+              id: 6762f30c1bb69f9f2193bc5e
+              las_request_at: 1663597260
+              location_data:
+                city_name: Dublin
+                continent_code: EU
+                country_code: IRL
+                country_name: Ireland
+                postal_code: D02 N960
+                region_name: Leinster
+                timezone: Europe/Dublin
+                type: location_data
+              marked_email_as_spam: false
+              name: Gareth Bale
+              pseudonym: Violet Suitcase
+              remote_created_at: 1734537996
+              segments:
+                segments:
+                  - segments
+                type: segment.list
+              session_count: 0
+              signed_up_at: 1734537996
+              social_profiles:
+                social_profiles:
+                  - social_profiles
+                type: social_profile.list
+              tags:
+                tags:
+                  - id: '8482'
+                    name: tag_name
+                type: tag.list
+              type: visitor
+              unsubscribed_from_emails: false
+              updated_at: 1734537997
+              user_id: 3ecf64d0-9ed1-4e9f-88e1-da7d6e6782f3
+        - name: visitor Not Found
+          request:
+            name: Christian Fail
+            user_id: fail
+          response:
+            body:
+              anonymous: true
+              app_id: this_is_an_id716_that_should_be_at_least_
+              avatar:
+                image_url: >-
+                  https://static.intercomassets.com/app/pseudonym_avatars_2019/violet-suitcase.png
+                type: avatar
+              companies:
+                companies:
+                  - app_id: ecahpwf5
+                    company_id: '6'
+                    created_at: 1663597223
+                    custom_attributes:
+                      monthly_spend: 155.5
+                      paid_subscriber: true
+                      team_mates: 9
+                    id: 531ee472cce572a6ec000006
+                    industry: Software
+                    last_request_at: 1663597223
+                    monthly_spend: 100
+                    name: Blue Sun
+                    remote_created_at: 1663597223
+                    session_count: 100
+                    size: 100
+                    updated_at: 1663597223
+                    user_count: 100
+                    website: https://www.intercom.com
+                type: company.list
+              created_at: 1734537996
+              custom_attributes:
+                key: value
+              email: ''
+              has_hard_bounced: false
+              id: 6762f30c1bb69f9f2193bc5e
+              las_request_at: 1663597260
+              location_data:
+                city_name: Dublin
+                continent_code: EU
+                country_code: IRL
+                country_name: Ireland
+                postal_code: D02 N960
+                region_name: Leinster
+                timezone: Europe/Dublin
+                type: location_data
+              marked_email_as_spam: false
+              name: Gareth Bale
+              pseudonym: Violet Suitcase
+              remote_created_at: 1734537996
+              segments:
+                segments:
+                  - segments
+                type: segment.list
+              session_count: 0
+              signed_up_at: 1734537996
+              social_profiles:
+                social_profiles:
+                  - social_profiles
+                type: social_profile.list
+              tags:
+                tags:
+                  - id: '8482'
+                    name: tag_name
+                type: tag.list
+              type: visitor
+              unsubscribed_from_emails: false
+              updated_at: 1734537997
+              user_id: 3ecf64d0-9ed1-4e9f-88e1-da7d6e6782f3
+      method: PUT
+      path: /visitors
+      request:
+        body:
+          type: root.UpdateVisitorRequest
+        content-type: application/json
+      response:
+        docs: successful
+        status-code: 200
+        type: optional<root.Visitor>
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/2.14/api.intercom.io.yaml

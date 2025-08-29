@@ -1,0 +1,1417 @@
+imports:
+  root: ../__package__.yml
+  unstableRoot: __package__.yml
+types:
+  Contact:
+    docs: Contacts represent your leads and users in Intercom.
+    properties:
+      android_app_name:
+        docs: The name of the Android app which the contact is using.
+        type: optional<string>
+      android_app_version:
+        docs: The version of the Android app which the contact is using.
+        type: optional<string>
+      android_device:
+        docs: The Android device which the contact is using.
+        type: optional<string>
+      android_last_seen_at:
+        docs: >-
+          (UNIX timestamp) The time when the contact was last seen on an Android
+          device.
+        type: optional<integer>
+      android_os_version:
+        docs: The version of the Android OS which the contact is using.
+        type: optional<string>
+      android_sdk_version:
+        docs: The version of the Android SDK which the contact is using.
+        type: optional<string>
+      avatar:
+        type: optional<ContactAvatar>
+      browser:
+        docs: The name of the browser which the contact is using.
+        type: optional<string>
+      browser_language:
+        docs: The language set by the browser which the contact is using.
+        type: optional<string>
+      browser_version:
+        docs: The version of the browser which the contact is using.
+        type: optional<string>
+      companies:
+        type: optional<unstableRoot.ContactCompanies>
+      created_at:
+        docs: (UNIX timestamp) The time when the contact was created.
+        type: optional<integer>
+      custom_attributes:
+        docs: The custom attributes which are set for the contact.
+        type: optional<map<string, unknown>>
+      email:
+        docs: The contact's email.
+        type: optional<string>
+      email_domain:
+        docs: The contact's email domain.
+        type: optional<string>
+      external_id:
+        docs: The unique identifier for the contact which is provided by the Client.
+        type: optional<string>
+      formatted_phone:
+        docs: The contacts phone number normalized to the E164 format
+        type: optional<string>
+      has_hard_bounced:
+        docs: Whether the contact has had an email sent to them hard bounce.
+        type: optional<boolean>
+      id:
+        docs: The unique identifier for the contact which is given by Intercom.
+        type: optional<string>
+      ios_app_name:
+        docs: The name of the iOS app which the contact is using.
+        type: optional<string>
+      ios_app_version:
+        docs: The version of the iOS app which the contact is using.
+        type: optional<string>
+      ios_device:
+        docs: The iOS device which the contact is using.
+        type: optional<string>
+      ios_last_seen_at:
+        docs: (UNIX timestamp) The last time the contact used the iOS app.
+        type: optional<integer>
+      ios_os_version:
+        docs: The version of iOS which the contact is using.
+        type: optional<string>
+      ios_sdk_version:
+        docs: The version of the iOS SDK which the contact is using.
+        type: optional<string>
+      language_override:
+        docs: >-
+          A preferred language setting for the contact, used by the Intercom
+          Messenger even if their browser settings change.
+        type: optional<string>
+      last_contacted_at:
+        docs: (UNIX timestamp) The time when the contact was last messaged.
+        type: optional<integer>
+      last_email_clicked_at:
+        docs: >-
+          (UNIX timestamp) The time when the contact last clicked a link in an
+          email.
+        type: optional<integer>
+      last_email_opened_at:
+        docs: (UNIX timestamp) The time when the contact last opened an email.
+        type: optional<integer>
+      last_replied_at:
+        docs: (UNIX timestamp) The time when the contact last messaged in.
+        type: optional<integer>
+      last_seen_at:
+        docs: >-
+          (UNIX timestamp) The time when the contact was last seen (either where
+          the Intercom Messenger was installed or when specified manually).
+        type: optional<integer>
+      location:
+        type: optional<unstableRoot.ContactLocation>
+      marked_email_as_spam:
+        docs: Whether the contact has marked an email sent to them as spam.
+        type: optional<boolean>
+      name:
+        docs: The contacts name.
+        type: optional<string>
+      notes:
+        type: optional<unstableRoot.ContactNotes>
+      os:
+        docs: The operating system which the contact is using.
+        type: optional<string>
+      owner_id:
+        docs: >-
+          The id of an admin that has been assigned account ownership of the
+          contact.
+        type: optional<integer>
+      phone:
+        docs: The contacts phone.
+        type: optional<string>
+      role:
+        docs: The role of the contact.
+        type: optional<string>
+      signed_up_at:
+        docs: (UNIX timestamp) The time specified for when a contact signed up.
+        type: optional<integer>
+      social_profiles:
+        type: optional<unstableRoot.ContactSocialProfiles>
+      tags:
+        type: optional<unstableRoot.ContactTags>
+      type:
+        docs: The type of object.
+        type: optional<string>
+      unsubscribed_from_emails:
+        docs: Whether the contact is unsubscribed from emails.
+        type: optional<boolean>
+      updated_at:
+        docs: (UNIX timestamp) The time when the contact was last updated.
+        type: optional<integer>
+      workspace_id:
+        docs: The id of the workspace which the contact belongs to.
+        type: optional<string>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  ContactAvatar:
+    inline: true
+    properties:
+      image_url:
+        docs: An image URL containing the avatar of a contact.
+        type: optional<string>
+        validation:
+          format: uri
+      type:
+        docs: The type of object
+        type: optional<string>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  CreateContactResponse:
+    extends:
+      - Contact
+    properties:
+      enabled_push_messaging:
+        docs: If the user has enabled push messaging.
+        type: optional<boolean>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  MergeContactResponse:
+    extends:
+      - Contact
+    properties:
+      enabled_push_messaging:
+        docs: If the user has enabled push messaging.
+        type: optional<boolean>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  ShowContactByExternalIdResponse:
+    extends:
+      - Contact
+    properties:
+      enabled_push_messaging:
+        docs: If the user has enabled push messaging.
+        type: optional<boolean>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  ShowContactResponse:
+    extends:
+      - Contact
+    properties:
+      enabled_push_messaging:
+        docs: If the user has enabled push messaging.
+        type: optional<boolean>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  UpdateContactResponse:
+    extends:
+      - Contact
+    properties:
+      enabled_push_messaging:
+        docs: If the user has enabled push messaging.
+        type: optional<boolean>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+docs: Everything about your contacts
+service:
+  auth: false
+  base-path: ''
+  display-name: Contacts
+  endpoints:
+    ArchiveContact:
+      auth: true
+      display-name: Archive contact
+      docs: You can archive a single contact.
+      examples:
+        - path-parameters:
+            id: 63a07ddf05a32042dffac965
+          response:
+            body:
+              archived: true
+              external_id: '70'
+              id: 5ba682d23d7cf92bef87bfd4
+              type: contact
+      method: POST
+      path: /contacts/{id}/archive
+      request:
+        name: ArchiveContactRequest
+        path-parameters:
+          id:
+            docs: id
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.ContactArchived
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    BlockContact:
+      auth: true
+      display-name: Block contact
+      docs: >-
+        Block a single contact.<br>**Note:** conversations of the contact will
+        also be archived during the process.<br>More details in [FAQ How do I
+        block Inbox
+        spam?](https://www.intercom.com/help/en/articles/8838656-inbox-faqs)
+      examples:
+        - path-parameters:
+            id: 63a07ddf05a32042dffac965
+          response:
+            body:
+              blocked: true
+              external_id: '70'
+              id: 5ba682d23d7cf92bef87bfd4
+              type: contact
+      method: POST
+      path: /contacts/{id}/block
+      request:
+        name: BlockContactRequest
+        path-parameters:
+          id:
+            docs: id
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.ContactBlocked
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    CreateContact:
+      auth: true
+      display-name: Create contact
+      docs: You can create a new contact (ie. user or lead).
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          request:
+            email: joebloggs@intercom.io
+          response:
+            body:
+              companies:
+                data:
+                  - id: 5ba682d23d7cf92bef87bfd4
+                    url: /companies/5ba682d23d7cf92bef87bfd4
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0dd1bb69f9f2193bb83/companies
+              created_at: 1734537437
+              custom_attributes:
+                key: value
+              email: joebloggs@intercom.io
+              email_domain: example.com
+              has_hard_bounced: false
+              id: 6762f0dd1bb69f9f2193bb83
+              location:
+                type: location
+              marked_email_as_spam: false
+              notes:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0dd1bb69f9f2193bb83/notes
+              role: user
+              social_profiles:
+                data:
+                  - name: Facebook
+                    type: social_profile
+                    url: http://twitter.com/th1sland
+              tags:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0dd1bb69f9f2193bb83/tags
+              type: contact
+              unsubscribed_from_emails: false
+              updated_at: 1734537437
+              workspace_id: this_is_an_id303_that_should_be_at_least_
+      method: POST
+      path: /contacts
+      request:
+        body: root.CreateContactRequestTwo
+        content-type: application/json
+      response:
+        docs: successful
+        status-code: 200
+        type: CreateContactResponse
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    DeleteContact:
+      auth: true
+      display-name: Delete a contact
+      docs: You can delete a single contact.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - path-parameters:
+            id: id
+          response:
+            body:
+              deleted: true
+              external_id: '70'
+              id: 5ba682d23d7cf92bef87bfd4
+              type: contact
+      method: DELETE
+      path: /contacts/{id}
+      request:
+        name: DeleteContactRequest
+        path-parameters:
+          id:
+            docs: id
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.ContactDeleted
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    listCompaniesForAContact:
+      auth: true
+      display-name: List attached companies for contact
+      docs: You can fetch a list of companies that are associated to a contact.
+      errors:
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            id: 63a07ddf05a32042dffac965
+          response:
+            body:
+              companies:
+                - app_id: ecahpwf5
+                  company_id: '6'
+                  created_at: 1663597223
+                  custom_attributes:
+                    monthly_spend: custom_attributes
+                    paid_subscriber: custom_attributes
+                    team_mates: custom_attributes
+                  id: 531ee472cce572a6ec000006
+                  industry: Software
+                  last_request_at: 1663597223
+                  monthly_spend: 100
+                  name: Blue Sun
+                  plan:
+                    id: '269315'
+                    name: Pro
+                    type: plan
+                  remote_created_at: 1663597223
+                  session_count: 100
+                  size: 100
+                  type: company
+                  updated_at: 1663597223
+                  user_count: 100
+                  website: https://www.intercom.com
+              pages:
+                page: 1
+                per_page: 50
+                total_pages: 1
+                type: pages
+              total_count: 1
+              type: list
+      method: GET
+      path: /contacts/{id}/companies
+      request:
+        name: ListCompaniesForAContactRequest
+        path-parameters:
+          id:
+            docs: The unique identifier for the contact which is given by Intercom
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.ContactAttachedCompanies
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    ListContacts:
+      auth: true
+      display-name: List all contacts
+      docs: >
+        You can fetch a list of all contacts (ie. users or leads) in your
+        workspace.
+
+        {% admonition type="warning" name="Pagination" %}
+          You can use pagination to limit the number of results returned. The default is `50` results per page.
+          See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.
+        {% /admonition %}
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          response:
+            body:
+              data:
+                - android_app_name: Intercom
+                  android_app_version: 5.0.0
+                  android_device: Pixel 3
+                  android_last_seen_at: 1571672154
+                  android_os_version: '10'
+                  android_sdk_version: '28'
+                  avatar:
+                    type: avatar
+                  browser: Chrome
+                  browser_language: en-US
+                  browser_version: 80.0.3987.132
+                  companies:
+                    has_more: true
+                    total_count: 100
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/companies
+                  created_at: 1571672154
+                  custom_attributes:
+                    key: value
+                  email: joe@example.com
+                  email_domain: example.com
+                  external_id: f3b87a2e09d514c6c2e79b9a
+                  formatted_phone: '+1123456789'
+                  has_hard_bounced: true
+                  id: 5ba682d23d7cf92bef87bfd4
+                  ios_app_name: Intercom
+                  ios_app_version: 5.0.0
+                  ios_device: iPhone 11
+                  ios_last_seen_at: 1571672154
+                  ios_os_version: 13.3.1
+                  ios_sdk_version: 13.3.1
+                  language_override: en
+                  last_contacted_at: 1571672154
+                  last_email_clicked_at: 1571672154
+                  last_email_opened_at: 1571672154
+                  last_replied_at: 1571672154
+                  last_seen_at: 1571672154
+                  marked_email_as_spam: true
+                  name: John Doe
+                  notes:
+                    has_more: true
+                    total_count: 100
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                  os: Mac OS X
+                  owner_id: 123
+                  phone: '+1123456789'
+                  role: user
+                  signed_up_at: 1571672154
+                  tags:
+                    has_more: true
+                    total_count: 100
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/tags
+                  type: contact
+                  unsubscribed_from_emails: true
+                  updated_at: 1571672154
+                  workspace_id: ecahpwf5
+              pages:
+                next:
+                  per_page: 2
+                  starting_after: your-cursor-from-response
+                page: 1
+                per_page: 10
+                total_pages: 0
+                type: pages
+              total_count: 0
+              type: list
+      method: GET
+      path: /contacts
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.ContactList
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    listSegmentsForAContact:
+      auth: true
+      display-name: List attached segments for contact
+      docs: You can fetch a list of segments that are associated to a contact.
+      errors:
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            contact_id: 63a07ddf05a32042dffac965
+          response:
+            body:
+              data:
+                - count: 3
+                  created_at: 1734537394
+                  id: 6762f0b21bb69f9f2193bb65
+                  name: segment
+                  person_type: user
+                  type: segment
+                  updated_at: 1734537394
+              type: list
+      method: GET
+      path: /contacts/{contact_id}/segments
+      request:
+        name: ListSegmentsForAContactRequest
+        path-parameters:
+          contact_id:
+            docs: The unique identifier for the contact which is given by Intercom
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.ContactSegments
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    listSubscriptionsForAContact:
+      auth: true
+      display-name: List subscriptions for a contact
+      docs: >
+        You can fetch a list of subscription types that are attached to a
+        contact. These can be subscriptions that a user has 'opted-in' to or has
+        'opted-out' from, depending on the subscription type.
+
+        This will return a list of Subscription Type objects that the contact is
+        associated with.
+
+
+        The data property will show a combined list of:
+
+          1.Opt-out subscription types that the user has opted-out from.
+          2.Opt-in subscription types that the user has opted-in to receiving.
+      errors:
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+      examples:
+        - name: Successful
+          path-parameters:
+            contact_id: 63a07ddf05a32042dffac965
+          response:
+            body:
+              data:
+                - consent_type: opt_out
+                  content_types:
+                    - email
+                  default_translation:
+                    description: Lorem ipsum dolor sit amet
+                    locale: en
+                    name: Newsletters
+                  id: '91'
+                  state: live
+                  translations:
+                    - description: Lorem ipsum dolor sit amet
+                      locale: en
+                      name: Newsletters
+                  type: subscription
+                - consent_type: opt_in
+                  content_types:
+                    - sms_message
+                  default_translation:
+                    description: Lorem ipsum dolor sit amet
+                    locale: en
+                    name: Newsletters
+                  id: '93'
+                  state: live
+                  translations:
+                    - description: Lorem ipsum dolor sit amet
+                      locale: en
+                      name: Newsletters
+                  type: subscription
+              type: list
+      method: GET
+      path: /contacts/{contact_id}/subscriptions
+      request:
+        name: ListSubscriptionsForAContactRequest
+        path-parameters:
+          contact_id:
+            docs: The unique identifier for the contact which is given by Intercom
+            type: string
+      response:
+        docs: Successful
+        status-code: 200
+        type: unstableRoot.SubscriptionTypeList
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    listTagsForAContact:
+      auth: true
+      display-name: List tags attached to a contact
+      docs: >-
+        You can fetch a list of all tags that are attached to a specific
+        contact.
+      errors:
+        - unstableRoot.UnauthorizedError
+        - unstableRoot.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            contact_id: 63a07ddf05a32042dffac965
+          response:
+            body:
+              data:
+                - applied_at: 1663597223
+                  applied_by:
+                    type: contact
+                  id: '80'
+                  name: Manual tag
+                  type: tag
+              type: list
+      method: GET
+      path: /contacts/{contact_id}/tags
+      request:
+        name: ListTagsForAContactRequest
+        path-parameters:
+          contact_id:
+            docs: The unique identifier for the contact which is given by Intercom
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.TagList
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    MergeContact:
+      auth: true
+      display-name: Merge a lead and a user
+      docs: >-
+        You can merge a contact with a `role` of `lead` into a contact with a
+        `role` of `user`.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          request:
+            from: 6762f0d51bb69f9f2193bb7f
+            into: 6762f0d51bb69f9f2193bb80
+          response:
+            body:
+              companies:
+                data:
+                  - id: 5ba682d23d7cf92bef87bfd4
+                    url: /companies/5ba682d23d7cf92bef87bfd4
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0d51bb69f9f2193bb80/companies
+              created_at: 1734537429
+              custom_attributes:
+                key: value
+              email: joe@bloggs.com
+              email_domain: example.com
+              external_id: '70'
+              has_hard_bounced: false
+              id: 6762f0d51bb69f9f2193bb80
+              location:
+                type: location
+              marked_email_as_spam: false
+              name: Joe Bloggs
+              notes:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0d51bb69f9f2193bb80/notes
+              role: user
+              signed_up_at: 1734537429
+              social_profiles:
+                data:
+                  - name: Facebook
+                    type: social_profile
+                    url: http://twitter.com/th1sland
+              tags:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0d51bb69f9f2193bb80/tags
+              type: contact
+              unsubscribed_from_emails: false
+              updated_at: 1734537430
+              workspace_id: this_is_an_id291_that_should_be_at_least_
+      method: POST
+      path: /contacts/merge
+      request:
+        body:
+          properties:
+            from:
+              docs: >-
+                The unique identifier for the contact to merge away from. Must
+                be a lead.
+              type: optional<string>
+            into:
+              docs: >-
+                The unique identifier for the contact to merge into. Must be a
+                user.
+              type: optional<string>
+        content-type: application/json
+        name: MergeContactsRequest
+      response:
+        docs: successful
+        status-code: 200
+        type: MergeContactResponse
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    SearchContacts:
+      auth: true
+      display-name: Search contacts
+      docs: >
+        You can search for multiple contacts by the value of their attributes in
+        order to fetch exactly who you want.
+
+
+        To search for contacts, you need to send a `POST` request to
+        `https://api.intercom.io/contacts/search`.
+
+
+        This will accept a query object in the body which will define your
+        filters in order to search for contacts.
+
+
+        {% admonition type="warning" name="Optimizing search queries" %}
+          Search queries can be complex, so optimizing them can help the performance of your search.
+          Use the `AND` and `OR` operators to combine multiple filters to get the exact results you need and utilize
+          pagination to limit the number of results returned. The default is `50` results per page.
+          See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#example-search-conversations-request) for more details on how to use the `starting_after` param.
+        {% /admonition %}
+
+        ### Contact Creation Delay
+
+
+        If a contact has recently been created, there is a possibility that it
+        will not yet be available when searching. This means that it may not
+        appear in the response. This delay can take a few minutes. If you need
+        to be instantly notified it is recommended to use webhooks and iterate
+        to see if they match your search filters.
+
+
+        ### Nesting & Limitations
+
+
+        You can nest these filters in order to get even more granular insights
+        that pinpoint exactly what you need. Example: (1 OR 2) AND (3 OR 4).
+
+        There are some limitations to the amount of multiple's there can be:
+
+        * There's a limit of max 2 nested filters
+
+        * There's a limit of max 15 filters for each AND or OR group
+
+
+        ### Searching for Timestamp Fields
+
+
+        All timestamp fields (created_at, updated_at etc.) are indexed as Dates
+        for Contact Search queries; Datetime queries are not currently
+        supported. This means you can only query for timestamp fields by day -
+        not hour, minute or second.
+
+        For example, if you search for all Contacts with a created_at value
+        greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020
+        9:00 AM), that will be interpreted as 1577836800 (January 1st, 2020
+        12:00 AM). The search results will then include Contacts created from
+        January 2nd, 2020 12:00 AM onwards.
+
+        If you'd like to get contacts created on January 1st, 2020 you should
+        search with a created_at value equal (=) to 1577836800 (January 1st,
+        2020 12:00 AM).
+
+        This behaviour applies only to timestamps used in search queries. The
+        search results will still contain the full UNIX timestamp and be sorted
+        accordingly.
+
+
+        ### Accepted Fields
+
+
+        Most key listed as part of the Contacts Model are searchable, whether
+        writeable or not. The value you search for has to match the accepted
+        type, otherwise the query will fail (ie. as `created_at` accepts a date,
+        the `value` cannot be a string such as `"foorbar"`).
+
+
+        | Field                              | Type                           |
+
+        | ---------------------------------- | ------------------------------ |
+
+        | id                                 | String                         |
+
+        | role                               | String<br>Accepts user or lead |
+
+        | name                               | String                         |
+
+        | avatar                             | String                         |
+
+        | owner_id                           | Integer                        |
+
+        | email                              | String                         |
+
+        | email_domain                       | String                         |
+
+        | phone                              | String                         |
+
+        | formatted_phone                    | String                         |
+
+        | external_id                        | String                         |
+
+        | created_at                         | Date (UNIX Timestamp)          |
+
+        | signed_up_at                       | Date (UNIX Timestamp)          |
+
+        | updated_at                         | Date (UNIX Timestamp)          |
+
+        | last_seen_at                       | Date (UNIX Timestamp)          |
+
+        | last_contacted_at                  | Date (UNIX Timestamp)          |
+
+        | last_replied_at                    | Date (UNIX Timestamp)          |
+
+        | last_email_opened_at               | Date (UNIX Timestamp)          |
+
+        | last_email_clicked_at              | Date (UNIX Timestamp)          |
+
+        | language_override                  | String                         |
+
+        | browser                            | String                         |
+
+        | browser_language                   | String                         |
+
+        | os                                 | String                         |
+
+        | location.country                   | String                         |
+
+        | location.region                    | String                         |
+
+        | location.city                      | String                         |
+
+        | unsubscribed_from_emails           | Boolean                        |
+
+        | marked_email_as_spam               | Boolean                        |
+
+        | has_hard_bounced                   | Boolean                        |
+
+        | ios_last_seen_at                   | Date (UNIX Timestamp)          |
+
+        | ios_app_version                    | String                         |
+
+        | ios_device                         | String                         |
+
+        | ios_app_device                     | String                         |
+
+        | ios_os_version                     | String                         |
+
+        | ios_app_name                       | String                         |
+
+        | ios_sdk_version                    | String                         |
+
+        | android_last_seen_at               | Date (UNIX Timestamp)          |
+
+        | android_app_version                | String                         |
+
+        | android_device                     | String                         |
+
+        | android_app_name                   | String                         |
+
+        | andoid_sdk_version                 | String                         |
+
+        | segment_id                         | String                         |
+
+        | tag_id                             | String                         |
+
+        | custom_attributes.{attribute_name} | String                         |
+
+
+        ### Accepted Operators
+
+
+        {% admonition type="warning" name="Searching based on `created_at`" %}
+          You cannot use the `<=` or `>=` operators to search by `created_at`.
+        {% /admonition %}
+
+
+        The table below shows the operators you can use to define how you want
+        to search for the value.  The operator should be put in as a string
+        (`"="`). The operator has to be compatible with the field's type (eg.
+        you cannot search with `>` for a given string value as it's only
+        compatible for integer's and dates).
+
+
+        | Operator | Valid Types                      |
+        Description                                                      |
+
+        | :------- | :------------------------------- |
+        :--------------------------------------------------------------- |
+
+        | =        | All                              |
+        Equals                                                           |
+
+        | !=       | All                              | Doesn't
+        Equal                                                    |
+
+        | IN       | All                              | In<br>Shortcut for `OR`
+        queries<br>Values must be in Array       |
+
+        | NIN      | All                              | Not In<br>Shortcut for
+        `OR !` queries<br>Values must be in Array |
+
+        | >        | Integer<br>Date (UNIX Timestamp) | Greater
+        than                                                     |
+
+        | <       | Integer<br>Date (UNIX Timestamp) | Lower
+        than                                                       |
+
+        | ~        | String                           |
+        Contains                                                         |
+
+        | !~       | String                           | Doesn't
+        Contain                                                  |
+
+        | ^        | String                           | Starts
+        With                                                      |
+
+        | $        | String                           | Ends
+        With                                                        |
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          request:
+            pagination:
+              per_page: 5
+            query:
+              operator: AND
+              value:
+                - field: created_at
+                  operator: '>'
+                  value: '1306054154'
+          response:
+            body:
+              data:
+                - android_app_name: Intercom
+                  android_app_version: 5.0.0
+                  android_device: Pixel 3
+                  android_last_seen_at: 1571672154
+                  android_os_version: '10'
+                  android_sdk_version: '28'
+                  avatar:
+                    type: avatar
+                  browser: Chrome
+                  browser_language: en-US
+                  browser_version: 80.0.3987.132
+                  companies:
+                    has_more: true
+                    total_count: 100
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/companies
+                  created_at: 1571672154
+                  custom_attributes:
+                    key: value
+                  email: joe@example.com
+                  email_domain: example.com
+                  external_id: f3b87a2e09d514c6c2e79b9a
+                  formatted_phone: '+1123456789'
+                  has_hard_bounced: true
+                  id: 5ba682d23d7cf92bef87bfd4
+                  ios_app_name: Intercom
+                  ios_app_version: 5.0.0
+                  ios_device: iPhone 11
+                  ios_last_seen_at: 1571672154
+                  ios_os_version: 13.3.1
+                  ios_sdk_version: 13.3.1
+                  language_override: en
+                  last_contacted_at: 1571672154
+                  last_email_clicked_at: 1571672154
+                  last_email_opened_at: 1571672154
+                  last_replied_at: 1571672154
+                  last_seen_at: 1571672154
+                  marked_email_as_spam: true
+                  name: John Doe
+                  notes:
+                    has_more: true
+                    total_count: 100
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                  os: Mac OS X
+                  owner_id: 123
+                  phone: '+1123456789'
+                  role: user
+                  signed_up_at: 1571672154
+                  tags:
+                    has_more: true
+                    total_count: 100
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/tags
+                  type: contact
+                  unsubscribed_from_emails: true
+                  updated_at: 1571672154
+                  workspace_id: ecahpwf5
+              pages:
+                next:
+                  per_page: 2
+                  starting_after: your-cursor-from-response
+                page: 1
+                per_page: 5
+                total_pages: 0
+                type: pages
+              total_count: 0
+              type: list
+      method: POST
+      path: /contacts/search
+      request:
+        body:
+          type: unstableRoot.SearchRequest
+        content-type: application/json
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.ContactList
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    ShowContact:
+      auth: true
+      display-name: Get a contact
+      docs: You can fetch the details of a single contact.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          path-parameters:
+            id: 63a07ddf05a32042dffac965
+          response:
+            body:
+              companies:
+                data:
+                  - id: 5ba682d23d7cf92bef87bfd4
+                    url: /companies/5ba682d23d7cf92bef87bfd4
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0d01bb69f9f2193bb7d/companies
+              created_at: 1734537424
+              custom_attributes:
+                key: value
+              email: joe@bloggs.com
+              email_domain: example.com
+              external_id: '70'
+              has_hard_bounced: false
+              id: 6762f0d01bb69f9f2193bb7d
+              location:
+                type: location
+              marked_email_as_spam: false
+              name: Joe Bloggs
+              notes:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0d01bb69f9f2193bb7d/notes
+              role: user
+              signed_up_at: 1734537424
+              social_profiles:
+                data:
+                  - name: Facebook
+                    type: social_profile
+                    url: http://twitter.com/th1sland
+              tags:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0d01bb69f9f2193bb7d/tags
+              type: contact
+              unsubscribed_from_emails: false
+              updated_at: 1734537424
+              workspace_id: this_is_an_id283_that_should_be_at_least_
+      method: GET
+      path: /contacts/{id}
+      request:
+        name: ShowContactRequest
+        path-parameters:
+          id:
+            docs: id
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: ShowContactResponse
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    ShowContactByExternalId:
+      auth: true
+      display-name: Get a contact by External ID
+      docs: >-
+        You can fetch the details of a single contact by external ID. Note that
+        this endpoint only supports users and not leads.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          path-parameters:
+            external_id: cdd29344-5e0c-4ef0-ac56-f9ba2979bc27
+          response:
+            body:
+              companies:
+                data:
+                  - id: 5ba682d23d7cf92bef87bfd4
+                    url: /companies/5ba682d23d7cf92bef87bfd4
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0df1bb69f9f2193bb84/companies
+              created_at: 1734537439
+              custom_attributes:
+                key: value
+              email: joe@bloggs.com
+              email_domain: example.com
+              external_id: '70'
+              has_hard_bounced: false
+              id: 6762f0df1bb69f9f2193bb84
+              location:
+                type: location
+              marked_email_as_spam: false
+              name: Joe Bloggs
+              notes:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0df1bb69f9f2193bb84/notes
+              role: user
+              signed_up_at: 1734537439
+              social_profiles:
+                data:
+                  - name: Facebook
+                    type: social_profile
+                    url: http://twitter.com/th1sland
+              tags:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0df1bb69f9f2193bb84/tags
+              type: contact
+              unsubscribed_from_emails: false
+              updated_at: 1734537439
+              workspace_id: this_is_an_id307_that_should_be_at_least_
+      method: GET
+      path: /contacts/find_by_external_id/{external_id}
+      request:
+        name: ShowContactByExternalIdRequest
+        path-parameters:
+          external_id:
+            docs: The external ID of the user that you want to retrieve
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: ShowContactByExternalIdResponse
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    UnarchiveContact:
+      auth: true
+      display-name: Unarchive contact
+      docs: You can unarchive a single contact.
+      examples:
+        - path-parameters:
+            id: 63a07ddf05a32042dffac965
+          response:
+            body:
+              archived: false
+              external_id: '70'
+              id: 5ba682d23d7cf92bef87bfd4
+              type: contact
+      method: POST
+      path: /contacts/{id}/unarchive
+      request:
+        name: UnarchiveContactRequest
+        path-parameters:
+          id:
+            docs: id
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.ContactUnarchived
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    UpdateContact:
+      auth: true
+      display-name: Update a contact
+      docs: |
+        You can update an existing contact (ie. user or lead).
+
+        {% admonition type="info" %}
+          This endpoint handles both **contact updates** and **custom object associations**.
+
+          See _`update a contact with an association to a custom object instance`_ in the request/response examples to see the custom object association format.
+        {% /admonition %}
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          path-parameters:
+            id: 63a07ddf05a32042dffac965
+          request:
+            email: joebloggs@intercom.io
+            name: joe bloggs
+          response:
+            body:
+              companies:
+                data:
+                  - id: 5ba682d23d7cf92bef87bfd4
+                    url: /companies/5ba682d23d7cf92bef87bfd4
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0cd1bb69f9f2193bb7c/companies
+              created_at: 1734537421
+              custom_attributes:
+                key: value
+              email: joebloggs@intercom.io
+              email_domain: example.com
+              external_id: '70'
+              has_hard_bounced: false
+              id: 6762f0cd1bb69f9f2193bb7c
+              location:
+                type: location
+              marked_email_as_spam: false
+              name: joe bloggs
+              notes:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0cd1bb69f9f2193bb7c/notes
+              role: user
+              signed_up_at: 1734537421
+              social_profiles:
+                data:
+                  - name: Facebook
+                    type: social_profile
+                    url: http://twitter.com/th1sland
+              tags:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0cd1bb69f9f2193bb7c/tags
+              type: contact
+              unsubscribed_from_emails: false
+              updated_at: 1734537422
+              workspace_id: this_is_an_id279_that_should_be_at_least_
+        - name: update a contact with an association to a custom object instance
+          path-parameters:
+            id: 63a07ddf05a32042dffac965
+          request:
+            custom_attributes:
+              order:
+                - '21'
+          response:
+            body:
+              companies:
+                data:
+                  - id: 5ba682d23d7cf92bef87bfd4
+                    url: /companies/5ba682d23d7cf92bef87bfd4
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0cd1bb69f9f2193bb7c/companies
+              created_at: 1734537421
+              custom_attributes:
+                order:
+                  instances:
+                    - custom_attributes:
+                        order_number: ORDER-12345
+                        total_amount: 99.99
+                      external_created_at: 1392036272
+                      external_id: '123'
+                      external_updated_at: 1392036272
+                      id: '21'
+                      type: Order
+                  type: Order.list
+              email: joebloggs@intercom.io
+              email_domain: example.com
+              external_id: '70'
+              has_hard_bounced: false
+              id: 6762f0cd1bb69f9f2193bb7c
+              location:
+                type: location
+              marked_email_as_spam: false
+              name: joe bloggs
+              notes:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0cd1bb69f9f2193bb7c/notes
+              role: user
+              signed_up_at: 1734537421
+              social_profiles:
+                data:
+                  - name: Facebook
+                    type: social_profile
+                    url: http://twitter.com/th1sland
+              tags:
+                data:
+                  - id: '123'
+                    type: note
+                    url: /contacts/5ba682d23d7cf92bef87bfd4/notes
+                has_more: false
+                total_count: 0
+                url: /contacts/6762f0cd1bb69f9f2193bb7c/tags
+              type: contact
+              unsubscribed_from_emails: false
+              updated_at: 1734537422
+              workspace_id: this_is_an_id279_that_should_be_at_least_
+      method: PUT
+      path: /contacts/{id}
+      request:
+        body:
+          properties:
+            avatar:
+              docs: An image URL containing the avatar of a contact
+              type: optional<string>
+            custom_attributes:
+              docs: The custom attributes which are set for the contact
+              type: optional<map<string, unknown>>
+            email:
+              docs: The contacts email
+              type: optional<string>
+            external_id:
+              docs: A unique identifier for the contact which is given to Intercom
+              type: optional<string>
+            last_seen_at:
+              docs: >-
+                The time when the contact was last seen (either where the
+                Intercom Messenger was installed or when specified manually)
+              type: optional<integer>
+            name:
+              docs: The contacts name
+              type: optional<string>
+            owner_id:
+              docs: >-
+                The id of an admin that has been assigned account ownership of
+                the contact
+              type: optional<integer>
+            phone:
+              docs: The contacts phone
+              type: optional<string>
+            role:
+              docs: The role of the contact.
+              type: optional<string>
+            signed_up_at:
+              docs: The time specified for when a contact signed up
+              type: optional<integer>
+            unsubscribed_from_emails:
+              docs: Whether the contact is unsubscribed from emails
+              type: optional<boolean>
+        content-type: application/json
+        name: UpdateContactRequest
+        path-parameters:
+          id:
+            docs: id
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: UpdateContactResponse
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/0/api.intercom.io.yaml

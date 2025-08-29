@@ -1,0 +1,77 @@
+imports:
+  root: __package__.yml
+service:
+  auth: false
+  base-path: ''
+  endpoints:
+    create:
+      auth: true
+      display-name: Create a phone Switch
+      docs: >
+        You can use the API to deflect phone calls to the Intercom Messenger.
+
+        Calling this endpoint will send an SMS with a link to the Messenger to
+        the phone number specified.
+
+
+        If custom attributes are specified, they will be added to the user or
+        lead's custom data attributes.
+      errors:
+        - root.BadRequestError
+        - root.UnauthorizedError
+        - root.UnprocessableEntityError
+      examples:
+        - name: successful
+          request:
+            custom_attributes:
+              issue_type: Billing
+              priority: High
+            phone: '+353832345678'
+          response:
+            body:
+              phone: +1 1234567890
+              type: phone_call_redirect
+        - name: bad request - exception sending sms
+          request:
+            custom_attributes:
+              issue_type: Billing
+              priority: High
+            phone: '+353832345678'
+          response:
+            body:
+              phone: +1 1234567890
+              type: phone_call_redirect
+        - name: bad request - invalid number
+          request:
+            custom_attributes:
+              issue_type: Billing
+              priority: High
+            phone: '+353832345678'
+          response:
+            body:
+              phone: +1 1234567890
+              type: phone_call_redirect
+        - name: unprocessable entity
+          request:
+            custom_attributes:
+              issue_type: Billing
+              priority: High
+            phone: '+40241100100'
+          response:
+            body:
+              phone: +1 1234567890
+              type: phone_call_redirect
+      method: POST
+      path: /phone_call_redirects
+      request:
+        body:
+          type: optional<root.CreatePhoneSwitchRequest>
+        content-type: application/json
+      response:
+        docs: successful
+        status-code: 200
+        type: optional<root.PhoneSwitch>
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/2.14/api.intercom.io.yaml

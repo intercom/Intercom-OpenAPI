@@ -1,0 +1,697 @@
+imports:
+  root: __package__.yml
+types:
+  Tag:
+    docs: >-
+      A tag allows you to label your contacts, companies, and conversations and
+      list them using that tag.
+    properties:
+      applied_at:
+        docs: The time when the tag was applied to the object
+        type: optional<integer>
+      applied_by:
+        type: optional<root.Reference>
+      id:
+        docs: The id of the tag
+        type: string
+      name:
+        docs: The name of the tag
+        type: string
+      type:
+        docs: value is "tag"
+        type: literal<"tag">
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TagBasic:
+    docs: >-
+      A tag allows you to label your contacts, companies, and conversations and
+      list them using that tag.
+    properties:
+      id:
+        docs: The id of the tag
+        type: optional<string>
+      name:
+        docs: The name of the tag
+        type: optional<string>
+      type:
+        docs: value is "tag"
+        type: optional<string>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  TagsCreateRequestBody:
+    discriminated: false
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+    union:
+      - type: root.CreateOrUpdateTagRequest
+      - type: root.TagCompanyRequest
+      - type: root.UntagCompanyRequest
+      - type: root.TagMultipleUsersRequest
+docs: Everything about tags
+service:
+  auth: false
+  base-path: ''
+  display-name: Tags
+  endpoints:
+    create:
+      auth: true
+      display-name: Create or update a tag, Tag or untag companies, Tag contacts
+      docs: |
+        You can use this endpoint to perform the following operations:
+
+          **1. Create a new tag:** You can create a new tag by passing in the tag name as specified in "Create or Update Tag Request Payload" described below.
+
+          **2. Update an existing tag:** You can update an existing tag by passing the id of the tag as specified in "Create or Update Tag Request Payload" described below.
+
+          **3. Tag Companies:** You can tag single company or a list of companies. You can tag a company by passing in the tag name and the company details as specified in "Tag Company Request Payload" described below. Also, if the tag doesn't exist then a new one will be created automatically.
+
+          **4. Untag Companies:** You can untag a single company or a list of companies. You can untag a company by passing in the tag id and the company details as specified in "Untag Company Request Payload" described below.
+
+          **5. Tag Multiple Users:** You can tag a list of users. You can tag the users by passing in the tag name and the user details as specified in "Tag Users Request Payload" described below.
+
+        Each operation will return a tag object.
+      errors:
+        - root.BadRequestError
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: Action successful
+          request:
+            name: test
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '105'
+              name: test
+              type: tag
+        - name: Invalid parameters
+          request:
+            name: Independent
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '105'
+              name: test
+              type: tag
+        - name: Company not found
+          request:
+            companies:
+              - company_id: '123'
+            name: test
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '105'
+              name: test
+              type: tag
+        - name: User  not found
+          request:
+            name: test
+            users:
+              - id: '123'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '105'
+              name: test
+              type: tag
+      method: POST
+      path: /tags
+      request:
+        body: TagsCreateRequestBody
+        content-type: application/json
+      response:
+        docs: Action successful
+        status-code: 200
+        type: Tag
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    delete:
+      auth: true
+      examples:
+        - path-parameters:
+            tag_id: tag_id
+      method: DELETE
+      path: /tags/{tag_id}
+      request:
+        name: DeleteTagRequest
+        path-parameters:
+          tag_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    deleteTag:
+      auth: true
+      display-name: Delete tag
+      docs: >-
+        You can delete the details of tags that are on the workspace by passing
+        in the id.
+      errors:
+        - root.BadRequestError
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - path-parameters:
+            id: '123'
+      method: DELETE
+      path: /tags/{id}
+      request:
+        name: DeleteTagRequest
+        path-parameters:
+          id:
+            docs: The unique identifier of a given tag
+            type: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    detachTagFromContact:
+      auth: true
+      display-name: Remove tag from a contact
+      docs: >-
+        You can remove tag from a specific contact. This will return a tag
+        object for the tag that was removed from the contact.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            contact_id: 63a07ddf05a32042dffac965
+            id: '7522907'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '84'
+              name: Manual tag
+              type: tag
+      method: DELETE
+      path: /contacts/{contact_id}/tags/{id}
+      request:
+        name: DetachTagFromContactRequest
+        path-parameters:
+          contact_id:
+            docs: The unique identifier for the contact which is given by Intercom
+            type: string
+          id:
+            docs: The unique identifier for the tag which is given by Intercom
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: Tag
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    detachTagFromConversation:
+      auth: true
+      display-name: Remove tag from a conversation
+      docs: >-
+        You can remove tag from a specific conversation. This will return a tag
+        object for the tag that was removed from the conversation.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            conversation_id: '64619700005694'
+            id: '7522907'
+          request:
+            admin_id: '123'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '89'
+              name: Manual tag
+              type: tag
+        - name: Conversation not found
+          path-parameters:
+            conversation_id: '64619700005694'
+            id: '7522907'
+          request:
+            admin_id: '123'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '89'
+              name: Manual tag
+              type: tag
+        - name: Tag not found
+          path-parameters:
+            conversation_id: '64619700005694'
+            id: '7522907'
+          request:
+            admin_id: '123'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '89'
+              name: Manual tag
+              type: tag
+      method: DELETE
+      path: /conversations/{conversation_id}/tags/{id}
+      request:
+        body:
+          properties:
+            admin_id:
+              docs: The unique identifier for the admin which is given by Intercom.
+              type: string
+        content-type: application/json
+        name: DetachTagFromConversationRequest
+        path-parameters:
+          conversation_id:
+            docs: conversation_id
+            type: string
+          id:
+            docs: id
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: Tag
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    detachTagFromTicket:
+      auth: true
+      display-name: Remove tag from a ticket
+      docs: >-
+        You can remove tag from a specific ticket. This will return a tag object
+        for the tag that was removed from the ticket.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            id: '7522907'
+            ticket_id: '64619700005694'
+          request:
+            admin_id: '123'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '124'
+              name: Manual tag
+              type: tag
+        - name: Ticket not found
+          path-parameters:
+            id: '7522907'
+            ticket_id: '64619700005694'
+          request:
+            admin_id: '123'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '124'
+              name: Manual tag
+              type: tag
+        - name: Tag not found
+          path-parameters:
+            id: '7522907'
+            ticket_id: '64619700005694'
+          request:
+            admin_id: '123'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '124'
+              name: Manual tag
+              type: tag
+      method: DELETE
+      path: /tickets/{ticket_id}/tags/{id}
+      request:
+        body:
+          properties:
+            admin_id:
+              docs: The unique identifier for the admin which is given by Intercom.
+              type: string
+        content-type: application/json
+        name: DetachTagFromTicketRequest
+        path-parameters:
+          id:
+            docs: The unique identifier for the tag which is given by Intercom
+            type: string
+          ticket_id:
+            docs: ticket_id
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: Tag
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    find:
+      auth: true
+      examples:
+        - path-parameters:
+            tag_id: tag_id
+      method: GET
+      path: /tags/{tag_id}
+      request:
+        name: FindTagRequest
+        path-parameters:
+          tag_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    findTag:
+      auth: true
+      display-name: Find a specific tag
+      docs: |
+        You can fetch the details of tags that are on the workspace by their id.
+        This will return a tag object.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: Tag found
+          path-parameters:
+            id: '123'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '113'
+              name: Manual tag
+              type: tag
+      method: GET
+      path: /tags/{id}
+      request:
+        name: FindTagRequest
+        path-parameters:
+          id:
+            docs: The unique identifier of a given tag
+            type: string
+      response:
+        docs: Tag found
+        status-code: 200
+        type: Tag
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    list:
+      auth: true
+      display-name: List all tags
+      docs: |+
+        You can fetch a list of all tags for a given workspace.
+
+      errors:
+        - root.UnauthorizedError
+      examples:
+        - name: successful
+          response:
+            body:
+              data:
+                - applied_at: 1663597223
+                  applied_by:
+                    type: contact
+                  id: '102'
+                  name: Manual tag 1
+                  type: tag
+              type: list
+      method: GET
+      path: /tags
+      response:
+        docs: successful
+        status-code: 200
+        type: root.TagList
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    tagContact:
+      auth: true
+      display-name: Add tag to a contact
+      docs: >-
+        You can tag a specific contact. This will return a tag object for the
+        tag that was added to the contact.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            contact_id: 63a07ddf05a32042dffac965
+          request:
+            id: '7522907'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '81'
+              name: Manual tag
+              type: tag
+        - name: Contact not found
+          path-parameters:
+            contact_id: 63a07ddf05a32042dffac965
+          request:
+            id: '7522907'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '81'
+              name: Manual tag
+              type: tag
+        - name: Tag not found
+          path-parameters:
+            contact_id: 63a07ddf05a32042dffac965
+          request:
+            id: '123'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '81'
+              name: Manual tag
+              type: tag
+      method: POST
+      path: /contacts/{contact_id}/tags
+      request:
+        body:
+          properties:
+            id:
+              docs: The unique identifier for the tag which is given by Intercom
+              name: tag_id
+              type: string
+        content-type: application/json
+        name: TagContactRequest
+        path-parameters:
+          contact_id:
+            docs: The unique identifier for the contact which is given by Intercom
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: Tag
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    tagConversation:
+      auth: true
+      display-name: Add tag to a conversation
+      docs: >-
+        You can tag a specific conversation. This will return a tag object for
+        the tag that was added to the conversation.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            conversation_id: '64619700005694'
+          request:
+            admin_id: '780'
+            id: '7522907'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '86'
+              name: Manual tag
+              type: tag
+        - name: Conversation not found
+          path-parameters:
+            conversation_id: '64619700005694'
+          request:
+            admin_id: '780'
+            id: '7522907'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '86'
+              name: Manual tag
+              type: tag
+      method: POST
+      path: /conversations/{conversation_id}/tags
+      request:
+        body:
+          properties:
+            admin_id:
+              docs: The unique identifier for the admin which is given by Intercom.
+              type: string
+            id:
+              docs: The unique identifier for the tag which is given by Intercom
+              name: tag_id
+              type: string
+        content-type: application/json
+        name: TagConversationRequest
+        path-parameters:
+          conversation_id:
+            docs: conversation_id
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: Tag
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    tagTicket:
+      auth: true
+      display-name: Add tag to a ticket
+      docs: >-
+        You can tag a specific ticket. This will return a tag object for the tag
+        that was added to the ticket.
+      errors:
+        - root.UnauthorizedError
+        - root.NotFoundError
+      examples:
+        - name: successful
+          path-parameters:
+            ticket_id: '64619700005694'
+          request:
+            admin_id: '780'
+            id: '7522907'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '121'
+              name: Manual tag
+              type: tag
+        - name: Ticket not found
+          path-parameters:
+            ticket_id: '64619700005694'
+          request:
+            admin_id: '780'
+            id: '7522907'
+          response:
+            body:
+              applied_at: 1663597223
+              applied_by:
+                id: 1a2b3c
+                type: contact
+              id: '121'
+              name: Manual tag
+              type: tag
+      method: POST
+      path: /tickets/{ticket_id}/tags
+      request:
+        body:
+          properties:
+            admin_id:
+              docs: The unique identifier for the admin which is given by Intercom.
+              type: string
+            id:
+              docs: The unique identifier for the tag which is given by Intercom
+              name: tag_id
+              type: string
+        content-type: application/json
+        name: TagTicketRequest
+        path-parameters:
+          ticket_id:
+            docs: ticket_id
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: Tag
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    untagContact:
+      auth: true
+      examples:
+        - path-parameters:
+            contact_id: contact_id
+            tag_id: tag_id
+      method: DELETE
+      path: /contacts/{contact_id}/tags/{tag_id}
+      request:
+        name: UntagContactRequest
+        path-parameters:
+          contact_id: string
+          tag_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    untagConversation:
+      auth: true
+      examples:
+        - path-parameters:
+            conversation_id: conversation_id
+            tag_id: tag_id
+      method: DELETE
+      path: /conversations/{conversation_id}/tags/{tag_id}
+      request:
+        name: UntagConversationRequest
+        path-parameters:
+          conversation_id: string
+          tag_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+    untagTicket:
+      auth: true
+      examples:
+        - path-parameters:
+            tag_id: tag_id
+            ticket_id: ticket_id
+      method: DELETE
+      path: /tickets/{ticket_id}/tags/{tag_id}
+      request:
+        name: UntagTicketRequest
+        path-parameters:
+          tag_id: string
+          ticket_id: string
+      source:
+        openapi: ../descriptions/2.14/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/2.14/api.intercom.io.yaml

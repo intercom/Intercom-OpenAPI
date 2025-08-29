@@ -1,0 +1,331 @@
+imports:
+  root: ../__package__.yml
+  unstableRoot: __package__.yml
+types:
+  CreateDataEventSummariesRequestEventSummaries:
+    docs: >-
+      A list of event summaries for the user. Each event summary should contain
+      the event name, the time the event occurred, and the number of times the
+      event occurred. The event name should be a past tense 'verb-noun'
+      combination, to improve readability, for example `updated-plan`.
+    inline: true
+    properties:
+      count:
+        docs: The number of times the event occurred.
+        type: optional<integer>
+      event_name:
+        docs: >-
+          The name of the event that occurred. A good event name is typically a
+          past tense 'verb-noun' combination, to improve readability, for
+          example `updated-plan`.
+        type: optional<string>
+      first:
+        docs: The first time the event was sent
+        type: optional<integer>
+      last:
+        docs: The last time the event was sent
+        type: optional<integer>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  DataEvent:
+    docs: Data events are used to notify Intercom of changes to your data.
+    properties:
+      created_at:
+        docs: The time the event occurred as a UTC Unix timestamp
+        type: integer
+      email:
+        docs: >-
+          An email address for your user. An email should only be used where
+          your application uses email to uniquely identify users.
+        type: optional<string>
+      event_name:
+        docs: >-
+          The name of the event that occurred. This is presented to your App's
+          admins when filtering and creating segments - a good event name is
+          typically a past tense 'verb-noun' combination, to improve
+          readability, for example `updated-plan`.
+        type: string
+      id:
+        docs: Your identifier for a lead or a user.
+        type: optional<string>
+      intercom_user_id:
+        docs: The Intercom identifier for the user.
+        type: optional<string>
+      metadata:
+        docs: Optional metadata about the event.
+        type: optional<map<string, string>>
+      type:
+        docs: The type of the object
+        type: optional<literal<"event">>
+      user_id:
+        docs: Your identifier for the user.
+        type: optional<string>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  LisDataEventsRequestFilter:
+    discriminated: false
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+    union:
+      - type: LisDataEventsRequestFilterUserId
+      - type: LisDataEventsRequestFilterIntercomUserId
+      - type: LisDataEventsRequestFilterEmail
+  LisDataEventsRequestFilterEmail:
+    inline: true
+    properties:
+      email: string
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  LisDataEventsRequestFilterIntercomUserId:
+    inline: true
+    properties:
+      intercom_user_id: string
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  LisDataEventsRequestFilterUserId:
+    inline: true
+    properties:
+      user_id: string
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+docs: Everything about your Data Events
+service:
+  auth: false
+  base-path: ''
+  display-name: Data Events
+  endpoints:
+    createDataEvent:
+      auth: true
+      display-name: Submit a data event
+      docs: >+
+
+        You will need an Access Token that has write permissions to send Events.
+        Once you have a key you can submit events via POST to the Events
+        resource, which is located at https://api.intercom.io/events, or you can
+        send events using one of the client libraries. When working with the
+        HTTP API directly a client should send the event with a `Content-Type`
+        of `application/json`.
+
+
+        When using the JavaScript API, [adding the code to your
+        app](http://docs.intercom.io/configuring-Intercom/tracking-user-events-in-your-app)
+        makes the Events API available. Once added, you can submit an event
+        using the `trackEvent` method. This will associate the event with the
+        Lead or currently logged-in user or logged-out visitor/lead and send it
+        to Intercom. The final parameter is a map that can be used to send
+        optional metadata about the event.
+
+
+        With the Ruby client you pass a hash describing the event to
+        `Intercom::Event.create`, or call the `track_user` method directly on
+        the current user object (e.g. `user.track_event`).
+
+
+        **NB: For the JSON object types, please note that we do not currently
+        support nested JSON structure.**
+
+
+        | Type            |
+        Description                                                                                                                                                                                                    
+        |
+        Example                                                                          
+        |
+
+        | :-------------- |
+        :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        |
+        :--------------------------------------------------------------------------------
+        |
+
+        | String          | The value is a JSON
+        String                                                                                                                                                                                     
+        |
+        `"source":"desktop"`                                                             
+        |
+
+        | Number          | The value is a JSON
+        Number                                                                                                                                                                                     
+        | `"load":
+        3.67`                                                                   
+        |
+
+        | Date            | The key ends with the String `_date` and the value
+        is a [Unix timestamp](http://en.wikipedia.org/wiki/Unix_time), assumed
+        to be in the
+        [UTC](http://en.wikipedia.org/wiki/Coordinated_Universal_Time) timezone.
+        | `"contact_date":
+        1392036272`                                                      |
+
+        | Link            | The value is a HTTP or HTTPS
+        URI.                                                                                                                                                                              
+        | `"article":
+        "https://example.org/ab1de.html"`                                     |
+
+        | Rich Link       | The value is a JSON object that contains `url` and
+        `value`
+        keys.                                                                                                                                               
+        | `"article": {"url": "https://example.org/ab1de.html", "value":"the
+        dude abides"}` |
+
+        | Monetary Amount | The value is a JSON object that contains `amount`
+        and `currency` keys. The `amount` key is a positive integer representing
+        the amount in cents. The price in the example to the right denotes
+        €349.99.          | `"price": {"amount": 34999, "currency":
+        "eur"}`                                   |
+
+
+        **Lead Events**
+
+
+        When submitting events for Leads, you will need to specify the Lead's
+        `id`.
+
+
+        **Metadata behaviour**
+
+
+        - We currently limit the number of tracked metadata keys to 10 per
+        event. Once the quota is reached, we ignore any further keys we receive.
+        The first 10 metadata keys are determined by the order in which they are
+        sent in with the event.
+
+        - It is not possible to change the metadata keys once the event has been
+        sent. A new event will need to be created with the new keys and you can
+        archive the old one.
+
+        - There might be up to 24 hrs delay when you send a new metadata for an
+        existing event.
+
+
+        **Event de-duplication**
+
+
+        The API may detect and ignore duplicate events. Each event is uniquely
+        identified as a combination of the following data - the Workspace
+        identifier, the Contact external identifier, the Data Event name and the
+        Data Event created time. As a result, it is **strongly recommended** to
+        send a second granularity Unix timestamp in the `created_at` field.
+
+
+        Duplicated events are responded to using the normal `202 Accepted` code
+        - an error is not thrown, however repeat requests will be counted
+        against any rate limit that is in place.
+
+
+        ### HTTP API Responses
+
+
+        - Successful responses to submitted events return `202 Accepted` with an
+        empty body.
+
+        - Unauthorised access will be rejected with a `401 Unauthorized` or `403
+        Forbidden` response code.
+
+        - Events sent about users that cannot be found will return a `404 Not
+        Found`.
+
+        - Event lists containing duplicate events will have those duplicates
+        ignored.
+
+        - Server errors will return a `500` response code and may contain an
+        error message in the body.
+
+      errors:
+        - unstableRoot.UnauthorizedError
+      method: POST
+      path: /events
+      request:
+        body: root.CreateDataEventRequestTwo
+        content-type: application/json
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    dataEventSummaries:
+      auth: true
+      display-name: Create event summaries
+      docs: >+
+        Create event summaries for a user. Event summaries are used to track the
+        number of times an event has occurred, the first time it occurred and
+        the last time it occurred.
+
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - request: {}
+      method: POST
+      path: /events/summaries
+      request:
+        body:
+          properties:
+            event_summaries:
+              docs: >-
+                A list of event summaries for the user. Each event summary
+                should contain the event name, the time the event occurred, and
+                the number of times the event occurred. The event name should be
+                a past tense 'verb-noun' combination, to improve readability,
+                for example `updated-plan`.
+              type: optional<CreateDataEventSummariesRequestEventSummaries>
+            user_id:
+              docs: Your identifier for the user.
+              type: optional<string>
+        content-type: application/json
+        name: CreateDataEventSummariesRequest
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    lisDataEvents:
+      auth: true
+      display-name: List all data events
+      docs: >
+
+        > 🚧
+
+        >
+
+        > Please note that you can only 'list' events that are less than 90 days
+        old. Event counts and summaries will still include your events older
+        than 90 days but you cannot 'list' these events individually if they are
+        older than 90 days
+
+
+        The events belonging to a customer can be listed by sending a GET
+        request to `https://api.intercom.io/events` with a user or lead
+        identifier along with a `type` parameter. The identifier parameter can
+        be one of `user_id`, `email` or `intercom_user_id`. The `type` parameter
+        value must be `user`.
+
+
+        - `https://api.intercom.io/events?type=user&user_id={user_id}`
+
+        - `https://api.intercom.io/events?type=user&email={email}`
+
+        - `https://api.intercom.io/events?type=user&intercom_user_id={id}` (this
+        call can be used to list leads)
+
+
+        The `email` parameter value should be [url
+        encoded](http://en.wikipedia.org/wiki/Percent-encoding) when sending.
+
+
+        You can optionally define the result page size as well with the
+        `per_page` parameter.
+      errors:
+        - unstableRoot.UnauthorizedError
+      method: GET
+      path: /events
+      request:
+        name: LisDataEventsRequest
+        query-parameters:
+          filter: LisDataEventsRequestFilter
+          summary:
+            docs: summary flag
+            type: optional<boolean>
+          type:
+            docs: The value must be user
+            type: string
+      response:
+        docs: Successful response
+        status-code: 200
+        type: unstableRoot.DataEventSummary
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/0/api.intercom.io.yaml

@@ -1,0 +1,174 @@
+imports:
+  unstableRoot: __package__.yml
+  unstableTickets: tickets.yml
+docs: Everything about your ticket types
+service:
+  auth: false
+  base-path: ''
+  display-name: Ticket Types
+  endpoints:
+    createTicketType:
+      auth: true
+      display-name: Create a ticket type
+      docs: >
+        You can create a new ticket type.
+
+        > 📘 Creating ticket types.
+
+        >
+
+        > Every ticket type will be created with two default attributes:
+        _default_title_ and _default_description_.
+
+        > For the `icon` propery, use an emoji from [Twemoji
+        Cheatsheet](https://twemoji-cheatsheet.vercel.app/)
+      errors:
+        - unstableRoot.UnauthorizedError
+      method: POST
+      path: /ticket_types
+      request:
+        body: unknown
+        content-type: application/json
+      response:
+        docs: Ticket type created
+        status-code: 200
+        type: optional<unstableTickets.TicketType>
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    getTicketType:
+      auth: true
+      display-name: Retrieve a ticket type
+      docs: You can fetch the details of a single ticket type.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: Ticket type found
+          path-parameters:
+            id: id
+          response:
+            body:
+              archived: false
+              category: Customer
+              created_at: 1734537870
+              description: Bug Report Template
+              icon: 🎟️
+              id: '72'
+              name: Bug Report
+              ticket_states:
+                data:
+                  - category: submitted
+                    external_label: Submitted
+                    id: '8353'
+                    internal_label: Submitted
+                    type: ticket_state
+                  - category: in_progress
+                    external_label: In progress
+                    id: '8354'
+                    internal_label: In progress
+                    type: ticket_state
+                  - category: waiting_on_customer
+                    external_label: Waiting on you
+                    id: '8355'
+                    internal_label: Waiting on customer
+                    type: ticket_state
+                  - category: resolved
+                    external_label: Resolved
+                    id: '8356'
+                    internal_label: Resolved
+                    type: ticket_state
+                type: list
+              ticket_type_attributes:
+                ticket_type_attributes:
+                  - archived: false
+                    data_type: string
+                    default: true
+                    description: Bug title.
+                    id: '1'
+                    input_options:
+                      key: value
+                    name: Title
+                    order: 1
+                    required_to_create: false
+                    required_to_create_for_contacts: false
+                    ticket_type_id: 42
+                    type: ticket_type_attribute
+                    visible_on_create: false
+                    visible_to_contacts: false
+                    workspace_id: ecahpwf5
+                type: list
+              type: ticket_type
+              updated_at: 1734537870
+              workspace_id: this_is_an_id656_that_should_be_at_least_
+      method: GET
+      path: /ticket_types/{id}
+      request:
+        name: GetTicketTypeRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the ticket type which is given by
+              Intercom.
+            type: string
+      response:
+        docs: Ticket type found
+        status-code: 200
+        type: optional<unstableTickets.TicketType>
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    listTicketTypes:
+      auth: true
+      display-name: List all ticket types
+      docs: You can get a list of all ticket types for a workspace.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          response:
+            body:
+              data:
+                - archived: false
+                  category: Customer
+                  created_at: 1734537866
+                  description: Bug Report Template
+                  icon: 🎟️
+                  id: '67'
+                  name: Bug Report
+                  ticket_states:
+                    data:
+                      - category: submitted
+                        external_label: Submitted
+                        id: '8321'
+                        internal_label: Submitted
+                        type: ticket_state
+                      - category: in_progress
+                        external_label: In progress
+                        id: '8322'
+                        internal_label: In progress
+                        type: ticket_state
+                      - category: waiting_on_customer
+                        external_label: Waiting on you
+                        id: '8323'
+                        internal_label: Waiting on customer
+                        type: ticket_state
+                      - category: resolved
+                        external_label: Resolved
+                        id: '8324'
+                        internal_label: Resolved
+                        type: ticket_state
+                    type: list
+                  ticket_type_attributes:
+                    type: list
+                  type: ticket_type
+                  updated_at: 1734537866
+                  workspace_id: this_is_an_id648_that_should_be_at_least_
+              type: list
+      method: GET
+      path: /ticket_types
+      response:
+        docs: successful
+        status-code: 200
+        type: unstableRoot.TicketTypeList
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/0/api.intercom.io.yaml

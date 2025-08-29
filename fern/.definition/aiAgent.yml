@@ -1,0 +1,56 @@
+imports:
+  root: __package__.yml
+types:
+  AiAgent:
+    docs: Data related to AI Agent involvement in the conversation.
+    properties:
+      content_sources:
+        type: optional<root.ContentSourcesList>
+      created_at:
+        docs: The time when the AI agent rating was created.
+        type: optional<integer>
+      last_answer_type:
+        docs: >-
+          The type of the last answer delivered by AI Agent. If no answer was
+          delivered then this will return `null`
+        type: optional<string>
+      rating:
+        docs: The customer satisfaction rating given to AI Agent, from 1-5.
+        type: optional<integer>
+      rating_remark:
+        docs: The customer satisfaction rating remark given to AI Agent.
+        type: optional<string>
+      resolution_state:
+        docs: >-
+          The resolution state of AI Agent. If no AI or custom answer has been
+          delivered then this will return `null`.
+        type: optional<string>
+      source_title:
+        docs: >-
+          The title of the source that triggered AI Agent involvement in the
+          conversation. If this is `essentials_plan_setup` then it will return
+          `null`.
+        type: optional<string>
+      source_type:
+        docs: >-
+          The type of the source that triggered AI Agent involvement in the
+          conversation.
+        type: optional<AiAgentSourceType>
+      updated_at:
+        docs: The time when the AI agent rating was last updated.
+        type: optional<integer>
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml
+  AiAgentSourceType:
+    docs: >-
+      The type of the source that triggered AI Agent involvement in the
+      conversation.
+    enum:
+      - essentials_plan_setup
+      - profile
+      - workflow
+      - workflow_preview
+      - fin_preview
+    inline: true
+    source:
+      openapi: ../descriptions/2.14/api.intercom.io.yaml

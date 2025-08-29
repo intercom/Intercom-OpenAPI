@@ -1,0 +1,773 @@
+imports:
+  unstableRoot: __package__.yml
+types:
+  ContentImportSource:
+    docs: >-
+      An external source for External Pages that you add to your Fin Content
+      Library.
+    properties:
+      created_at:
+        docs: The time when the content import source was created.
+        type: integer
+      id:
+        docs: >-
+          The unique identifier for the content import source which is given by
+          Intercom.
+        type: integer
+      last_synced_at:
+        docs: The time when the content import source was last synced.
+        type: integer
+      status:
+        default: active
+        docs: The status of the content import source.
+        type: ContentImportSourceStatus
+      sync_behavior:
+        docs: >-
+          If you intend to create or update External Pages via the API, this
+          should be set to `api`.
+        type: ContentImportSourceSyncBehavior
+      type:
+        docs: Always external_page
+        type: literal<"content_import_source">
+      updated_at:
+        docs: The time when the content import source was last updated.
+        type: integer
+      url:
+        docs: The URL of the root of the external source.
+        type: string
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  ContentImportSourcesList:
+    docs: This will return a list of the content import sources for the App.
+    properties:
+      data:
+        docs: An array of Content Import Source objects
+        type: optional<list<ContentImportSource>>
+      pages:
+        type: optional<unstableRoot.PagesLink>
+      total_count:
+        docs: A count of the total number of content import sources.
+        type: optional<integer>
+      type:
+        docs: The type of the object - `list`.
+        type: optional<literal<"list">>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  ContentImportSourceStatus:
+    default: active
+    docs: The status of the content import source.
+    enum:
+      - active
+      - deactivated
+    inline: true
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  ContentImportSourceSyncBehavior:
+    docs: >-
+      If you intend to create or update External Pages via the API, this should
+      be set to `api`.
+    enum:
+      - api
+      - automatic
+      - manual
+    inline: true
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  CreateContentImportSourceRequestStatus:
+    default: active
+    docs: The status of the content import source.
+    enum:
+      - active
+      - deactivated
+    inline: true
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  ExternalPage:
+    docs: External pages that you have added to your Fin Content Library.
+    properties:
+      ai_agent_availability:
+        docs: >-
+          Whether the external page should be used to answer questions by AI
+          Agent.
+        type: boolean
+      ai_copilot_availability:
+        docs: >-
+          Whether the external page should be used to answer questions by AI
+          Copilot.
+        type: boolean
+      created_at:
+        docs: The time when the external page was created.
+        type: integer
+      external_id:
+        docs: >-
+          The identifier for the external page which was given by the source.
+          Must be unique for the source.
+        type: string
+      fin_availability:
+        docs: >-
+          Deprecated. Use ai_agent_availability and ai_copilot_availability
+          instead.
+        type: optional<boolean>
+      html:
+        docs: The body of the external page in HTML.
+        type: string
+      id:
+        docs: >-
+          The unique identifier for the external page which is given by
+          Intercom.
+        type: string
+      last_ingested_at:
+        docs: The time when the external page was last ingested.
+        type: integer
+      locale:
+        docs: Always en
+        type: literal<"en">
+      source_id:
+        docs: >-
+          The unique identifier for the source of the external page which was
+          given by Intercom. Every external page must be associated with a
+          Content Import Source which represents the place it comes from and
+          from which it inherits a default audience (configured in the UI). For
+          a new source, make a POST request to the Content Import Source
+          endpoint and an ID for the source will be returned in the response.
+        type: integer
+      title:
+        docs: The title of the external page.
+        type: string
+      type:
+        docs: Always external_page
+        type: literal<"external_page">
+      updated_at:
+        docs: The time when the external page was last updated.
+        type: integer
+      url:
+        docs: >-
+          The URL of the external page. This will be used by Fin to link end
+          users to the page it based its answer on.
+        type: optional<string>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  ExternalPagesList:
+    docs: This will return a list of external pages for the App.
+    properties:
+      data:
+        docs: An array of External Page objects
+        type: optional<list<ExternalPage>>
+      pages:
+        type: optional<unstableRoot.PagesLink>
+      total_count:
+        docs: A count of the total number of external pages.
+        type: optional<integer>
+      type:
+        docs: The type of the object - `list`.
+        type: optional<literal<"list">>
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  UpdateContentImportSourceRequestStatus:
+    default: active
+    docs: The status of the content import source.
+    enum:
+      - active
+      - deactivated
+    inline: true
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+  UpdateContentImportSourceRequestSyncBehavior:
+    docs: >-
+      If you intend to create or update External Pages via the API, this should
+      be set to `api`. You can not change the value to or from api.
+    enum:
+      - api
+      - automated
+      - manual
+    inline: true
+    source:
+      openapi: ../descriptions/0/api.intercom.io.yaml
+docs: >
+  With the AI Content APIs, you can create and manage External Pages and Content
+  Import Sources for your Fin Content Library.
+
+
+  &nbsp;
+
+
+  *External Pages* are pages that you want Fin to be able to answer questions
+  about. The API for External Pages is a great way to ingest into your Fin
+  Content Library pages that are not publicly accessible and hence can't be
+  crawled by Intercom.
+
+
+  &nbsp;
+
+
+  *Content Import Sources* are the sources of those pages, and they are used to
+  determine the default audience for the pages (configured via the UI). You
+  should create a Content Import Source for each source of External Pages that
+  you want to ingest into your Fin Content Library.
+
+
+  &nbsp;
+
+
+  You can then iterate through the content from that source via its API and POST
+  it to the External Pages endpoint. That endpoint has an *external_id*
+  parameter which allows you to specify the identifier from the source. The
+  endpoint will then either create a new External Page or update an existing one
+  as appropriate.",
+service:
+  auth: false
+  base-path: ''
+  display-name: AI Content
+  endpoints:
+    createContentImportSource:
+      auth: true
+      display-name: Create a content import source
+      docs: >-
+        You can create a new content import source by sending a POST request to
+        this endpoint.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          request:
+            sync_behavior: api
+            url: https://www.example.com
+          response:
+            body:
+              created_at: 1734537261
+              id: 36
+              last_synced_at: 1734537261
+              status: active
+              sync_behavior: api
+              type: content_import_source
+              updated_at: 1734537261
+              url: https://www.example.com
+      method: POST
+      path: /ai/content_import_sources
+      request:
+        body:
+          properties:
+            status:
+              default: active
+              docs: The status of the content import source.
+              type: optional<CreateContentImportSourceRequestStatus>
+            sync_behavior:
+              docs: >-
+                If you intend to create or update External Pages via the API,
+                this should be set to `api`.
+              type: literal<"api">
+            url:
+              docs: The URL of the content import source.
+              type: string
+        content-type: application/json
+        name: CreateContentImportSourceRequest
+      response:
+        docs: successful
+        status-code: 200
+        type: ContentImportSource
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    createExternalPage:
+      auth: true
+      display-name: Create an external page (or update an external page by external ID)
+      docs: >-
+        You can create a new external page by sending a POST request to this
+        endpoint. If an external page already exists with the specified
+        source_id and external_id, it will be updated instead.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          request:
+            external_id: abc1234
+            html: <html><body><h1>Test</h1></body></html>
+            locale: en
+            source_id: 44
+            title: Test
+            url: https://www.example.com
+          response:
+            body:
+              ai_agent_availability: true
+              ai_copilot_availability: true
+              created_at: 1734537273
+              external_id: abc1234
+              fin_availability: true
+              html: <html><body><h1>Test</h1></body></html>
+              id: '21'
+              last_ingested_at: 1734537274
+              locale: en
+              source_id: 44
+              title: Test
+              type: external_page
+              updated_at: 1734537274
+              url: https://www.example.com
+      method: POST
+      path: /ai/external_pages
+      request:
+        body:
+          properties:
+            ai_agent_availability:
+              default: false
+              docs: >-
+                Whether the external page should be used to answer questions by
+                AI Agent. Will not default when updating an existing external
+                page.
+              type: optional<boolean>
+            ai_copilot_availability:
+              default: false
+              docs: >-
+                Whether the external page should be used to answer questions by
+                AI Copilot. Will not default when updating an existing external
+                page.
+              type: optional<boolean>
+            external_id:
+              docs: >-
+                The identifier for the external page which was given by the
+                source. Must be unique for the source.
+              type: string
+            html:
+              docs: The body of the external page in HTML.
+              type: string
+            locale:
+              docs: Always en
+              type: literal<"en">
+            source_id:
+              docs: >-
+                The unique identifier for the source of the external page which
+                was given by Intercom. Every external page must be associated
+                with a Content Import Source which represents the place it comes
+                from and from which it inherits a default audience (configured
+                in the UI). For a new source, make a POST request to the Content
+                Import Source endpoint and an ID for the source will be returned
+                in the response.
+              type: integer
+            title:
+              docs: The title of the external page.
+              type: string
+            url:
+              docs: >-
+                The URL of the external page. This will be used by Fin to link
+                end users to the page it based its answer on. When a URL is not
+                present, Fin will not reference the source.
+              type: optional<string>
+        content-type: application/json
+        name: CreateExternalPageRequest
+      response:
+        docs: successful
+        status-code: 200
+        type: ExternalPage
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    deleteContentImportSource:
+      auth: true
+      display-name: Delete a content import source
+      docs: >-
+        You can delete a content import source by making a DELETE request this
+        endpoint. This will also delete all external pages that were imported
+        from this source.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - path-parameters:
+            id: id
+      method: DELETE
+      path: /ai/content_import_sources/{id}
+      request:
+        name: DeleteContentImportSourceRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the content import source which is given
+              by Intercom.
+            type: string
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    deleteExternalPage:
+      auth: true
+      display-name: Delete an external page
+      docs: >-
+        Sending a DELETE request for an external page will remove it from the
+        content library UI and from being used for AI answers.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          path-parameters:
+            id: id
+          response:
+            body:
+              ai_agent_availability: true
+              ai_copilot_availability: true
+              created_at: 1734537276
+              external_id: '4'
+              fin_availability: true
+              html: ''
+              id: '22'
+              last_ingested_at: 1734537276
+              locale: en
+              source_id: 45
+              title: My External Content
+              type: external_page
+              updated_at: 1734537276
+              url: https://support.example.com/us/5
+      method: DELETE
+      path: /ai/external_pages/{id}
+      request:
+        name: DeleteExternalPageRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the external page which is given by
+              Intercom.
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: ExternalPage
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    getContentImportSource:
+      auth: true
+      display-name: Retrieve a content import source
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          path-parameters:
+            id: id
+          response:
+            body:
+              created_at: 1734537265
+              id: 38
+              last_synced_at: 1734537265
+              status: active
+              sync_behavior: api
+              type: content_import_source
+              updated_at: 1734537265
+              url: https://support.example.com/us/5
+      method: GET
+      path: /ai/content_import_sources/{id}
+      request:
+        name: GetContentImportSourceRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the content import source which is given
+              by Intercom.
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: ContentImportSource
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    getExternalPage:
+      auth: true
+      display-name: Retrieve an external page
+      docs: You can retrieve an external page.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          path-parameters:
+            id: id
+          response:
+            body:
+              ai_agent_availability: true
+              ai_copilot_availability: true
+              created_at: 1734537278
+              external_id: '5'
+              fin_availability: true
+              html: <h1>Hello world</h1><p>This is external content</p>
+              id: '23'
+              last_ingested_at: 1734537278
+              locale: en
+              source_id: 46
+              title: My External Content
+              type: external_page
+              updated_at: 1734537278
+              url: https://support.example.com/us/6
+      method: GET
+      path: /ai/external_pages/{id}
+      request:
+        name: GetExternalPageRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the external page which is given by
+              Intercom.
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: ExternalPage
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    listContentImportSources:
+      auth: true
+      display-name: List content import sources
+      docs: You can retrieve a list of all content import sources for a workspace.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          response:
+            body:
+              data:
+                - created_at: 1734537259
+                  id: 33
+                  last_synced_at: 1734537259
+                  status: active
+                  sync_behavior: automatic
+                  type: content_import_source
+                  updated_at: 1734537259
+                  url: https://support.example.com/us/1
+                - created_at: 1734537259
+                  id: 34
+                  last_synced_at: 1734537259
+                  status: active
+                  sync_behavior: automatic
+                  type: content_import_source
+                  updated_at: 1734537259
+                  url: https://support.example.com/us/2
+                - created_at: 1734537259
+                  id: 35
+                  last_synced_at: 1734537259
+                  status: active
+                  sync_behavior: automatic
+                  type: content_import_source
+                  updated_at: 1734537259
+                  url: https://support.example.com/us/3
+              pages:
+                next: next
+                page: 1
+                per_page: 50
+                total_pages: 1
+                type: pages
+              total_count: 3
+              type: list
+      method: GET
+      path: /ai/content_import_sources
+      response:
+        docs: successful
+        status-code: 200
+        type: ContentImportSourcesList
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    listExternalPages:
+      auth: true
+      display-name: List external pages
+      docs: You can retrieve a list of all external pages for a workspace.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          response:
+            body:
+              data:
+                - ai_agent_availability: true
+                  ai_copilot_availability: true
+                  created_at: 1734537269
+                  external_id: '3'
+                  fin_availability: true
+                  html: <h1>Hello world</h1><p>This is external content</p>
+                  id: '19'
+                  last_ingested_at: 1734537269
+                  locale: en
+                  source_id: 42
+                  title: My External Content
+                  type: external_page
+                  updated_at: 1734537269
+                  url: https://support.example.com/us/3
+                - ai_agent_availability: true
+                  ai_copilot_availability: true
+                  created_at: 1734537269
+                  external_id: '2'
+                  fin_availability: true
+                  html: <h1>Hello world</h1><p>This is external content</p>
+                  id: '18'
+                  last_ingested_at: 1734537269
+                  locale: en
+                  source_id: 41
+                  title: My External Content
+                  type: external_page
+                  updated_at: 1734537269
+                  url: https://support.example.com/us/2
+                - ai_agent_availability: true
+                  ai_copilot_availability: true
+                  created_at: 1734537269
+                  external_id: '1'
+                  fin_availability: true
+                  html: <h1>Hello world</h1><p>This is external content</p>
+                  id: '17'
+                  last_ingested_at: 1734537269
+                  locale: en
+                  source_id: 40
+                  title: My External Content
+                  type: external_page
+                  updated_at: 1734537269
+                  url: https://support.example.com/us/1
+              pages:
+                next: next
+                page: 1
+                per_page: 50
+                total_pages: 1
+                type: pages
+              total_count: 3
+              type: list
+      method: GET
+      path: /ai/external_pages
+      response:
+        docs: successful
+        status-code: 200
+        type: ExternalPagesList
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    updateContentImportSource:
+      auth: true
+      display-name: Update a content import source
+      docs: You can update an existing content import source.
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          path-parameters:
+            id: id
+          request:
+            sync_behavior: api
+            url: https://www.example.com
+          response:
+            body:
+              created_at: 1734537267
+              id: 39
+              last_synced_at: 1734537267
+              status: active
+              sync_behavior: api
+              type: content_import_source
+              updated_at: 1734537267
+              url: https://www.example.com
+      method: PUT
+      path: /ai/content_import_sources/{id}
+      request:
+        body:
+          properties:
+            status:
+              default: active
+              docs: The status of the content import source.
+              type: optional<UpdateContentImportSourceRequestStatus>
+            sync_behavior:
+              docs: >-
+                If you intend to create or update External Pages via the API,
+                this should be set to `api`. You can not change the value to or
+                from api.
+              type: UpdateContentImportSourceRequestSyncBehavior
+            url:
+              docs: >-
+                The URL of the content import source. This may only be different
+                from the existing value if the sync behavior is API.
+              type: string
+        content-type: application/json
+        name: UpdateContentImportSourceRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the content import source which is given
+              by Intercom.
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: ContentImportSource
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+    updateExternalPage:
+      auth: true
+      display-name: Update an external page
+      docs: >-
+        You can update an existing external page (if it was created via the
+        API).
+      errors:
+        - unstableRoot.UnauthorizedError
+      examples:
+        - name: successful
+          path-parameters:
+            id: id
+          request:
+            external_id: '5678'
+            html: <html><body><h1>Test</h1></body></html>
+            locale: en
+            source_id: 47
+            title: Test
+            url: https://www.example.com
+          response:
+            body:
+              ai_agent_availability: true
+              ai_copilot_availability: true
+              created_at: 1734537280
+              external_id: '5678'
+              fin_availability: true
+              html: <html><body><h1>Test</h1></body></html>
+              id: '24'
+              last_ingested_at: 1734537281
+              locale: en
+              source_id: 47
+              title: Test
+              type: external_page
+              updated_at: 1734537281
+              url: https://www.example.com
+      method: PUT
+      path: /ai/external_pages/{id}
+      request:
+        body:
+          properties:
+            external_id:
+              docs: >-
+                The identifier for the external page which was given by the
+                source. Must be unique for the source.
+              type: optional<string>
+            fin_availability:
+              default: true
+              docs: >-
+                Whether the external page should be used to answer questions by
+                Fin.
+              type: optional<boolean>
+            html:
+              docs: The body of the external page in HTML.
+              type: string
+            locale:
+              docs: Always en
+              type: literal<"en">
+            source_id:
+              docs: >-
+                The unique identifier for the source of the external page which
+                was given by Intercom. Every external page must be associated
+                with a Content Import Source which represents the place it comes
+                from and from which it inherits a default audience (configured
+                in the UI). For a new source, make a POST request to the Content
+                Import Source endpoint and an ID for the source will be returned
+                in the response.
+              type: integer
+            title:
+              docs: The title of the external page.
+              type: string
+            url:
+              docs: >-
+                The URL of the external page. This will be used by Fin to link
+                end users to the page it based its answer on.
+              type: string
+        content-type: application/json
+        name: UpdateExternalPageRequest
+        path-parameters:
+          id:
+            docs: >-
+              The unique identifier for the external page which is given by
+              Intercom.
+            type: string
+      response:
+        docs: successful
+        status-code: 200
+        type: ExternalPage
+      source:
+        openapi: ../descriptions/0/api.intercom.io.yaml
+  source:
+    openapi: ../descriptions/0/api.intercom.io.yaml
