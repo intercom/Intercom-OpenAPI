@@ -39,6 +39,11 @@ paths:
       x-fern-sdk-method-name: list
       x-fern-request-name: ListArticlesRequest
       parameters:
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
       - name: page
         in: query
         required: false
@@ -91,6 +96,11 @@ paths:
       x-fern-sdk-method-name: list
       x-fern-request-name: ListCollectionsRequest
       parameters:
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
       - name: page
         in: query
         required: false
@@ -140,6 +150,11 @@ paths:
       x-fern-sdk-method-name: list
       x-fern-request-name: ListHelpCentersRequest
       parameters:
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
       - name: page
         in: query
         required: false
@@ -238,6 +253,11 @@ paths:
       x-fern-sdk-method-name: list
       x-fern-request-name: ListContactsRequest
       parameters:
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
       - name: page
         in: query
         required: false
@@ -252,6 +272,12 @@ paths:
         example: 15
         schema:
           type: integer
+      - name: starting_after
+        in: query
+        required: false
+        description: String used to get the next page of conversations.
+        schema:
+          type: string
     post:
       x-fern-sdk-group-name:
         - contacts
@@ -283,6 +309,17 @@ paths:
       x-fern-sdk-method-name: listAttachedCompanies
       x-fern-request-name: ListAttachedCompaniesRequest
       parameters:
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the contact which is given by Intercom
+        schema:
+          type: string
       - name: page
         in: query
         required: false
@@ -325,6 +362,17 @@ paths:
       x-fern-sdk-method-name: list
       x-fern-request-name: ListContactNotesRequest
       parameters:
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of a contact.
+        schema:
+          type: integer
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
       - name: page
         in: query
         required: false
