@@ -38,6 +38,26 @@ paths:
         - articles
       x-fern-sdk-method-name: list
       x-fern-request-name: ListArticlesRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
     post:
       x-fern-sdk-group-name:
         - articles
@@ -75,6 +95,26 @@ paths:
         - collections
       x-fern-sdk-method-name: list
       x-fern-request-name: ListCollectionsRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
     post:
       x-fern-sdk-group-name:
         - helpCenters
@@ -109,6 +149,26 @@ paths:
         - helpCenters
       x-fern-sdk-method-name: list
       x-fern-request-name: ListHelpCentersRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
   /help_center/help_centers/{help_center_id}:
     get:
       x-fern-sdk-group-name:
@@ -192,6 +252,32 @@ paths:
         - contacts
       x-fern-sdk-method-name: list
       x-fern-request-name: ListContactsRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
+      - name: starting_after
+        in: query
+        required: false
+        description: String used to get the next page of conversations.
+        schema:
+          type: string
     post:
       x-fern-sdk-group-name:
         - contacts
@@ -248,7 +334,33 @@ paths:
       x-fern-sdk-group-name:
         - notes
       x-fern-sdk-method-name: list
-      x-fern-request-name: ListContactNotesRequest
+      x-fern-request-name: 
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of a contact.
+        schema:
+          type: integer
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
     post:
       x-fern-sdk-group-name:
         - notes
@@ -442,6 +554,42 @@ paths:
         - conversations
       x-fern-sdk-method-name: redactConversationPart
       x-fern-request-name: RedactConversationPartRequest
+  /custom_channel_events/notify_attribute_collected:
+    post:
+      x-fern-sdk-group-name:
+        - customChannelEvents
+      x-fern-sdk-method-name: notifyAttributeCollected
+      x-fern-request-name: NotifyAttributeCollectedRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
+  /custom_channel_events/notify_new_conversation:
+    post:
+      x-fern-sdk-group-name:
+        - customChannelEvents
+      x-fern-sdk-method-name: notifyNewConversation
+      x-fern-request-name: NotifyNewConversationRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
+  /custom_channel_events/notify_new_message:
+    post:
+      x-fern-sdk-group-name:
+        - customChannelEvents
+      x-fern-sdk-method-name: notifyNewMessage
+      x-fern-request-name: NotifyNewMessageRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
   /data_attributes:
     get:
       x-fern-sdk-group-name:
@@ -537,12 +685,62 @@ paths:
         - dataExport
       x-fern-sdk-method-name: cancel
       x-fern-request-name: CancelDataExportRequest
+  /export/reporting_data/{job_identifier}:
+    get:
+      x-fern-sdk-group-name:
+        - dataExport
+      x-fern-sdk-method-name: exportReportingData
+      x-fern-request-name: ExportReportingDataRequest
+      parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            "$ref": "#/components/schemas/intercom_version"
+        - name: app_id
+          in: query
+          description: The Intercom defined code of the workspace the company is associated
+            to.
+          required: true
+          schema:
+            type: string
+        - name: client_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: job_identifier
+          description: Unique identifier of the job.
+          in: path
+          required: true
+          schema:
+            type: string
   /download/content/data/{job_identifier}:
     get:
       x-fern-sdk-group-name:
         - dataExport
       x-fern-sdk-method-name: download
       x-fern-request-name: DownloadDataExportRequest
+  /download/reporting_data/{job_identifier}:
+    get:
+      x-fern-sdk-group-name:
+        - dataExport
+      x-fern-sdk-method-name: downloadReportingDataExport
+      x-fern-request-name: DownloadReportingDataExportRequest
+      parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            "$ref": "#/components/schemas/intercom_version"
+        - name: app_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: job_identifier
+          in: path
+          required: true
+          schema:
+            type: string
   /messages:
     post:
       requestBody:
@@ -1384,6 +1582,8 @@ components:
       title: Custom atttributes
       type: object
       description: Custom data set for this data.
+      example:
+        monthly_spend: '155.5'
 
     # enum additions
     contact:
@@ -1607,6 +1807,28 @@ components:
     bearerAuth:
       x-fern-bearer:
         env: INTERCOM_API_KEY
+
+  create_ticket_request:
+    x-fern-type-name: CreateTicketRequestBody
+    properties:
+      ticket_attributes: null
+  update_article_request:
+    x-fern-type-name: UpdateArticleRequestBody
+    # TODO: fern-support
+    # Remove nullable: false once java generator updated to handle this case.
+    nullable: false
+  update_data_attribute_request:
+    x-fern-type-name: UpdateDataAttributeRequestBody
+  update_internal_article_request:
+    x-fern-type-name: UpdateInternalArticleRequestBody
+    # TODO: fern-support
+    # Remove nullable: false once java generator updated to handle this case.
+    nullable: false
+  update_ticket_type_request:
+    x-fern-type-name: UpdateTicketTypeRequestBody
+    # TODO: fern-support
+    # Remove nullable: false once java generator updated to handle this case.
+    nullable: false
 
 x-fern-version:
   header:
