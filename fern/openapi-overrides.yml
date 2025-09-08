@@ -317,6 +317,7 @@ paths:
         in: path
         required: true
         description: The unique identifier for the contact which is given by Intercom
+        example: '123'
         schema:
           type: string
       - name: page
@@ -366,7 +367,7 @@ paths:
         required: true
         description: The unique identifier of a contact.
         schema:
-          type: integer
+          type: string
       - name: Intercom-Version
         in: header
         required: true
@@ -391,6 +392,18 @@ paths:
         - notes
       x-fern-sdk-method-name: create
       x-fern-request-name: CreateContactNoteRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: contact_id
+        in: path
+        required: true
+        description: The unique identifier of a given contact.
+        example: '123'
+        schema:
+          type: string
   /contacts/{contact_id}/segments:
     get:
       x-fern-sdk-group-name:
