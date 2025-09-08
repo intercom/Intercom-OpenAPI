@@ -308,6 +308,31 @@ paths:
         - contacts
       x-fern-sdk-method-name: listAttachedCompanies
       x-fern-request-name: ListAttachedCompaniesRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: contact_id
+        in: path
+        required: true
+        description: The unique identifier for the contact which is given by Intercom
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
     post:
       x-fern-sdk-group-name:
         - companies
@@ -336,7 +361,7 @@ paths:
       x-fern-sdk-method-name: list
       x-fern-request-name: 
       parameters:
-      - name: id
+      - name: contact_id
         in: path
         required: true
         description: The unique identifier of a contact.
@@ -1803,32 +1828,32 @@ components:
         - created_at
         - order
 
+    create_ticket_request:
+      x-fern-type-name: CreateTicketRequestBody
+      properties:
+        ticket_attributes: null
+    update_article_request:
+      x-fern-type-name: UpdateArticleRequestBody
+      # TODO: fern-support
+      # Remove nullable: false once java generator updated to handle this case.
+      nullable: false
+    update_data_attribute_request:
+      x-fern-type-name: UpdateDataAttributeRequestBody
+    update_internal_article_request:
+      x-fern-type-name: UpdateInternalArticleRequestBody
+      # TODO: fern-support
+      # Remove nullable: false once java generator updated to handle this case.
+      nullable: false
+    update_ticket_type_request:
+      x-fern-type-name: UpdateTicketTypeRequestBody
+      # TODO: fern-support
+      # Remove nullable: false once java generator updated to handle this case.
+      nullable: false
+
   securitySchemes:
     bearerAuth:
       x-fern-bearer:
         env: INTERCOM_API_KEY
-
-  create_ticket_request:
-    x-fern-type-name: CreateTicketRequestBody
-    properties:
-      ticket_attributes: null
-  update_article_request:
-    x-fern-type-name: UpdateArticleRequestBody
-    # TODO: fern-support
-    # Remove nullable: false once java generator updated to handle this case.
-    nullable: false
-  update_data_attribute_request:
-    x-fern-type-name: UpdateDataAttributeRequestBody
-  update_internal_article_request:
-    x-fern-type-name: UpdateInternalArticleRequestBody
-    # TODO: fern-support
-    # Remove nullable: false once java generator updated to handle this case.
-    nullable: false
-  update_ticket_type_request:
-    x-fern-type-name: UpdateTicketTypeRequestBody
-    # TODO: fern-support
-    # Remove nullable: false once java generator updated to handle this case.
-    nullable: false
 
 x-fern-version:
   header:
