@@ -56,7 +56,7 @@ paths:
                     has_inbox_seat: true
               schema:
                 "$ref": "#/components/schemas/admin_with_app"
-  "/admins/{id}/away":
+  "/admins/{admin_id}/away":
     put:
       summary: Set an admin to away
       parameters:
@@ -318,7 +318,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/admins/{id}":
+  "/admins/{admin_id}":
     get:
       summary: Retrieve an admin
       parameters:
@@ -1136,7 +1136,7 @@ paths:
                   description: Description of the Article
                   body: Body of the Article
                   state: published
-  "/articles/{id}":
+  "/articles/{article_id}":
     get:
       summary: Retrieve an article
       parameters:
@@ -1917,7 +1917,7 @@ paths:
                 summary: Bad Request
                 value:
                   description: Missing required parameter
-  "/help_center/collections/{id}":
+  "/help_center/collections/{collection_id}":
     get:
       summary: Retrieve a collection
       parameters:
@@ -2128,7 +2128,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/help_center/help_centers/{id}":
+  "/help_center/help_centers/{help_center_id}":
     get:
       summary: Retrieve a Help Center
       parameters:
@@ -2841,7 +2841,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/companies/{id}":
+  "/companies/{company_id}":
     get:
       summary: Retrieve a company by ID
       parameters:
@@ -3056,7 +3056,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/companies/{id}/contacts":
+  "/companies/{company_id}/contacts":
     get:
       summary: List attached contacts
       parameters:
@@ -3122,7 +3122,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/companies/{id}/segments":
+  "/companies/{company_id}/segments":
     get:
       summary: List attached segments for companies
       parameters:
@@ -3357,7 +3357,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/contacts/{id}/companies":
+  "/contacts/{contact_id}/companies":
     post:
       summary: Attach a Contact to a Company
       parameters:
@@ -3558,7 +3558,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/contacts/{contact_id}/companies/{id}":
+  "/contacts/{contact_id}/companies/{company_id}":
     delete:
       summary: Detach a contact from a company
       parameters:
@@ -3649,7 +3649,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/contacts/{id}/notes":
+  "/contacts/{contact_id}/notes":
     get:
       summary: List all notes
       parameters:
@@ -4126,7 +4126,7 @@ paths:
                 value:
                   id: invalid_id
                   consent_type: opt_in
-  "/contacts/{contact_id}/subscriptions/{id}":
+  "/contacts/{contact_id}/subscriptions/{subscription_id}":
     delete:
       summary: Remove subscription from a contact
       tags:
@@ -4373,7 +4373,7 @@ paths:
                 summary: Tag not found
                 value:
                   id: '123'
-  "/contacts/{contact_id}/tags/{id}":
+  "/contacts/{contact_id}/tags/{tag_id}":
     delete:
       summary: Remove tag from a contact
       tags:
@@ -4449,7 +4449,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/contacts/{id}":
+  "/contacts/{contact_id}":
     put:
       summary: Update a contact
       parameters:
@@ -5510,7 +5510,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/contacts/{id}/archive":
+  "/contacts/{contact_id}/archive":
     post:
       summary: Archive contact
       parameters:
@@ -5536,7 +5536,7 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/contact_archived"
-  "/contacts/{id}/unarchive":
+  "/contacts/{contact_id}/unarchive":
     post:
       summary: Unarchive contact
       parameters:
@@ -5680,7 +5680,7 @@ paths:
                 value:
                   id: 87
                   admin_id: 991267620
-  "/conversations/{conversation_id}/tags/{id}":
+  "/conversations/{conversation_id}/tags/{tag_id}":
     delete:
       summary: Remove tag from a conversation
       parameters:
@@ -6011,7 +6011,7 @@ paths:
                     type: user
                     id: 123_doesnt_exist
                   body: Hello there
-  "/conversations/{id}":
+  "/conversations/{conversation_id}":
     get:
       summary: Retrieve a conversation
       parameters:
@@ -6805,7 +6805,7 @@ paths:
                       value: '1306054154'
                   pagination:
                     per_page: 5
-  "/conversations/{id}/reply":
+  "/conversations/{conversation_id}/reply":
     post:
       summary: Reply to a conversation
       parameters:
@@ -7248,7 +7248,7 @@ paths:
                   type: user
                   intercom_user_id: 6762f1661bb69f9f2193bbbf
                   body: Thanks again :)
-  "/conversations/{id}/parts":
+  "/conversations/{conversation_id}/parts":
     post:
       summary: Manage a conversation
       parameters:
@@ -7670,7 +7670,7 @@ paths:
                   type: admin
                   admin_id: 991267717
                   body: Goodbye :)
-  "/conversations/{id}/customers":
+  "/conversations/{conversation_id}/customers":
     post:
       summary: Attach a contact to a conversation
       parameters:
@@ -8057,7 +8057,7 @@ paths:
                   type: conversation_part
                   conversation_id: really_123_doesnt_exist
                   conversation_part_id: really_123_doesnt_exist
-  "/conversations/{id}/convert":
+  "/conversations/{conversation_id}/convert":
     post:
       summary: Convert a conversation to a ticket
       parameters:
@@ -9015,7 +9015,7 @@ paths:
                   options:
                   - value: 1-10
                   archived: false
-  "/data_attributes/{id}":
+  "/data_attributes/{data_attribute_id}":
     put:
       summary: Update a data attribute
       parameters:
@@ -9934,7 +9934,7 @@ paths:
                   newsfeed_assignments:
                   - newsfeed_id: 53
                     published_at: 1664638214
-  "/news/news_items/{id}":
+  "/news/news_items/{news_item_id}":
     get:
       summary: Retrieve a news item
       parameters:
@@ -10165,7 +10165,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/news/newsfeeds/{id}/items":
+  "/news/newsfeeds/{newsfeed_id}/items":
     get:
       summary: List all live newsfeed items
       parameters:
@@ -10272,7 +10272,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/news/newsfeeds/{id}":
+  "/news/newsfeeds/{newsfeed_id}":
     get:
       summary: Retrieve a newsfeed
       parameters:
@@ -10321,7 +10321,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/notes/{id}":
+  "/notes/{note_id}":
     get:
       summary: Retrieve a note
       parameters:
@@ -10449,7 +10449,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/segments/{id}":
+  "/segments/{segment_id}":
     get:
       summary: Retrieve a segment
       parameters:
@@ -11167,7 +11167,7 @@ paths:
                   name: test
                   users:
                   - id: '123'
-  "/tags/{id}":
+  "/tags/{tag_id}":
     get:
       summary: Find a specific tag
       parameters:
@@ -11332,7 +11332,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/teams/{id}":
+  "/teams/{team_id}":
     get:
       summary: Retrieve a team
       parameters:
@@ -11679,7 +11679,7 @@ paths:
                   description: Attribute Description
                   data_type: string
                   required_to_create: false
-  "/ticket_types/{ticket_type_id}/attributes/{id}":
+  "/ticket_types/{ticket_type_id}/attributes/{attribute_id}":
     put:
       summary: Update an existing attribute for a ticket type
       parameters:
@@ -12006,7 +12006,7 @@ paths:
                   description: Customer Report Template
                   icon: "\U0001F39F️"
                   category: Customer
-  "/ticket_types/{id}":
+  "/ticket_types/{ticket_type_id}":
     get:
       summary: Retrieve a ticket type
       parameters:
@@ -12280,7 +12280,7 @@ paths:
                 summary: Ticket type updated
                 value:
                   name: Bug Report 2
-  "/tickets/{id}/reply":
+  "/tickets/{ticket_id}/reply":
     post:
       summary: Reply to a ticket
       operationId: replyTicket
@@ -12534,7 +12534,7 @@ paths:
                 value:
                   id: 122
                   admin_id: 991267963
-  "/tickets/{ticket_id}/tags/{id}":
+  "/tickets/{ticket_id}/tags/{tag_id}":
     delete:
       summary: Remove tag from a ticket
       parameters:
@@ -12868,7 +12868,7 @@ paths:
                       message: "Missing required ticket attributes"
               schema:
                 "$ref": "#/components/schemas/error"
-  "/tickets/{id}":
+  "/tickets/{ticket_id}":
     put:
       summary: Update a ticket
       parameters:
