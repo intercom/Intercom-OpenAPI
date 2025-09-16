@@ -1741,12 +1741,27 @@ paths:
   "/download/reporting_data/{job_identifier}":
     get:
       summary: Download completed export job data
+      description: |
+        Download the data from a completed reporting data export job.
+
+        > Octet header required
+        >
+        > You will have to specify the header Accept: `application/octet-stream` when hitting this endpoint.
       tags: [Export]
       parameters:
         - name: Intercom-Version
           in: header
           schema:
             "$ref": "#/components/schemas/intercom_version"
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+            example: application/octet-stream
+            enum:
+              - application/octet-stream
+          description: "Required header for downloading the export file"
         - name: app_id
           in: query
           required: true
