@@ -88,9 +88,38 @@ paths:
       parameters:
       - name: Intercom-Version
         in: header
-        required: true
         schema:
-          $ref: '#/components/schemas/intercom_version'
+          "$ref": "#/components/schemas/intercom_version"
+      - name: phrase
+        in: query
+        required: false
+        description: The phrase within your articles to search for.
+        example: Getting started
+        schema:
+          type: string
+      - name: state
+        in: query
+        required: false
+        description: The state of the Articles returned. One of `published`, `draft`
+          or `all`.
+        example: published
+        schema:
+          type: string
+      - name: help_center_id
+        in: query
+        required: false
+        description: The ID of the Help Center to search in.
+        example: 123
+        schema:
+          type: integer
+      - name: highlight
+        in: query
+        required: false
+        description: Return a highlighted version of the matching content within your
+          articles. Refer to the response schema for more details.
+        example: false
+        schema:
+          type: boolean
       - name: page
         in: query
         required: false
