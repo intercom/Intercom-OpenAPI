@@ -85,6 +85,26 @@ paths:
         - articles
       x-fern-sdk-method-name: search
       x-fern-request-name: SearchArticlesRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        required: true
+        schema:
+          $ref: '#/components/schemas/intercom_version'
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results to display per page. Defaults to 15
+        example: 15
+        schema:
+          type: integer
   /help_center/collections:
     get:
       x-fern-pagination:
