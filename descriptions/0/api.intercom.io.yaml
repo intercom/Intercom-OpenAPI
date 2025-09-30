@@ -3220,6 +3220,109 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/companies/{id}/notes":
+    get:
+      summary: List all notes
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the company which is given by Intercom
+        example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+        schema:
+          type: string
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Notes
+      - Companies
+      operationId: listCompanyNotes
+      description: You can fetch a list of notes that are associated to a company.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - type: note
+                      id: '26'
+                      created_at: 1733932587
+                      company:
+                        type: company
+                        id: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+                      author:
+                        type: admin
+                        id: '991267581'
+                        name: Ciaran122 Lee
+                        email: admin122@email.com
+                        away_mode_enabled: false
+                        away_mode_reassign: false
+                        away_status_reason_id: null
+                        has_inbox_seat: true
+                        team_ids: []
+                        team_priority_level: {}
+                      body: "<p>This is a note.</p>"
+                    - type: note
+                      id: '25'
+                      created_at: 1733846187
+                      company:
+                        type: company
+                        id: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+                      author:
+                        type: admin
+                        id: '991267581'
+                        name: Ciaran122 Lee
+                        email: admin122@email.com
+                        away_mode_enabled: false
+                        away_mode_reassign: false
+                      body: "<p>This is a note.</p>"
+                    - type: note
+                      id: '24'
+                      created_at: 1733846187
+                      company:
+                        type: company
+                        id: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+                      author:
+                        type: admin
+                        id: '991267581'
+                        name: Ciaran122 Lee
+                        email: admin122@email.com
+                        away_mode_enabled: false
+                        away_mode_reassign: false
+                        away_status_reason_id: null
+                        has_inbox_seat: true
+                        team_ids: []
+                        team_priority_level: {}
+                      body: "<p>This is a note.</p>"
+                    total_count: 3
+                    pages:
+                      type: pages
+                      next:
+                      page: 1
+                      per_page: 50
+                      total_pages: 1
+              schema:
+                "$ref": "#/components/schemas/company_note_list"
+        '404':
+          description: Company not found
+          content:
+            application/json:
+              examples:
+                Company not found:
+                  value:
+                    type: error.list
+                    request_id: 57055cde-3d0d-4c67-b5c9-b20b80340bf0
+                    errors:
+                    - code: company_not_found
+                      message: Company Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/companies/list":
     post:
       summary: List all companies
@@ -21151,6 +21254,27 @@ components:
           description: An array of notes.
           items:
             "$ref": "#/components/schemas/note"
+        total_count:
+          type: integer
+          description: A count of the total number of notes.
+          example: 1
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
+    company_note_list:
+      title: Paginated Company Notes Response
+      type: object
+      description: A paginated list of notes associated with a company.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `list`.
+          example: list
+        data:
+          type: array
+          description: An array of company notes.
+          items:
+            "$ref": "#/components/schemas/company_note"
         total_count:
           type: integer
           description: A count of the total number of notes.
