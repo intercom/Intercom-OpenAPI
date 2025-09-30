@@ -16526,40 +16526,10 @@ components:
               description: The type of the object
               enum:
               - note.list
-              example: note.list
-            data:
+            notes:
               type: array
-              description: An array containing note objects
               items:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    description: The id of the note
-                  type:
-                    type: string
-                    description: The type of the object
-                    enum:
-                    - note
-                  url:
-                    type: string
-                    description: The URL of the note
-                  body:
-                    type: string
-                    description: The body of the note in HTML format
-              example: []
-            url:
-              type: string
-              description: The URL to get all notes associated with the company
-              example: "/companies/6762f0761bb69f9f2193bae2/notes"
-            total_count:
-              type: integer
-              description: The total number of notes associated with the company
-              example: 0
-            has_more:
-              type: boolean
-              description: Whether there are more notes than returned
-              example: false
+                "$ref": "#/components/schemas/company_note"
     company_attached_contacts:
       title: Company Attached Contacts
       type: object
@@ -21187,6 +21157,48 @@ components:
           example: 1
         pages:
           "$ref": "#/components/schemas/cursor_pages"
+    company_note:
+      title: Company Note
+      type: object
+      x-tags:
+      - Notes
+      description: Notes allow you to annotate and comment on companies.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `note`.
+          example: note
+        id:
+          type: string
+          description: The id of the note.
+          example: '17495962'
+        created_at:
+          type: integer
+          format: timestamp
+          description: The time the note was created.
+          example: 1674589321
+        company:
+          type: object
+          description: Represents the company that the note was created about.
+          nullable: true
+          properties:
+            type:
+              type: string
+              description: String representing the object's type. Always has the value
+                `company`.
+              example: company
+            id:
+              type: string
+              description: The id of the company.
+              example: 6329bd9ffe4e2e91dac76188
+        author:
+          "$ref": "#/components/schemas/admin"
+          description: Optional. Represents the Admin that created the note.
+        body:
+          type: string
+          description: The body text of the note.
+          example: "<p>Text for the note.</p>"
     open_conversation_request:
       title: Open Conversation Request
       type: object
