@@ -3308,7 +3308,7 @@ paths:
                       per_page: 50
                       total_pages: 1
               schema:
-                "$ref": "#/components/schemas/company_note_list"
+                "$ref": "#/components/schemas/note_list"
         '404':
           description: Company not found
           content:
@@ -21242,7 +21242,7 @@ components:
     note_list:
       title: Paginated Response
       type: object
-      description: A paginated list of notes associated with a contact.
+      description: A paginated list of notes associated with a contact or a company.
       properties:
         type:
           type: string
@@ -21254,27 +21254,6 @@ components:
           description: An array of notes.
           items:
             "$ref": "#/components/schemas/note"
-        total_count:
-          type: integer
-          description: A count of the total number of notes.
-          example: 1
-        pages:
-          "$ref": "#/components/schemas/cursor_pages"
-    company_note_list:
-      title: Paginated Company Notes Response
-      type: object
-      description: A paginated list of notes associated with a company.
-      properties:
-        type:
-          type: string
-          description: String representing the object's type. Always has the value
-            `list`.
-          example: list
-        data:
-          type: array
-          description: An array of company notes.
-          items:
-            "$ref": "#/components/schemas/company_note"
         total_count:
           type: integer
           description: A count of the total number of notes.
