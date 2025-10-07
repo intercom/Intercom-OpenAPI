@@ -2677,6 +2677,12 @@ paths:
                     segments:
                       type: segment.list
                       segments: []
+                    notes:
+                      type: note.list
+                      data: []
+                      url: "/companies/6762f0761bb69f9f2193bae2/notes"
+                      total_count: 0
+                      has_more: false
                     plan: {}
                     custom_attributes:
                       creation_source: api
@@ -2817,6 +2823,12 @@ paths:
                       segments:
                         type: segment.list
                         segments: []
+                      notes:
+                        type: note.list
+                        data: []
+                        url: "/companies/6762f07a1bb69f9f2193baea/notes"
+                        total_count: 0
+                        has_more: false
                       plan: {}
                       custom_attributes: {}
                     pages:
@@ -2900,6 +2912,12 @@ paths:
                     segments:
                       type: segment.list
                       segments: []
+                    notes:
+                      type: note.list
+                      data: []
+                      url: "/companies/6762f0761bb69f9f2193bae2/notes"
+                      total_count: 0
+                      has_more: false
                     plan: {}
                     custom_attributes: {}
               schema:
@@ -2980,6 +2998,12 @@ paths:
                     segments:
                       type: segment.list
                       segments: []
+                    notes:
+                      type: note.list
+                      data: []
+                      url: "/companies/6762f0841bb69f9f2193baff/notes"
+                      total_count: 0
+                      has_more: false
                     plan: {}
                     custom_attributes: {}
               schema:
@@ -3196,6 +3220,109 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/companies/{id}/notes":
+    get:
+      summary: List all company notes
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the company which is given by Intercom
+        example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+        schema:
+          type: string
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Notes
+      - Companies
+      operationId: listCompanyNotes
+      description: You can fetch a list of notes that are associated to a company.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - type: note
+                      id: '26'
+                      created_at: 1733932587
+                      company:
+                        type: company
+                        id: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+                      author:
+                        type: admin
+                        id: '991267581'
+                        name: Ciaran122 Lee
+                        email: admin122@email.com
+                        away_mode_enabled: false
+                        away_mode_reassign: false
+                        away_status_reason_id: null
+                        has_inbox_seat: true
+                        team_ids: []
+                        team_priority_level: {}
+                      body: "<p>This is a note.</p>"
+                    - type: note
+                      id: '25'
+                      created_at: 1733846187
+                      company:
+                        type: company
+                        id: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+                      author:
+                        type: admin
+                        id: '991267581'
+                        name: Ciaran122 Lee
+                        email: admin122@email.com
+                        away_mode_enabled: false
+                        away_mode_reassign: false
+                      body: "<p>This is a note.</p>"
+                    - type: note
+                      id: '24'
+                      created_at: 1733846187
+                      company:
+                        type: company
+                        id: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+                      author:
+                        type: admin
+                        id: '991267581'
+                        name: Ciaran122 Lee
+                        email: admin122@email.com
+                        away_mode_enabled: false
+                        away_mode_reassign: false
+                        away_status_reason_id: null
+                        has_inbox_seat: true
+                        team_ids: []
+                        team_priority_level: {}
+                      body: "<p>This is a note.</p>"
+                    total_count: 3
+                    pages:
+                      type: pages
+                      next:
+                      page: 1
+                      per_page: 50
+                      total_pages: 1
+              schema:
+                "$ref": "#/components/schemas/note_list"
+        '404':
+          description: Company not found
+          content:
+            application/json:
+              examples:
+                Company not found:
+                  value:
+                    type: error.list
+                    request_id: 57055cde-3d0d-4c67-b5c9-b20b80340bf0
+                    errors:
+                    - code: company_not_found
+                      message: Company Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/companies/list":
     post:
       summary: List all companies
@@ -3266,6 +3393,12 @@ paths:
                       segments:
                         type: segment.list
                         segments: []
+                      notes:
+                        type: note.list
+                        data: []
+                        url: "/companies/6762f0941bb69f9f2193bb25/notes"
+                        total_count: 0
+                        has_more: false
                       plan: {}
                       custom_attributes: {}
                     pages:
@@ -3351,6 +3484,12 @@ paths:
                       segments:
                         type: segment.list
                         segments: []
+                      notes:
+                        type: note.list
+                        data: []
+                        url: "/companies/6762f0971bb69f9f2193bb2b/notes"
+                        total_count: 0
+                        has_more: false
                       plan: {}
                       custom_attributes: {}
                     pages:
@@ -3416,6 +3555,12 @@ paths:
                     segments:
                       type: segment.list
                       segments: []
+                    notes:
+                      type: note.list
+                      data: []
+                      url: "/companies/6762f09a1bb69f9f2193bb34/notes"
+                      total_count: 0
+                      has_more: false
                     plan: {}
                     custom_attributes: {}
               schema:
@@ -3666,7 +3811,7 @@ paths:
                 "$ref": "#/components/schemas/error"
   "/contacts/{id}/notes":
     get:
-      summary: List all notes
+      summary: List all contact notes
       parameters:
       - name: id
         in: path
@@ -16475,6 +16620,19 @@ components:
               type: array
               items:
                 "$ref": "#/components/schemas/segment"
+        notes:
+          type: object
+          description: The list of notes associated with the company
+          properties:
+            type:
+              type: string
+              description: The type of the object
+              enum:
+              - note.list
+            notes:
+              type: array
+              items:
+                "$ref": "#/components/schemas/company_note"
     company_attached_contacts:
       title: Company Attached Contacts
       type: object
@@ -21089,7 +21247,7 @@ components:
     note_list:
       title: Paginated Response
       type: object
-      description: A paginated list of notes associated with a contact.
+      description: A paginated list of notes associated with a contact or a company.
       properties:
         type:
           type: string
@@ -21107,6 +21265,48 @@ components:
           example: 1
         pages:
           "$ref": "#/components/schemas/cursor_pages"
+    company_note:
+      title: Company Note
+      type: object
+      x-tags:
+      - Notes
+      description: Notes allow you to annotate and comment on companies.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `note`.
+          example: note
+        id:
+          type: string
+          description: The id of the note.
+          example: '17495962'
+        created_at:
+          type: integer
+          format: timestamp
+          description: The time the note was created.
+          example: 1674589321
+        company:
+          type: object
+          description: Represents the company that the note was created about.
+          nullable: true
+          properties:
+            type:
+              type: string
+              description: String representing the object's type. Always has the value
+                `company`.
+              example: company
+            id:
+              type: string
+              description: The id of the company.
+              example: 6329bd9ffe4e2e91dac76188
+        author:
+          "$ref": "#/components/schemas/admin"
+          description: Optional. Represents the Admin that created the note.
+        body:
+          type: string
+          description: The body text of the note.
+          example: "<p>Text for the note.</p>"
     open_conversation_request:
       title: Open Conversation Request
       type: object
