@@ -2955,6 +2955,21 @@ paths:
         {% admonition type="warning" name="Using `company_id`" %}
           When updating a company it is not possible to update `company_id`. This can only be set once upon creation of the company.
         {% /admonition %}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_company_request"
+            examples:
+              successful:
+                summary: Successful
+                value:
+                  name: my company
+                  website: http://www.mycompany.com/
+              bad_request:
+                summary: Bad Request
+                value:
+                  test: invalid
       responses:
         '200':
           description: Successful
@@ -17778,6 +17793,50 @@ components:
           type: integer
           description: The time the company was created by you.
           example: 1394531169
+        monthly_spend:
+          type: integer
+          description: How much revenue the company generates for your business. Note
+            that this will truncate floats. i.e. it only allow for whole integers,
+            155.98 will be truncated to 155. Note that this has an upper limit of
+            2**31-1 or 2147483647..
+          example: 1000
+    update_company_request:
+      type: object
+      title: Update Company Request Payload
+      description: You can update a Company
+      nullable: true
+      properties:
+        name:
+          type: string
+          description: The name of the Company
+          example: Intercom
+        plan:
+          type: string
+          description: The name of the plan you have associated with the company.
+          example: Enterprise
+        size:
+          type: integer
+          description: The number of employees in this company.
+          example: '100'
+        website:
+          type: string
+          description: The URL for this company's website. Please note that the value
+            specified here is not validated. Accepts any string.
+          example: https://www.example.com
+        industry:
+          type: string
+          description: The industry that this company operates in.
+          example: Manufacturing
+        custom_attributes:
+          type: object
+          description: A hash of key/value pairs containing any other data about the
+            company you want Intercom to store.
+          additionalProperties:
+            type: string
+          example:
+            paid_subscriber: true
+            monthly_spend: 155.5
+            team_mates: 9
         monthly_spend:
           type: integer
           description: How much revenue the company generates for your business. Note
