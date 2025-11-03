@@ -10347,8 +10347,8 @@ paths:
         | id                                        | String                                                                                   |
         | created_at                                | Date (UNIX timestamp)                                                                    |
         | updated_at                                | Date (UNIX timestamp)                                                                    |
-        | _default_title_                           | String                                                                                   |
-        | _default_description_                     | String                                                                                   |
+        | title                           | String                                                                                   |
+        | description                     | String                                                                                   |
         | category                                  | String                                                                                   |
         | ticket_type_id                            | String                                                                                   |
         | contact_ids                               | String                                                                                   |
@@ -10866,7 +10866,7 @@ components:
       title: Action Component
       oneOf:
       - "$ref": "#/components/schemas/sheet_action_component"
-      - "$ref": "#/components/schemas/url_action_component" 
+      - "$ref": "#/components/schemas/url_action_component"
       - "$ref": "#/components/schemas/submit_action_component"
     activity_log:
       title: Activity Log
@@ -17101,7 +17101,7 @@ components:
 
         - Adding an `action` to the single-select component
         - Using a ButtonComponent (which will submit all interactive components in the canvas)
-        
+
         When a submit action takes place, the results are given in a hash with the `id` from the single-select component used as the key and the `id` from the chosen option as the value.
       properties:
         type:
@@ -17293,7 +17293,7 @@ components:
           type: string
           description: The id of the component clicked by the teammate to trigger the request.
         context:
-          "$ref": "#/components/schemas/context" 
+          "$ref": "#/components/schemas/context"
           description: The context of where the app is added, where the user last visited, and information on the Messenger settings.
         conversation:
           "$ref": "#/components/schemas/conversation"
@@ -17327,11 +17327,11 @@ components:
       type: object
       description: |
         The response object returned when submitting an app interaction. This will replace the previous canvas that was visible until the app was interacted with.
-        
+
         You can optionally provide an event object with the attribute `type` given as `completed` to tell us if the app has completed its purpose. For example, an email collector app would be complete when the end-user submits their email address.
-        
+
         Apps in conversation details can also optionally insert an app into the conversation reply:
-        
+
         1. You respond with a card_creation_options object (https://developers.intercom.com/canvas-kit-reference/reference/card-creation-options)
         2. We send a request to the initialize URL for Messenger capabilities (https://developers.intercom.com/docs/build-an-integration/getting-started/build-an-app-for-your-messenger/request-flows) with the card_creation_options object present
         3. You respond with a canvas object with the components you want to insert into the conversation reply
