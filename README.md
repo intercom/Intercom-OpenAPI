@@ -57,6 +57,7 @@ Learn more on the [Fin Voice product page](https://fin.ai/voice) or see [Fin Voi
 Because this description is automatically generated from Intercom’s internal codebase, so we do not currently accept direct pull requests that directly modify the specification.
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 
+If you've identified a mismatch between the Intercom API's behavior and these descriptions, or found an issue with the format of a schema, [please open an issue.](https://github.com/intercom/Intercom-OpenAPI/issues/new?template=schema-inaccuracy.md)
 
 ---
 
