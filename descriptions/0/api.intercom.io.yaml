@@ -15024,6 +15024,152 @@ paths:
                     errors:
                       - code: not_found
                         message: Email setting not found
+  "/fin_voice/register":
+    post:
+      summary: Register a Fin Voice call
+      description: |
+        Register a Fin Voice call with Intercom. This endpoint creates an external reference
+        that links an external call identifier to an Intercom call and conversation.
+
+        The call can be from different sources:
+        - AWS Connect (default)
+        - Five9
+        - Zoom Phone
+      operationId: registerFinVoiceCall
+      tags:
+        - Calls
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/register_fin_voice_call_request"
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ai_call_response"
+        '400':
+          description: bad request - missing phone_number or call_id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        '409':
+          description: conflict - duplicate call registration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  "/fin_voice/collect/{id}":
+    get:
+      summary: Collect Fin Voice call by ID
+      description: Retrieve information about a Fin Voice call using the external reference ID.
+      operationId: collectFinVoiceCallById
+      tags:
+        - Calls
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The external reference ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ai_call_response"
+        '404':
+          description: not found - external reference not found or not matched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  "/fin_voice/external_id/{external_id}":
+    get:
+      summary: Collect Fin Voice call by external ID
+      description: Retrieve information about a Fin Voice call using the external call identifier.
+      operationId: collectFinVoiceCallByExternalId
+      tags:
+        - Calls
+      parameters:
+        - name: external_id
+          in: path
+          required: true
+          description: The external call identifier from the call provider
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ai_call_response"
+        '404':
+          description: not found - external reference not found or not matched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  "/fin_voice/phone_number/{phone_number}":
+    get:
+      summary: Collect Fin Voice call by phone number
+      description: |
+        Retrieve information about a Fin Voice call using the phone number.
+
+        Returns the most recent matched call for the given phone number, ordered by creation date.
+      operationId: collectFinVoiceCallByPhoneNumber
+      tags:
+        - Calls
+      parameters:
+        - name: phone_number
+          in: path
+          required: true
+          description: Phone number in E.164 format
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        '404':
+          description: not found - no call found for phone number or not matched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
 components:
   schemas:
     datetime:
@@ -23445,6 +23591,88 @@ components:
           type: string
           description: Automatically generated identifier for the Visitor.
           example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+    ai_call_response:
+      title: AI Call Response
+      type: object
+      description: Response containing information about a Fin Voice call
+      properties:
+        id:
+          type: integer
+          description: The unique identifier for the external reference
+          example: 12345
+        app_id:
+          type: integer
+          description: The workspace identifier
+          example: 12345
+        user_phone_number:
+          type: string
+          description: Phone number in E.164 format for the call
+          example: '+1234567890'
+        status:
+          type: string
+          description: Status of the call. Can be "registered", "in-progress", or a resolution state
+          example: 'registered'
+        intercom_call_id:
+          type: string
+          nullable: true
+          description: The Intercom call identifier, if the call has been matched
+          example: '1234'
+        external_call_id:
+          type: string
+          description: The external call identifier from the call provider
+          example: 'call-123-abc'
+        intercom_conversation_id:
+          type: string
+          nullable: true
+          description: The Intercom conversation identifier, if a conversation has been created
+          example: '5678'
+        call_transcript:
+          type: array
+          description: Array of transcript entries for the call
+          items:
+            type: object
+          example: []
+        call_summary:
+          type: string
+          description: Summary of the call conversation, truncated to 256 characters. Empty string if no summary available.
+          example: 'Customer called about billing issue...'
+        intent:
+          type: array
+          description: Array of intent classifications for the call
+          items:
+            type: object
+          example: []
+    register_fin_voice_call_request:
+      title: Register Fin Voice Call Request Payload
+      type: object
+      description: Register a Fin Voice call with Intercom
+      nullable: true
+      required:
+        - phone_number
+        - call_id
+      properties:
+        phone_number:
+          type: string
+          description: Phone number in E.164 format for the call
+          example: '+1234567890'
+        call_id:
+          type: string
+          description: External call identifier from the call provider
+          example: 'call-123-abc'
+        source:
+          type: string
+          description: Source of the call. Can be "five9", "zoom_phone", or defaults to "aws_connect"
+          enum:
+            - five9
+            - zoom_phone
+            - aws_connect
+          example: 'aws_connect'
+        data:
+          type: object
+          description: Additional metadata about the call
+          nullable: true
+          example:
+            key: value
   securitySchemes:
     bearerAuth:
       type: http
@@ -23580,6 +23808,8 @@ tags:
   description: Everything about your Away Status Reasons
 - name: Brands
   description: Everything about your Brands
+- name: Calls
+  description: Everything about your Calls
 - name: Companies
   description: Everything about your Companies
 - name: Contacts
