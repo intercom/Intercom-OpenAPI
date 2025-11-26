@@ -1,130 +1,4 @@
 paths:
-  '/data_attributes':
-    post:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateDataAttributeRequest'
-  '/data_attributes/{id}':
-    put:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateDataAttributeRequest'
-  '/tickets':
-    post: null
-  '/ticket_types/{id}':
-    put: null
-  '/export/reporting_data/{job_identifier}':
-    get: null
-  '/download/reporting_data/{job_identifier}':
-    get: null
-  '/companies':
-    post:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateOrUpdateCompanyRequestBody'
-  '/phone_call_redirects':
-    post:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePhoneSwitchRequestBody'
-  '/ticket_types':
-    post:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateTicketTypeRequestBody'
-  '/contacts/{id}/companies':
-    post:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              required:
-                - company_id
-              properties:
-                company_id:
-                  type: string
-                  description: The unique identifier for the company which is given
-                    by Intercom
-                  example: 58a430d35458202d41b1e65b
-                id: null
-            examples:
-              successful:
-                summary: Successful
-                value:
-                  company_id: 6762f09a1bb69f9f2193bb34
-              bad_request:
-                summary: Bad Request
-                value:
-              company_not_found:
-                summary: Company Not Found
-                value:
-                  company_id: '123'
-  '/messages/status':
-    get:
-      responses:
-        '500':
-          content:
-            application/json:
-              examples: null
-  '/custom_channel_events/notify_attribute_collected':
-    post:
-      x-fern-sdk-group-name:
-        - customChannelEvents
-      x-fern-sdk-method-name: notifyAttributeCollected
-      x-fern-request-name: NotifyAttributeCollectedRequest
-      parameters:
-      - name: Intercom-Version
-        in: header
-        required: null
-        schema:
-          $ref: '#/components/schemas/intercom_version_unstable'
-  '/custom_channel_events/notify_new_message':
-    post:
-      x-fern-sdk-group-name:
-        - customChannelEvents
-      x-fern-sdk-method-name: notifyNewMessage
-      x-fern-request-name: NotifyNewMessageRequest
-      parameters:
-      - name: Intercom-Version
-        in: header
-        required: null
-        schema:
-          $ref: '#/components/schemas/intercom_version_unstable'
-  '/custom_channel_events/notify_new_conversation':
-    post:
-      x-fern-sdk-group-name:
-        - customChannelEvents
-      x-fern-sdk-method-name: notifyNewConversation
-      x-fern-request-name: NotifyNewConversationRequest
-      parameters:
-      - name: Intercom-Version
-        in: header
-        required: null
-        schema:
-          $ref: '#/components/schemas/intercom_version_unstable'
-  '/custom_channel_events/notify_quick_reply_selected':
-    post:
-      x-fern-sdk-group-name:
-        - customChannelEvents
-      x-fern-sdk-method-name: notifyQuickReplySelected
-      x-fern-request-name: NotifyQuickReplySelectedRequest
-      parameters:
-      - name: Intercom-Version
-        in: header
-        required: null
-        schema:
-          $ref: '#/components/schemas/intercom_version_unstable'
-
   '/me':
     parameters:
       - name: Intercom-Version
@@ -231,6 +105,7 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/export/reporting_data/{job_identifier}':
+    get: null
     parameters:
       - name: Intercom-Version
         in: header
@@ -245,6 +120,7 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/download/reporting_data/{job_identifier}':
+    get: null
     parameters:
       - name: Intercom-Version
         in: header
@@ -301,6 +177,12 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/companies':
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrUpdateCompanyRequestBody'
     parameters:
       - name: Intercom-Version
         in: header
@@ -350,6 +232,32 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/contacts/{id}/companies':
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - company_id
+              properties:
+                company_id:
+                  type: string
+                  description: The unique identifier for the company which is given
+                    by Intercom
+                  example: 58a430d35458202d41b1e65b
+                id: null
+            examples:
+              successful:
+                summary: Successful
+                value:
+                  company_id: 6762f09a1bb69f9f2193bb34
+              bad_request:
+                summary: Bad Request
+                value:
+              company_not_found:
+                summary: Company Not Found
+                value:
+                  company_id: '123'
     parameters:
       - name: Intercom-Version
         in: header
@@ -539,6 +447,17 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/custom_channel_events/notify_new_conversation':
+    post:
+      x-fern-sdk-group-name:
+        - customChannelEvents
+      x-fern-sdk-method-name: notifyNewConversation
+      x-fern-request-name: NotifyNewConversationRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        required: null
+        schema:
+          $ref: '#/components/schemas/intercom_version_unstable'
     parameters:
       - name: Intercom-Version
         in: header
@@ -546,6 +465,17 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/custom_channel_events/notify_new_message':
+    post:
+      x-fern-sdk-group-name:
+        - customChannelEvents
+      x-fern-sdk-method-name: notifyNewMessage
+      x-fern-request-name: NotifyNewMessageRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        required: null
+        schema:
+          $ref: '#/components/schemas/intercom_version_unstable'
     parameters:
       - name: Intercom-Version
         in: header
@@ -553,6 +483,18 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/custom_channel_events/notify_quick_reply_selected':
+    post:
+      x-fern-sdk-group-name:
+        - customChannelEvents
+      x-fern-sdk-method-name: notifyQuickReplySelected
+      x-fern-request-name: NotifyQuickReplySelectedRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        required: null
+        schema:
+          $ref: '#/components/schemas/intercom_version_unstable'
+
     parameters:
       - name: Intercom-Version
         in: header
@@ -560,6 +502,17 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/custom_channel_events/notify_attribute_collected':
+    post:
+      x-fern-sdk-group-name:
+        - customChannelEvents
+      x-fern-sdk-method-name: notifyAttributeCollected
+      x-fern-request-name: NotifyAttributeCollectedRequest
+      parameters:
+      - name: Intercom-Version
+        in: header
+        required: null
+        schema:
+          $ref: '#/components/schemas/intercom_version_unstable'
     parameters:
       - name: Intercom-Version
         in: header
@@ -581,6 +534,12 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/data_attributes':
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDataAttributeRequest'
     parameters:
       - name: Intercom-Version
         in: header
@@ -588,6 +547,12 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/data_attributes/{id}':
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDataAttributeRequest'
     parameters:
       - name: Intercom-Version
         in: header
@@ -665,6 +630,12 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/messages/status':
+    get:
+      responses:
+        '500':
+          content:
+            application/json:
+              examples: null
     parameters:
       - name: Intercom-Version
         in: header
@@ -735,6 +706,12 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/phone_call_redirects':
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePhoneSwitchRequestBody'
     parameters:
       - name: Intercom-Version
         in: header
@@ -826,6 +803,12 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/ticket_types':
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTicketTypeRequestBody'
     parameters:
       - name: Intercom-Version
         in: header
@@ -833,6 +816,7 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/ticket_types/{id}':
+    put: null
     parameters:
       - name: Intercom-Version
         in: header
@@ -861,6 +845,7 @@ paths:
         schema:
           $ref: '#/components/schemas/intercom_version_unstable'
   '/tickets':
+    post: null
     parameters:
       - name: Intercom-Version
         in: header
