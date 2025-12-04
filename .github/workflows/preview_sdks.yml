@@ -15,9 +15,6 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v6
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Download Fern
         run: npm install -g fern-api
 
@@ -26,6 +23,11 @@ jobs:
           FERN_TOKEN: ${{ secrets.FERN_TOKEN }}
         run: |
           fern generate --group ts-sdk --preview --log-level debug
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: fern/.preview/fern-typescript-sdk/package.json
 
       - name: Compile
         env:
