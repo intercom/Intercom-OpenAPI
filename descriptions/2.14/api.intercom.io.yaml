@@ -2631,6 +2631,119 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/ip_allowlist":
+    get:
+      summary: Get IP allowlist settings
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - IP Allowlist
+      operationId: getIpAllowlist
+      description: Retrieve the current IP allowlist configuration for the workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful:
+                  value:
+                    type: ip_allowlist
+                    enabled: true
+                    ip_allowlist:
+                    - "192.168.1.0/24"
+                    - "10.0.0.1"
+              schema:
+                "$ref": "#/components/schemas/ip_allowlist"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update IP allowlist settings
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - IP Allowlist
+      operationId: updateIpAllowlist
+      description: |
+        Update the IP allowlist configuration for the workspace.
+
+        {% admonition type="warning" name="Lockout Protection" %}
+          The API will reject updates that would lock out the caller's IP address. Ensure your current IP is included in the allowlist when enabling the feature.
+        {% /admonition %}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful:
+                  value:
+                    type: ip_allowlist
+                    enabled: true
+                    ip_allowlist:
+                    - "192.168.1.0/24"
+                    - "10.0.0.1"
+              schema:
+                "$ref": "#/components/schemas/ip_allowlist"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Lockout Protection:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: parameter_invalid
+                      message: Your IP (1.2.3.4) is not on the allowlist. Saving would lock you out of this workspace.
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ip_allowlist"
+            examples:
+              successful:
+                summary: Enable IP allowlist
+                value:
+                  enabled: true
+                  ip_allowlist:
+                  - "192.168.1.0/24"
+                  - "10.0.0.1"
   "/companies":
     post:
       summary: Create or Update a company
@@ -19587,6 +19700,31 @@ components:
           nullable: true
       required:
       - id
+    ip_allowlist:
+      title: IP Allowlist
+      type: object
+      description: IP allowlist settings for the workspace.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `ip_allowlist`.
+          example: ip_allowlist
+        enabled:
+          type: boolean
+          description: Whether the IP allowlist is enabled for the workspace.
+          example: true
+        ip_allowlist:
+          type: array
+          description: |
+            List of allowed IP addresses and/or IP ranges in CIDR notation.
+            Examples:
+            - Single IP: `192.168.0.1`
+            - IP range: `192.168.0.1/24` (allows 192.168.0.0 - 192.168.0.255)
+          items:
+            type: string
+          example:
+          - "192.168.1.0/24"
+          - "10.0.0.1"
     intercom_version:
       description: Intercom API version.</br>By default, it's equal to the version
         set in the app package.
@@ -22406,6 +22544,15 @@ tags:
   description: Everything about your Help Center
 - name: Internal Articles
   description: Everything about your Internal Articles
+- name: IP Allowlist
+  description: |
+    Manage IP allowlist settings for your workspace.
+
+    The IP Allowlist API allows you to configure which IP addresses are allowed to access the Intercom API and web application for your workspace. This is useful for restricting access to your Intercom workspace to specific corporate networks or VPNs.
+
+    {% admonition type="info" name="Authentication" %}
+      This endpoint requires the `manage_ip_allowlist` OAuth scope.
+    {% /admonition %}
 - name: Jobs
   description: Everything about jobs
 - name: Messages
