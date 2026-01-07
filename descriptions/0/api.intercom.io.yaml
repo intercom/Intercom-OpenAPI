@@ -20155,8 +20155,37 @@ components:
           properties:
             name:
               type: string
-              description: Value of the CDA updated
+              description: Current value of the CDA updated
               example: PROJ-007
+            previous:
+              type: string
+              nullable: true
+              description: Previous value of the CDA
+              example: PROJ-006
+    conversation_attribute_updated_by_user:
+      title: Part type - conversation_attribute_updated_by_user
+      type: object
+      description: Contains details about Custom Data Attributes (CDAs) that were modified by a user for conversation part type <code>conversation_attribute_updated_by_user</code>.
+      properties:
+        attribute:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Name of the CDA updated
+              example: Priority
+        value:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Current value of the CDA updated
+              example: High
+            previous:
+              type: string
+              nullable: true
+              description: Previous value of the CDA (null for older events)
+              example: Medium
     custom_action_started:
       title: Part type - custom_action_started
       type: object
@@ -20281,15 +20310,231 @@ components:
               type: string
               description: Result of the workflow event
               example: Finsihed waiting
+    conversation_tags_updated:
+      title: Part type - conversation_tags_updated
+      type: object
+      description: Contains details about tags that were added or removed from a conversation for conversation part type <code>conversation_tags_updated</code>.
+      properties:
+        tags_added:
+          type: array
+          items:
+            type: string
+          description: Array of tag names that were added
+          example: ["feature-shopify-multi-store", "second-tag"]
+        tags_removed:
+          type: array
+          items:
+            type: string
+          description: Array of tag names that were removed
+          example: ["feature-embercom-app-serializer-limit-external-plans"]
+    snoozed:
+      title: Part type - snoozed
+      type: object
+      description: Contains details about conversation snooze timing for conversation part type <code>snoozed</code>.
+      properties:
+        until:
+          type: string
+          description: Human-readable description of snooze duration
+          example: "until tomorrow"
+        custom_until_time:
+          type: string
+          format: date-time
+          nullable: true
+          description: ISO timestamp for custom snooze times (null for general snoozes)
+          example: "2025-09-03T18:44:20.146Z"
+    priority_changed:
+      title: Part type - priority_changed
+      type: object
+      description: Contains details about priority changes for conversation part type <code>priority_changed</code>.
+      properties:
+        current_priority:
+          type: string
+          enum: ["priority", "not_priority"]
+          description: Current priority state
+          example: "priority"
+        previous_priority:
+          type: string
+          enum: ["priority", "not_priority"]
+          description: Previous priority state
+          example: "not_priority"
+    conversation_sla_applied_by_rule:
+      title: Part type - conversation_sla_applied_by_rule
+      type: object
+      description: Contains details about SLA applied by modern Operator workflows for conversation part type <code>conversation_sla_applied_by_rule</code>.
+      properties:
+        sla_name:
+          type: string
+          description: Name of the SLA that was applied
+          example: "Premium SLA"
+        sla_definition:
+          type: object
+          description: Target times configured for the SLA (in seconds)
+          properties:
+            first_reply_time:
+              type: integer
+              nullable: true
+              description: First response time target in seconds
+              example: 300
+            next_reply_time:
+              type: integer
+              nullable: true
+              description: Next reply time target in seconds
+              example: 600
+            resolution_time:
+              type: integer
+              nullable: true
+              description: Resolution time target in seconds
+              example: 3600
+            time_to_close:
+              type: integer
+              nullable: true
+              description: Time to close target in seconds
+              example: 7200
+    conversation_sla_applied_by_workflow:
+      title: Part type - conversation_sla_applied_by_workflow
+      type: object
+      description: Contains details about SLA applied by legacy Inbox Rules for conversation part type <code>conversation_sla_applied_by_workflow</code>.
+      properties:
+        sla_name:
+          type: string
+          description: Name of the SLA that was applied
+          example: "Standard SLA"
+        sla_definition:
+          type: object
+          description: Target times configured for the SLA (in seconds)
+          properties:
+            first_reply_time:
+              type: integer
+              nullable: true
+              description: First response time target in seconds
+              example: 300
+            next_reply_time:
+              type: integer
+              nullable: true
+              description: Next reply time target in seconds
+              example: 600
+            resolution_time:
+              type: integer
+              nullable: true
+              description: Resolution time target in seconds
+              example: 3600
+            time_to_close:
+              type: integer
+              nullable: true
+              description: Time to close target in seconds
+              example: 7200
+    conversation_sla_target_missed:
+      title: Part type - conversation_sla_target_missed
+      type: object
+      description: Contains complete status of all SLA targets when a breach occurs for conversation part type <code>conversation_sla_target_missed</code>.
+      properties:
+        sla_name:
+          type: string
+          description: Name of the SLA
+          example: "HandleConversation"
+        sla_target_type:
+          type: string
+          enum: ["first_reply_time", "next_reply_time", "resolution_time", "time_to_close"]
+          description: Which specific target was missed
+          example: "first_reply_time"
+        current_sla_status:
+          type: string
+          enum: ["hit", "missed", "active", "paused", "canceled"]
+          description: Overall SLA status
+          example: "missed"
+        sla_states:
+          type: object
+          description: Status of all SLA targets at the time of breach
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+                enum: ["hit", "missed", "active", "paused"]
+                description: Status of this specific target
+              seconds_remaining:
+                type: integer
+                nullable: true
+                description: Time remaining for active/paused targets (null for hit/missed)
+          example:
+            first_reply_time:
+              status: "missed"
+              seconds_remaining: null
+            time_to_close:
+              status: "active"
+              seconds_remaining: 210
+    conversation_sla_paused:
+      title: Part type - conversation_sla_paused
+      type: object
+      description: Contains SLA status at the moment of pausing for conversation part type <code>conversation_sla_paused</code>.
+      properties:
+        sla_name:
+          type: string
+          description: Name of the SLA being paused
+          example: "Premium SLA"
+        current_sla_status:
+          type: string
+          enum: ["active", "hit", "missed", "canceled"]
+          description: Overall SLA status at pause time
+          example: "active"
+        sla_states:
+          type: object
+          description: Status of all SLA targets at pause time
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+                enum: ["paused"]
+                description: Status of this specific target (always paused)
+              seconds_remaining:
+                type: integer
+                nullable: true
+                description: Time remaining when paused
+          example:
+            first_reply_time:
+              status: "paused"
+              seconds_remaining: 3600
+            time_to_close:
+              status: "paused"
+              seconds_remaining: 7200
+    conversation_sla_unpaused:
+      title: Part type - conversation_sla_unpaused
+      type: object
+      description: Contains basic SLA information when unpaused for conversation part type <code>conversation_sla_unpaused</code>.
+      properties:
+        sla_name:
+          type: string
+          description: Name of the SLA being unpaused
+          example: "Premium SLA"
+    conversation_sla_removed:
+      title: Part type - conversation_sla_removed
+      type: object
+      description: Contains basic SLA information when removed for conversation part type <code>conversation_sla_removed</code>.
+      properties:
+        sla_name:
+          type: string
+          description: Name of the SLA that was removed
+          example: "Standard SLA"
     event_details:
       title: Event details of Workflow & actions
       type: object
       anyOf:
         - "$ref": "#/components/schemas/conversation_attribute_updated_by_workflow"
         - "$ref": "#/components/schemas/conversation_attribute_updated_by_admin"
+        - "$ref": "#/components/schemas/conversation_attribute_updated_by_user"
         - "$ref": "#/components/schemas/custom_action_started"
         - "$ref": "#/components/schemas/custom_action_finished"
         - "$ref": "#/components/schemas/operator_workflow_event"
+        - "$ref": "#/components/schemas/conversation_tags_updated"
+        - "$ref": "#/components/schemas/snoozed"
+        - "$ref": "#/components/schemas/priority_changed"
+        - "$ref": "#/components/schemas/conversation_sla_applied_by_rule"
+        - "$ref": "#/components/schemas/conversation_sla_applied_by_workflow"
+        - "$ref": "#/components/schemas/conversation_sla_target_missed"
+        - "$ref": "#/components/schemas/conversation_sla_paused"
+        - "$ref": "#/components/schemas/conversation_sla_unpaused"
+        - "$ref": "#/components/schemas/conversation_sla_removed"
     email_setting:
       type: object
       title: Email Setting
