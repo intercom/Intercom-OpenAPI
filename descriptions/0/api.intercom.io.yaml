@@ -8073,6 +8073,66 @@ paths:
                   admin_id: 991267748
                   customer:
                     intercom_user_id: 6762f1d11bb69f9f2193bbf1
+  "/conversations/{id}/handling_events":
+    get:
+      summary: List handling events
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The identifier for the conversation as given by Intercom.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: listHandlingEvents
+      description: |
+        List all pause/resume events for a conversation. These events track when teammates paused or resumed handling a conversation.
+
+        Requires the `read_conversations` OAuth scope.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/handling_event_list"
+              examples:
+                Successful response:
+                  value:
+                    handling_events:
+                    - teammate:
+                        type: admin
+                        id: 123
+                        name: Jane Example
+                        email: jane@example.com
+                      type: paused
+                      timestamp: "2026-01-09T09:00:00Z"
+                      reason: Paused
+                    - teammate:
+                        type: admin
+                        id: 123
+                        name: Jane Example
+                        email: jane@example.com
+                      type: resumed
+                      timestamp: "2026-01-09T09:10:00Z"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/redact":
     post:
       summary: Redact a conversation part
@@ -20947,6 +21007,42 @@ components:
         zh-TW:
           description: The content of the group in Chinese (Taiwan)
           "$ref": "#/components/schemas/group_content"
+    handling_event:
+      title: Handling Event
+      type: object
+      description: A pause or resume event for a conversation
+      required:
+        - teammate
+        - type
+        - timestamp
+      properties:
+        teammate:
+          "$ref": "#/components/schemas/teammate_reference"
+        type:
+          type: string
+          enum: [paused, resumed]
+          description: The type of handling event
+          example: paused
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO8601 timestamp when the event occurred
+          example: "2026-01-09T09:00:00Z"
+        reason:
+          type: string
+          description: Optional reason for the event (e.g., "Paused", "Away")
+          example: Paused
+          nullable: true
+    handling_event_list:
+      title: Handling Event List
+      type: object
+      description: A list of handling events for a conversation
+      properties:
+        handling_events:
+          type: array
+          description: Array of handling events
+          items:
+            "$ref": "#/components/schemas/handling_event"
     help_center:
       title: Help Center
       type: object
@@ -22386,6 +22482,34 @@ components:
           - 493881
           items:
             type: integer
+    teammate_reference:
+      title: Teammate Reference
+      type: object
+      description: A reference to a teammate (admin, team, or bot)
+      required:
+        - type
+        - id
+        - name
+      properties:
+        type:
+          type: string
+          enum: [admin, team, bot]
+          description: The type of teammate
+          example: admin
+        id:
+          type: integer
+          description: The unique identifier of the teammate
+          example: 123
+        name:
+          type: string
+          description: The display name of the teammate
+          example: Jane Example
+        email:
+          type: string
+          format: email
+          description: The email address of the teammate (optional for teams/bots)
+          example: jane@example.com
+          nullable: true
     ticket:
       title: Ticket
       type: object
