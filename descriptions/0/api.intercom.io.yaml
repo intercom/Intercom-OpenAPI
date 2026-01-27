@@ -9735,6 +9735,87 @@ paths:
                     download_expires_at: ''
               schema:
                 "$ref": "#/components/schemas/data_export"
+  "/export/workflows/{id}":
+    get:
+      summary: Export a workflow
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        description: The unique identifier for the workflow
+        required: true
+        schema:
+          type: string
+          example: "12345"
+      tags:
+      - Workflows
+      operationId: exportWorkflow
+      description: |
+        Export a workflow configuration by its ID. This endpoint returns the complete workflow definition including its steps, targeting rules, and attributes.
+
+        This endpoint is designed for EU Data Act compliance, allowing customers to export their workflow configurations.
+
+        {% admonition type="warning" name="Unstable API" %}
+          This API is currently in the Unstable version. Its behavior may change in future releases.
+        {% /admonition %}
+      responses:
+        '200':
+          description: Workflow exported successfully
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    export_version: "1.0"
+                    exported_at: "2026-01-26T12:00:00Z"
+                    app_id: 12345
+                    workflow:
+                      id: "67890"
+                      title: "My Workflow"
+                      description: "A workflow that handles customer inquiries"
+                      trigger_type: "inbound_conversation"
+                      state: "live"
+                      target_channels: ["chat"]
+                      preferred_devices: ["desktop", "mobile"]
+                      created_at: "2025-06-15T10:30:00Z"
+                      updated_at: "2026-01-20T14:45:00Z"
+                      targeting: {}
+                      snapshot: {}
+                      attributes: []
+                      embedded_rules: []
+              schema:
+                "$ref": "#/components/schemas/workflow_export"
+        '404':
+          description: Workflow not found
+          content:
+            application/json:
+              examples:
+                Workflow not found:
+                  value:
+                    type: error.list
+                    request_id: b3c8c472-8478-4f10-a29e-a23dbf921c46
+                    errors:
+                    - code: not_found
+                      message: Workflow not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Workflow export is not available for this app
+          content:
+            application/json:
+              examples:
+                Feature not available:
+                  value:
+                    type: error.list
+                    request_id: d92f7e84-5c31-4a2b-b8e6-9f4c3d2a1b0e
+                    errors:
+                    - code: api_plan_restricted
+                      message: Workflow export is not available for this app
+              schema:
+                "$ref": "#/components/schemas/error"
   "/download/content/data/{job_identifier}":
     get:
       summary: Download content data export
@@ -23988,6 +24069,93 @@ components:
           type: string
           description: Automatically generated identifier for the Visitor.
           example: 8a88a590-e1c3-41e2-a502-e0649dbf721c
+    workflow_export:
+      title: Workflow Export
+      type: object
+      description: A workflow export containing the complete workflow configuration.
+      properties:
+        export_version:
+          type: string
+          description: The version of the export format.
+          example: "1.0"
+        exported_at:
+          type: string
+          format: date-time
+          description: The timestamp when the export was generated.
+          example: "2026-01-26T12:00:00Z"
+        app_id:
+          type: integer
+          description: The workspace identifier.
+          example: 12345
+        workflow:
+          type: object
+          description: The workflow configuration.
+          properties:
+            id:
+              type: string
+              description: The unique identifier for the workflow.
+              example: "67890"
+            title:
+              type: string
+              description: The title of the workflow.
+              example: "My Workflow"
+            description:
+              type: string
+              nullable: true
+              description: The description of the workflow.
+              example: "A workflow that handles customer inquiries"
+            trigger_type:
+              type: string
+              description: The type of trigger that starts this workflow.
+              example: "inbound_conversation"
+            state:
+              type: string
+              description: The current state of the workflow.
+              enum:
+              - live
+              - draft
+              - paused
+              example: "live"
+            target_channels:
+              type: array
+              items:
+                type: string
+              description: The channels this workflow targets.
+              example: ["chat"]
+            preferred_devices:
+              type: array
+              items:
+                type: string
+              description: The preferred devices for this workflow.
+              example: ["desktop", "mobile"]
+            created_at:
+              type: string
+              format: date-time
+              description: When the workflow was created.
+              example: "2025-06-15T10:30:00Z"
+            updated_at:
+              type: string
+              format: date-time
+              description: When the workflow was last updated.
+              example: "2026-01-20T14:45:00Z"
+            targeting:
+              type: object
+              nullable: true
+              description: The targeting rules for this workflow.
+            snapshot:
+              type: object
+              nullable: true
+              description: The current snapshot of workflow steps and configuration.
+            attributes:
+              type: array
+              items:
+                type: object
+              description: Custom attributes defined for this workflow.
+            embedded_rules:
+              type: array
+              items:
+                type: object
+              description: Rules embedded within the workflow steps.
     ai_call_response:
       title: AI Call Response
       type: object
@@ -24278,3 +24446,5 @@ tags:
   description: Everything about your tickets
 - name: Visitors
   description: Everything about your Visitors
+- name: Workflows
+  description: Export workflow configurations from your workspace.
