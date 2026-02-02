@@ -1829,7 +1829,40 @@ components:
       example:
         monthly_spend: '155.5'
 
-    # enum additions
+    # enum additions and required field corrections
+    admin:
+      required:
+        - type
+        - id
+        - name
+        - email
+        - job_title
+        - away_mode_enabled
+        - away_mode_reassign
+        - has_inbox_seat
+        - team_ids
+    article_list_item:
+      required:
+        - id
+        - workspace_id
+        - title
+        - author_id
+        - state
+        - created_at
+        - updated_at
+        - url
+        - parent_id
+        - parent_type
+        - default_locale
+    company:
+      required:
+        - type
+        - company_id
+        - id
+        - app_id
+        - name
+        - created_at
+        - updated_at
     contact:
       properties:
         type:
@@ -1841,6 +1874,29 @@ components:
           format: uri
           description: An image URL containing the avatar of a contact.
           example: https://example.org/128Wash.jpg
+      required:
+        - type
+        - id
+        - workspace_id
+        - role
+        - has_hard_bounced
+        - marked_email_as_spam
+        - unsubscribed_from_emails
+        - created_at
+        - updated_at
+    conversation:
+      required:
+        - type
+        - id
+        - created_at
+        - updated_at
+        - open
+        - state
+        - read
+        - source
+        - contacts
+        - teammates
+        - custom_attributes
     content_source:
       properties:
         content_type:
@@ -1852,11 +1908,30 @@ components:
           enum:
             - collection
             - section
+    data_event:
+      required:
+        - type
+        - event_name
+        - created_at
     error:
       properties:
         type:
           enum:
             - error.list
+    message:
+      required:
+        - type
+        - id
+        - created_at
+        - body
+        - message_type
+        - conversation_id
+    note:
+      required:
+        - type
+        - id
+        - created_at
+        - body
     social_profile:
       properties:
         type:
@@ -1877,6 +1952,15 @@ components:
         - type
         - id
         - name
+    ticket:
+      required:
+        - type
+        - id
+        - ticket_id
+        - category
+        - ticket_attributes
+        - ticket_state
+        - contacts
     ticket_custom_attributes:
       x-fern-type: map<string, unknown>
     ticket_request_custom_attributes:
@@ -1905,6 +1989,10 @@ components:
         type:
           enum:
             - visitor
+      required:
+        - type
+        - id
+        - user_id
 
     # change teammates.teammates to teammates.admins
     conversation_teammates:
