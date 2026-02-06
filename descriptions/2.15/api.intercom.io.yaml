@@ -507,9 +507,9 @@ paths:
                 value:
                   sync_behavior: api
                   url: https://www.example.com
-  "/ai/content_import_sources/{content_import_source_id}":
+  "/ai/content_import_sources/{source_id}":
     parameters:
-    - name: content_import_source_id
+    - name: source_id
       in: path
       description: The unique identifier for the content import source which is given
         by Intercom.
@@ -794,9 +794,9 @@ paths:
                   source_id: 44
                   title: Test
                   url: https://www.example.com
-  "/ai/external_pages/{external_page_id}":
+  "/ai/external_pages/{page_id}":
     parameters:
-    - name: external_page_id
+    - name: page_id
       in: path
       description: The unique identifier for the external page which is given by Intercom.
       required: true
@@ -2631,6 +2631,119 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/ip_allowlist":
+    get:
+      summary: Get IP allowlist settings
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - IP Allowlist
+      operationId: getIpAllowlist
+      description: Retrieve the current IP allowlist configuration for the workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful:
+                  value:
+                    type: ip_allowlist
+                    enabled: true
+                    ip_allowlist:
+                    - "192.168.1.0/24"
+                    - "10.0.0.1"
+              schema:
+                "$ref": "#/components/schemas/ip_allowlist"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update IP allowlist settings
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - IP Allowlist
+      operationId: updateIpAllowlist
+      description: |
+        Update the IP allowlist configuration for the workspace.
+
+        {% admonition type="warning" name="Lockout Protection" %}
+          The API will reject updates that would lock out the caller's IP address. Ensure your current IP is included in the allowlist when enabling the feature.
+        {% /admonition %}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful:
+                  value:
+                    type: ip_allowlist
+                    enabled: true
+                    ip_allowlist:
+                    - "192.168.1.0/24"
+                    - "10.0.0.1"
+              schema:
+                "$ref": "#/components/schemas/ip_allowlist"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Lockout Protection:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: parameter_invalid
+                      message: Your IP (1.2.3.4) is not on the allowlist. Saving would lock you out of this workspace.
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ip_allowlist"
+            examples:
+              successful:
+                summary: Enable IP allowlist
+                value:
+                  enabled: true
+                  ip_allowlist:
+                  - "192.168.1.0/24"
+                  - "10.0.0.1"
   "/companies":
     post:
       summary: Create or Update a company
@@ -2677,12 +2790,6 @@ paths:
                     segments:
                       type: segment.list
                       segments: []
-                    notes:
-                      type: note.list
-                      data: []
-                      url: "/companies/6762f0761bb69f9f2193bae2/notes"
-                      total_count: 0
-                      has_more: false
                     plan: {}
                     custom_attributes:
                       creation_source: api
@@ -2823,12 +2930,6 @@ paths:
                       segments:
                         type: segment.list
                         segments: []
-                      notes:
-                        type: note.list
-                        data: []
-                        url: "/companies/6762f07a1bb69f9f2193baea/notes"
-                        total_count: 0
-                        has_more: false
                       plan: {}
                       custom_attributes: {}
                     pages:
@@ -2912,12 +3013,6 @@ paths:
                     segments:
                       type: segment.list
                       segments: []
-                    notes:
-                      type: note.list
-                      data: []
-                      url: "/companies/6762f0761bb69f9f2193bae2/notes"
-                      total_count: 0
-                      has_more: false
                     plan: {}
                     custom_attributes: {}
               schema:
@@ -2973,6 +3068,21 @@ paths:
         {% admonition type="warning" name="Using `company_id`" %}
           When updating a company it is not possible to update `company_id`. This can only be set once upon creation of the company.
         {% /admonition %}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_company_request"
+            examples:
+              successful:
+                summary: Successful
+                value:
+                  name: my company
+                  website: http://www.mycompany.com/
+              bad_request:
+                summary: Bad Request
+                value:
+                  test: invalid
       responses:
         '200':
           description: Successful
@@ -2998,12 +3108,6 @@ paths:
                     segments:
                       type: segment.list
                       segments: []
-                    notes:
-                      type: note.list
-                      data: []
-                      url: "/companies/6762f0841bb69f9f2193baff/notes"
-                      total_count: 0
-                      has_more: false
                     plan: {}
                     custom_attributes: {}
               schema:
@@ -3268,39 +3372,7 @@ paths:
                         team_ids: []
                         team_priority_level: {}
                       body: "<p>This is a note.</p>"
-                    - type: note
-                      id: '25'
-                      created_at: 1733846187
-                      company:
-                        type: company
-                        id: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
-                      author:
-                        type: admin
-                        id: '991267581'
-                        name: Ciaran122 Lee
-                        email: admin122@email.com
-                        away_mode_enabled: false
-                        away_mode_reassign: false
-                      body: "<p>This is a note.</p>"
-                    - type: note
-                      id: '24'
-                      created_at: 1733846187
-                      company:
-                        type: company
-                        id: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
-                      author:
-                        type: admin
-                        id: '991267581'
-                        name: Ciaran122 Lee
-                        email: admin122@email.com
-                        away_mode_enabled: false
-                        away_mode_reassign: false
-                        away_status_reason_id: null
-                        has_inbox_seat: true
-                        team_ids: []
-                        team_priority_level: {}
-                      body: "<p>This is a note.</p>"
-                    total_count: 3
+                    total_count: 1
                     pages:
                       type: pages
                       next:
@@ -3393,12 +3465,6 @@ paths:
                       segments:
                         type: segment.list
                         segments: []
-                      notes:
-                        type: note.list
-                        data: []
-                        url: "/companies/6762f0941bb69f9f2193bb25/notes"
-                        total_count: 0
-                        has_more: false
                       plan: {}
                       custom_attributes: {}
                     pages:
@@ -3484,12 +3550,6 @@ paths:
                       segments:
                         type: segment.list
                         segments: []
-                      notes:
-                        type: note.list
-                        data: []
-                        url: "/companies/6762f0971bb69f9f2193bb2b/notes"
-                        total_count: 0
-                        has_more: false
                       plan: {}
                       custom_attributes: {}
                     pages:
@@ -3555,12 +3615,6 @@ paths:
                     segments:
                       type: segment.list
                       segments: []
-                    notes:
-                      type: note.list
-                      data: []
-                      url: "/companies/6762f09a1bb69f9f2193bb34/notes"
-                      total_count: 0
-                      has_more: false
                     plan: {}
                     custom_attributes: {}
               schema:
@@ -3811,14 +3865,14 @@ paths:
                 "$ref": "#/components/schemas/error"
   "/contacts/{contact_id}/notes":
     get:
-      summary: List all contact notes
+      summary: List all notes
       parameters:
       - name: contact_id
         in: path
         required: true
         description: The unique identifier of a contact.
         schema:
-          type: integer
+          type: string
       - name: Intercom-Version
         in: header
         schema:
@@ -3979,10 +4033,6 @@ paths:
                   type: string
                   description: The text of the note.
                   example: New note
-                contact_id:
-                  type: string
-                  description: The unique identifier of a given contact.
-                  example: '123'
                 admin_id:
                   type: string
                   description: The unique identifier of a given admin.
@@ -4651,7 +4701,6 @@ paths:
                     role: user
                     email: joebloggs@intercom.io
                     phone:
-                    formatted_phone:
                     name: joe bloggs
                     avatar:
                     owner_id:
@@ -4740,7 +4789,6 @@ paths:
                     role: user
                     email: joebloggs@intercom.io
                     phone:
-                    formatted_phone:
                     name: joe bloggs
                     avatar:
                     owner_id:
@@ -4882,7 +4930,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       - name: contact_id
         in: path
-        description: id
+        description: contact_id
         example: 63a07ddf05a32042dffac965
         required: true
         schema:
@@ -4906,7 +4954,6 @@ paths:
                     role: user
                     email: joe@bloggs.com
                     phone:
-                    formatted_phone:
                     name: Joe Bloggs
                     avatar:
                     owner_id:
@@ -5018,7 +5065,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       - name: contact_id
         in: path
-        description: id
+        description: contact_id
         required: true
         schema:
           type: string
@@ -5075,7 +5122,6 @@ paths:
                     role: user
                     email: joe@bloggs.com
                     phone:
-                    formatted_phone:
                     name: Joe Bloggs
                     avatar:
                     owner_id:
@@ -5245,7 +5291,6 @@ paths:
         | email                              | String                         |
         | email_domain                       | String                         |
         | phone                              | String                         |
-        | formatted_phone                    | String                         |
         | external_id                        | String                         |
         | created_at                         | Date (UNIX Timestamp)          |
         | signed_up_at                       | Date (UNIX Timestamp)          |
@@ -5425,7 +5470,6 @@ paths:
                     role: user
                     email: joebloggs@intercom.io
                     phone:
-                    formatted_phone:
                     name:
                     avatar:
                     owner_id:
@@ -5574,7 +5618,6 @@ paths:
                     role: user
                     email: joe@bloggs.com
                     phone:
-                    formatted_phone:
                     name: Joe Bloggs
                     avatar:
                     owner_id:
@@ -5687,7 +5730,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       - name: contact_id
         in: path
-        description: id
+        description: contact_id
         example: 63a07ddf05a32042dffac965
         required: true
         schema:
@@ -5713,7 +5756,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       - name: contact_id
         in: path
-        description: id
+        description: contact_id
         example: 63a07ddf05a32042dffac965
         required: true
         schema:
@@ -5739,7 +5782,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       - name: contact_id
         in: path
-        description: id
+        description: contact_id
         example: 63a07ddf05a32042dffac965
         required: true
         schema:
@@ -5864,7 +5907,7 @@ paths:
           type: string
       - name: tag_id
         in: path
-        description: id
+        description: tag_id
         example: '7522907'
         required: true
         schema:
@@ -6196,7 +6239,7 @@ paths:
       - name: display_as
         in: query
         required: false
-        description: Set to plaintext to retrieve conversation messages in plain text. This affects both the body and subject fields.
+        description: Set to plaintext to retrieve conversation messages in plain text.
         example: plaintext
         schema:
           type: string
@@ -6450,7 +6493,7 @@ paths:
       - name: display_as
         in: query
         required: false
-        description: Set to plaintext to retrieve conversation messages in plain text. This affects both the body and subject fields.
+        description: Set to plaintext to retrieve conversation messages in plain text.
         example: plaintext
         schema:
           type: string
@@ -8366,12 +8409,6 @@ paths:
       description: |
         Notifies Intercom that a new conversation was created in your custom channel/platform. This triggers conversation creation and workflow automations within Intercom for your custom channel integration.
         > **Note:** This endpoint is currently under managed availability. Please reach out to your accounts team to discuss access and tailored, hands-on support.
-      parameters:
-        - name: Intercom-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/intercom_version'
       requestBody:
         required: true
         content:
@@ -8409,12 +8446,6 @@ paths:
       description: |
         Notifies Intercom that a new message was sent in a conversation on your custom channel/platform. This allows Intercom to process the message and trigger any relevant workflow automations.
         > **Note:** This endpoint is currently under managed availability. Please reach out to your accounts team to discuss access and tailored, hands-on support.
-      parameters:
-        - name: Intercom-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/intercom_version'
       requestBody:
         required: true
         content:
@@ -8461,12 +8492,6 @@ paths:
       description: |
         Notifies Intercom that a user selected a quick reply option in your custom channel/platform. This allows Intercom to process the response and trigger any relevant workflow automations.
         > **Note:** This endpoint is currently under managed availability. Please reach out to your accounts team to discuss access and tailored, hands-on support.
-      parameters:
-        - name: Intercom-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/intercom_version'
       requestBody:
         required: true
         content:
@@ -8513,12 +8538,6 @@ paths:
       description: |
         Notifies Intercom that a user provided a response to an attribute collector in your custom channel/platform. This allows Intercom to process the attribute and trigger any relevant workflow automations.
         > **Note:** This endpoint is currently under managed availability. Please reach out to your accounts team to discuss access and tailored, hands-on support.
-      parameters:
-        - name: Intercom-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/intercom_version'
       requestBody:
         required: true
         content:
@@ -9675,87 +9694,6 @@ paths:
                     download_expires_at: ''
               schema:
                 "$ref": "#/components/schemas/data_export"
-  "/export/workflows/{workflow_id}":
-    get:
-      summary: Export a workflow
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: workflow_id
-        in: path
-        description: The unique identifier for the workflow
-        required: true
-        schema:
-          type: string
-          example: "12345"
-      tags:
-      - Workflows
-      operationId: exportWorkflow
-      description: |
-        Export a workflow configuration by its ID. This endpoint returns the complete workflow definition including its steps, targeting rules, and attributes.
-
-        This endpoint is designed for EU Data Act compliance, allowing customers to export their workflow configurations.
-
-        {% admonition type="warning" name="Unstable API" %}
-          This API is currently in the Unstable version. Its behavior may change in future releases.
-        {% /admonition %}
-      responses:
-        '200':
-          description: Workflow exported successfully
-          content:
-            application/json:
-              examples:
-                successful:
-                  value:
-                    export_version: "1.0"
-                    exported_at: "2026-01-26T12:00:00Z"
-                    app_id: 12345
-                    workflow:
-                      id: "67890"
-                      title: "My Workflow"
-                      description: "A workflow that handles customer inquiries"
-                      trigger_type: "inbound_conversation"
-                      state: "live"
-                      target_channels: ["chat"]
-                      preferred_devices: ["desktop", "mobile"]
-                      created_at: "2025-06-15T10:30:00Z"
-                      updated_at: "2026-01-20T14:45:00Z"
-                      targeting: {}
-                      snapshot: {}
-                      attributes: []
-                      embedded_rules: []
-              schema:
-                "$ref": "#/components/schemas/workflow_export"
-        '404':
-          description: Workflow not found
-          content:
-            application/json:
-              examples:
-                Workflow not found:
-                  value:
-                    type: error.list
-                    request_id: b3c8c472-8478-4f10-a29e-a23dbf921c46
-                    errors:
-                    - code: not_found
-                      message: Workflow not found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '403':
-          description: Workflow export is not available for this app
-          content:
-            application/json:
-              examples:
-                Feature not available:
-                  value:
-                    type: error.list
-                    request_id: d92f7e84-5c31-4a2b-b8e6-9f4c3d2a1b0e
-                    errors:
-                    - code: api_plan_restricted
-                      message: Workflow export is not available for this app
-              schema:
-                "$ref": "#/components/schemas/error"
   "/download/content/data/{job_identifier}":
     get:
       summary: Download content data export
@@ -9856,7 +9794,7 @@ paths:
       - Messages
       operationId: createMessage
       description: "You can create a message that has been initiated by an admin.
-        The conversation can be either an in-app message, an email, sms or whatsapp.\n\n> \U0001F6A7
+        The conversation can be either an in-app message or an email.\n\n> \U0001F6A7
         Sending for visitors\n>\n> There can be a short delay between when a contact
         is created and when a contact becomes available to be messaged through the
         API. A 404 Not Found error will be returned in this case.\n\nThis will return
@@ -9922,13 +9860,6 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: Body is required
-                Invalid body supplied for sms message:
-                  value:
-                    type: error.list
-                    request_id: d7997515-65af-4860-9bf5-777852f8b24f
-                    errors:
-                    - code: parameter_invalid
-                      message: Invalid SMS message body
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
@@ -10018,34 +9949,6 @@ paths:
                       id: 6762f23e1bb69f9f2193bc2f
                   message_type: conversation
                   body: heyy
-              admin_sms_message_created:
-                summary: admin sms message created
-                value:
-                  from:
-                    type: admin
-                    id: '991267817'
-                  to:
-                    type: user
-                    id: 6762f23a1bb69f9f2193bc1a
-                  message_type: sms
-                  body: heyy
-              admin_whatsapp_message_created:
-                summary: admin whatsapp message created
-                value:
-                  from:
-                    type: admin
-                    id: '991267817'
-                  to:
-                    phone: +5547999998888
-                    name: John Doe
-                  message_type: whatsapp
-                  components:
-                    - type: BODY
-                      parameters:
-                        - type: text
-                          text: Username 123
-                  template: keep_live
-                  locale: en
               no_body_supplied_for_message:
                 summary: No body supplied for message
                 value:
@@ -10081,17 +9984,6 @@ paths:
                   message_type: email
                   body:
                   subject: heyy
-              invalid_body_supplied_for_sms_message:
-                summary: Invalid body supplied for sms message
-                value:
-                  from:
-                    type: admin
-                    id: '991267821'
-                  to:
-                    type: user
-                    id: 6762f23b1bb69f9f2193bc1d
-                  message_type: sms
-                  body: heyy https://picsum.photos/200/300
   "/news/news_items":
     get:
       summary: List all news items
@@ -11683,6 +11575,8 @@ paths:
                     id: '991267902'
                     name: team 1
                     admin_ids: []
+                    assignment_limit: 10
+                    distribution_method: round_robin
               schema:
                 "$ref": "#/components/schemas/team"
         '404':
@@ -14185,7 +14079,6 @@ paths:
                     role: user
                     email: foo@bar.com
                     phone:
-                    formatted_phone:
                     name:
                     avatar:
                     owner_id:
@@ -14343,7 +14236,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/error"
-  "/brands/{brand_id}":
+  "/brands/{id}":
     get:
       summary: Retrieve a brand
       tags:
@@ -14355,7 +14248,7 @@ paths:
           in: header
           schema:
             $ref: "#/components/schemas/intercom_version"
-        - name: brand_id
+        - name: id
           in: path
           required: true
           description: The unique identifier of the brand
@@ -14449,7 +14342,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/error"
-  "/emails/{email_id}":
+  "/emails/{id}":
     get:
       summary: Retrieve an email setting
       tags:
@@ -14461,7 +14354,7 @@ paths:
           in: header
           schema:
             $ref: "#/components/schemas/intercom_version"
-        - name: email_id
+        - name: id
           in: path
           required: true
           description: The unique identifier of the email setting
@@ -14551,7 +14444,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/error"
-  "/fin_voice/collect/{external_reference_id}":
+  "/fin_voice/collect/{id}":
     get:
       summary: Collect Fin Voice call by ID
       description: Retrieve information about a Fin Voice call using the external reference ID.
@@ -14559,7 +14452,7 @@ paths:
       tags:
         - Calls
       parameters:
-        - name: external_reference_id
+        - name: id
           in: path
           required: true
           description: The external reference ID
@@ -14653,6 +14546,83 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/error"
+  "/export/workflows/{id}":
+    get:
+      summary: Export a workflow
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        description: The unique identifier for the workflow
+        required: true
+        schema:
+          type: string
+          example: "12345"
+      tags:
+      - Workflows
+      operationId: exportWorkflow
+      description: |
+        Export a workflow configuration by its ID. This endpoint returns the complete workflow definition including its steps, targeting rules, and attributes.
+
+        This endpoint is designed for EU Data Act compliance, allowing customers to export their workflow configurations.
+      responses:
+        '200':
+          description: Workflow exported successfully
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    export_version: "1.0"
+                    exported_at: "2026-01-26T12:00:00Z"
+                    app_id: 12345
+                    workflow:
+                      id: "67890"
+                      title: "My Workflow"
+                      description: "A workflow that handles customer inquiries"
+                      trigger_type: "inbound_conversation"
+                      state: "live"
+                      target_channels: ["chat"]
+                      preferred_devices: ["desktop", "mobile"]
+                      created_at: "2025-06-15T10:30:00Z"
+                      updated_at: "2026-01-20T14:45:00Z"
+                      targeting: {}
+                      snapshot: {}
+                      attributes: []
+                      embedded_rules: []
+              schema:
+                "$ref": "#/components/schemas/workflow_export"
+        '404':
+          description: Workflow not found
+          content:
+            application/json:
+              examples:
+                Workflow not found:
+                  value:
+                    type: error.list
+                    request_id: b3c8c472-8478-4f10-a29e-a23dbf921c46
+                    errors:
+                    - code: not_found
+                      message: Workflow not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Workflow export is not available for this app
+          content:
+            application/json:
+              examples:
+                Feature not available:
+                  value:
+                    type: error.list
+                    request_id: d92f7e84-5c31-4a2b-b8e6-9f4c3d2a1b0e
+                    errors:
+                    - code: api_plan_restricted
+                      message: Workflow export is not available for this app
+              schema:
+                "$ref": "#/components/schemas/error"
 components:
   schemas:
     datetime:
@@ -14712,6 +14682,8 @@ components:
           - admin_deprovisioned
           - admin_impersonation_end
           - admin_impersonation_start
+          - admin_impersonation_consent_approved
+          - admin_impersonation_consent_revoked
           - admin_invite_change
           - admin_invite_creation
           - admin_invite_deletion
@@ -14742,6 +14714,7 @@ components:
           - app_webhook_creation
           - app_webhook_deletion
           - articles_in_messenger_enabled_change
+          - automatic_away_mode_setting_change
           - bulk_delete
           - bulk_export
           - campaign_deletion
@@ -14750,14 +14723,22 @@ components:
           - conversation_topic_change
           - conversation_topic_creation
           - conversation_topic_deletion
+          - custom_authentication_token_creation
           - help_center_settings_change
           - inbound_conversations_change
           - inbox_access_change
+          - macro_creation
+          - macro_deletion
+          - macro_update
+          - malicious_domains_setting_change
           - message_deletion
           - message_state_change
+          - messenger_api_secret_creation
+          - messenger_api_secret_deletion
           - messenger_look_and_feel_change
           - messenger_search_required_change
           - messenger_spaces_change
+          - oauth_token_revocation
           - office_hours_change
           - role_change
           - role_creation
@@ -14770,9 +14751,28 @@ components:
           - seat_change
           - seat_revoke
           - security_settings_change
+          - series_creation
+          - series_deletion
+          - series_settings_update
+          - series_status_change
+          - series_update
+          - strip_inbound_email_links_change
           - temporary_expectation_change
+          - team_assignment_limit_change
+          - trusted_domains_setting_change
+          - unassign_unsnoozed_at_capacity_setting_change
           - upfront_email_collection_change
+          - allowed_attachment_filetypes_setting_change
+          - attach_uploads_inline_setting_change
+          - teammate_gifs_setting_change
+          - user_camera_attachments_setting_change
+          - user_conversation_attachments_setting_change
+          - user_file_attachments_setting_change
+          - user_gifs_setting_change
+          - user_media_attachments_setting_change
+          - user_voice_notes_setting_change
           - welcome_message_change
+          - workspace_deletion_request
           example: app_name_change
         activity_description:
           type: string
@@ -14859,6 +14859,48 @@ components:
           nullable: true
           description: The ticket assignment limit value for an admin.
           example: 20
+        team:
+          type: object
+          nullable: true
+          description: Details about the team whose assignment limit was changed.
+          properties:
+            id:
+              type: integer
+              description: The ID of the team.
+              example: 123
+            name:
+              type: string
+              description: The name of the team.
+              example: Support Team
+        team_assignment_limit:
+          type: integer
+          nullable: true
+          description: The team assignment limit value (null if limit was removed).
+          example: 50
+        enabled:
+          type: boolean
+          nullable: true
+          description: Indicates if the setting is enabled or disabled.
+          example: true
+        consent_id:
+          type: integer
+          nullable: true
+          description: The ID of the impersonation consent.
+          example: 149673
+        expired_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: The timestamp when the impersonation consent expires.
+          example: "2025-12-04T09:31:57.000Z"
+        before:
+          type: object
+          nullable: true
+          description: The state of settings or values before the change. Structure varies by activity type.
+        after:
+          type: object
+          nullable: true
+          description: The state of settings or values after the change. Structure varies by activity type.
     addressable_list:
       title: Addressable List
       type: object
@@ -15247,6 +15289,57 @@ components:
           nullable: true
         content_sources:
           "$ref": "#/components/schemas/content_sources_list"
+    ai_call_response:
+      title: AI Call Response
+      type: object
+      description: Response containing information about a Fin Voice call
+      properties:
+        id:
+          type: integer
+          description: The unique identifier for the external reference
+          example: 12345
+        app_id:
+          type: integer
+          description: The workspace identifier
+          example: 12345
+        user_phone_number:
+          type: string
+          description: Phone number in E.164 format for the call
+          example: '+1234567890'
+        status:
+          type: string
+          description: Status of the call. Can be "registered", "in-progress", or a resolution state
+          example: 'registered'
+        intercom_call_id:
+          type: string
+          nullable: true
+          description: The Intercom call identifier, if the call has been matched
+          example: '1234'
+        external_call_id:
+          type: string
+          description: The external call identifier from the call provider
+          example: 'call-123-abc'
+        intercom_conversation_id:
+          type: string
+          nullable: true
+          description: The Intercom conversation identifier, if a conversation has been created
+          example: '5678'
+        call_transcript:
+          type: array
+          description: Array of transcript entries for the call
+          items:
+            type: object
+          example: []
+        call_summary:
+          type: string
+          description: Summary of the call conversation, truncated to 256 characters. Empty string if no summary available.
+          example: 'Customer called about billing issue...'
+        intent:
+          type: array
+          description: Array of intent classifications for the call
+          items:
+            type: object
+          example: []
     app:
       title: App
       type: object
@@ -15912,6 +16005,62 @@ components:
                 "$ref": "#/components/schemas/customer_request"
             required:
             - email
+    brand:
+      type: object
+      title: Brand
+      description: Represents a branding configuration for the workspace
+      x-tags:
+        - Brands
+      properties:
+        type:
+          type: string
+          description: The type of object
+          example: brand
+        id:
+          type: string
+          description: Unique brand identifier. For default brand, matches the workspace ID
+          example: "10"
+        name:
+          type: string
+          description: Display name of the brand
+          example: "Default Brand"
+        is_default:
+          type: boolean
+          description: Whether this is the workspace's default brand
+          example: true
+        created_at:
+          type: integer
+          format: date-time
+          description: Unix timestamp of brand creation
+          example: 1673778600
+        updated_at:
+          type: integer
+          format: date-time
+          description: Unix timestamp of last modification
+          example: 1711031100
+        help_center_id:
+          type: string
+          description: Associated help center identifier
+          example: "10"
+        default_address_settings_id:
+          type: string
+          description: Default email settings ID for this brand
+          example: "15"
+    brand_list:
+      type: object
+      title: Brand List
+      description: A list of brands
+      x-tags:
+        - Brands
+      properties:
+        type:
+          type: string
+          description: The type of object
+          example: list
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/brand"
     away_status_reason:
       type: object
       properties:
@@ -16073,62 +16222,6 @@ components:
           description: An array of collection objects
           items:
             "$ref": "#/components/schemas/collection"
-    brand:
-      type: object
-      title: Brand
-      description: Represents a branding configuration for the workspace
-      x-tags:
-        - Brands
-      properties:
-        type:
-          type: string
-          description: The type of object
-          example: brand
-        id:
-          type: string
-          description: Unique brand identifier. For default brand, matches the workspace ID
-          example: "10"
-        name:
-          type: string
-          description: Display name of the brand
-          example: "Default Brand"
-        is_default:
-          type: boolean
-          description: Whether this is the workspace's default brand
-          example: true
-        created_at:
-          type: integer
-          format: date-time
-          description: Unix timestamp of brand creation
-          example: 1673778600
-        updated_at:
-          type: integer
-          format: date-time
-          description: Unix timestamp of last modification
-          example: 1711031100
-        help_center_id:
-          type: string
-          description: Associated help center identifier
-          example: "10"
-        default_address_settings_id:
-          type: string
-          description: Default email settings ID for this brand
-          example: "15"
-    brand_list:
-      type: object
-      title: Brand List
-      description: A list of brands
-      x-tags:
-        - Brands
-      properties:
-        type:
-          type: string
-          description: The type of object
-          example: list
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/brand"
     company:
       title: Company
       type: object
@@ -16252,19 +16345,6 @@ components:
               type: array
               items:
                 "$ref": "#/components/schemas/segment"
-        notes:
-          type: object
-          description: The list of notes associated with the company
-          properties:
-            type:
-              type: string
-              description: The type of the object
-              enum:
-              - note.list
-            notes:
-              type: array
-              items:
-                "$ref": "#/components/schemas/company_note"
     company_attached_contacts:
       title: Company Attached Contacts
       type: object
@@ -16303,6 +16383,48 @@ components:
           description: An array containing Segment Objects
           items:
             "$ref": "#/components/schemas/segment"
+    company_note:
+      title: Company Note
+      type: object
+      x-tags:
+      - Notes
+      description: Notes allow you to annotate and comment on companies.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `note`.
+          example: note
+        id:
+          type: string
+          description: The id of the note.
+          example: '17495962'
+        created_at:
+          type: integer
+          format: timestamp
+          description: The time the note was created.
+          example: 1674589321
+        company:
+          type: object
+          description: Represents the company that the note was created about.
+          nullable: true
+          properties:
+            type:
+              type: string
+              description: String representing the object's type. Always has the value
+                `company`.
+              example: company
+            id:
+              type: string
+              description: The id of the company.
+              example: 6329bd9ffe4e2e91dac76188
+        author:
+          "$ref": "#/components/schemas/admin"
+          description: Optional. Represents the Admin that created the note.
+        body:
+          type: string
+          description: The body text of the note.
+          example: "<p>Text for the note.</p>"
     company_list:
       title: Companies
       type: object
@@ -16398,11 +16520,6 @@ components:
           nullable: true
           description: The contacts phone.
           example: "+1123456789"
-        formatted_phone:
-          type: string
-          nullable: true
-          description: The contacts phone number normalized to the E164 format
-          example: "+1123456789"
         name:
           type: string
           nullable: true
@@ -16479,10 +16596,8 @@ components:
         language_override:
           type: string
           nullable: true
-          description: A preferred language setting for the contact, used by Intercom
-            as the language of Fin and the Messenger even if their browser has a different
-            setting. Supports ISO 639-1 two-letter language codes. If an unsupported
-            code is supplied, the field will be set to null.
+          description: A preferred language setting for the contact, used by the Intercom
+            Messenger even if their browser settings change.
           example: en
         browser:
           type: string
@@ -18051,14 +18166,6 @@ components:
           nullable: true
           description: Whether the contact is unsubscribed from emails
           example: true
-        language_override:
-          type: string
-          nullable: true
-          description: A preferred language setting for the contact, used by Intercom
-            as the language of Fin and the Messenger even if their browser has a different
-            setting. Supports ISO 639-1 two-letter language codes. If an unsupported
-            code is supplied, the field will be set to null.
-          example: en
         custom_attributes:
           type: object
           nullable: true
@@ -18377,12 +18484,10 @@ components:
       properties:
         message_type:
           type: string
-          description: 'The kind of message being created. Values: `in_app`, `email`, `sms` or `whatsapp`.'
+          description: 'The kind of message being created. Values: `in_app` or `email`.'
           enum:
           - in_app
           - email
-          - sms
-          - whatsapp
           example: in_app
         subject:
           type: string
@@ -18473,19 +18578,6 @@ components:
         - body
         - from
         - to
-      - title: 'message_type: `sms`.'
-        required:
-        - message_type
-        - body
-        - from
-        - to
-      - title: 'message_type: `whatsapp`.'
-        required:
-        - message_type
-        - template
-        - components
-        - from
-        - to
     recipient:
       type: object
       title: Recipient
@@ -18550,6 +18642,50 @@ components:
           type: integer
           description: The time the company was created by you.
           example: 1394531169
+        monthly_spend:
+          type: integer
+          description: How much revenue the company generates for your business. Note
+            that this will truncate floats. i.e. it only allow for whole integers,
+            155.98 will be truncated to 155. Note that this has an upper limit of
+            2**31-1 or 2147483647..
+          example: 1000
+    update_company_request:
+      type: object
+      title: Update Company Request Payload
+      description: You can update a Company
+      nullable: true
+      properties:
+        name:
+          type: string
+          description: The name of the Company
+          example: Intercom
+        plan:
+          type: string
+          description: The name of the plan you have associated with the company.
+          example: Enterprise
+        size:
+          type: integer
+          description: The number of employees in this company.
+          example: '100'
+        website:
+          type: string
+          description: The URL for this company's website. Please note that the value
+            specified here is not validated. Accepts any string.
+          example: https://www.example.com
+        industry:
+          type: string
+          description: The industry that this company operates in.
+          example: Manufacturing
+        custom_attributes:
+          type: object
+          description: A hash of key/value pairs containing any other data about the
+            company you want Intercom to store.
+          additionalProperties:
+            type: string
+          example:
+            paid_subscriber: true
+            monthly_spend: 155.5
+            team_mates: 9
         monthly_spend:
           type: integer
           description: How much revenue the company generates for your business. Note
@@ -18891,7 +19027,7 @@ components:
           type: string
           format: uri
           nullable: true
-          description: API URL to the call transcript if available.
+          description: API URL to download or redirect to the call transcript if available.
           example: "https://api.intercom.io/calls/123/transcript"
         call_type:
           type: string
@@ -19331,7 +19467,7 @@ components:
       description: The data export api is used to view all message sent & viewed in
         a given timeframe.
       properties:
-        job_identfier:
+        job_identifier:
           type: string
           description: The identifier for your job.
           example: orzzsbd7hk67xyu
@@ -19596,6 +19732,72 @@ components:
           nullable: true
           description: The unique identifier for the email message as specified in the Message-ID header
           example: "<CADKw7xrXzqSn8v3mP8K8Q8yZ6K8Q8yZ6@mail.gmail.com>"
+    email_setting:
+      type: object
+      title: Email Setting
+      description: Represents a sender email address configuration
+      x-tags:
+        - Emails
+      properties:
+        type:
+          type: string
+          description: The type of object
+          example: email_setting
+        id:
+          type: string
+          description: Unique email setting identifier
+          example: "10"
+        email:
+          type: string
+          description: Full sender email address
+          example: "support@company.com"
+        verified:
+          type: boolean
+          description: Whether the email address has been verified
+          example: true
+        domain:
+          type: string
+          description: Domain portion of the email address
+          example: "company.com"
+        brand_id:
+          type: string
+          description: Associated brand identifier
+          example: "10"
+        forwarding_enabled:
+          type: boolean
+          description: Whether email forwarding is active
+          example: true
+        forwarded_email_last_received_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: Unix timestamp of last forwarded email received (null if never)
+          example: 1710498600
+        created_at:
+          type: integer
+          format: date-time
+          description: Unix timestamp of creation
+          example: 1692530400
+        updated_at:
+          type: integer
+          format: date-time
+          description: Unix timestamp of last modification
+          example: 1710498600
+    email_list:
+      type: object
+      title: Email List
+      description: A list of email settings
+      x-tags:
+        - Emails
+      properties:
+        type:
+          type: string
+          description: The type of object
+          example: list
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/email_setting"
     metadata:
           "$ref": "#/components/schemas/conversation_part_metadata"
     conversation_attribute_updated_by_workflow:
@@ -19796,212 +19998,6 @@ components:
               type: string
               description: Result of the workflow event
               example: Finsihed waiting
-    conversation_tags_updated:
-      title: Part type - conversation_tags_updated
-      type: object
-      description: Contains details about tags that were added or removed from a conversation for conversation part type <code>conversation_tags_updated</code>.
-      properties:
-        tags_added:
-          type: array
-          items:
-            type: string
-          description: Array of tag names that were added
-          example: ["feature-shopify-multi-store", "second-tag"]
-        tags_removed:
-          type: array
-          items:
-            type: string
-          description: Array of tag names that were removed
-          example: ["feature-embercom-app-serializer-limit-external-plans"]
-    snoozed:
-      title: Part type - snoozed
-      type: object
-      description: Contains details about conversation snooze timing for conversation part type <code>snoozed</code>.
-      properties:
-        until:
-          type: string
-          description: Human-readable description of snooze duration
-          example: "until tomorrow"
-        custom_until_time:
-          type: string
-          format: date-time
-          nullable: true
-          description: ISO timestamp for custom snooze times (null for general snoozes)
-          example: "2025-09-03T18:44:20.146Z"
-    priority_changed:
-      title: Part type - priority_changed
-      type: object
-      description: Contains details about priority changes for conversation part type <code>priority_changed</code>.
-      properties:
-        current_priority:
-          type: string
-          enum: ["priority", "not_priority"]
-          description: Current priority state
-          example: "priority"
-        previous_priority:
-          type: string
-          enum: ["priority", "not_priority"]
-          description: Previous priority state
-          example: "not_priority"
-    conversation_sla_applied_by_rule:
-      title: Part type - conversation_sla_applied_by_rule
-      type: object
-      description: Contains details about SLA applied by modern Operator workflows for conversation part type <code>conversation_sla_applied_by_rule</code>.
-      properties:
-        sla_name:
-          type: string
-          description: Name of the SLA that was applied
-          example: "Premium SLA"
-        sla_definition:
-          type: object
-          description: Target times configured for the SLA (in seconds)
-          properties:
-            first_reply_time:
-              type: integer
-              nullable: true
-              description: First response time target in seconds
-              example: 300
-            next_reply_time:
-              type: integer
-              nullable: true
-              description: Next reply time target in seconds
-              example: 600
-            resolution_time:
-              type: integer
-              nullable: true
-              description: Resolution time target in seconds
-              example: 3600
-            time_to_close:
-              type: integer
-              nullable: true
-              description: Time to close target in seconds
-              example: 7200
-    conversation_sla_applied_by_workflow:
-      title: Part type - conversation_sla_applied_by_workflow
-      type: object
-      description: Contains details about SLA applied by legacy Inbox Rules for conversation part type <code>conversation_sla_applied_by_workflow</code>.
-      properties:
-        sla_name:
-          type: string
-          description: Name of the SLA that was applied
-          example: "Standard SLA"
-        sla_definition:
-          type: object
-          description: Target times configured for the SLA (in seconds)
-          properties:
-            first_reply_time:
-              type: integer
-              nullable: true
-              description: First response time target in seconds
-              example: 300
-            next_reply_time:
-              type: integer
-              nullable: true
-              description: Next reply time target in seconds
-              example: 600
-            resolution_time:
-              type: integer
-              nullable: true
-              description: Resolution time target in seconds
-              example: 3600
-            time_to_close:
-              type: integer
-              nullable: true
-              description: Time to close target in seconds
-              example: 7200
-    conversation_sla_target_missed:
-      title: Part type - conversation_sla_target_missed
-      type: object
-      description: Contains complete status of all SLA targets when a breach occurs for conversation part type <code>conversation_sla_target_missed</code>.
-      properties:
-        sla_name:
-          type: string
-          description: Name of the SLA
-          example: "HandleConversation"
-        sla_target_type:
-          type: string
-          enum: ["first_reply_time", "next_reply_time", "resolution_time", "time_to_close"]
-          description: Which specific target was missed
-          example: "first_reply_time"
-        current_sla_status:
-          type: string
-          enum: ["hit", "missed", "active", "paused", "canceled"]
-          description: Overall SLA status
-          example: "missed"
-        sla_states:
-          type: object
-          description: Status of all SLA targets at the time of breach
-          additionalProperties:
-            type: object
-            properties:
-              status:
-                type: string
-                enum: ["hit", "missed", "active", "paused"]
-                description: Status of this specific target
-              seconds_remaining:
-                type: integer
-                nullable: true
-                description: Time remaining for active/paused targets (null for hit/missed)
-          example:
-            first_reply_time:
-              status: "missed"
-              seconds_remaining: null
-            time_to_close:
-              status: "active"
-              seconds_remaining: 210
-    conversation_sla_paused:
-      title: Part type - conversation_sla_paused
-      type: object
-      description: Contains SLA status at the moment of pausing for conversation part type <code>conversation_sla_paused</code>.
-      properties:
-        sla_name:
-          type: string
-          description: Name of the SLA being paused
-          example: "Premium SLA"
-        current_sla_status:
-          type: string
-          enum: ["active", "hit", "missed", "canceled"]
-          description: Overall SLA status at pause time
-          example: "active"
-        sla_states:
-          type: object
-          description: Status of all SLA targets at pause time
-          additionalProperties:
-            type: object
-            properties:
-              status:
-                type: string
-                enum: ["paused"]
-                description: Status of this specific target (always paused)
-              seconds_remaining:
-                type: integer
-                nullable: true
-                description: Time remaining when paused
-          example:
-            first_reply_time:
-              status: "paused"
-              seconds_remaining: 3600
-            time_to_close:
-              status: "paused"
-              seconds_remaining: 7200
-    conversation_sla_unpaused:
-      title: Part type - conversation_sla_unpaused
-      type: object
-      description: Contains basic SLA information when unpaused for conversation part type <code>conversation_sla_unpaused</code>.
-      properties:
-        sla_name:
-          type: string
-          description: Name of the SLA being unpaused
-          example: "Premium SLA"
-    conversation_sla_removed:
-      title: Part type - conversation_sla_removed
-      type: object
-      description: Contains basic SLA information when removed for conversation part type <code>conversation_sla_removed</code>.
-      properties:
-        sla_name:
-          type: string
-          description: Name of the SLA that was removed
-          example: "Standard SLA"
     event_details:
       title: Event details of Workflow & actions
       type: object
@@ -20012,81 +20008,6 @@ components:
         - "$ref": "#/components/schemas/custom_action_started"
         - "$ref": "#/components/schemas/custom_action_finished"
         - "$ref": "#/components/schemas/operator_workflow_event"
-        - "$ref": "#/components/schemas/conversation_tags_updated"
-        - "$ref": "#/components/schemas/snoozed"
-        - "$ref": "#/components/schemas/priority_changed"
-        - "$ref": "#/components/schemas/conversation_sla_applied_by_rule"
-        - "$ref": "#/components/schemas/conversation_sla_applied_by_workflow"
-        - "$ref": "#/components/schemas/conversation_sla_target_missed"
-        - "$ref": "#/components/schemas/conversation_sla_paused"
-        - "$ref": "#/components/schemas/conversation_sla_unpaused"
-        - "$ref": "#/components/schemas/conversation_sla_removed"
-    email_setting:
-      type: object
-      title: Email Setting
-      description: Represents a sender email address configuration
-      x-tags:
-        - Emails
-      properties:
-        type:
-          type: string
-          description: The type of object
-          example: email_setting
-        id:
-          type: string
-          description: Unique email setting identifier
-          example: "10"
-        email:
-          type: string
-          description: Full sender email address
-          example: "support@company.com"
-        verified:
-          type: boolean
-          description: Whether the email address has been verified
-          example: true
-        domain:
-          type: string
-          description: Domain portion of the email address
-          example: "company.com"
-        brand_id:
-          type: string
-          description: Associated brand identifier
-          example: "10"
-        forwarding_enabled:
-          type: boolean
-          description: Whether email forwarding is active
-          example: true
-        forwarded_email_last_received_at:
-          type: integer
-          format: date-time
-          nullable: true
-          description: Unix timestamp of last forwarded email received (null if never)
-          example: 1710498600
-        created_at:
-          type: integer
-          format: date-time
-          description: Unix timestamp of creation
-          example: 1692530400
-        updated_at:
-          type: integer
-          format: date-time
-          description: Unix timestamp of last modification
-          example: 1710498600
-    email_list:
-      type: object
-      title: Email List
-      description: A list of email settings
-      x-tags:
-        - Emails
-      properties:
-        type:
-          type: string
-          description: The type of object
-          example: list
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/email_setting"
     error:
       type: object
       title: Error
@@ -20542,12 +20463,37 @@ components:
           nullable: true
       required:
       - id
+    ip_allowlist:
+      title: IP Allowlist
+      type: object
+      description: IP allowlist settings for the workspace.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `ip_allowlist`.
+          example: ip_allowlist
+        enabled:
+          type: boolean
+          description: Whether the IP allowlist is enabled for the workspace.
+          example: true
+        ip_allowlist:
+          type: array
+          description: |
+            List of allowed IP addresses and/or IP ranges in CIDR notation.
+            Examples:
+            - Single IP: `192.168.0.1`
+            - IP range: `192.168.0.1/24` (allows 192.168.0.0 - 192.168.0.255)
+          items:
+            type: string
+          example:
+          - "192.168.1.0/24"
+          - "10.0.0.1"
     intercom_version:
       description: Intercom API version.</br>By default, it's equal to the version
         set in the app package.
       type: string
-      example: '2.15'
-      default: '2.15'
+      example: '2.14'
+      default: '2.14'
       enum:
       - '1.0'
       - '1.1'
@@ -20569,7 +20515,6 @@ components:
       - '2.12'
       - '2.13'
       - '2.14'
-      - '2.15'
     linked_object:
       title: Linked Object
       type: object
@@ -20673,10 +20618,8 @@ components:
           - inapp
           - facebook
           - twitter
-          - sms
-          - whatsapp
-          description: The type of message that was sent. Can be email, inapp, facebook,
-            twitter, sms or whatsapp.
+          description: The type of message that was sent. Can be email, inapp, facebook
+            or twitter.
           example: inapp
         conversation_id:
           type: string
@@ -21040,7 +20983,7 @@ components:
     note_list:
       title: Paginated Response
       type: object
-      description: A paginated list of notes associated with a contact or a company.
+      description: A paginated list of notes associated with a contact.
       properties:
         type:
           type: string
@@ -21058,48 +21001,6 @@ components:
           example: 1
         pages:
           "$ref": "#/components/schemas/cursor_pages"
-    company_note:
-      title: Company Note
-      type: object
-      x-tags:
-      - Notes
-      description: Notes allow you to annotate and comment on companies.
-      properties:
-        type:
-          type: string
-          description: String representing the object's type. Always has the value
-            `note`.
-          example: note
-        id:
-          type: string
-          description: The id of the note.
-          example: '17495962'
-        created_at:
-          type: integer
-          format: timestamp
-          description: The time the note was created.
-          example: 1674589321
-        company:
-          type: object
-          description: Represents the company that the note was created about.
-          nullable: true
-          properties:
-            type:
-              type: string
-              description: String representing the object's type. Always has the value
-                `company`.
-              example: company
-            id:
-              type: string
-              description: The id of the company.
-              example: 6329bd9ffe4e2e91dac76188
-        author:
-          "$ref": "#/components/schemas/admin"
-          description: Optional. Represents the Admin that created the note.
-        body:
-          type: string
-          description: The body text of the note.
-          example: "<p>Text for the note.</p>"
     open_conversation_request:
       title: Open Conversation Request
       type: object
@@ -21237,6 +21138,37 @@ components:
       required:
       - text
       - uuid
+    register_fin_voice_call_request:
+      title: Register Fin Voice Call Request Payload
+      type: object
+      description: Register a Fin Voice call with Intercom
+      nullable: true
+      required:
+        - phone_number
+        - call_id
+      properties:
+        phone_number:
+          type: string
+          description: Phone number in E.164 format for the call
+          example: '+1234567890'
+        call_id:
+          type: string
+          description: External call identifier from the call provider
+          example: 'call-123-abc'
+        source:
+          type: string
+          description: Source of the call. Can be "five9", "zoom_phone", or defaults to "aws_connect"
+          enum:
+            - five9
+            - zoom_phone
+            - aws_connect
+          example: 'aws_connect'
+        data:
+          type: object
+          description: Additional metadata about the call
+          nullable: true
+          example:
+            key: value
     redact_conversation_request:
       oneOf:
       - title: Redact Conversation Part Request
@@ -21723,6 +21655,16 @@ components:
             type: integer
         admin_priority_level:
           "$ref": "#/components/schemas/admin_priority_level"
+        assignment_limit:
+          type: integer
+          nullable: true
+          description: The assignment limit for the team. This field is only present when the team's distribution type is load balanced.
+          example: 10
+        distribution_method:
+          type: string
+          nullable: true
+          description: Describes how assignments are distributed among the team members
+          example: "round_robin"
     team_list:
       title: Team List
       type: object
@@ -21761,34 +21703,6 @@ components:
           - 493881
           items:
             type: integer
-    teammate_reference:
-      title: Teammate Reference
-      type: object
-      description: A reference to a teammate (admin, team, or bot)
-      required:
-        - type
-        - id
-        - name
-      properties:
-        type:
-          type: string
-          enum: [admin, team, bot]
-          description: The type of teammate
-          example: admin
-        id:
-          type: integer
-          description: The unique identifier of the teammate
-          example: 123
-        name:
-          type: string
-          description: The display name of the teammate
-          example: Jane Example
-        email:
-          type: string
-          format: email
-          description: The email address of the teammate (optional for teams/bots)
-          example: jane@example.com
-          nullable: true
     ticket:
       title: Ticket
       type: object
@@ -22677,14 +22591,6 @@ components:
           nullable: true
           description: Whether the contact is unsubscribed from emails
           example: true
-        language_override:
-          type: string
-          nullable: true
-          description: A preferred language setting for the contact, used by Intercom
-            as the language of Fin and the Messenger even if their browser has a different
-            setting. Supports ISO 639-1 two-letter language codes. If an unsupported
-            code is supplied, the field will be set to null.
-          example: en
         custom_attributes:
           type: object
           nullable: true
@@ -23354,88 +23260,6 @@ components:
               items:
                 type: object
               description: Rules embedded within the workflow steps.
-    ai_call_response:
-      title: AI Call Response
-      type: object
-      description: Response containing information about a Fin Voice call
-      properties:
-        id:
-          type: integer
-          description: The unique identifier for the external reference
-          example: 12345
-        app_id:
-          type: integer
-          description: The workspace identifier
-          example: 12345
-        user_phone_number:
-          type: string
-          description: Phone number in E.164 format for the call
-          example: '+1234567890'
-        status:
-          type: string
-          description: Status of the call. Can be "registered", "in-progress", or a resolution state
-          example: 'registered'
-        intercom_call_id:
-          type: string
-          nullable: true
-          description: The Intercom call identifier, if the call has been matched
-          example: '1234'
-        external_call_id:
-          type: string
-          description: The external call identifier from the call provider
-          example: 'call-123-abc'
-        intercom_conversation_id:
-          type: string
-          nullable: true
-          description: The Intercom conversation identifier, if a conversation has been created
-          example: '5678'
-        call_transcript:
-          type: array
-          description: Array of transcript entries for the call
-          items:
-            type: object
-          example: []
-        call_summary:
-          type: string
-          description: Summary of the call conversation, truncated to 256 characters. Empty string if no summary available.
-          example: 'Customer called about billing issue...'
-        intent:
-          type: array
-          description: Array of intent classifications for the call
-          items:
-            type: object
-          example: []
-    register_fin_voice_call_request:
-      title: Register Fin Voice Call Request Payload
-      type: object
-      description: Register a Fin Voice call with Intercom
-      nullable: true
-      required:
-        - phone_number
-        - call_id
-      properties:
-        phone_number:
-          type: string
-          description: Phone number in E.164 format for the call
-          example: '+1234567890'
-        call_id:
-          type: string
-          description: External call identifier from the call provider
-          example: 'call-123-abc'
-        source:
-          type: string
-          description: Source of the call. Can be "five9", "zoom_phone", or defaults to "aws_connect"
-          enum:
-            - five9
-            - zoom_phone
-            - aws_connect
-          example: 'aws_connect'
-        data:
-          type: object
-          description: Additional metadata about the call
-          nullable: true
-          example:
-            key: value
   securitySchemes:
     bearerAuth:
       type: http
@@ -23571,8 +23395,6 @@ tags:
   description: Everything about your Away Status Reasons
 - name: Brands
   description: Everything about your Brands
-- name: Calls
-  description: Everything about your Calls
 - name: Companies
   description: Everything about your Companies
 - name: Contacts
@@ -23602,11 +23424,20 @@ tags:
 - name: Data Export
   description: Everything about your Data Exports
 - name: Emails
-  description: Everything about your Emails
+  description: Everything about your Email Settings
 - name: Help Center
   description: Everything about your Help Center
 - name: Internal Articles
   description: Everything about your Internal Articles
+- name: IP Allowlist
+  description: |
+    Manage IP allowlist settings for your workspace.
+
+    The IP Allowlist API allows you to configure which IP addresses are allowed to access the Intercom API and web application for your workspace. This is useful for restricting access to your Intercom workspace to specific corporate networks or VPNs.
+
+    {% admonition type="info" name="Authentication" %}
+      This endpoint requires the `manage_ip_allowlist` OAuth scope.
+    {% /admonition %}
 - name: Jobs
   description: Everything about jobs
 - name: Messages
@@ -23642,4 +23473,4 @@ tags:
 - name: Visitors
   description: Everything about your Visitors
 - name: Workflows
-  description: Export workflow configurations from your workspace.
+  description: Everything about your Workflows
