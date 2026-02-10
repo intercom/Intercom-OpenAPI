@@ -3520,6 +3520,10 @@ paths:
                     - type: tag
                       id: '1'
                       name: Manual tag
+                      applied_at: 1663597223
+                      applied_by:
+                        type: admin
+                        id: '456'
               schema:
                 "$ref": "#/components/schemas/tag_list"
         '404':
@@ -3581,6 +3585,10 @@ paths:
                     type: tag
                     id: '2'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -3683,6 +3691,10 @@ paths:
                     type: tag
                     id: '5'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -4635,6 +4647,10 @@ paths:
                     type: tag
                     id: '7'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -4734,6 +4750,10 @@ paths:
                     type: tag
                     id: '10'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -8928,7 +8948,7 @@ paths:
                     id: '26'
                     name: test
               schema:
-                "$ref": "#/components/schemas/tag"
+                "$ref": "#/components/schemas/tag_basic"
         '400':
           description: Invalid parameters
           content:
@@ -9041,7 +9061,7 @@ paths:
                     id: '34'
                     name: Manual tag
               schema:
-                "$ref": "#/components/schemas/tag"
+                "$ref": "#/components/schemas/tag_basic"
         '404':
           description: Tag not found
           content:
@@ -10308,6 +10328,10 @@ paths:
                     type: tag
                     id: '42'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -10407,6 +10431,10 @@ paths:
                     type: tag
                     id: '45'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -12936,8 +12964,7 @@ components:
             tags:
               type: array
               items:
-                items:
-                  "$ref": "#/components/schemas/tag"
+                "$ref": "#/components/schemas/tag_basic"
         segments:
           type: object
           description: The list of segments associated with the company
@@ -17090,10 +17117,35 @@ components:
         applied_at:
           type: integer
           format: date-time
+          nullable: true
           description: The time when the tag was applied to the object
           example: 1663597223
         applied_by:
-          "$ref": "#/components/schemas/reference"
+          type: object
+          nullable: true
+          description: The admin who applied the tag
+          allOf:
+            - "$ref": "#/components/schemas/reference"
+    tag_basic:
+      title: Tag
+      type: object
+      x-tags:
+      - Tags
+      description: A tag allows you to label your contacts, companies, and conversations
+        and list them using that tag.
+      properties:
+        type:
+          type: string
+          description: value is "tag"
+          example: tag
+        id:
+          type: string
+          description: The id of the tag
+          example: '123456'
+        name:
+          type: string
+          description: The name of the tag
+          example: Test tag
     tag_company_request:
       description: You can tag a single company or a list of companies.
       type: object

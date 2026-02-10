@@ -4388,6 +4388,10 @@ paths:
                     - type: tag
                       id: '80'
                       name: Manual tag
+                      applied_at: 1663597223
+                      applied_by:
+                        type: admin
+                        id: '456'
               schema:
                 "$ref": "#/components/schemas/tag_list"
         '404':
@@ -4449,6 +4453,10 @@ paths:
                     type: tag
                     id: '81'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -4551,6 +4559,10 @@ paths:
                     type: tag
                     id: '84'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -5759,6 +5771,10 @@ paths:
                     type: tag
                     id: '86'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -5858,6 +5874,10 @@ paths:
                     type: tag
                     id: '89'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -11232,7 +11252,7 @@ paths:
                     id: '105'
                     name: test
               schema:
-                "$ref": "#/components/schemas/tag"
+                "$ref": "#/components/schemas/tag_basic"
         '400':
           description: Invalid parameters
           content:
@@ -11345,7 +11365,7 @@ paths:
                     id: '113'
                     name: Manual tag
               schema:
-                "$ref": "#/components/schemas/tag"
+                "$ref": "#/components/schemas/tag_basic"
         '404':
           description: Tag not found
           content:
@@ -12621,6 +12641,10 @@ paths:
                     type: tag
                     id: '121'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -12720,6 +12744,10 @@ paths:
                     type: tag
                     id: '124'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -15721,8 +15749,7 @@ components:
             tags:
               type: array
               items:
-                items:
-                  "$ref": "#/components/schemas/tag"
+                "$ref": "#/components/schemas/tag_basic"
         segments:
           type: object
           description: The list of segments associated with the company
@@ -20738,10 +20765,15 @@ components:
         applied_at:
           type: integer
           format: date-time
+          nullable: true
           description: The time when the tag was applied to the object
           example: 1663597223
         applied_by:
-          "$ref": "#/components/schemas/reference"
+          type: object
+          nullable: true
+          description: The admin who applied the tag
+          allOf:
+            - "$ref": "#/components/schemas/reference"
     tag_basic:
       title: Tag
       type: object
