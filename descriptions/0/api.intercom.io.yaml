@@ -15270,6 +15270,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/error"
+  "/fin_voice/call_id/{call_id}":
+    get:
+      summary: Collect Fin Voice call by call ID
+      description: Retrieve information about a Fin Voice call using the call ID.
+      operationId: collectFinVoiceCallByCallId
+      tags:
+        - Calls
+      parameters:
+        - name: call_id
+          in: path
+          required: true
+          description: The call ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ai_call_response"
+        '404':
+          description: not found - external reference not found or not matched
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
   "/fin_voice/external_id/{external_id}":
     get:
       summary: Collect Fin Voice call by external ID
