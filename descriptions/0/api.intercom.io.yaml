@@ -14330,7 +14330,12 @@ paths:
       tags:
       - Tickets
       operationId: deleteTicket
-      description: You can delete a ticket using the Intercom provided ID.
+      description: |
+        {% admonition type="warning" name="Irreversible operation" %}
+        Deleting a ticket is permanent and cannot be reversed.
+        {% /admonition %}
+
+        Deleting a ticket permanently removes it from the inbox. All sensitive data is deleted, including admin and user replies, ticket attributes, uploads, and related content. The ticket will still appear in reporting, though some data may be incomplete due to the deletion.
       responses:
         '200':
           description: successful
@@ -14343,24 +14348,7 @@ paths:
                     object: ticket
                     deleted: true
               schema:
-                title: Ticket Deleted
-                type: object
-                description: Response when a ticket is deleted.
-                properties:
-                  id:
-                    type: string
-                    description: The unique identifier for the ticket.
-                    example: '42'
-                  object:
-                    type: string
-                    description: always ticket
-                    enum:
-                    - ticket
-                    example: ticket
-                  deleted:
-                    type: boolean
-                    description: Whether the ticket is deleted or not.
-                    example: true
+                "$ref": "#/components/schemas/ticket_deleted"
         '404':
           description: Ticket not found
           content:
@@ -14374,38 +14362,7 @@ paths:
                     - code: ticket_not_found
                       message: Ticket not found
               schema:
-                type: object
-                title: Ticket not found error
-                properties:
-                  type:
-                    type: string
-                    description: The type is error.list
-                    example: error.list
-                  request_id:
-                    type: string
-                    nullable: true
-                    format: uuid
-                    description: ''
-                    example: f93ecfa8-d08a-4325-8694-89aeb89c8f85
-                  errors:
-                    type: array
-                    description: An array of one or more error objects
-                    items:
-                      properties:
-                        code:
-                          type: string
-                          description: ticket_not_found
-                          example: ticket_not_found
-                        message:
-                          type: string
-                          nullable: true
-                          description: Ticket not found
-                          example: Ticket not found
-                      required:
-                      - code
-                required:
-                - type
-                - errors
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -14418,6 +14375,20 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 7a80b950-b392-499f-85db-ea7c6c424d37
+                    errors:
+                    - code: api_plan_restricted
+                      message: Active subscription needed.
               schema:
                 "$ref": "#/components/schemas/error"
   "/tickets/search":
@@ -22706,6 +22677,25 @@ components:
         is_shared:
           type: boolean
           description: Whether or not the ticket is shared with the customer.
+          example: true
+    ticket_deleted:
+      title: Ticket Deleted
+      type: object
+      description: deleted ticket object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the ticket.
+          example: 5ba682d23d7cf92bef87bfd4
+        object:
+          type: string
+          description: always ticket
+          enum:
+          - ticket
+          example: ticket
+        deleted:
+          type: boolean
+          description: Whether the ticket is deleted or not.
           example: true
     ticket_contacts:
       title: Contacts
