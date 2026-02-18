@@ -1514,9 +1514,10 @@ paths:
                   example: conversation
                 attribute_ids:
                   type: array
+                  description: List of attribute identifiers to include in the export. Requires qualified_id format (e.g., "people.Brand", "standard.conversation_id"). Use the qualified_id returned from the get_datasets response.
                   items:
                     type: string
-                  example: [conversation_id, conversation_started_at]
+                  example: [standard.conversation_id, timestamp.conversation_started_at]
                 start_time:
                   type: integer
                   format: int64
@@ -1734,7 +1735,12 @@ paths:
                             properties:
                               id:
                                 type: string
+                                description: The simple attribute identifier. Note that this may be ambiguous if the same name exists across different attribute types. Use qualified_id when calling the enqueue endpoint.
                                 example: conversation_id
+                              qualified_id:
+                                type: string
+                                description: A namespaced identifier that uniquely identifies the attribute across all types. Format is "prefix.name" (e.g., "people.Brand", "conversation.Brand"). Required when calling the enqueue endpoint.
+                                example: conversation.conversation_id
                               name:
                                 type: string
                                 example: Conversation ID
