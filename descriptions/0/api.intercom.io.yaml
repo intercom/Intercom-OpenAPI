@@ -3366,8 +3366,14 @@ paths:
                     body: "<p>Hello</p>"
               schema:
                 "$ref": "#/components/schemas/note"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
-          description: Company not found
+          description: Company or admin not found
           content:
             application/json:
               examples:
@@ -3399,32 +3405,24 @@ paths:
                   type: string
                   description: The text of the note.
                   example: New note
-                company_id:
-                  type: string
-                  description: The unique identifier of a given company.
-                  example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
                 admin_id:
                   type: string
-                  description: The unique identifier of a given admin.
+                  description: The unique identifier of the admin creating the note. If not provided, defaults to the admin associated with the access token.
                   example: '991267583'
             examples:
               successful_response:
                 summary: Successful response
                 value:
-                  company_id: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
-                  admin_id: '991267583'
                   body: Hello
+                  admin_id: '991267583'
               admin_not_found:
                 summary: Admin not found
                 value:
-                  company_id: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
-                  admin_id: '123'
                   body: Hello
+                  admin_id: '123'
               company_not_found:
                 summary: Company not found
                 value:
-                  company_id: '123'
-                  admin_id: '991267583'
                   body: Hello
   "/companies/list":
     post:
