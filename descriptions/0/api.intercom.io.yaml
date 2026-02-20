@@ -3323,6 +3323,107 @@ paths:
                       message: Company Not Found
               schema:
                 "$ref": "#/components/schemas/error"
+    post:
+      summary: Create a company note
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the company which is given by Intercom
+        example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+        schema:
+          type: string
+      tags:
+      - Notes
+      - Companies
+      operationId: createCompanyNote
+      description: You can add a note to a single company.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: note
+                    id: '31'
+                    created_at: 1734537390
+                    company:
+                      type: company
+                      id: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+                    author:
+                      type: admin
+                      id: '991267583'
+                      name: Ciaran124 Lee
+                      email: admin124@email.com
+                      away_mode_enabled: false
+                      away_mode_reassign: false
+                    body: "<p>Hello</p>"
+              schema:
+                "$ref": "#/components/schemas/note"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Company or admin not found
+          content:
+            application/json:
+              examples:
+                Admin not found:
+                  value:
+                    type: error.list
+                    request_id: 168f1bc3-d198-4797-8422-9f93fe8af5ad
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+                Company not found:
+                  value:
+                    type: error.list
+                    request_id: 6f372239-0259-428f-9943-91b8f7a92162
+                    errors:
+                    - code: company_not_found
+                      message: Company Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - body
+              properties:
+                body:
+                  type: string
+                  description: The text of the note.
+                  example: New note
+                admin_id:
+                  type: string
+                  description: The unique identifier of the admin creating the note. If not provided, defaults to the admin associated with the access token.
+                  example: '991267583'
+            examples:
+              successful_response:
+                summary: Successful response
+                value:
+                  body: Hello
+                  admin_id: '991267583'
+              admin_not_found:
+                summary: Admin not found
+                value:
+                  body: Hello
+                  admin_id: '123'
+              company_not_found:
+                summary: Company not found
+                value:
+                  body: Hello
   "/companies/list":
     post:
       summary: List all companies
