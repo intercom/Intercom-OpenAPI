@@ -9433,6 +9433,330 @@ paths:
                 value:
                   description: Trying to archieve
                   archived: true
+  "/data_connectors":
+    get:
+      summary: List all data connectors
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Data Connectors
+      operationId: listDataConnectors
+      description: |
+        You can fetch a list of all data connectors for your workspace by making a GET request to `https://api.intercom.io/data_connectors`.
+
+        Data connectors allow you to make HTTP requests to external APIs from Intercom workflows and AI agents.
+        Each connector in the response includes an `execution_results_url` for navigating to its execution logs.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: data_connector
+                      id: '12345'
+                      name: Slack Notification Service
+                      description: Posts conversation updates to Slack channel
+                      state: live
+                      http_method: post
+                      usage: workflow_and_inbox
+                      created_at: '2025-11-15T09:30:00Z'
+                      updated_at: '2026-01-20T14:22:15Z'
+                      execution_results_url: "/data_connectors/12345/execution_results"
+              schema:
+                "$ref": "#/components/schemas/data_connector_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/data_connectors/{data_connector_id}/execution_results":
+    get:
+      summary: List execution results for a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: data_connector_id
+        in: path
+        required: true
+        description: The unique identifier for the data connector.
+        schema:
+          type: string
+          example: '12345'
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results per page (1-30, default 10).
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
+          maximum: 30
+      - name: starting_after
+        in: query
+        required: false
+        description: Cursor for pagination. Use the value from `pages.next.starting_after` in a previous response.
+        schema:
+          type: string
+      - name: success
+        in: query
+        required: false
+        description: Filter by success status. Use `true`, `false`, or omit for all.
+        schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+      - name: error_type
+        in: query
+        required: false
+        description: Filter by error type.
+        schema:
+          type: string
+          enum:
+          - request_configuration_error
+          - faraday_error
+          - 3rd_party_error
+          - response_mapping_error
+          - token_refresh_error
+          - fin_action_response_formatting_error
+          - fin_action_identity_verification_error
+          - email_verification_error
+          - non_fin_standalone_action_identity_verification_error
+          - request_validation_error
+          - client_side_action_error
+      - name: start_ts
+        in: query
+        required: false
+        description: Unix timestamp for start of time range (default 1 hour ago).
+        schema:
+          type: integer
+      - name: end_ts
+        in: query
+        required: false
+        description: Unix timestamp for end of time range (default now).
+        schema:
+          type: integer
+      - name: include_bodies
+        in: query
+        required: false
+        description: Include request/response bodies in the response (default false).
+        schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+      - name: include_request_url
+        in: query
+        required: false
+        description: Include the request URL in the response (default false).
+        schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+      tags:
+      - Data Connectors
+      operationId: listDataConnectorExecutionResults
+      description: |
+        Retrieve paginated execution logs for a specific data connector.
+        Results from the last hour are returned by default. Use `start_ts` and `end_ts` to customize the time range.
+
+        Request/response bodies and request URL are excluded by default.
+        Use `include_bodies=true` to include bodies.
+        Use `include_request_url=true` to include the sanitised request URL.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: data_connector.execution
+                      id: '99001'
+                      data_connector_id: '12345'
+                      success: true
+                      http_status: 200
+                      http_method: post
+                      execution_time_ms: 150
+                      source_type: workflow
+                      source_id: '5001'
+                      conversation_id: '8001'
+                      created_at: '2026-02-10T18:15:32Z'
+                    - type: data_connector.execution
+                      id: '99000'
+                      data_connector_id: '12345'
+                      success: false
+                      http_status:
+                      http_method: post
+                      error_type: 3rd_party_error
+                      error_message: Connection refused
+                      source_type: inbox
+                      created_at: '2026-02-10T17:45:15Z'
+                    pages:
+                      type: pages
+                      per_page: 10
+                      next:
+                        starting_after: WzE3MDc1OTQ3MTUuMCw5OTAwMF0=
+              schema:
+                "$ref": "#/components/schemas/data_connector_execution_result_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Invalid error_type:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid error_type. Must be one of: request_configuration_error, faraday_error, 3rd_party_error, response_mapping_error, token_refresh_error"
+                Invalid timestamp:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: start_ts must be a Unix timestamp (integer)
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Data connector not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/data_connectors/{data_connector_id}/execution_results/{id}":
+    get:
+      summary: Retrieve an execution result
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: data_connector_id
+        in: path
+        required: true
+        description: The unique identifier for the data connector.
+        schema:
+          type: string
+          example: '12345'
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the execution result.
+        schema:
+          type: string
+          example: '99001'
+      tags:
+      - Data Connectors
+      operationId: showDataConnectorExecutionResult
+      description: |
+        Retrieve details for a specific data connector execution result.
+        Always includes request/response bodies and the sanitised request URL.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: data_connector.execution
+                    id: '99001'
+                    data_connector_id: '12345'
+                    success: true
+                    http_status: 200
+                    http_method: post
+                    execution_time_ms: 150
+                    source_type: workflow
+                    source_id: '5001'
+                    conversation_id: '8001'
+                    created_at: '2026-02-10T18:15:32Z'
+                    request_url: https://api.example.com/webhook
+                    request_body: '{"channel": "#alerts", "text": "Conversation updated"}'
+                    response_body: '{"ok": true}'
+                    raw_response_body: '{"ok": true}'
+              schema:
+                "$ref": "#/components/schemas/data_connector_execution_result"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Execution result not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+                Execution result not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: execution_result_not_found
+                      message: Execution result not found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/events":
     post:
       summary: Submit a data event
@@ -19868,6 +20192,243 @@ components:
           description: A list of data attributes
           items:
             "$ref": "#/components/schemas/data_attribute"
+    data_connector:
+      title: Data Connector
+      type: object
+      x-tags:
+      - Data Connectors
+      description: |
+        A data connector allows you to make HTTP requests to external APIs from Intercom workflows and AI agents.
+      properties:
+        type:
+          type: string
+          description: The type of object - `data_connector`.
+          enum:
+          - data_connector
+          example: data_connector
+        id:
+          type: string
+          description: The unique identifier for the data connector.
+          example: '12345'
+        name:
+          type: string
+          description: The name of the data connector.
+          example: Slack Notification Service
+        description:
+          type: string
+          nullable: true
+          description: A description of what this data connector does.
+          example: Posts conversation updates to Slack channel
+        state:
+          type: string
+          description: The current state of the data connector.
+          enum:
+          - draft
+          - live
+          example: live
+        http_method:
+          type: string
+          description: The HTTP method used by the data connector.
+          enum:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          example: post
+        usage:
+          type: string
+          description: Where this data connector can be used.
+          enum:
+          - workflow_and_inbox
+          - fin
+          - fin_voice
+          example: workflow_and_inbox
+        created_at:
+          type: string
+          format: date-time
+          description: The time the data connector was created.
+          example: '2025-11-15T09:30:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: The time the data connector was last updated.
+          example: '2026-01-20T14:22:15Z'
+        execution_results_url:
+          type: string
+          description: The URL path to fetch execution results for this connector.
+          example: "/data_connectors/12345/execution_results"
+    data_connector_execution_result:
+      title: Data Connector Execution Result
+      type: object
+      x-tags:
+      - Data Connectors
+      description: An execution result from a data connector HTTP request.
+      properties:
+        type:
+          type: string
+          description: The type of object - `data_connector.execution`.
+          enum:
+          - data_connector.execution
+          example: data_connector.execution
+        id:
+          type: string
+          description: The unique identifier for the execution result.
+          example: '99001'
+        data_connector_id:
+          type: string
+          description: The unique identifier of the data connector that produced this result.
+          example: '12345'
+        success:
+          type: boolean
+          description: Whether the execution was successful.
+          example: true
+        http_status:
+          type: integer
+          nullable: true
+          description: The HTTP status code returned by the external API.
+          example: 200
+        http_method:
+          type: string
+          description: The HTTP method used for the request.
+          enum:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          example: post
+        error_type:
+          type: string
+          nullable: true
+          description: The type of error that occurred, if any.
+          enum:
+          - request_configuration_error
+          - faraday_error
+          - 3rd_party_error
+          - response_mapping_error
+          - token_refresh_error
+          - fin_action_response_formatting_error
+          - fin_action_identity_verification_error
+          - email_verification_error
+          - non_fin_standalone_action_identity_verification_error
+          - request_validation_error
+          - client_side_action_error
+          example: 3rd_party_error
+        error_message:
+          type: string
+          nullable: true
+          description: A human-readable error message. Query parameters, userinfo, and fragments in URLs are redacted.
+          example: Connection refused
+        execution_time_ms:
+          type: integer
+          nullable: true
+          description: The execution time in milliseconds.
+          example: 245
+        source_type:
+          type: string
+          nullable: true
+          description: The type of source that triggered this execution.
+          enum:
+          - custom_bot
+          - inbound_custom_bot
+          - button_custom_bot
+          - answer
+          - workflow
+          - saved_reply
+          - triggerable_custom_bot
+          - inbox
+          - fin
+          example: workflow
+        source_id:
+          type: string
+          nullable: true
+          description: The identifier of the source that triggered this execution.
+          example: '5001'
+        conversation_id:
+          type: string
+          nullable: true
+          description: The conversation associated with this execution, if any.
+          example: '8001'
+        created_at:
+          type: string
+          format: date-time
+          description: The time the execution occurred.
+          example: '2026-02-10T18:15:32Z'
+        request_url:
+          type: string
+          nullable: true
+          description: The request URL. Query parameters, userinfo, and fragments are redacted.
+          example: https://api.example.com/webhook
+        request_body:
+          type: string
+          nullable: true
+          description: The request body sent to the external API.
+          example: '{"message": "hello"}'
+        response_body:
+          type: string
+          nullable: true
+          description: The response body from the external API.
+          example: '{"status": "ok"}'
+        raw_response_body:
+          type: string
+          nullable: true
+          description: The raw (unmapped) response body.
+          example: '{"status": "ok"}'
+    data_connector_execution_result_list:
+      title: Data Connector Execution Result List
+      type: object
+      description: A paginated list of data connector execution results.
+      properties:
+        type:
+          type: string
+          description: The type of object - `list`.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of execution result objects.
+          items:
+            "$ref": "#/components/schemas/data_connector_execution_result"
+        pages:
+          type: object
+          description: Pagination information.
+          properties:
+            type:
+              type: string
+              example: pages
+              enum:
+              - pages
+            per_page:
+              type: integer
+              description: The number of results per page.
+              example: 10
+            next:
+              type: object
+              nullable: true
+              description: Cursor for the next page of results.
+              properties:
+                starting_after:
+                  type: string
+                  description: The cursor value to use for the next page.
+                  example: WzE3MDc1OTQ3MTUuMCw5OTAwMF0=
+    data_connector_list:
+      title: Data Connector List
+      type: object
+      description: A list of data connectors.
+      properties:
+        type:
+          type: string
+          description: The type of object - `list`.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of data connector objects.
+          items:
+            "$ref": "#/components/schemas/data_connector"
     data_event:
       title: Data Event
       type: object
@@ -24444,6 +25005,10 @@ tags:
     {% /admonition %}
 - name: Data Attributes
   description: Everything about your Data Attributes
+- name: Data Connectors
+  description: |
+    Data connectors allow you to make HTTP requests to external APIs from Intercom workflows and AI agents.
+    Use these endpoints to list your data connectors and view their execution history for monitoring and debugging.
 - name: Data Events
   description: Everything about your Data Events
 - name: Data Export
