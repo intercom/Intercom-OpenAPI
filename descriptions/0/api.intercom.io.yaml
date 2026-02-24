@@ -6750,6 +6750,16 @@ paths:
         required: true
         schema:
           type: integer
+      - name: retain_metrics
+        in: query
+        required: false
+        description: If true (default), soft deletes the conversation but retains it
+          in reporting. If false, permanently deletes all conversation data including
+          metrics. Setting to false requires the `permanently_delete_conversations`
+          OAuth scope.
+        example: true
+        schema:
+          type: boolean
       tags:
       - Conversations
       operationId: deleteConversation
@@ -6758,7 +6768,11 @@ paths:
         Deleting a conversation is permanent and cannot be reversed.
         {% /admonition %}
 
-        Deleting a conversation permanently removes it from the inbox. All sensitive data is deleted, including admin and user replies, conversation attributes, uploads, and related content. The conversation will still appear in reporting, though some data may be incomplete due to the deletion.
+        You can delete a single conversation. The behavior depends on the `retain_metrics` parameter:
+
+        - **With `retain_metrics=true` (default)**: Soft deletes the conversation, removing sensitive data (admin and user replies, conversation attributes, uploads, and related content). The conversation will still appear in reporting, though some data may be incomplete due to the deletion.
+
+        - **With `retain_metrics=false`**: Permanently deletes ALL conversation data including metrics. This requires the `permanently_delete_conversations` OAuth scope. The conversation will be completely removed from both the inbox and all reporting.
       responses:
         '200':
           description: successful
