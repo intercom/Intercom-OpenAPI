@@ -2637,6 +2637,308 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/internal_articles/folders":
+    get:
+      summary: List all folders
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        description: The page number
+        schema:
+          type: integer
+          example: 1
+      - name: per_page
+        in: query
+        description: Number of results per page
+        schema:
+          type: integer
+          example: 50
+          maximum: 150
+      tags:
+      - Internal Articles
+      operationId: listInternalArticleFolders
+      description: "You can fetch a list of all folders for internal articles by making a GET request to `https://api.intercom.io/internal_articles/folders`."
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              example:
+                type: list
+                data:
+                - id: 6
+                  name: Product Documentation
+                  description: Internal product docs
+                  emoji: "📚"
+                  parent_folder_id: null
+                  article_count: 5
+                  created_at: 1672928359
+                  updated_at: 1672928610
+                total_count: 1
+                pages:
+                  type: pages
+                  page: 1
+                  per_page: 50
+                  total_pages: 1
+              schema:
+                "$ref": "#/components/schemas/internal_article_folder_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create a folder
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Internal Articles
+      operationId: createInternalArticleFolder
+      description: "You can create a new folder for internal articles by making a POST request to `https://api.intercom.io/internal_articles/folders`."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_internal_article_folder_request"
+            example:
+              folder:
+                name: Product Documentation
+                description: Internal product docs
+                emoji: "📚"
+      responses:
+        '200':
+          description: folder created
+          content:
+            application/json:
+              example:
+                id: 6
+                name: Product Documentation
+                description: Internal product docs
+                emoji: "📚"
+                parent_folder_id: null
+                article_count: 0
+                created_at: 1672928359
+                updated_at: 1672928359
+              schema:
+                "$ref": "#/components/schemas/internal_article_folder"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/internal_articles/folders/{id}":
+    get:
+      summary: Retrieve a folder
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the folder
+        schema:
+          type: integer
+        example: 6
+      tags:
+      - Internal Articles
+      operationId: retrieveInternalArticleFolder
+      description: "You can fetch the details of a single folder by making a GET request to `https://api.intercom.io/internal_articles/folders/<id>`."
+      responses:
+        '200':
+          description: folder found
+          content:
+            application/json:
+              example:
+                id: 6
+                name: Product Documentation
+                description: Internal product docs
+                emoji: "📚"
+                parent_folder_id: null
+                article_count: 5
+                created_at: 1672928359
+                updated_at: 1672928610
+              schema:
+                "$ref": "#/components/schemas/internal_article_folder"
+        '404':
+          description: Folder not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update a folder
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the folder
+        schema:
+          type: integer
+        example: 6
+      tags:
+      - Internal Articles
+      operationId: updateInternalArticleFolder
+      description: "You can update a folder by making a PUT request to `https://api.intercom.io/internal_articles/folders/<id>`."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_internal_article_folder_request"
+            example:
+              folder:
+                name: Updated Product Documentation
+                emoji: "📖"
+      responses:
+        '200':
+          description: folder updated
+          content:
+            application/json:
+              example:
+                id: 6
+                name: Updated Product Documentation
+                description: Internal product docs
+                emoji: "📖"
+                parent_folder_id: null
+                article_count: 5
+                created_at: 1672928359
+                updated_at: 1672928900
+              schema:
+                "$ref": "#/components/schemas/internal_article_folder"
+        '404':
+          description: Folder not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete a folder
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the folder
+        schema:
+          type: integer
+        example: 6
+      tags:
+      - Internal Articles
+      operationId: deleteInternalArticleFolder
+      description: "You can delete a folder (if it contains no articles) by making a DELETE request to `https://api.intercom.io/internal_articles/folders/<id>`."
+      responses:
+        '200':
+          description: folder deleted
+          content:
+            application/json:
+              example:
+                id: 6
+                object: folder
+                deleted: true
+        '404':
+          description: Folder not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Folder contains articles
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/internal_articles/move_to_folder":
+    post:
+      summary: Bulk move articles to folder
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Internal Articles
+      operationId: moveInternalArticlesToFolder
+      description: "You can move multiple articles to a folder (or remove them from folders) by making a POST request to `https://api.intercom.io/internal_articles/move_to_folder`."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - article_ids
+              - destination_folder_id
+              properties:
+                article_ids:
+                  type: array
+                  items:
+                    type: integer
+                  description: Array of article IDs to move
+                  example: [123, 124, 125]
+                destination_folder_id:
+                  oneOf:
+                  - type: integer
+                  - type: string
+                    enum: ["root"]
+                  description: Target folder ID, or "root" to remove from folders
+                  example: 6
+            examples:
+              move_to_folder:
+                summary: Move articles to folder
+                value:
+                  article_ids: [123, 124]
+                  destination_folder_id: 6
+              move_to_root:
+                summary: Move articles to root
+                value:
+                  article_ids: [123, 124]
+                  destination_folder_id: "root"
+      responses:
+        '200':
+          description: articles moved
+          content:
+            application/json:
+              example:
+                moved_count: 2
+                destination_folder_id: 6
+              schema:
+                type: object
+                properties:
+                  moved_count:
+                    type: integer
+                    description: Number of articles successfully moved
+                  destination_folder_id:
+                    type: integer
+                    nullable: true
+                    description: Target folder ID, or null if moved to root
+        '404':
+          description: Folder not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/companies":
     post:
       summary: Create or Update a company
@@ -16706,6 +17008,132 @@ components:
           description: An array of Internal Article objects
           items:
             "$ref": "#/components/schemas/internal_article_list_item"
+    internal_article_folder:
+      title: Internal Article Folder
+      type: object
+      x-tags:
+      - Internal Articles
+      description: A folder for organizing internal articles
+      properties:
+        id:
+          type: integer
+          description: The unique identifier for the folder
+          example: 6
+        name:
+          type: string
+          description: The name of the folder
+          example: Product Documentation
+        description:
+          type: string
+          nullable: true
+          description: The description of the folder
+          example: Internal product documentation
+        emoji:
+          type: string
+          nullable: true
+          description: An emoji associated with the folder
+          example: "📚"
+        parent_folder_id:
+          type: integer
+          nullable: true
+          description: The ID of the parent folder, or null if this is a root folder
+          example: null
+        article_count:
+          type: integer
+          description: The number of articles in this folder
+          example: 5
+        created_at:
+          type: integer
+          format: date-time
+          description: The time when the folder was created (seconds)
+          example: 1672928359
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time when the folder was last updated (seconds)
+          example: 1672928610
+    internal_article_folder_list:
+      title: Internal Article Folder List
+      type: object
+      x-tags:
+      - Internal Articles
+      description: A list of folders for internal articles
+      properties:
+        type:
+          type: string
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          items:
+            "$ref": "#/components/schemas/internal_article_folder"
+        total_count:
+          type: integer
+          description: Total number of folders
+          example: 2
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
+    create_internal_article_folder_request:
+      title: Create Internal Article Folder Request
+      type: object
+      x-tags:
+      - Internal Articles
+      description: Request payload for creating a folder
+      required:
+      - folder
+      properties:
+        folder:
+          type: object
+          required:
+          - name
+          properties:
+            name:
+              type: string
+              description: The name of the folder
+              example: Product Documentation
+            description:
+              type: string
+              description: The description of the folder
+              example: Internal product documentation
+            emoji:
+              type: string
+              description: An emoji for the folder
+              example: "📚"
+            parent_folder_id:
+              type: integer
+              nullable: true
+              description: The ID of the parent folder
+              example: null
+    update_internal_article_folder_request:
+      title: Update Internal Article Folder Request
+      type: object
+      x-tags:
+      - Internal Articles
+      description: Request payload for updating a folder
+      required:
+      - folder
+      properties:
+        folder:
+          type: object
+          properties:
+            name:
+              type: string
+              description: The name of the folder
+              example: Updated Product Documentation
+            description:
+              type: string
+              description: The description of the folder
+              example: Updated internal product documentation
+            emoji:
+              type: string
+              description: An emoji for the folder
+              example: "📖"
+            parent_folder_id:
+              type: integer
+              nullable: true
+              description: The ID of the parent folder
+              example: null
     article_list:
       title: Articles
       type: object
@@ -16880,6 +17308,11 @@ components:
           type: string
           description: The default locale of the article.
           example: en
+        folder_id:
+          type: integer
+          nullable: true
+          description: The ID of the folder this article belongs to, or null if not in a folder.
+          example: 6
     article_search_highlights:
       title: Article Search Highlights
       type: object
@@ -19310,6 +19743,11 @@ components:
           type: integer
           description: The id of the owner of the article.
           example: 1295
+        folder_id:
+          type: integer
+          nullable: true
+          description: The ID of the folder to place this article in, or null to leave it without a folder.
+          example: 6
       required:
       - title
       - owner_id
