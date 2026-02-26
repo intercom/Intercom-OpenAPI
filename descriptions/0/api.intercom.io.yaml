@@ -2637,7 +2637,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/internal_articles/folders":
+  "/folders":
     get:
       summary: List all folders
       parameters:
@@ -2659,9 +2659,9 @@ paths:
           example: 50
           maximum: 150
       tags:
-      - Internal Articles
-      operationId: listInternalArticleFolders
-      description: "You can fetch a list of all folders for internal articles by making a GET request to `https://api.intercom.io/internal_articles/folders`."
+      - Folders
+      operationId: listFolders
+      description: "You can fetch a list of all folders for organizing content by making a GET request to `https://api.intercom.io/folders`."
       responses:
         '200':
           description: successful
@@ -2700,9 +2700,9 @@ paths:
         schema:
           "$ref": "#/components/schemas/intercom_version"
       tags:
-      - Internal Articles
-      operationId: createInternalArticleFolder
-      description: "You can create a new folder for internal articles by making a POST request to `https://api.intercom.io/internal_articles/folders`."
+      - Folders
+      operationId: createFolder
+      description: "You can create a new folder for organizing content by making a POST request to `https://api.intercom.io/folders`."
       requestBody:
         content:
           application/json:
@@ -2735,7 +2735,7 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
-  "/internal_articles/folders/{id}":
+  "/folders/{id}":
     get:
       summary: Retrieve a folder
       parameters:
@@ -2751,9 +2751,9 @@ paths:
           type: integer
         example: 6
       tags:
-      - Internal Articles
-      operationId: retrieveInternalArticleFolder
-      description: "You can fetch the details of a single folder by making a GET request to `https://api.intercom.io/internal_articles/folders/<id>`."
+      - Folders
+      operationId: retrieveFolder
+      description: "You can fetch the details of a single folder by making a GET request to `https://api.intercom.io/folders/<id>`."
       responses:
         '200':
           description: folder found
@@ -2791,9 +2791,9 @@ paths:
           type: integer
         example: 6
       tags:
-      - Internal Articles
-      operationId: updateInternalArticleFolder
-      description: "You can update a folder by making a PUT request to `https://api.intercom.io/internal_articles/folders/<id>`."
+      - Folders
+      operationId: updateFolder
+      description: "You can update a folder by making a PUT request to `https://api.intercom.io/folders/<id>`."
       requestBody:
         content:
           application/json:
@@ -2840,9 +2840,9 @@ paths:
           type: integer
         example: 6
       tags:
-      - Internal Articles
-      operationId: deleteInternalArticleFolder
-      description: "You can delete a folder (if it contains no articles) by making a DELETE request to `https://api.intercom.io/internal_articles/folders/<id>`."
+      - Folders
+      operationId: deleteFolder
+      description: "You can delete a folder (if it contains no articles) by making a DELETE request to `https://api.intercom.io/folders/<id>`."
       responses:
         '200':
           description: folder deleted
@@ -2860,81 +2860,6 @@ paths:
                 "$ref": "#/components/schemas/error"
         '422':
           description: Folder contains articles
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/error"
-  "/internal_articles/move_to_folder":
-    post:
-      summary: Bulk move articles to folder
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      tags:
-      - Internal Articles
-      operationId: moveInternalArticlesToFolder
-      description: "You can move multiple articles to a folder (or remove them from folders) by making a POST request to `https://api.intercom.io/internal_articles/move_to_folder`."
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - article_ids
-              - destination_folder_id
-              properties:
-                article_ids:
-                  type: array
-                  items:
-                    type: integer
-                  description: Array of article IDs to move
-                  example: [123, 124, 125]
-                destination_folder_id:
-                  oneOf:
-                  - type: integer
-                  - type: string
-                    enum: ["root"]
-                  description: Target folder ID, or "root" to remove from folders
-                  example: 6
-            examples:
-              move_to_folder:
-                summary: Move articles to folder
-                value:
-                  article_ids: [123, 124]
-                  destination_folder_id: 6
-              move_to_root:
-                summary: Move articles to root
-                value:
-                  article_ids: [123, 124]
-                  destination_folder_id: "root"
-      responses:
-        '200':
-          description: articles moved
-          content:
-            application/json:
-              example:
-                moved_count: 2
-                destination_folder_id: 6
-              schema:
-                type: object
-                properties:
-                  moved_count:
-                    type: integer
-                    description: Number of articles successfully moved
-                  destination_folder_id:
-                    type: integer
-                    nullable: true
-                    description: Target folder ID, or null if moved to root
-        '404':
-          description: Folder not found
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/error"
-        '422':
-          description: Validation error
           content:
             application/json:
               schema:
