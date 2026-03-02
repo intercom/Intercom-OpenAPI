@@ -6753,10 +6753,9 @@ paths:
       - name: retain_metrics
         in: query
         required: false
-        description: If true (default), soft deletes the conversation but retains it
-          in reporting. If false, permanently deletes all conversation data including
-          metrics. Setting to false requires the `permanently_delete_conversations`
-          OAuth scope.
+        description: If true (default), deletes the conversation while retaining reporting
+          data. If false, deletes the conversation and all associated reporting data.
+          Setting to false requires the `permanently_delete_conversations` OAuth scope.
         example: true
         schema:
           type: boolean
@@ -6770,9 +6769,13 @@ paths:
 
         You can delete a single conversation. The behavior depends on the `retain_metrics` parameter:
 
-        - **With `retain_metrics=true` (default)**: Soft deletes the conversation, removing sensitive data (admin and user replies, conversation attributes, uploads, and related content). The conversation will still appear in reporting, though some data may be incomplete due to the deletion.
+        - **With `retain_metrics=true` (default)**: Deletes the conversation while retaining reporting data. The conversation will still appear in reporting, though some data may be incomplete due to the deletion.
 
-        - **With `retain_metrics=false`**: Permanently deletes ALL conversation data including metrics. This requires the `permanently_delete_conversations` OAuth scope. The conversation will be completely removed from both the inbox and all reporting.
+        - **With `retain_metrics=false`**: Deletes the conversation and all associated reporting data. The conversation will be completely removed from both the inbox and all reporting.
+
+        {% admonition type="info" name="Required scope for retain_metrics=false" %}
+        Using `retain_metrics=false` requires the `permanently_delete_conversations` OAuth scope.
+        {% /admonition %}
       responses:
         '200':
           description: successful
