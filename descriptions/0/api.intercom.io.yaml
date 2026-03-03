@@ -1041,7 +1041,10 @@ paths:
       tags:
       - Articles
       operationId: createArticle
-      description: You can create a new article by making a POST request to `https://api.intercom.io/articles`.
+      description: "You can create a new article by making a POST request to `https://api.intercom.io/articles`.\n\n>
+        \U0001F4D8 Tags cannot be managed via the Articles API\n>\n> Article tags are
+        read-only in responses. To create, update, or delete tags, use the Intercom
+        UI or the Tags API endpoints.\n"
       responses:
         '200':
           description: article created
@@ -1236,8 +1239,11 @@ paths:
       tags:
       - Articles
       operationId: updateArticle
-      description: You can update the details of a single article by making a PUT
-        request to `https://api.intercom.io/articles/<id>`.
+      description: "You can update the details of a single article by making a PUT
+        request to `https://api.intercom.io/articles/<id>`.\n\n> \U0001F4D8 Tags cannot be
+        managed via the Articles API\n>\n> Article tags are read-only in responses.
+        To create, update, or delete tags, use the Intercom UI or the Tags API
+        endpoints.\n"
       responses:
         '200':
           description: successful
@@ -3323,6 +3329,107 @@ paths:
                       message: Company Not Found
               schema:
                 "$ref": "#/components/schemas/error"
+    post:
+      summary: Create a company note
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the company which is given by Intercom
+        example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+        schema:
+          type: string
+      tags:
+      - Notes
+      - Companies
+      operationId: createCompanyNote
+      description: You can add a note to a single company.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: note
+                    id: '31'
+                    created_at: 1734537390
+                    company:
+                      type: company
+                      id: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+                    author:
+                      type: admin
+                      id: '991267583'
+                      name: Ciaran124 Lee
+                      email: admin124@email.com
+                      away_mode_enabled: false
+                      away_mode_reassign: false
+                    body: "<p>Hello</p>"
+              schema:
+                "$ref": "#/components/schemas/note"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Company or admin not found
+          content:
+            application/json:
+              examples:
+                Admin not found:
+                  value:
+                    type: error.list
+                    request_id: 168f1bc3-d198-4797-8422-9f93fe8af5ad
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+                Company not found:
+                  value:
+                    type: error.list
+                    request_id: 6f372239-0259-428f-9943-91b8f7a92162
+                    errors:
+                    - code: company_not_found
+                      message: Company Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - body
+              properties:
+                body:
+                  type: string
+                  description: The text of the note.
+                  example: New note
+                admin_id:
+                  type: string
+                  description: The unique identifier of the admin creating the note. If not provided, defaults to the admin associated with the access token.
+                  example: '991267583'
+            examples:
+              successful_response:
+                summary: Successful response
+                value:
+                  body: Hello
+                  admin_id: '991267583'
+              admin_not_found:
+                summary: Admin not found
+                value:
+                  body: Hello
+                  admin_id: '123'
+              company_not_found:
+                summary: Company not found
+                value:
+                  body: Hello
   "/companies/list":
     post:
       summary: List all companies
@@ -3577,6 +3684,13 @@ paths:
                     errors:
                     - code: parameter_not_found
                       message: company not specified
+                Contact Company Limit Exceeded:
+                  value:
+                    type: error.list
+                    request_id: 9a3d0816-9707-4598-977e-c009ba630148
+                    errors:
+                    - code: contact_company_limit_exceeded
+                      message: Contact has reached the maximum of 1000 company associations
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -9433,6 +9547,330 @@ paths:
                 value:
                   description: Trying to archieve
                   archived: true
+  "/data_connectors":
+    get:
+      summary: List all data connectors
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Data Connectors
+      operationId: listDataConnectors
+      description: |
+        You can fetch a list of all data connectors for your workspace by making a GET request to `https://api.intercom.io/data_connectors`.
+
+        Data connectors allow you to make HTTP requests to external APIs from Intercom workflows and AI agents.
+        Each connector in the response includes an `execution_results_url` for navigating to its execution logs.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: data_connector
+                      id: '12345'
+                      name: Slack Notification Service
+                      description: Posts conversation updates to Slack channel
+                      state: live
+                      http_method: post
+                      usage: workflow_and_inbox
+                      created_at: '2025-11-15T09:30:00Z'
+                      updated_at: '2026-01-20T14:22:15Z'
+                      execution_results_url: "/data_connectors/12345/execution_results"
+              schema:
+                "$ref": "#/components/schemas/data_connector_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/data_connectors/{data_connector_id}/execution_results":
+    get:
+      summary: List execution results for a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: data_connector_id
+        in: path
+        required: true
+        description: The unique identifier for the data connector.
+        schema:
+          type: string
+          example: '12345'
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results per page (1-30, default 10).
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
+          maximum: 30
+      - name: starting_after
+        in: query
+        required: false
+        description: Cursor for pagination. Use the value from `pages.next.starting_after` in a previous response.
+        schema:
+          type: string
+      - name: success
+        in: query
+        required: false
+        description: Filter by success status. Use `true`, `false`, or omit for all.
+        schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+      - name: error_type
+        in: query
+        required: false
+        description: Filter by error type.
+        schema:
+          type: string
+          enum:
+          - request_configuration_error
+          - faraday_error
+          - 3rd_party_error
+          - response_mapping_error
+          - token_refresh_error
+          - fin_action_response_formatting_error
+          - fin_action_identity_verification_error
+          - email_verification_error
+          - non_fin_standalone_action_identity_verification_error
+          - request_validation_error
+          - client_side_action_error
+      - name: start_ts
+        in: query
+        required: false
+        description: Unix timestamp for start of time range (default 1 hour ago).
+        schema:
+          type: integer
+      - name: end_ts
+        in: query
+        required: false
+        description: Unix timestamp for end of time range (default now).
+        schema:
+          type: integer
+      - name: include_bodies
+        in: query
+        required: false
+        description: Include request/response bodies in the response (default false).
+        schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+      - name: include_request_url
+        in: query
+        required: false
+        description: Include the request URL in the response (default false).
+        schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+      tags:
+      - Data Connectors
+      operationId: listDataConnectorExecutionResults
+      description: |
+        Retrieve paginated execution logs for a specific data connector.
+        Results from the last hour are returned by default. Use `start_ts` and `end_ts` to customize the time range.
+
+        Request/response bodies and request URL are excluded by default.
+        Use `include_bodies=true` to include bodies.
+        Use `include_request_url=true` to include the sanitised request URL.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: data_connector.execution
+                      id: '99001'
+                      data_connector_id: '12345'
+                      success: true
+                      http_status: 200
+                      http_method: post
+                      execution_time_ms: 150
+                      source_type: workflow
+                      source_id: '5001'
+                      conversation_id: '8001'
+                      created_at: '2026-02-10T18:15:32Z'
+                    - type: data_connector.execution
+                      id: '99000'
+                      data_connector_id: '12345'
+                      success: false
+                      http_status:
+                      http_method: post
+                      error_type: 3rd_party_error
+                      error_message: Connection refused
+                      source_type: inbox
+                      created_at: '2026-02-10T17:45:15Z'
+                    pages:
+                      type: pages
+                      per_page: 10
+                      next:
+                        starting_after: WzE3MDc1OTQ3MTUuMCw5OTAwMF0=
+              schema:
+                "$ref": "#/components/schemas/data_connector_execution_result_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Invalid error_type:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid error_type. Must be one of: request_configuration_error, faraday_error, 3rd_party_error, response_mapping_error, token_refresh_error, fin_action_response_formatting_error, fin_action_identity_verification_error, email_verification_error, non_fin_standalone_action_identity_verification_error, request_validation_error, client_side_action_error"
+                Invalid timestamp:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: start_ts must be a Unix timestamp (integer)
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Data connector not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/data_connectors/{data_connector_id}/execution_results/{id}":
+    get:
+      summary: Retrieve an execution result
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: data_connector_id
+        in: path
+        required: true
+        description: The unique identifier for the data connector.
+        schema:
+          type: string
+          example: '12345'
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the execution result.
+        schema:
+          type: string
+          example: '99001'
+      tags:
+      - Data Connectors
+      operationId: showDataConnectorExecutionResult
+      description: |
+        Retrieve details for a specific data connector execution result.
+        Always includes request/response bodies and the sanitised request URL.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: data_connector.execution
+                    id: '99001'
+                    data_connector_id: '12345'
+                    success: true
+                    http_status: 200
+                    http_method: post
+                    execution_time_ms: 150
+                    source_type: workflow
+                    source_id: '5001'
+                    conversation_id: '8001'
+                    created_at: '2026-02-10T18:15:32Z'
+                    request_url: https://api.example.com/webhook
+                    request_body: '{"channel": "#alerts", "text": "Conversation updated"}'
+                    response_body: '{"ok": true}'
+                    raw_response_body: '{"ok": true}'
+              schema:
+                "$ref": "#/components/schemas/data_connector_execution_result"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Execution result not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+                Execution result not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: execution_result_not_found
+                      message: Execution result not found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/events":
     post:
       summary: Submit a data event
@@ -13299,7 +13737,11 @@ paths:
         schema:
           title: Ticket ID
           type: string
-          description: The id of the ticket to target.
+          description: |
+            The id of the ticket to target.
+            {% admonition type="info" name="Not the Inbox ticket ID" %}
+            This is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.
+            {% /admonition %}
           example: '123'
       tags:
       - Tickets
@@ -13889,7 +14331,11 @@ paths:
       - name: id
         in: path
         required: true
-        description: The unique identifier for the ticket which is given by Intercom
+        description: |
+          The unique identifier for the ticket which is given by Intercom.
+          {% admonition type="info" name="Not the Inbox ticket ID" %}
+          This is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.
+          {% /admonition %}
         schema:
           type: string
       tags:
@@ -14185,7 +14631,11 @@ paths:
       - name: id
         in: path
         required: true
-        description: The unique identifier for the ticket which is given by Intercom.
+        description: |
+          The unique identifier for the ticket which is given by Intercom.
+          {% admonition type="info" name="Not the Inbox ticket ID" %}
+          This is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.
+          {% /admonition %}
         schema:
           type: string
       tags:
@@ -14324,13 +14774,22 @@ paths:
       - name: id
         in: path
         required: true
-        description: The unique identifier for the ticket which is given by Intercom.
+        description: |
+          The unique identifier for the ticket which is given by Intercom.
+          {% admonition type="info" name="Not the Inbox ticket ID" %}
+          This is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.
+          {% /admonition %}
         schema:
           type: string
       tags:
       - Tickets
       operationId: deleteTicket
-      description: You can delete a ticket using the Intercom provided ID.
+      description: |
+        {% admonition type="warning" name="Irreversible operation" %}
+        Deleting a ticket is permanent and cannot be reversed.
+        {% /admonition %}
+
+        Deleting a ticket permanently removes it from the inbox. All sensitive data is deleted, including admin and user replies, ticket attributes, uploads, and related content. The ticket will still appear in reporting, though some data may be incomplete due to the deletion.
       responses:
         '200':
           description: successful
@@ -14343,24 +14802,7 @@ paths:
                     object: ticket
                     deleted: true
               schema:
-                title: Ticket Deleted
-                type: object
-                description: Response when a ticket is deleted.
-                properties:
-                  id:
-                    type: string
-                    description: The unique identifier for the ticket.
-                    example: '42'
-                  object:
-                    type: string
-                    description: always ticket
-                    enum:
-                    - ticket
-                    example: ticket
-                  deleted:
-                    type: boolean
-                    description: Whether the ticket is deleted or not.
-                    example: true
+                "$ref": "#/components/schemas/ticket_deleted"
         '404':
           description: Ticket not found
           content:
@@ -14374,38 +14816,7 @@ paths:
                     - code: ticket_not_found
                       message: Ticket not found
               schema:
-                type: object
-                title: Ticket not found error
-                properties:
-                  type:
-                    type: string
-                    description: The type is error.list
-                    example: error.list
-                  request_id:
-                    type: string
-                    nullable: true
-                    format: uuid
-                    description: ''
-                    example: f93ecfa8-d08a-4325-8694-89aeb89c8f85
-                  errors:
-                    type: array
-                    description: An array of one or more error objects
-                    items:
-                      properties:
-                        code:
-                          type: string
-                          description: ticket_not_found
-                          example: ticket_not_found
-                        message:
-                          type: string
-                          nullable: true
-                          description: Ticket not found
-                          example: Ticket not found
-                      required:
-                      - code
-                required:
-                - type
-                - errors
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -14418,6 +14829,20 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 7a80b950-b392-499f-85db-ea7c6c424d37
+                    errors:
+                    - code: api_plan_restricted
+                      message: Active subscription needed.
               schema:
                 "$ref": "#/components/schemas/error"
   "/tickets/search":
@@ -15633,6 +16058,25 @@ components:
           example: https://picsum.photos/200/300
         team_priority_level:
           "$ref": "#/components/schemas/team_priority_level"
+        role:
+          type: object
+          nullable: true
+          description: The role assigned to this admin. Only present if the admin has
+            a role assigned.
+          properties:
+            type:
+              type: string
+              description: String representing the object's type. Always has the value
+                `role`.
+              example: role
+            id:
+              type: string
+              description: The id of the role.
+              example: '1'
+            name:
+              type: string
+              description: The name of the role.
+              example: Support Agent
     admin_list:
       title: Admins
       type: object
@@ -15861,6 +16305,25 @@ components:
           description: Identifies if this admin's email is verified.
           nullable: true
           example: true
+        role:
+          type: object
+          nullable: true
+          description: The role assigned to this admin. Only present if the admin has
+            a role assigned.
+          properties:
+            type:
+              type: string
+              description: String representing the object's type. Always has the value
+                `role`.
+              example: role
+            id:
+              type: string
+              description: The id of the role.
+              example: '1'
+            name:
+              type: string
+              description: The name of the role.
+              example: Support Agent
         app:
           "$ref": "#/components/schemas/app"
           nullable: true
@@ -16193,6 +16656,8 @@ components:
         translated_content:
           nullable: true
           "$ref": "#/components/schemas/article_translated_content"
+        tags:
+          "$ref": "#/components/schemas/tags"
     internal_article_list_item:
       title: Internal Articles
       type: object
@@ -19876,6 +20341,243 @@ components:
           description: A list of data attributes
           items:
             "$ref": "#/components/schemas/data_attribute"
+    data_connector:
+      title: Data Connector
+      type: object
+      x-tags:
+      - Data Connectors
+      description: |
+        A data connector allows you to make HTTP requests to external APIs from Intercom workflows and AI agents.
+      properties:
+        type:
+          type: string
+          description: The type of object - `data_connector`.
+          enum:
+          - data_connector
+          example: data_connector
+        id:
+          type: string
+          description: The unique identifier for the data connector.
+          example: '12345'
+        name:
+          type: string
+          description: The name of the data connector.
+          example: Slack Notification Service
+        description:
+          type: string
+          nullable: true
+          description: A description of what this data connector does.
+          example: Posts conversation updates to Slack channel
+        state:
+          type: string
+          description: The current state of the data connector.
+          enum:
+          - draft
+          - live
+          example: live
+        http_method:
+          type: string
+          description: The HTTP method used by the data connector.
+          enum:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          example: post
+        usage:
+          type: string
+          description: Where this data connector can be used.
+          enum:
+          - workflow_and_inbox
+          - fin
+          - fin_voice
+          example: workflow_and_inbox
+        created_at:
+          type: string
+          format: date-time
+          description: The time the data connector was created.
+          example: '2025-11-15T09:30:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: The time the data connector was last updated.
+          example: '2026-01-20T14:22:15Z'
+        execution_results_url:
+          type: string
+          description: The URL path to fetch execution results for this connector.
+          example: "/data_connectors/12345/execution_results"
+    data_connector_execution_result:
+      title: Data Connector Execution Result
+      type: object
+      x-tags:
+      - Data Connectors
+      description: An execution result from a data connector HTTP request.
+      properties:
+        type:
+          type: string
+          description: The type of object - `data_connector.execution`.
+          enum:
+          - data_connector.execution
+          example: data_connector.execution
+        id:
+          type: string
+          description: The unique identifier for the execution result.
+          example: '99001'
+        data_connector_id:
+          type: string
+          description: The unique identifier of the data connector that produced this result.
+          example: '12345'
+        success:
+          type: boolean
+          description: Whether the execution was successful.
+          example: true
+        http_status:
+          type: integer
+          nullable: true
+          description: The HTTP status code returned by the external API.
+          example: 200
+        http_method:
+          type: string
+          description: The HTTP method used for the request.
+          enum:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          example: post
+        error_type:
+          type: string
+          nullable: true
+          description: The type of error that occurred, if any.
+          enum:
+          - request_configuration_error
+          - faraday_error
+          - 3rd_party_error
+          - response_mapping_error
+          - token_refresh_error
+          - fin_action_response_formatting_error
+          - fin_action_identity_verification_error
+          - email_verification_error
+          - non_fin_standalone_action_identity_verification_error
+          - request_validation_error
+          - client_side_action_error
+          example: 3rd_party_error
+        error_message:
+          type: string
+          nullable: true
+          description: A human-readable error message. Query parameters, userinfo, and fragments in URLs are redacted.
+          example: Connection refused
+        execution_time_ms:
+          type: integer
+          nullable: true
+          description: The execution time in milliseconds.
+          example: 245
+        source_type:
+          type: string
+          nullable: true
+          description: The type of source that triggered this execution.
+          enum:
+          - custom_bot
+          - inbound_custom_bot
+          - button_custom_bot
+          - answer
+          - workflow
+          - saved_reply
+          - triggerable_custom_bot
+          - inbox
+          - fin
+          example: workflow
+        source_id:
+          type: string
+          nullable: true
+          description: The identifier of the source that triggered this execution.
+          example: '5001'
+        conversation_id:
+          type: string
+          nullable: true
+          description: The conversation associated with this execution, if any.
+          example: '8001'
+        created_at:
+          type: string
+          format: date-time
+          description: The time the execution occurred.
+          example: '2026-02-10T18:15:32Z'
+        request_url:
+          type: string
+          nullable: true
+          description: The request URL. Query parameters, userinfo, and fragments are redacted.
+          example: https://api.example.com/webhook
+        request_body:
+          type: string
+          nullable: true
+          description: The request body sent to the external API.
+          example: '{"message": "hello"}'
+        response_body:
+          type: string
+          nullable: true
+          description: The response body from the external API.
+          example: '{"status": "ok"}'
+        raw_response_body:
+          type: string
+          nullable: true
+          description: The raw (unmapped) response body.
+          example: '{"status": "ok"}'
+    data_connector_execution_result_list:
+      title: Data Connector Execution Result List
+      type: object
+      description: A paginated list of data connector execution results.
+      properties:
+        type:
+          type: string
+          description: The type of object - `list`.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of execution result objects.
+          items:
+            "$ref": "#/components/schemas/data_connector_execution_result"
+        pages:
+          type: object
+          description: Pagination information.
+          properties:
+            type:
+              type: string
+              example: pages
+              enum:
+              - pages
+            per_page:
+              type: integer
+              description: The number of results per page.
+              example: 10
+            next:
+              type: object
+              nullable: true
+              description: Cursor for the next page of results.
+              properties:
+                starting_after:
+                  type: string
+                  description: The cursor value to use for the next page.
+                  example: WzE3MDc1OTQ3MTUuMCw5OTAwMF0=
+    data_connector_list:
+      title: Data Connector List
+      type: object
+      description: A list of data connectors.
+      properties:
+        type:
+          type: string
+          description: The type of object - `list`.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of data connector objects.
+          items:
+            "$ref": "#/components/schemas/data_connector"
     data_event:
       title: Data Event
       type: object
@@ -22702,6 +23404,25 @@ components:
           type: boolean
           description: Whether or not the ticket is shared with the customer.
           example: true
+    ticket_deleted:
+      title: Ticket Deleted
+      type: object
+      description: deleted ticket object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the ticket.
+          example: 5ba682d23d7cf92bef87bfd4
+        object:
+          type: string
+          description: always ticket
+          enum:
+          - ticket
+          example: ticket
+        deleted:
+          type: boolean
+          description: Whether the ticket is deleted or not.
+          example: true
     ticket_contacts:
       title: Contacts
       type: object
@@ -24433,6 +25154,8 @@ tags:
     {% /admonition %}
 - name: Data Attributes
   description: Everything about your Data Attributes
+- name: Data Connectors
+  description: Everything about your Data Connectors
 - name: Data Events
   description: Everything about your Data Events
 - name: Data Export

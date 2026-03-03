@@ -2106,6 +2106,13 @@ paths:
                     errors:
                     - code: parameter_not_found
                       message: company not specified
+                Contact Company Limit Exceeded:
+                  value:
+                    type: error.list
+                    request_id: 9a3d0816-9707-4598-977e-c009ba630148
+                    errors:
+                    - code: contact_company_limit_exceeded
+                      message: Contact has reached the maximum of 1000 company associations
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -2938,6 +2945,10 @@ paths:
                     - type: tag
                       id: '124'
                       name: Manual tag
+                      applied_at: 1663597223
+                      applied_by:
+                        type: admin
+                        id: '456'
               schema:
                 "$ref": "#/components/schemas/tag_list"
         '404':
@@ -2999,6 +3010,10 @@ paths:
                     type: tag
                     id: '125'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -3101,6 +3116,10 @@ paths:
                     type: tag
                     id: '128'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -4021,6 +4040,10 @@ paths:
                     type: tag
                     id: '130'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -4120,6 +4143,10 @@ paths:
                     type: tag
                     id: '133'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -8438,7 +8465,7 @@ paths:
                     id: '149'
                     name: test
               schema:
-                "$ref": "#/components/schemas/tag"
+                "$ref": "#/components/schemas/tag_basic"
         '400':
           description: Invalid parameters
           content:
@@ -8551,7 +8578,7 @@ paths:
                     id: '157'
                     name: Manual tag
               schema:
-                "$ref": "#/components/schemas/tag"
+                "$ref": "#/components/schemas/tag_basic"
         '404':
           description: Tag not found
           content:
@@ -9344,7 +9371,11 @@ paths:
         schema:
           title: Ticket ID
           type: string
-          description: The id of the ticket to target.
+          description: |
+            The id of the ticket to target.
+            {% admonition type="info" name="Not the Inbox ticket ID" %}
+            This is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.
+            {% /admonition %}
           example: '123'
       tags:
       - Tickets
@@ -9515,6 +9546,10 @@ paths:
                     type: tag
                     id: '165'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -9614,6 +9649,10 @@ paths:
                     type: tag
                     id: '168'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -9833,7 +9872,11 @@ paths:
       - name: id
         in: path
         required: true
-        description: The unique identifier for the ticket which is given by Intercom
+        description: |
+          The unique identifier for the ticket which is given by Intercom.
+          {% admonition type="info" name="Not the Inbox ticket ID" %}
+          This is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.
+          {% /admonition %}
         schema:
           type: string
       tags:
@@ -10091,7 +10134,11 @@ paths:
       - name: id
         in: path
         required: true
-        description: The unique identifier for the ticket which is given by Intercom.
+        description: |
+          The unique identifier for the ticket which is given by Intercom.
+          {% admonition type="info" name="Not the Inbox ticket ID" %}
+          This is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.
+          {% /admonition %}
         schema:
           type: string
       tags:
@@ -12046,8 +12093,7 @@ components:
             tags:
               type: array
               items:
-                items:
-                  "$ref": "#/components/schemas/tag"
+                "$ref": "#/components/schemas/tag_basic"
         segments:
           type: object
           description: The list of segments associated with the company
@@ -15801,10 +15847,35 @@ components:
         applied_at:
           type: integer
           format: date-time
+          nullable: true
           description: The time when the tag was applied to the object
           example: 1663597223
         applied_by:
-          "$ref": "#/components/schemas/reference"
+          type: object
+          nullable: true
+          description: The admin who applied the tag
+          allOf:
+            - "$ref": "#/components/schemas/reference"
+    tag_basic:
+      title: Tag
+      type: object
+      x-tags:
+      - Tags
+      description: A tag allows you to label your contacts, companies, and conversations
+        and list them using that tag.
+      properties:
+        type:
+          type: string
+          description: value is "tag"
+          example: tag
+        id:
+          type: string
+          description: The id of the tag
+          example: '123456'
+        name:
+          type: string
+          description: The name of the tag
+          example: Test tag
     tag_company_request:
       description: You can tag a single company or a list of companies.
       type: object

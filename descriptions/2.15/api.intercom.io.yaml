@@ -1041,7 +1041,10 @@ paths:
       tags:
       - Articles
       operationId: createArticle
-      description: You can create a new article by making a POST request to `https://api.intercom.io/articles`.
+      description: "You can create a new article by making a POST request to `https://api.intercom.io/articles`.\n\n>
+        \U0001F4D8 Tags cannot be managed via the Articles API\n>\n> Article tags are
+        read-only in responses. To create, update, or delete tags, use the Intercom
+        UI or the Tags API endpoints.\n"
       responses:
         '200':
           description: article created
@@ -1236,8 +1239,11 @@ paths:
       tags:
       - Articles
       operationId: updateArticle
-      description: You can update the details of a single article by making a PUT
-        request to `https://api.intercom.io/articles/<id>`.
+      description: "You can update the details of a single article by making a PUT
+        request to `https://api.intercom.io/articles/<id>`.\n\n> \U0001F4D8 Tags cannot be
+        managed via the Articles API\n>\n> Article tags are read-only in responses.
+        To create, update, or delete tags, use the Intercom UI or the Tags API
+        endpoints.\n"
       responses:
         '200':
           description: successful
@@ -3631,6 +3637,13 @@ paths:
                     errors:
                     - code: parameter_not_found
                       message: company not specified
+                Contact Company Limit Exceeded:
+                  value:
+                    type: error.list
+                    request_id: 9a3d0816-9707-4598-977e-c009ba630148
+                    errors:
+                    - code: contact_company_limit_exceeded
+                      message: Contact has reached the maximum of 1000 company associations
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -4459,6 +4472,10 @@ paths:
                     - type: tag
                       id: '80'
                       name: Manual tag
+                      applied_at: 1663597223
+                      applied_by:
+                        type: admin
+                        id: '456'
               schema:
                 "$ref": "#/components/schemas/tag_list"
         '404':
@@ -4520,6 +4537,10 @@ paths:
                     type: tag
                     id: '81'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -4622,6 +4643,10 @@ paths:
                     type: tag
                     id: '84'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -5830,6 +5855,10 @@ paths:
                     type: tag
                     id: '86'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -5929,6 +5958,10 @@ paths:
                     type: tag
                     id: '89'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -11303,7 +11336,7 @@ paths:
                     id: '105'
                     name: test
               schema:
-                "$ref": "#/components/schemas/tag"
+                "$ref": "#/components/schemas/tag_basic"
         '400':
           description: Invalid parameters
           content:
@@ -11416,7 +11449,7 @@ paths:
                     id: '113'
                     name: Manual tag
               schema:
-                "$ref": "#/components/schemas/tag"
+                "$ref": "#/components/schemas/tag_basic"
         '404':
           description: Tag not found
           content:
@@ -12515,7 +12548,11 @@ paths:
         schema:
           title: Ticket ID
           type: string
-          description: The id of the ticket to target.
+          description: |
+            The id of the ticket to target.
+            {% admonition type="info" name="Not the Inbox ticket ID" %}
+            This is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.
+            {% /admonition %}
           example: '123'
       tags:
       - Tickets
@@ -12692,6 +12729,10 @@ paths:
                     type: tag
                     id: '121'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -12791,6 +12832,10 @@ paths:
                     type: tag
                     id: '124'
                     name: Manual tag
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '456'
               schema:
                 "$ref": "#/components/schemas/tag"
         '404':
@@ -13097,7 +13142,11 @@ paths:
       - name: ticket_id
         in: path
         required: true
-        description: The unique identifier for the ticket which is given by Intercom
+        description: |
+          The unique identifier for the ticket which is given by Intercom.
+          {% admonition type="info" name="Not the Inbox ticket ID" %}
+          This is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.
+          {% /admonition %}
         schema:
           type: string
       tags:
@@ -13393,7 +13442,11 @@ paths:
       - name: ticket_id
         in: path
         required: true
-        description: The unique identifier for the ticket which is given by Intercom.
+        description: |
+          The unique identifier for the ticket which is given by Intercom.
+          {% admonition type="info" name="Not the Inbox ticket ID" %}
+          This is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.
+          {% /admonition %}
         schema:
           type: string
       tags:
@@ -13532,13 +13585,22 @@ paths:
       - name: ticket_id
         in: path
         required: true
-        description: The unique identifier for the ticket which is given by Intercom.
+        description: |
+          The unique identifier for the ticket which is given by Intercom.
+          {% admonition type="info" name="Not the Inbox ticket ID" %}
+          This is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.
+          {% /admonition %}
         schema:
           type: string
       tags:
       - Tickets
       operationId: deleteTicket
-      description: You can delete a ticket using the Intercom provided ID.
+      description: |
+        {% admonition type="warning" name="Irreversible operation" %}
+        Deleting a ticket is permanent and cannot be reversed.
+        {% /admonition %}
+
+        Deleting a ticket permanently removes it from the inbox. All sensitive data is deleted, including admin and user replies, ticket attributes, uploads, and related content. The ticket will still appear in reporting, though some data may be incomplete due to the deletion.
       responses:
         '200':
           description: successful
@@ -13551,24 +13613,7 @@ paths:
                     object: ticket
                     deleted: true
               schema:
-                title: Ticket Deleted
-                type: object
-                description: Response when a ticket is deleted.
-                properties:
-                  id:
-                    type: string
-                    description: The unique identifier for the ticket.
-                    example: '42'
-                  object:
-                    type: string
-                    description: always ticket
-                    enum:
-                    - ticket
-                    example: ticket
-                  deleted:
-                    type: boolean
-                    description: Whether the ticket is deleted or not.
-                    example: true
+                "$ref": "#/components/schemas/ticket_deleted"
         '404':
           description: Ticket not found
           content:
@@ -13582,38 +13627,7 @@ paths:
                     - code: ticket_not_found
                       message: Ticket not found
               schema:
-                type: object
-                title: Ticket not found error
-                properties:
-                  type:
-                    type: string
-                    description: The type is error.list
-                    example: error.list
-                  request_id:
-                    type: string
-                    nullable: true
-                    format: uuid
-                    description: ''
-                    example: f93ecfa8-d08a-4325-8694-89aeb89c8f85
-                  errors:
-                    type: array
-                    description: An array of one or more error objects
-                    items:
-                      properties:
-                        code:
-                          type: string
-                          description: ticket_not_found
-                          example: ticket_not_found
-                        message:
-                          type: string
-                          nullable: true
-                          description: Ticket not found
-                          example: Ticket not found
-                      required:
-                      - code
-                required:
-                - type
-                - errors
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -13626,6 +13640,20 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 7a80b950-b392-499f-85db-ea7c6c424d37
+                    errors:
+                    - code: api_plan_restricted
+                      message: Active subscription needed.
               schema:
                 "$ref": "#/components/schemas/error"
   "/tickets/search":
@@ -14724,10 +14752,16 @@ components:
           - bulk_export
           - campaign_deletion
           - campaign_state_change
+          - conversation_deletion_schedule_creation
+          - conversation_deletion_schedule_deletion
+          - conversation_deletion_schedule_state_change
+          - conversation_deletion_schedule_update
           - conversation_part_deletion
           - conversation_topic_change
           - conversation_topic_creation
           - conversation_topic_deletion
+          - csv_import_completion
+          - csv_import_creation
           - custom_authentication_token_creation
           - help_center_settings_change
           - inbound_conversations_change
@@ -15079,6 +15113,10 @@ components:
           items:
             "$ref": "#/components/schemas/conversation_attachment_files"
           maxItems: 10
+        skip_notifications:
+          type: boolean
+          description: Option to disable notifications when replying to a conversation.
+          example: true
       required:
       - message_type
       - type
@@ -15600,6 +15638,8 @@ components:
         translated_content:
           nullable: true
           "$ref": "#/components/schemas/article_translated_content"
+        tags:
+          "$ref": "#/components/schemas/tags"
     internal_article_list_item:
       title: Internal Articles
       type: object
@@ -16335,8 +16375,7 @@ components:
             tags:
               type: array
               items:
-                items:
-                  "$ref": "#/components/schemas/tag"
+                "$ref": "#/components/schemas/tag_basic"
         segments:
           type: object
           description: The list of segments associated with the company
@@ -17536,7 +17575,8 @@ components:
           type: string
           nullable: true
           description: The message body, which may contain HTML. For Twitter, this
-            will show a generic message regarding why the body is obscured.
+            will show a generic message regarding why the body is obscured. In webhook
+            payloads for API version 2.15+, this field returns plain text.
           example: "<p>Okay!</p>"
         created_at:
           type: integer
@@ -17768,12 +17808,14 @@ components:
         subject:
           type: string
           description: Optional. The message subject. For Twitter, this will show
-            a generic message regarding why the subject is obscured.
+            a generic message regarding why the subject is obscured. In webhook
+            payloads for API version 2.15+, this field returns plain text.
           example: ''
         body:
           type: string
           description: The message body, which may contain HTML. For Twitter, this
-            will show a generic message regarding why the body is obscured.
+            will show a generic message regarding why the body is obscured. In webhook
+            payloads for API version 2.15+, this field returns plain text.
           example: "<p>Hey there!</p>"
         author:
           "$ref": "#/components/schemas/conversation_part_author"
@@ -21525,10 +21567,15 @@ components:
         applied_at:
           type: integer
           format: date-time
+          nullable: true
           description: The time when the tag was applied to the object
           example: 1663597223
         applied_by:
-          "$ref": "#/components/schemas/reference"
+          type: object
+          nullable: true
+          description: The admin who applied the tag
+          allOf:
+            - "$ref": "#/components/schemas/reference"
     tag_basic:
       title: Tag
       type: object
@@ -21779,6 +21826,25 @@ components:
         is_shared:
           type: boolean
           description: Whether or not the ticket is shared with the customer.
+          example: true
+    ticket_deleted:
+      title: Ticket Deleted
+      type: object
+      description: deleted ticket object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the ticket.
+          example: 5ba682d23d7cf92bef87bfd4
+        object:
+          type: string
+          description: always ticket
+          enum:
+          - ticket
+          example: ticket
+        deleted:
+          type: boolean
+          description: Whether the ticket is deleted or not.
           example: true
     ticket_contacts:
       title: Contacts
