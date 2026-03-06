@@ -8557,6 +8557,100 @@ paths:
                 summary: Bad request
                 value:
                   ticket_type_id: '54'
+  "/conversations/deleted":
+    get:
+      summary: List all deleted conversation IDs
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results per page
+        schema:
+          type: integer
+          default: 20
+          maximum: 60
+      - name: order
+        in: query
+        required: false
+        description: "`asc` or `desc`. Returns the conversation IDs in ascending or descending order. Defaults to desc"
+        example: desc
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: listDeletedConversationIds
+      description: |+
+        List all deleted conversation IDs.
+
+        {% admonition type="warning" name="Pagination" %}
+          You can use pagination to limit the number of results returned. The default is `20` results per page. You can navigate to next pages using the `page` param.
+        {% /admonition %}
+      responses:
+        '200':
+          description: View all deleted conversation IDs
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: conversations.list
+                    total_count: 4
+                    pages:
+                      type: pages
+                      next: https://api.intercom.io/conversations/deleted?per_page=2&order=desc&page=2
+                      page: 1
+                      per_page: 2
+                      total_pages: 2
+                    conversations:
+                    - type: conversation
+                      id: '512'
+                      metrics_retained: false
+                      deleted_at: 1734537460
+                    - type: conversation
+                      id: '513'
+                      metrics_retained: true
+                      deleted_at: 1734537400
+              schema:
+                "$ref": "#/components/schemas/deleted_conversation_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 310f55b0-2660-43e8-bed4-7e82b2f40920
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Resource not available
+          content:
+            application/json:
+              examples:
+                Resource not available:
+                  value:
+                    type: error.list
+                    request_id: 7a80b950-b392-499f-85db-ea7c6c424d37
+                    errors:
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version.
+              schema:
+                "$ref": "#/components/schemas/error"
   "/custom_channel_events/notify_new_conversation":
     post:
       summary: Notify Intercom of a new conversation created in a custom channel
@@ -18506,6 +18600,50 @@ components:
           type: boolean
           description: Whether the conversation is deleted or not.
           example: true
+    deleted_conversation_item:
+      title: Conversation
+      type: object
+      x-tags:
+      - Conversation
+      description: A deleted conversation record containing its ID, metrics retained status and deletion timestamp.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `conversation`.
+          example: 'conversation'
+        id:
+          type: string
+          description: The ID of the deleted conversation.
+          example: '512'
+        metrics_retained:
+          type: boolean
+          description: Whether reporting metrics are retained for this conversation ID
+          example: true
+        deleted_at:
+          type: integer
+          format: date-time
+          description: The time when the conversation was deleted.
+          example: 1734537745
+    deleted_conversation_list:
+      title: Conversations
+      type: object
+      description: A paginated list of deleted conversation IDs.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `conversations.list`.
+          example: conversations.list
+        conversations:
+          type: array
+          description: The list of deleted conversation IDs.
+          items:
+            "$ref": "#/components/schemas/deleted_conversation_item"
+        total_count:
+          type: integer
+          description: Total number of items available.
+          example: 10
+        pages:
+          "$ref": "#/components/schemas/pages_link"
     conversation_first_contact_reply:
       title: First contact reply
       type: object
