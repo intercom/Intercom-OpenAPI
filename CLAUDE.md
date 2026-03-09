@@ -124,9 +124,7 @@ fern generate --group ts-sdk
 
 ## Skills
 
-- **generate-openapi-from-pr** — Takes an intercom monolith PR and generates OpenAPI spec changes. Provide a PR URL/number from `intercom/intercom` and the skill analyzes the diff (controllers, presenters, version changes, routes) to produce the corresponding YAML updates in the target spec file(s). See `.claude/skills/generate-openapi-from-pr/SKILL.md`.
-
-When a user provides an `intercom/intercom` PR URL or asks to generate OpenAPI docs from a PR, always use the `generate-openapi-from-pr` skill. Invoke it with: `/generate-openapi-from-pr <pr-url>`
+- **generate-openapi-from-pr** — Takes an intercom monolith PR and generates OpenAPI spec changes. Provide a PR URL/number from `intercom/intercom` and the skill analyzes the diff (controllers, presenters, version changes, routes) to produce the corresponding YAML updates in the target spec file(s). See `.claude/skills/generate-openapi-from-pr/SKILL.md`. This is the primary workflow for this repo — always use it when a user provides an intercom PR URL or asks to update the spec from a PR.
 
 ## Downstream Consumers
 

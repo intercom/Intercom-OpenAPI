@@ -77,7 +77,7 @@ intercom_version:
   - '2.14'
 ```
 
-Note: The v2.15 spec has `default: '2.14'` and does NOT include `'2.15'` in its own enum. This is an existing pattern — follow it.
+Note: Stable specs set `default` to the previous stable version and do NOT include their own version number in the enum. For example, v2.15 has `default: '2.14'` and does not list `'2.15'`. Always check the actual file to confirm the pattern before editing — it may evolve with future releases.
 
 ### info.version
 

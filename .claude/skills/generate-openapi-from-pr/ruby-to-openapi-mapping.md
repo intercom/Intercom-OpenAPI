@@ -404,7 +404,7 @@ Maps to:
         Resource not found:
           value:
             type: error.list
-            request_id: <uuid>
+            request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
             errors:
             - code: not_found
               message: Resource Not Found
