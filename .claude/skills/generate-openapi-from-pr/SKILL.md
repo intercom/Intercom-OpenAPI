@@ -127,6 +127,7 @@ Read the target spec file(s) to understand:
 - The `intercom_version` enum (to verify version values)
 - Where to insert new paths/schemas (maintain alphabetical or logical grouping)
 - **All inline examples that reference the affected schema** — when adding a field, you must update every response example that returns that schema. Search with: `grep -n 'schemas/<name>' <spec_file>`
+- **Existing example values** for the same resource — reuse the same style of IDs, workspace IDs, timestamps, and names that nearby endpoints use. Consistency matters more than novelty.
 
 ### Step 6: Generate OpenAPI Changes
 
@@ -149,6 +150,10 @@ grep -n 'schemas/<schema_name>' descriptions/0/api.intercom.io.yaml
 
 Every endpoint needs: `summary`, `description`, `operationId` (unique, camelCase), `tags`, `Intercom-Version` header parameter (`"$ref": "#/components/schemas/intercom_version"`), response with inline examples + schema `$ref`, and at minimum a `401 Unauthorized` error response. POST/PUT endpoints also need a `requestBody` with schema and examples. See [./openapi-patterns.md](./openapi-patterns.md) for complete templates.
 
+**Writing good descriptions:** Extract the description from the PR's version change `define_description` if available — it's usually well-written for the changelog. Supplement with details from the controller (constraints, validations, edge cases). A good description explains what the endpoint does AND when you'd use it, not just "You can do X."
+
+**Response example detail level:** Match the verbosity of existing examples for the same schema. If other ticket endpoints show a full ticket object with nested `ticket_parts`, `contacts`, and `linked_objects`, your example should too. If they're minimal (just `type` and `id`), keep yours minimal. Look at the nearest sibling endpoint for the right level of detail.
+
 #### Quick checklist for new schemas
 
 Every schema needs: `title` (Title Case), `type: object`, `x-tags`, `description`, and `properties` where each property has `type`, `description`, and `example`. Mark nullable fields explicitly with `nullable: true`. Timestamps use `type: integer` + `format: date-time`.
@@ -169,7 +174,12 @@ Run Fern validation:
 fern check
 ```
 
-If validation fails, read the error output and fix the issues.
+If `fern` is not installed, fall back to YAML syntax validation:
+```bash
+python3 -c "import yaml; yaml.safe_load(open('descriptions/0/api.intercom.io.yaml'))" && echo "YAML valid"
+```
+
+If validation fails, read the error output and fix the issues. Common problems: indentation errors, missing quotes on string values that look like numbers, and duplicate keys.
 
 ### Step 9: Summarize
 
@@ -195,8 +205,9 @@ Always remind the user of remaining manual steps:
 ## Important Notes
 
 - **Do NOT run `fern generate` without `--preview`** — this would auto-submit PRs to SDK repos
-- **Examples must be realistic** — use plausible IDs, emails, timestamps
-- **Match existing style** — look at nearby endpoints for naming and formatting conventions
+- **Match existing examples** — before writing new example values, look at how nearby endpoints for the same resource format their examples. Reuse the same style of IDs (`'494'` not `'1'`), workspace IDs (`this_is_an_id664_that_should_be_at_least_`), timestamps (recent UNIX timestamps like `1719493065`), and names. Consistency across the spec is more important than creativity.
+- **Match existing style** — look at nearby endpoints for naming, formatting, and level of detail in response examples. If sibling endpoints show full nested objects, yours should too.
+- **Extract descriptions from the PR** — the version change's `define_description` is usually well-written. Use it as the basis for your endpoint description, then enrich with constraints and edge cases from the controller code.
 - **Cross-reference with existing schemas** — reuse `$ref` to existing schemas wherever possible
 - **Nullable fields** — always explicitly mark with `nullable: true`
 - **The `error` schema** is already defined — always reference it with `"$ref": "#/components/schemas/error"`
