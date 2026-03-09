@@ -4,18 +4,20 @@ How to decide which API version spec files to update and how to propagate change
 
 ## Version Directory Mapping
 
-| Version | Directory | intercom_version default | Notes |
-|---|---|---|---|
-| Unstable | `descriptions/0/` | `Unstable` | All new features land here first |
-| 2.15 | `descriptions/2.15/` | `2.14` | Current latest stable |
-| 2.14 | `descriptions/2.14/` | `2.14` | |
-| 2.13 | `descriptions/2.13/` | `2.11` | |
-| 2.12 | `descriptions/2.12/` | `2.11` | |
-| 2.11 | `descriptions/2.11/` | `2.11` | |
-| 2.10 | `descriptions/2.10/` | `2.10` | |
-| 2.9 | `descriptions/2.9/` | `2.9` | |
-| 2.8 | `descriptions/2.8/` | `2.8` | |
-| 2.7 | `descriptions/2.7/` | `2.7` | |
+| Version | Directory | Notes |
+|---|---|---|
+| Unstable | `descriptions/0/` | All new features land here first |
+| 2.15 | `descriptions/2.15/` | Current latest stable |
+| 2.14 | `descriptions/2.14/` | Stable SDK source (used by Fern) |
+| 2.13 | `descriptions/2.13/` | |
+| 2.12 | `descriptions/2.12/` | |
+| 2.11 | `descriptions/2.11/` | |
+| 2.10 | `descriptions/2.10/` | |
+| 2.9 | `descriptions/2.9/` | |
+| 2.8 | `descriptions/2.8/` | |
+| 2.7 | `descriptions/2.7/` | |
+
+Each version file is independent — always check the actual `intercom_version` schema in the file for its `default` and `enum` values before editing.
 
 ## Decision Tree: Which Versions to Update
 
