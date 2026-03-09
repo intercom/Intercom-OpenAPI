@@ -1,6 +1,12 @@
 ---
 name: generate-openapi-from-pr
-description: Generate OpenAPI spec changes from an intercom monolith PR. Use when a user provides an intercom/intercom PR URL or number and wants to create the corresponding OpenAPI documentation changes in this repo.
+description: >
+  Generate OpenAPI spec changes from an intercom monolith PR. Use this skill whenever a user
+  provides an intercom/intercom PR URL or number, asks to generate or update OpenAPI docs,
+  update the spec, document an API change, or mentions shipping API documentation from a PR.
+  Also trigger when the user pastes a github.com/intercom/intercom/pull/ URL even without
+  explicit instructions — they almost certainly want spec changes generated. This is the
+  primary workflow for this repository.
 
 metadata:
   author: team-data-foundations
@@ -14,11 +20,6 @@ allowed-tools: Task, Read, Glob, Grep, Write, Edit, Bash, AskUserQuestion
 # Generate OpenAPI Spec from Intercom PR
 
 This skill takes an intercom monolith PR (from `intercom/intercom`) and generates the corresponding OpenAPI spec changes in this repo (`Intercom-OpenAPI`).
-
-## When to Activate
-
-- User provides an `intercom/intercom` PR URL or number
-- User asks to "generate docs from PR", "create OpenAPI from PR", "document this API change"
 
 ## Workflow
 
@@ -129,136 +130,28 @@ Read the target spec file(s) to understand:
 
 ### Step 6: Generate OpenAPI Changes
 
-Use the patterns from the companion guide files:
-- **[./ruby-to-openapi-mapping.md](./ruby-to-openapi-mapping.md)** — Ruby pattern → OpenAPI mapping rules
-- **[./openapi-patterns.md](./openapi-patterns.md)** — Concrete YAML templates
-- **[./version-propagation.md](./version-propagation.md)** — Cross-version propagation rules
+Read the appropriate reference file based on what the PR changes:
 
-#### Adding a new field to an existing schema (most common change)
+- **Adding/modifying fields or schemas?** → Read [./ruby-to-openapi-mapping.md](./ruby-to-openapi-mapping.md) for how Ruby presenter attributes map to OpenAPI types
+- **Adding new endpoints?** → Read [./openapi-patterns.md](./openapi-patterns.md) for concrete YAML templates (GET, POST, PUT, DELETE, search)
+- **Updating multiple versions?** → Read [./version-propagation.md](./version-propagation.md) for the decision tree on which files to update
 
-This is the most frequent PR type. You must update TWO places in the spec:
+#### The two most important rules
 
-1. **Schema property** — add the new field to `components/schemas/<schema_name>/properties`
-2. **Inline response examples** — search for ALL endpoints that return this schema and update their inline example `value` objects to include the new field
-
-Example from a real PR (adding `previous_ticket_state_id` to ticket):
-```yaml
-# 1. In components/schemas/ticket/properties — add the field:
-previous_ticket_state_id:
-  type: string
-  nullable: true
-  description: The ID of the previous ticket state.
-  example: '7493'
-
-# 2. In EVERY endpoint response example that returns a ticket — add the value:
-examples:
-  Successful response:
-    value:
-      type: ticket
-      id: '494'
-      # ... existing fields ...
-      previous_ticket_state_id: '7490'    # ADD THIS
-```
-
-**To find all examples that need updating**, search the spec file for the schema name:
+**Rule 1: Field additions require updates in TWO places.** When adding a field to a schema, you must update both the schema definition in `components/schemas` AND every inline response example that returns that schema. Find all affected examples with:
 ```bash
-grep -n 'schemas/ticket' descriptions/0/api.intercom.io.yaml
-```
-Then check each endpoint that references that schema and update its inline examples.
-
-#### Required elements for every new endpoint:
-
-1. **`summary`** — short description used as page title in docs (required)
-
-2. **`description`** — longer explanation of what the endpoint does
-
-3. **`Intercom-Version` header parameter** — always reference the schema:
-   ```yaml
-   parameters:
-   - name: Intercom-Version
-     in: header
-     schema:
-       "$ref": "#/components/schemas/intercom_version"
-   ```
-
-4. **`tags`** — group name matching existing tags or new tag for new resource
-
-5. **`operationId`** — unique, camelCase identifier (e.g., `listTags`, `createContact`, `retrieveTicket`)
-
-6. **Response with inline examples + schema ref**:
-   ```yaml
-   responses:
-     '200':
-       description: Successful response
-       content:
-         application/json:
-           examples:
-             Successful response:
-               value:
-                 type: resource
-                 id: '123'
-           schema:
-             "$ref": "#/components/schemas/resource_schema"
-   ```
-
-7. **Standard error responses** — at minimum `401 Unauthorized`:
-   ```yaml
-   '401':
-     description: Unauthorized
-     content:
-       application/json:
-         examples:
-           Unauthorized:
-             value:
-               type: error.list
-               request_id: <uuid>
-               errors:
-               - code: unauthorized
-                 message: Access Token Invalid
-         schema:
-           "$ref": "#/components/schemas/error"
-   ```
-
-8. **Request body** (for POST/PUT) with schema and examples
-
-#### Required elements for new schemas:
-
-1. **`title`** — Title Case
-2. **`type: object`**
-3. **`x-tags`** — tag group linkage (must match a top-level tag name)
-4. **`description`**
-5. **`properties`** — each with `type`, `description`, `example`
-6. **`nullable: true`** — on fields that can be null
-7. **Timestamps** — `type: integer` + `format: date-time`
-
-#### Top-level `tags` section (for new resources)
-
-If adding a completely new API resource (not just new endpoints on an existing resource), you MUST add a tag entry to the **top-level `tags` array** at the bottom of the spec file (after `security`):
-
-```yaml
-tags:
-# ... existing tags ...
-- name: Your Resource
-  description: Everything about your Resource
+grep -n 'schemas/<schema_name>' descriptions/0/api.intercom.io.yaml
 ```
 
-This tag name must match:
-- The `tags` array on each endpoint (e.g., `tags: [Your Resource]`)
-- The `x-tags` on related schemas (e.g., `x-tags: [Your Resource]`)
+**Rule 2: New resources need a top-level tag.** If adding an entirely new API resource, add an entry to the `tags` array at the bottom of the spec (alphabetical order). The tag name must match the `tags` on endpoints and `x-tags` on schemas. See existing tags in [./openapi-patterns.md](./openapi-patterns.md) under "Top-Level Tags".
 
-Existing top-level tags include: Admins, AI Content, Articles, Away Status Reasons, Brands, Calls, Companies, Contacts, Conversations, Custom Channel Events, Custom Object Instances, Data Attributes, Data Events, Data Export, Emails, Help Center, Internal Articles, Jobs, Macros, Messages, News, Notes, Segments, Subscription Types, Switch, Tags, Teams, Ticket States, Ticket Type Attributes, Ticket Types, Tickets, Visitors, Workflows.
+#### Quick checklist for new endpoints
 
-#### Reusable `components/responses` (optional)
+Every endpoint needs: `summary`, `description`, `operationId` (unique, camelCase), `tags`, `Intercom-Version` header parameter (`"$ref": "#/components/schemas/intercom_version"`), response with inline examples + schema `$ref`, and at minimum a `401 Unauthorized` error response. POST/PUT endpoints also need a `requestBody` with schema and examples. See [./openapi-patterns.md](./openapi-patterns.md) for complete templates.
 
-The spec defines reusable error responses in `components/responses`:
-- `Unauthorized` — 401 with access token invalid
-- `TypeNotFound` — 404 for custom object types
-- `ObjectNotFound` — 404 for objects/custom objects/integrations
-- `ValidationError` — validation errors
-- `BadRequest` — bad request errors
-- `CustomChannelNotificationSuccess` — custom channel success
+#### Quick checklist for new schemas
 
-You can reference these with `"$ref": "#/components/responses/Unauthorized"` instead of inlining the error response, but most existing endpoints inline their errors. **Match the style of nearby endpoints** in the same resource group.
+Every schema needs: `title` (Title Case), `type: object`, `x-tags`, `description`, and `properties` where each property has `type`, `description`, and `example`. Mark nullable fields explicitly with `nullable: true`. Timestamps use `type: integer` + `format: date-time`.
 
 ### Step 7: Apply Changes
 
