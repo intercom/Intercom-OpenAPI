@@ -1,6 +1,13 @@
 ---
 name: generate-openapi-from-pr
 description: Generate OpenAPI spec changes from an intercom monolith PR. Use when a user provides an intercom/intercom PR URL or number and wants to create the corresponding OpenAPI documentation changes in this repo.
+
+metadata:
+  author: team-data-foundations
+  version: "1.0"
+  user-invocable: true
+  argument-hint: "<intercom-pr-url-or-number>"
+
 allowed-tools: Task, Read, Glob, Grep, Write, Edit, Bash, AskUserQuestion
 ---
 
