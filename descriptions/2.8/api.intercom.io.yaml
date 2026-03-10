@@ -11027,6 +11027,104 @@ components:
           type: boolean
           description: Whether the contact is archived or not.
           example: false
+    conversation_list_item:
+      title: Conversation List Item
+      type: object
+      x-tags:
+      - Conversations
+      description: The data returned about your conversations when you list or search
+        them.
+      properties:
+        type:
+          type: string
+          description: Always conversation.
+          example: conversation
+        id:
+          type: string
+          description: The id representing the conversation.
+          example: '1295'
+        title:
+          type: string
+          nullable: true
+          description: The title given to the conversation.
+          example: Conversation Title
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the conversation was created.
+          example: 1663597223
+        updated_at:
+          type: integer
+          format: date-time
+          description: The last time the conversation was updated.
+          example: 1663597260
+        waiting_since:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The last time a Contact responded to an Admin. In other words,
+            the time a customer started waiting for a response. Set to null if last
+            reply is from an Admin.
+          example: 1663597260
+        snoozed_until:
+          type: integer
+          format: date-time
+          nullable: true
+          description: If set this is the time in the future when this conversation
+            will be marked as open. i.e. it will be in a snoozed state until this
+            time. i.e. it will be in a snoozed state until this time.
+          example: 1663597260
+        open:
+          type: boolean
+          description: Indicates whether a conversation is open (true) or closed (false).
+          example: true
+        state:
+          type: string
+          enum:
+          - open
+          - closed
+          - snoozed
+          description: Can be set to "open", "closed" or "snoozed".
+          example: open
+        read:
+          type: boolean
+          description: Indicates whether a conversation has been read.
+          example: true
+        priority:
+          type: string
+          enum:
+          - priority
+          - not_priority
+          description: If marked as priority, it will return priority or else not_priority.
+          example: priority
+        admin_assignee_id:
+          type: integer
+          nullable: true
+          description: The id of the admin assigned to the conversation. If it's not
+            assigned to an admin it will return null.
+          example: 0
+        team_assignee_id:
+          type: string
+          nullable: true
+          description: The id of the team assigned to the conversation. If it's not
+            assigned to a team it will return null.
+          example: '5017691'
+        tags:
+          "$ref": "#/components/schemas/tags"
+        conversation_rating:
+          "$ref": "#/components/schemas/conversation_rating"
+        source:
+          "$ref": "#/components/schemas/conversation_source"
+        contacts:
+          "$ref": "#/components/schemas/conversation_contacts"
+        teammates:
+          "$ref": "#/components/schemas/conversation_teammates"
+        first_contact_reply:
+          "$ref": "#/components/schemas/conversation_first_contact_reply"
+        sla_applied:
+          "$ref": "#/components/schemas/sla_applied"
+        statistics:
+          "$ref": "#/components/schemas/conversation_statistics"
     conversation:
       title: Conversation
       type: object
@@ -11203,7 +11301,7 @@ components:
           type: array
           description: The list of conversation objects
           items:
-            "$ref": "#/components/schemas/conversation"
+            "$ref": "#/components/schemas/conversation_list_item"
         total_count:
           type: integer
           description: A count of the total number of objects.
