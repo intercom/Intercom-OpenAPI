@@ -2591,8 +2591,15 @@ paths:
       - name: folder_id
         in: query
         required: false
-        description: The ID of the folder to search in.
+        description: The ID of the folder to search in. Results will include articles from this folder and all its descendant folders.
         example: 123
+        schema:
+          type: integer
+      - name: phrase
+        in: query
+        required: false
+        description: The search phrase to filter internal articles by.
+        example: getting started
         schema:
           type: string
       tags:
@@ -2612,10 +2619,12 @@ paths:
                     data:
                       internal_articles:
                       - id: '55'
+                        title: Getting Started Guide
                         body: Body of the Article
                         owner_id: 991266252
                         author_id: 991266252
                         locale: en
+                        folder_id: 123
                     pages:
                       type: pages
                       page: 1
@@ -2658,6 +2667,13 @@ paths:
           type: integer
           example: 50
           maximum: 150
+      - name: parent_folder_id
+        in: query
+        required: false
+        description: Filter folders by parent folder ID. Use this to list only direct children of a specific folder.
+        schema:
+          type: integer
+        example: 1
       tags:
       - Folders
       operationId: listFolders
@@ -2675,7 +2691,7 @@ paths:
                   description: Internal product docs
                   emoji: "📚"
                   parent_folder_id: null
-                  article_count: 5
+                  content_count: 5
                   created_at: 1672928359
                   updated_at: 1672928610
                 total_count: 1
@@ -2724,7 +2740,7 @@ paths:
                 description: Internal product docs
                 emoji: "📚"
                 parent_folder_id: null
-                article_count: 0
+                content_count: 0
                 created_at: 1672928359
                 updated_at: 1672928359
               schema:
@@ -2765,7 +2781,7 @@ paths:
                 description: Internal product docs
                 emoji: "📚"
                 parent_folder_id: null
-                article_count: 5
+                content_count: 5
                 created_at: 1672928359
                 updated_at: 1672928610
               schema:
@@ -2814,7 +2830,7 @@ paths:
                 description: Internal product docs
                 emoji: "📖"
                 parent_folder_id: null
-                article_count: 5
+                content_count: 5
                 created_at: 1672928359
                 updated_at: 1672928900
               schema:
@@ -2842,7 +2858,7 @@ paths:
       tags:
       - Folders
       operationId: deleteFolder
-      description: "You can delete a folder (if it contains no articles) by making a DELETE request to `https://api.intercom.io/folders/<id>`."
+      description: "You can delete a folder (if it contains no content) by making a DELETE request to `https://api.intercom.io/folders/<id>`."
       responses:
         '200':
           description: folder deleted
@@ -2852,6 +2868,8 @@ paths:
                 id: 6
                 object: folder
                 deleted: true
+              schema:
+                "$ref": "#/components/schemas/deleted_folder_object"
         '404':
           description: Folder not found
           content:
@@ -2859,7 +2877,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
-          description: Folder contains articles
+          description: Folder contains content
           content:
             application/json:
               schema:
@@ -16963,9 +16981,9 @@ components:
           nullable: true
           description: The ID of the parent folder, or null if this is a root folder
           example: null
-        article_count:
+        content_count:
           type: integer
-          description: The number of articles in this folder
+          description: The number of content items in this folder
           example: 5
         created_at:
           type: integer
@@ -17030,6 +17048,25 @@ components:
               nullable: true
               description: The ID of the parent folder
               example: null
+    deleted_folder_object:
+      title: Deleted Folder Object
+      type: object
+      description: Response returned when a folder is deleted
+      properties:
+        id:
+          type: integer
+          description: The unique identifier for the deleted folder
+          example: 6
+        object:
+          type: string
+          description: The type of object - `folder`.
+          enum:
+          - folder
+          example: folder
+        deleted:
+          type: boolean
+          description: Whether the folder was successfully deleted.
+          example: true
     update_internal_article_folder_request:
       title: Update Internal Article Folder Request
       type: object
@@ -17185,6 +17222,11 @@ components:
           "$ref": "#/components/schemas/article_translated_content"
         tags:
           "$ref": "#/components/schemas/tags"
+        folder_id:
+          type: integer
+          nullable: true
+          description: The ID of the folder this article belongs to, or null if not in a folder.
+          example: 6
     internal_article_list_item:
       title: Internal Articles
       type: object
@@ -19643,6 +19685,11 @@ components:
           example: collection
         translated_content:
           "$ref": "#/components/schemas/article_translated_content"
+        folder_id:
+          type: integer
+          nullable: true
+          description: The ID of the folder to place this article in, or null to leave it without a folder.
+          example: 6
       required:
       - title
       - author_id
@@ -24704,6 +24751,11 @@ components:
           example: collection
         translated_content:
           "$ref": "#/components/schemas/article_translated_content"
+        folder_id:
+          type: integer
+          nullable: true
+          description: The ID of the folder to place this article in, or null to remove it from its folder.
+          example: 6
     update_internal_article_request:
       description: You can Update an Internal Article
       type: object
@@ -24723,8 +24775,13 @@ components:
           example: 1295
         owner_id:
           type: integer
-          description: The id of the author of the article.
+          description: The id of the owner of the article.
           example: 1295
+        folder_id:
+          type: integer
+          nullable: true
+          description: The ID of the folder to place this article in, or null to remove it from its folder.
+          example: 6
     update_collection_request:
       description: You can update a collection
       type: object
