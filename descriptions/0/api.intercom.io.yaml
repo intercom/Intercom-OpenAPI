@@ -2595,13 +2595,6 @@ paths:
         example: 123
         schema:
           type: integer
-      - name: phrase
-        in: query
-        required: false
-        description: The search phrase to filter internal articles by.
-        example: getting started
-        schema:
-          type: string
       tags:
       - Internal Articles
       operationId: searchInternalArticles
@@ -2619,7 +2612,6 @@ paths:
                     data:
                       internal_articles:
                       - id: '55'
-                        title: Getting Started Guide
                         body: Body of the Article
                         owner_id: 991266252
                         author_id: 991266252
@@ -2701,7 +2693,23 @@ paths:
                   per_page: 50
                   total_pages: 1
               schema:
-                "$ref": "#/components/schemas/folder_list"
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum:
+                    - list
+                    example: list
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/folder"
+                  total_count:
+                    type: integer
+                    description: Total number of folders
+                    example: 2
+                  pages:
+                    "$ref": "#/components/schemas/cursor_pages"
         '401':
           description: Unauthorized
           content:
@@ -2723,7 +2731,32 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/create_folder_request"
+              type: object
+              required:
+              - folder
+              properties:
+                folder:
+                  type: object
+                  required:
+                  - name
+                  properties:
+                    name:
+                      type: string
+                      description: The name of the folder
+                      example: Product Documentation
+                    description:
+                      type: string
+                      description: The description of the folder
+                      example: Internal product documentation
+                    emoji:
+                      type: string
+                      description: An emoji for the folder
+                      example: "📚"
+                    parent_folder_id:
+                      type: integer
+                      nullable: true
+                      description: The ID of the parent folder
+                      example: null
             example:
               folder:
                 name: Product Documentation
@@ -2814,7 +2847,30 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/update_folder_request"
+              type: object
+              required:
+              - folder
+              properties:
+                folder:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: The name of the folder
+                      example: Updated Product Documentation
+                    description:
+                      type: string
+                      description: The description of the folder
+                      example: Updated internal product documentation
+                    emoji:
+                      type: string
+                      description: An emoji for the folder
+                      example: "📖"
+                    parent_folder_id:
+                      type: integer
+                      nullable: true
+                      description: The ID of the parent folder
+                      example: null
             example:
               folder:
                 name: Updated Product Documentation
@@ -16995,59 +17051,6 @@ components:
           format: date-time
           description: The time when the folder was last updated (seconds)
           example: 1672928610
-    folder_list:
-      title: Folder List
-      type: object
-      x-tags:
-      - Folders
-      description: A paginated list of folders
-      properties:
-        type:
-          type: string
-          enum:
-          - list
-          example: list
-        data:
-          type: array
-          items:
-            "$ref": "#/components/schemas/folder"
-        total_count:
-          type: integer
-          description: Total number of folders
-          example: 2
-        pages:
-          "$ref": "#/components/schemas/cursor_pages"
-    create_folder_request:
-      title: Create Folder Request
-      type: object
-      x-tags:
-      - Folders
-      description: Request payload for creating a folder
-      required:
-      - folder
-      properties:
-        folder:
-          type: object
-          required:
-          - name
-          properties:
-            name:
-              type: string
-              description: The name of the folder
-              example: Product Documentation
-            description:
-              type: string
-              description: The description of the folder
-              example: Internal product documentation
-            emoji:
-              type: string
-              description: An emoji for the folder
-              example: "📚"
-            parent_folder_id:
-              type: integer
-              nullable: true
-              description: The ID of the parent folder
-              example: null
     deleted_folder_object:
       title: Deleted Folder Object
       type: object
@@ -17067,35 +17070,6 @@ components:
           type: boolean
           description: Whether the folder was successfully deleted.
           example: true
-    update_folder_request:
-      title: Update Folder Request
-      type: object
-      x-tags:
-      - Folders
-      description: Request payload for updating a folder
-      required:
-      - folder
-      properties:
-        folder:
-          type: object
-          properties:
-            name:
-              type: string
-              description: The name of the folder
-              example: Updated Product Documentation
-            description:
-              type: string
-              description: The description of the folder
-              example: Updated internal product documentation
-            emoji:
-              type: string
-              description: An emoji for the folder
-              example: "📖"
-            parent_folder_id:
-              type: integer
-              nullable: true
-              description: The ID of the parent folder
-              example: null
     article_list:
       title: Articles
       type: object
