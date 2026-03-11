@@ -2701,7 +2701,7 @@ paths:
                   per_page: 50
                   total_pages: 1
               schema:
-                "$ref": "#/components/schemas/internal_article_folder_list"
+                "$ref": "#/components/schemas/folder_list"
         '401':
           description: Unauthorized
           content:
@@ -2723,7 +2723,7 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/create_internal_article_folder_request"
+              "$ref": "#/components/schemas/create_folder_request"
             example:
               folder:
                 name: Product Documentation
@@ -2744,7 +2744,7 @@ paths:
                 created_at: 1672928359
                 updated_at: 1672928359
               schema:
-                "$ref": "#/components/schemas/internal_article_folder"
+                "$ref": "#/components/schemas/folder"
         '422':
           description: Validation error
           content:
@@ -2785,7 +2785,7 @@ paths:
                 created_at: 1672928359
                 updated_at: 1672928610
               schema:
-                "$ref": "#/components/schemas/internal_article_folder"
+                "$ref": "#/components/schemas/folder"
         '404':
           description: Folder not found
           content:
@@ -2814,7 +2814,7 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/update_internal_article_folder_request"
+              "$ref": "#/components/schemas/update_folder_request"
             example:
               folder:
                 name: Updated Product Documentation
@@ -2834,7 +2834,7 @@ paths:
                 created_at: 1672928359
                 updated_at: 1672928900
               schema:
-                "$ref": "#/components/schemas/internal_article_folder"
+                "$ref": "#/components/schemas/folder"
         '404':
           description: Folder not found
           content:
@@ -16951,12 +16951,12 @@ components:
           description: An array of Internal Article objects
           items:
             "$ref": "#/components/schemas/internal_article_list_item"
-    internal_article_folder:
-      title: Internal Article Folder
+    folder:
+      title: Folder
       type: object
       x-tags:
-      - Internal Articles
-      description: A folder for organizing internal articles
+      - Folders
+      description: A folder for organizing content
       properties:
         id:
           type: integer
@@ -16995,12 +16995,12 @@ components:
           format: date-time
           description: The time when the folder was last updated (seconds)
           example: 1672928610
-    internal_article_folder_list:
-      title: Internal Article Folder List
+    folder_list:
+      title: Folder List
       type: object
       x-tags:
-      - Internal Articles
-      description: A list of folders for internal articles
+      - Folders
+      description: A paginated list of folders
       properties:
         type:
           type: string
@@ -17010,18 +17010,18 @@ components:
         data:
           type: array
           items:
-            "$ref": "#/components/schemas/internal_article_folder"
+            "$ref": "#/components/schemas/folder"
         total_count:
           type: integer
           description: Total number of folders
           example: 2
         pages:
           "$ref": "#/components/schemas/cursor_pages"
-    create_internal_article_folder_request:
-      title: Create Internal Article Folder Request
+    create_folder_request:
+      title: Create Folder Request
       type: object
       x-tags:
-      - Internal Articles
+      - Folders
       description: Request payload for creating a folder
       required:
       - folder
@@ -17067,11 +17067,11 @@ components:
           type: boolean
           description: Whether the folder was successfully deleted.
           example: true
-    update_internal_article_folder_request:
-      title: Update Internal Article Folder Request
+    update_folder_request:
+      title: Update Folder Request
       type: object
       x-tags:
-      - Internal Articles
+      - Folders
       description: Request payload for updating a folder
       required:
       - folder
