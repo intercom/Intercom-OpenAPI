@@ -8465,6 +8465,144 @@ paths:
                   type: admin
                   admin_id: 991267717
                   body: Goodbye :)
+  "/conversations/{conversation_id}/conversation_parts/{id}":
+    put:
+      summary: Update a conversation part
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: conversation_id
+        in: path
+        required: true
+        description: The identifier for the conversation as given by Intercom.
+        example: '123'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The identifier for the conversation part.
+        example: '456'
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: updateConversationPart
+      description: |
+        You can update properties of a conversation part. Currently supports updating the send state of an external reply or marking a part as seen by an admin.
+
+        {% admonition type="warning" name="Experimental" %}
+          This is an experimental endpoint. It requires a valid HMAC secret for authentication in addition to the standard bearer token.
+        {% /admonition %}
+      responses:
+        '200':
+          description: Conversation part updated
+          content:
+            application/json:
+              examples:
+                Update send state:
+                  value:
+                    type: conversation_part
+                    id: '456'
+                    part_type: comment
+                    body: "<p>Hello there!</p>"
+                    created_at: 1734537559
+                    updated_at: 1734537561
+                    notified_at: 1734537559
+                    assigned_to:
+                    author:
+                      id: '991267694'
+                      type: admin
+                      name: Ciaran Lee
+                      email: admin@email.com
+                    attachments: []
+                    external_id:
+                    external_reply_send_state: sent
+                Mark part as seen:
+                  value:
+                    type: conversation_part
+                    id: '456'
+                    part_type: comment
+                    body: "<p>Hello there!</p>"
+                    created_at: 1734537559
+                    updated_at: 1734537561
+                    notified_at: 1734537559
+                    assigned_to:
+                    author:
+                      id: '991267694'
+                      type: admin
+                      name: Ciaran Lee
+                      email: admin@email.com
+                    attachments: []
+                    external_id:
+                    seen_state:
+                      admin_seen: true
+              schema:
+                "$ref": "#/components/schemas/conversation_part"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: b4f6c9d3-2345-6789-abcd-ef0123456789
+                    errors:
+                    - code: forbidden
+                      message: Forbidden request
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Conversation part not found
+          content:
+            application/json:
+              examples:
+                Conversation part not found:
+                  value:
+                    type: error.list
+                    request_id: c5a7d0e4-3456-789a-bcde-f01234567890
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_conversation_part_request"
+            examples:
+              update_send_state:
+                summary: Update send state
+                value:
+                  send_state: sent
+                  info_message: Message delivered successfully
+                  experimental: true
+                  secret: hmac_secret_value
+              mark_as_seen:
+                summary: Mark part as seen
+                value:
+                  seen: true
+                  admin_id: '991267694'
+                  experimental: true
+                  secret: hmac_secret_value
   "/conversations/{id}/customers":
     post:
       summary: Attach a contact to a conversation
@@ -23735,6 +23873,42 @@ components:
       required:
       - text
       - uuid
+    update_conversation_part_request:
+      title: Update Conversation Part Request
+      type: object
+      description: |
+        Payload for updating a conversation part. Supports two operations:
+        1. Updating the send state of an external reply (requires `send_state` and `info_message`).
+        2. Marking a part as seen by an admin (requires `seen` and `admin_id`).
+        Both operations require `experimental` and `secret` for HMAC authentication.
+      properties:
+        send_state:
+          type: string
+          description: The send state to set on the external reply.
+          example: sent
+        info_message:
+          type: string
+          description: An informational message about the send state update.
+          example: Message delivered successfully
+        seen:
+          type: boolean
+          description: Set to true to mark the conversation part as seen.
+          example: true
+        admin_id:
+          type: string
+          description: The id of the admin marking the part as seen.
+          example: '991267694'
+        experimental:
+          type: boolean
+          description: Must be true to use this experimental endpoint.
+          example: true
+        secret:
+          type: string
+          description: HMAC secret for authenticating the experimental request.
+          example: hmac_secret_value
+      required:
+      - experimental
+      - secret
     redact_conversation_request:
       oneOf:
       - title: Redact Conversation Part Request
