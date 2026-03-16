@@ -10208,7 +10208,9 @@ paths:
                       description: Posts conversation updates to Slack channel
                       state: live
                       http_method: post
-                      usage: workflow_and_inbox
+                      direct_fin_usage: false
+                      created_by_admin_id: '128'
+                      updated_by_admin_id: '128'
                       created_at: '2025-11-15T09:30:00Z'
                       updated_at: '2026-01-20T14:22:15Z'
                       execution_results_url: "/data_connectors/12345/execution_results"
@@ -21688,14 +21690,18 @@ components:
           - delete
           - patch
           example: post
-        usage:
+        direct_fin_usage:
+          type: boolean
+          description: Whether this data connector is assigned to Fin for direct usage.
+          example: false
+        created_by_admin_id:
           type: string
-          description: Where this data connector can be used.
-          enum:
-          - workflow_and_inbox
-          - fin
-          - fin_voice
-          example: workflow_and_inbox
+          description: The ID of the admin who created this data connector.
+          example: '12345'
+        updated_by_admin_id:
+          type: string
+          description: The ID of the admin who last updated this data connector.
+          example: '12345'
         created_at:
           type: string
           format: date-time
