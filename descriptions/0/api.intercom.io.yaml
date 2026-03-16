@@ -11704,6 +11704,98 @@ paths:
                     message: "Request failed due to an internal error. Please reach out to support"
               schema:
                 "$ref": "#/components/schemas/error"
+  "/messages/whatsapp/status":
+    get:
+      summary: Retrieve WhatsApp message delivery status
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: message_id
+        in: query
+        required: true
+        description: The WhatsApp message ID to check status for
+        schema:
+          type: string
+      tags:
+      - Messages
+      - WhatsApp
+      operationId: RetrieveWhatsAppMessageStatus
+      description: |
+        Retrieves the delivery status of a specific WhatsApp message by its message ID.
+
+
+        Returns the current status, conversation details, and any error information if the message failed to deliver.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    conversation_id: "123456789"
+                    status: delivered
+                    type: broadcast_outbound
+                    created_at: 1734537980
+                    updated_at: 1734538000
+                    template_name: appointment_reminder
+                    message_id: "wamid_abc123"
+                Failed message with error:
+                  value:
+                    conversation_id: "123456789"
+                    status: failed
+                    type: broadcast_outbound
+                    created_at: 1734537980
+                    updated_at: 1734538000
+                    template_name: appointment_reminder
+                    message_id: "wamid_abc123"
+                    error:
+                      message: "Message delivery failed"
+                      details: "Recipient phone number not on WhatsApp"
+              schema:
+                "$ref": "#/components/schemas/whatsapp_message_status"
+        '400':
+          description: Bad request - missing required parameters
+          content:
+            application/json:
+              examples:
+                missing message_id:
+                  value:
+                    type: error
+                    request_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                    message: "message_id is required"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 8b2e4c6f-1234-5678-9abc-def012345678
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: WhatsApp message not found
+          content:
+            application/json:
+              examples:
+                Message not found:
+                  value:
+                    type: error.list
+                    request_id: c4d5e6f7-8901-2345-6789-abcdef012345
+                    errors:
+                    - code: whatsapp_message_not_found
+                      message: Whatsapp message not found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/news/news_items":
     get:
       summary: List all news items
@@ -23267,6 +23359,50 @@ components:
               template_name:
                 type: string
                 description: Name of the WhatsApp template used
+    whatsapp_message_status:
+      type: object
+      description: The delivery status of a specific WhatsApp message.
+      properties:
+        conversation_id:
+          type: string
+          description: ID of the conversation
+          example: "123456789"
+        status:
+          type: string
+          description: Current delivery status of the message
+          enum: ["sent", "delivered", "read", "failed"]
+          example: delivered
+        type:
+          type: string
+          description: Event type
+          example: broadcast_outbound
+        created_at:
+          type: integer
+          description: Creation timestamp
+          example: 1734537980
+        updated_at:
+          type: integer
+          description: Last update timestamp
+          example: 1734538000
+        template_name:
+          type: string
+          description: Name of the WhatsApp template used
+          example: appointment_reminder
+        message_id:
+          type: string
+          description: The WhatsApp message ID
+          example: "wamid_abc123"
+        error:
+          type: object
+          nullable: true
+          description: Error details, present only when status is "failed"
+          properties:
+            message:
+              type: string
+              description: Error message
+            details:
+              type: string
+              description: Detailed error information
     multiple_filter_search_request:
       title: Multiple Filter Search Request
       description: Search using Intercoms Search APIs with more than one filter.
