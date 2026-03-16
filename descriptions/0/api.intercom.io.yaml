@@ -10228,6 +10228,76 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/data_connectors/{id}":
+    get:
+      summary: Retrieve a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        description: The unique identifier of the data connector
+        example: '12345'
+        required: true
+        schema:
+          type: string
+      tags:
+      - Data Connectors
+      operationId: RetrieveDataConnector
+      description: |
+        You can retrieve a single data connector by its ID.
+
+        The response includes full detail about the connector including its configuration, data inputs, response fields, and object mappings.
+      responses:
+        '200':
+          description: Data connector found
+          content:
+            application/json:
+              examples:
+                Data connector found:
+                  value:
+                    type: data_connector
+                    id: '12345'
+                    name: Slack Notification Service
+                    description: Posts conversation updates to Slack channel
+                    state: live
+                    http_method: post
+                    direct_fin_usage: false
+                    created_at: '2025-11-15T09:30:00Z'
+                    updated_at: '2026-01-20T14:22:15Z'
+                    execution_results_url: "/data_connectors/12345/execution_results"
+              schema:
+                "$ref": "#/components/schemas/data_connector"
+        '404':
+          description: Data connector not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/data_connectors/{data_connector_id}/execution_results":
     get:
       summary: List execution results for a data connector
