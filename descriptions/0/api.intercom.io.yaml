@@ -16669,6 +16669,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/error"
+  "/fin_voice/conversation/{conversation_id}":
+    get:
+      summary: Collect Fin Voice calls by conversation ID
+      description: |
+        Retrieve information about Fin Voice calls associated with a conversation.
+
+        Returns all matched calls for the given conversation ID. A conversation may have multiple associated calls.
+      operationId: collectFinVoiceCallsByConversationId
+      tags:
+        - Calls
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          description: The Intercom conversation identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ai_call_response"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
 components:
   schemas:
     datetime:
