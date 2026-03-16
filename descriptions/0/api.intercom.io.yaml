@@ -10245,23 +10245,13 @@ paths:
         required: true
         schema:
           type: string
-      - name: state_version
-        in: query
-        required: false
-        description: Return the `live` (default) or `draft` version of the connector.
-        schema:
-          type: string
-          enum:
-          - live
-          - draft
-          example: live
       tags:
       - Data Connectors
       operationId: RetrieveDataConnector
       description: |
         You can retrieve the full detail of a single data connector by its ID.
 
-        The response includes configuration, data inputs, response fields, and object mappings. Pass `state_version=draft` to retrieve the unpublished draft version.
+        The response includes configuration, data inputs, response fields, and object mappings.
       responses:
         '200':
           description: Data connector found
@@ -10308,20 +10298,6 @@ paths:
                     execution_results_url: "/data_connectors/12345/execution_results"
               schema:
                 "$ref": "#/components/schemas/data_connector_detail"
-        '400':
-          description: Invalid state_version parameter
-          content:
-            application/json:
-              examples:
-                Invalid state_version:
-                  value:
-                    type: error.list
-                    request_id: a1b2c3d4-1234-5678-abcd-ef0123456789
-                    errors:
-                    - code: invalid_parameter
-                      message: "Invalid state_version. Must be one of: live, draft"
-              schema:
-                "$ref": "#/components/schemas/error"
         '404':
           description: Data connector not found
           content:
