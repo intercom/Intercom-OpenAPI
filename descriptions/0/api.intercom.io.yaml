@@ -206,6 +206,19 @@ paths:
         example: '1677861493'
         schema:
           type: string
+      - name: event_types
+        in: query
+        required: false
+        description: An optional list of event types to filter activity logs by. When
+          provided, only logs matching the specified event types are returned. Use
+          the List all activity log event types endpoint to retrieve available values.
+        schema:
+          type: array
+          items:
+            type: string
+        example:
+        - admin_login_success
+        - app_name_change
       tags:
       - Admins
       operationId: listActivityLogs
@@ -267,6 +280,113 @@ paths:
                   value:
                     type: error.list
                     request_id: 57cc6148-2c0a-471b-bd9e-859538110958
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/admins/activity_log_event_types":
+    get:
+      summary: List all activity log event types
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Admins
+      operationId: listActivityLogEventTypes
+      description: |
+        You can get a list of all activity log event types. This is useful for discovering valid values to use with the `event_types` filter on the List all activity logs endpoint.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: activity_log_event_type.list
+                    event_types:
+                    - admin_conversation_assignment_limit_change
+                    - admin_ticket_assignment_limit_change
+                    - admin_away_mode_change
+                    - admin_deletion
+                    - admin_deprovisioned
+                    - admin_impersonation_end
+                    - admin_impersonation_start
+                    - admin_invite_change
+                    - admin_invite_creation
+                    - admin_invite_deletion
+                    - admin_login_failure
+                    - admin_login_success
+                    - admin_logout
+                    - admin_password_reset_request
+                    - admin_password_reset_success
+                    - admin_permission_change
+                    - admin_provisioned
+                    - admin_two_factor_auth_change
+                    - admin_unauthorized_sign_in_method
+                    - app_admin_join
+                    - app_authentication_method_change
+                    - app_data_deletion
+                    - app_data_export
+                    - app_google_sso_domain_change
+                    - app_identity_verification_change
+                    - app_name_change
+                    - app_outbound_address_change
+                    - app_package_installation
+                    - app_package_token_regeneration
+                    - app_package_uninstallation
+                    - app_team_creation
+                    - app_team_deletion
+                    - app_team_membership_modification
+                    - app_timezone_change
+                    - app_webhook_creation
+                    - app_webhook_deletion
+                    - articles_in_messenger_enabled_change
+                    - bulk_delete
+                    - bulk_export
+                    - campaign_deletion
+                    - campaign_state_change
+                    - conversation_part_deletion
+                    - conversation_topic_change
+                    - conversation_topic_creation
+                    - conversation_topic_deletion
+                    - help_center_settings_change
+                    - inbound_conversations_change
+                    - inbox_access_change
+                    - message_deletion
+                    - message_state_change
+                    - messenger_look_and_feel_change
+                    - messenger_search_required_change
+                    - messenger_spaces_change
+                    - office_hours_change
+                    - role_change
+                    - role_creation
+                    - role_deletion
+                    - ruleset_activation_title_preview
+                    - ruleset_creation
+                    - ruleset_deletion
+                    - search_browse_enabled_change
+                    - search_browse_required_change
+                    - seat_change
+                    - seat_revoke
+                    - security_settings_change
+                    - temporary_expectation_change
+                    - upfront_email_collection_change
+                    - welcome_message_change
+              schema:
+                "$ref": "#/components/schemas/activity_log_event_type_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 85a1e5b6-e743-4e89-a6e2-1d7c0c3f4a5b
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
@@ -16444,6 +16564,27 @@ components:
           type: string
           description: A sentence or two describing the activity.
           example: Admin updated the app's name to "My App".
+    activity_log_event_type_list:
+      title: Activity Log Event Types
+      type: object
+      x-tags:
+      - Admins
+      description: A list of all activity log event types.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `activity_log_event_type.list`.
+          example: activity_log_event_type.list
+        event_types:
+          type: array
+          description: An array of activity log event type strings.
+          items:
+            type: string
+          example:
+          - admin_login_success
+          - admin_logout
+          - app_name_change
     activity_log_list:
       title: Paginated Response
       type: object
