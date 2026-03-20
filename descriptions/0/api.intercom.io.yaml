@@ -10268,10 +10268,10 @@ paths:
                     http_method: post
                     direct_fin_usage: false
                     audiences:
-                    - user
-                    - lead
+                    - users
+                    - leads
                     execution_type: server_side
-                    configuration_response_type: json
+                    configuration_response_type: test_response_type
                     data_transformation_type:
                     client_function_name:
                     client_function_timeout_ms:
@@ -10280,7 +10280,7 @@ paths:
                       type: string
                       description: The Intercom conversation ID
                       required: true
-                      source: conversation
+                      source: fin
                     response_fields:
                     - path: status
                       type: string
@@ -21804,23 +21804,37 @@ components:
           description: The audience types this connector targets.
           items:
             type: string
+            enum:
+            - users
+            - leads
+            - visitors
           example:
-          - user
-          - lead
+          - users
+          - leads
         execution_type:
           type: string
           nullable: true
-          description: How the connector executes (e.g. `server_side`, `client_side`).
+          description: How the connector executes.
+          enum:
+          - server_side
+          - client_side
           example: server_side
         configuration_response_type:
           type: string
           nullable: true
           description: The expected response format from the connector.
-          example: json
+          enum:
+          - test_response_type
+          - mock_response_type
+          example: test_response_type
         data_transformation_type:
           type: string
           nullable: true
           description: The type of data transformation applied to the response.
+          enum:
+          - full_access
+          - redacted_access
+          - code_block_transformation
         client_function_name:
           type: string
           nullable: true
@@ -21842,6 +21856,11 @@ components:
               type:
                 type: string
                 description: The data type of the input.
+                enum:
+                - string
+                - integer
+                - decimal
+                - boolean
                 example: string
               description:
                 type: string
@@ -21857,8 +21876,12 @@ components:
               source:
                 type: string
                 nullable: true
-                description: The source context for this input (e.g. `contact`, `conversation`).
-                example: conversation
+                description: The source context for this input.
+                enum:
+                - fin
+                - custom
+                - attribute
+                example: fin
         response_fields:
           type: array
           description: The fields returned in the connector response.
@@ -21872,6 +21895,13 @@ components:
               type:
                 type: string
                 description: The data type of the response field.
+                enum:
+                - unknown
+                - string
+                - integer
+                - decimal
+                - datetime
+                - boolean
                 example: string
               example_value:
                 nullable: true
@@ -21891,6 +21921,9 @@ components:
                 type: string
               intercom_object_type:
                 type: string
+                enum:
+                - conversation
+                - user
               attribute_mappings:
                 type: array
                 items:
@@ -21902,6 +21935,9 @@ components:
                       type: string
                     mapping_type:
                       type: string
+                      enum:
+                      - primitive_mapping
+                      - context_mapping
               reference_mappings:
                 type: array
                 items:
@@ -21909,6 +21945,9 @@ components:
                   properties:
                     intercom_object_type:
                       type: string
+                      enum:
+                      - conversation
+                      - user
                     intercom_attribute_identifier:
                       type: string
         token_ids:
