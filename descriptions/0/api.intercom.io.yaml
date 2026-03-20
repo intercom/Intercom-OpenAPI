@@ -10240,7 +10240,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       - name: id
         in: path
-        description: The unique identifier of the data connector
+        description: The unique identifier of the data connector.
         example: '12345'
         required: true
         schema:
@@ -10249,9 +10249,9 @@ paths:
       - Data Connectors
       operationId: RetrieveDataConnector
       description: |
-        You can retrieve a single data connector by its ID.
+        You can retrieve the full detail of a single data connector by its ID.
 
-        The response includes full detail about the connector including its configuration, data inputs, response fields, and object mappings.
+        The response includes configuration, data inputs, response fields, and object mappings.
       responses:
         '200':
           description: Data connector found
@@ -10267,11 +10267,37 @@ paths:
                     state: live
                     http_method: post
                     direct_fin_usage: false
+                    audiences:
+                    - users
+                    - leads
+                    execution_type: server_side
+                    configuration_response_type: test_response_type
+                    data_transformation_type:
+                    client_function_name:
+                    client_function_timeout_ms:
+                    data_inputs:
+                    - name: conversation_id
+                      type: string
+                      description: The Intercom conversation ID
+                      required: true
+                      source: fin
+                    response_fields:
+                    - path: status
+                      type: string
+                      example_value: ok
+                      redacted: false
+                    object_mappings: []
+                    token_ids: []
+                    customer_authentication: false
+                    bypass_authentication: false
+                    validate_missing_attributes:
+                    created_by_admin_id: '456'
+                    updated_by_admin_id: '456'
                     created_at: '2025-11-15T09:30:00Z'
                     updated_at: '2026-01-20T14:22:15Z'
                     execution_results_url: "/data_connectors/12345/execution_results"
               schema:
-                "$ref": "#/components/schemas/data_connector"
+                "$ref": "#/components/schemas/data_connector_detail"
         '404':
           description: Data connector not found
           content:
@@ -21710,6 +21736,248 @@ components:
           type: string
           description: The ID of the admin who last updated this data connector.
           example: '12345'
+        created_at:
+          type: string
+          format: date-time
+          description: The time the data connector was created.
+          example: '2025-11-15T09:30:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: The time the data connector was last updated.
+          example: '2026-01-20T14:22:15Z'
+        execution_results_url:
+          type: string
+          description: The URL path to fetch execution results for this connector.
+          example: "/data_connectors/12345/execution_results"
+    data_connector_detail:
+      title: Data Connector (Detail)
+      type: object
+      x-tags:
+      - Data Connectors
+      description: |
+        Full detail view of a data connector, returned by `GET /data_connectors/{id}`.
+        Includes configuration, data inputs, response fields, and object mappings.
+      properties:
+        type:
+          type: string
+          description: The type of object - `data_connector`.
+          enum:
+          - data_connector
+          example: data_connector
+        id:
+          type: string
+          description: The unique identifier for the data connector.
+          example: '12345'
+        name:
+          type: string
+          description: The name of the data connector.
+          example: Slack Notification Service
+        description:
+          type: string
+          nullable: true
+          description: A description of what this data connector does.
+          example: Posts conversation updates to Slack channel
+        state:
+          type: string
+          description: The current state of the data connector.
+          enum:
+          - draft
+          - live
+          example: live
+        http_method:
+          type: string
+          description: The HTTP method used by the data connector.
+          enum:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          example: post
+        direct_fin_usage:
+          type: boolean
+          description: Whether this connector is used directly by Fin.
+          example: false
+        audiences:
+          type: array
+          description: The audience types this connector targets.
+          items:
+            type: string
+            enum:
+            - users
+            - leads
+            - visitors
+          example:
+          - users
+          - leads
+        execution_type:
+          type: string
+          nullable: true
+          description: How the connector executes.
+          enum:
+          - server_side
+          - client_side
+          example: server_side
+        configuration_response_type:
+          type: string
+          nullable: true
+          description: The expected response format from the connector.
+          enum:
+          - test_response_type
+          - mock_response_type
+          example: test_response_type
+        data_transformation_type:
+          type: string
+          nullable: true
+          description: The type of data transformation applied to the response.
+          enum:
+          - full_access
+          - redacted_access
+          - code_block_transformation
+        client_function_name:
+          type: string
+          nullable: true
+          description: The name of the client-side function, if applicable.
+        client_function_timeout_ms:
+          type: integer
+          nullable: true
+          description: Timeout in milliseconds for the client function, if applicable.
+        data_inputs:
+          type: array
+          description: The input parameters accepted by this data connector.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The name of the input parameter.
+                example: conversation_id
+              type:
+                type: string
+                description: The data type of the input.
+                enum:
+                - string
+                - integer
+                - decimal
+                - boolean
+                example: string
+              description:
+                type: string
+                nullable: true
+                description: A description of the input parameter.
+              required:
+                type: boolean
+                description: Whether this input is required.
+                example: true
+              default_value:
+                nullable: true
+                description: The default value for this input, if any.
+              source:
+                type: string
+                nullable: true
+                description: The source context for this input.
+                enum:
+                - fin
+                - custom
+                - attribute
+                example: fin
+        response_fields:
+          type: array
+          description: The fields returned in the connector response.
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+                description: The JSON path of the response field.
+                example: status
+              type:
+                type: string
+                description: The data type of the response field.
+                enum:
+                - unknown
+                - string
+                - integer
+                - decimal
+                - datetime
+                - boolean
+                example: string
+              example_value:
+                nullable: true
+                description: An example value for this field.
+                example: ok
+              redacted:
+                type: boolean
+                description: Whether this field is redacted in logs.
+                example: false
+        object_mappings:
+          type: array
+          description: Mappings from connector response objects to Intercom objects.
+          items:
+            type: object
+            properties:
+              response_object_path:
+                type: string
+              intercom_object_type:
+                type: string
+                enum:
+                - conversation
+                - user
+              attribute_mappings:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    response_attribute_path:
+                      type: string
+                    intercom_attribute_identifier:
+                      type: string
+                    mapping_type:
+                      type: string
+                      enum:
+                      - primitive_mapping
+                      - context_mapping
+              reference_mappings:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    intercom_object_type:
+                      type: string
+                      enum:
+                      - conversation
+                      - user
+                    intercom_attribute_identifier:
+                      type: string
+        token_ids:
+          type: array
+          description: IDs of authentication tokens associated with this connector.
+          items:
+            type: string
+          example: []
+        customer_authentication:
+          type: boolean
+          description: Whether OTP authentication is enabled for this connector.
+          example: false
+        bypass_authentication:
+          type: boolean
+          description: Whether authentication is bypassed for this connector.
+          example: false
+        validate_missing_attributes:
+          type: boolean
+          nullable: true
+          description: Whether to validate missing attributes before execution.
+        created_by_admin_id:
+          type: string
+          nullable: true
+          description: The ID of the admin who created this connector.
+          example: '456'
+        updated_by_admin_id:
+          type: string
+          nullable: true
+          description: The ID of the admin who last updated this connector.
+          example: '456'
         created_at:
           type: string
           format: date-time
