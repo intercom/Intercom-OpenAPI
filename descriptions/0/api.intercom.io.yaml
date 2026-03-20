@@ -10324,6 +10324,127 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+    post:
+      summary: Create a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Data Connectors
+      operationId: createDataConnector
+      description: |
+        Create a new data connector. The connector is created in `draft` state. Configure its URL, headers, data inputs, and other settings, then publish it to `live` when ready.
+      responses:
+        '201':
+          description: Data connector created
+          content:
+            application/json:
+              examples:
+                Data connector created:
+                  value:
+                    type: data_connector
+                    id: '125'
+                    name: Get Order Status
+                    description: Looks up order status from an external service
+                    state: draft
+                    http_method: get
+                    direct_fin_usage: true
+                    audiences:
+                    - leads
+                    - visitors
+                    execution_type: server_side
+                    configuration_response_type: test_response_type
+                    data_transformation_type: full_access
+                    client_function_timeout_ms: 30000
+                    data_inputs:
+                    - name: order_id
+                      type: string
+                      description: The order ID to look up
+                      required: true
+                      default_value: ''
+                    response_fields: []
+                    object_mappings: []
+                    token_ids: []
+                    customer_authentication: true
+                    bypass_authentication: false
+                    validate_missing_attributes: true
+                    created_by_admin_id: '128'
+                    updated_by_admin_id: '128'
+                    created_at: '2026-03-19T11:27:36Z'
+                    updated_at: '2026-03-19T11:27:36Z'
+                    execution_results_url: "/data_connectors/125/execution_results"
+              schema:
+                "$ref": "#/components/schemas/data_connector_detail"
+        '422':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Missing name:
+                  value:
+                    type: error.list
+                    request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
+                    errors:
+                    - code: parameter_not_found
+                      message: Name is required
+                Invalid audiences:
+                  value:
+                    type: error.list
+                    request_id: c5b56f3d-8b9e-5g4f-0d2b-3e6f9g8b7c4d
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid audiences. Must be a subset of: leads, users, visitors"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_data_connector_request"
+            examples:
+              data_connector_created:
+                summary: Data connector created
+                value:
+                  name: Get Order Status
+                  description: Looks up order status from an external service
+                  http_method: get
+                  url: "https://api.example.com/orders/{{order_id}}/status"
+                  direct_fin_usage: true
+                  audiences:
+                  - leads
+                  - visitors
+                  headers:
+                  - name: Content-Type
+                    value: application/json
+                  data_inputs:
+                  - name: order_id
+                    type: string
+                    description: The order ID to look up
+                    required: true
+                    default_value: ''
+                  customer_authentication: true
+                  bypass_authentication: false
+                  validate_missing_attributes: true
+              minimal:
+                summary: Minimal - name only
+                value:
+                  name: My Connector
   "/data_connectors/{id}":
     get:
       summary: Retrieve a data connector
@@ -10404,6 +10525,87 @@ paths:
                     errors:
                     - code: data_connector_not_found
                       message: Data connector not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the data connector
+        example: '12345'
+        schema:
+          type: string
+      tags:
+      - Data Connectors
+      operationId: deleteDataConnector
+      description: |
+        Delete an existing data connector. The connector must be in `draft` state and must not be in use by any workflows or AI agents.
+      responses:
+        '200':
+          description: Data connector deleted
+          content:
+            application/json:
+              examples:
+                Data connector deleted:
+                  value:
+                    id: '125'
+                    object: data_connector
+                    deleted: true
+              schema:
+                "$ref": "#/components/schemas/deleted_data_connector_object"
+        '404':
+          description: Data connector not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              examples:
+                Data connector in use:
+                  value:
+                    type: error.list
+                    request_id: d6c78e4f-1a2b-3c4d-5e6f-7a8b9c0d1e2f
+                    errors:
+                    - code: data_connector_in_use
+                      message: Data connector is in use by other resources and cannot be deleted
+                Data connector not in draft:
+                  value:
+                    type: error.list
+                    request_id: e7d89f5g-2b3c-4d5e-6f7g-8a9b0c1d2e3f
+                    errors:
+                    - code: conflict
+                      message: Data connector must be in draft state to be deleted
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -21818,6 +22020,112 @@ components:
           description: A list of data attributes
           items:
             "$ref": "#/components/schemas/data_attribute"
+    create_data_connector_request:
+      title: Create Data Connector Request
+      type: object
+      description: You can create a data connector by providing the required parameters.
+      properties:
+        name:
+          type: string
+          description: The name of the data connector.
+          example: Get Order Status
+        description:
+          type: string
+          description: A description of what this data connector does.
+          example: Looks up order status from an external service
+        http_method:
+          type: string
+          description: The HTTP method used when calling the external API.
+          enum:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          example: get
+        url:
+          type: string
+          description: The URL of the external API endpoint. Supports template variables like `{{order_id}}`.
+          example: "https://api.example.com/orders/{{order_id}}/status"
+        body:
+          type: string
+          nullable: true
+          description: The request body template. Supports template variables.
+        direct_fin_usage:
+          type: boolean
+          description: Whether the connector is used directly by Fin (true) or only in workflows (false). Defaults to false.
+          example: false
+        audiences:
+          type: array
+          description: The user types this connector is available for.
+          items:
+            type: string
+            enum:
+            - leads
+            - users
+            - visitors
+          example:
+          - leads
+          - visitors
+        headers:
+          type: array
+          description: HTTP headers to include in the request.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The header name.
+                example: Content-Type
+              value:
+                type: string
+                description: The header value. Supports template variables.
+                example: application/json
+        data_inputs:
+          type: array
+          description: Input parameters accepted by the connector.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The parameter name.
+                example: order_id
+              type:
+                type: string
+                description: The parameter type.
+                enum:
+                - string
+                - integer
+                - decimal
+                - boolean
+                example: string
+              description:
+                type: string
+                description: A description of the parameter.
+                example: The order ID to look up
+              required:
+                type: boolean
+                description: Whether the parameter is required.
+                example: true
+              default_value:
+                type: string
+                nullable: true
+                description: The default value for the parameter.
+        customer_authentication:
+          type: boolean
+          description: Whether the connector requires customer authentication before executing. Defaults to false.
+          example: false
+        bypass_authentication:
+          type: boolean
+          description: Whether authentication is bypassed entirely (public endpoint). Defaults to false.
+          example: false
+        validate_missing_attributes:
+          type: boolean
+          description: Whether to validate that all required data inputs have values before executing.
+          example: false
+      required:
+      - name
     data_connector:
       title: Data Connector
       type: object
@@ -22301,6 +22609,25 @@ components:
           description: An array of data connector objects.
           items:
             "$ref": "#/components/schemas/data_connector"
+    deleted_data_connector_object:
+      title: Deleted Data Connector Object
+      type: object
+      description: Response returned when a data connector is deleted.
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the data connector.
+          example: '125'
+        object:
+          type: string
+          description: The type of object which was deleted.
+          enum:
+          - data_connector
+          example: data_connector
+        deleted:
+          type: boolean
+          description: Whether the data connector was deleted successfully.
+          example: true
     data_event:
       title: Data Event
       type: object
