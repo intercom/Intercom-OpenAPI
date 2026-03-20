@@ -10278,6 +10278,21 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Defaults to 20, minimum 1, maximum 50.
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 50
+      - name: starting_after
+        in: query
+        required: false
+        description: The cursor value from `pages.next.starting_after` in a previous response. Used to paginate through results.
+        schema:
+          type: string
       tags:
       - Data Connectors
       operationId: listDataConnectors
@@ -10286,6 +10301,8 @@ paths:
 
         Data connectors allow you to make HTTP requests to external APIs from Intercom workflows and AI agents.
         Each connector in the response includes an `execution_results_url` for navigating to its execution logs.
+
+        Results are ordered by `updated_at` descending and paginated using cursor-based pagination. Use the `starting_after` cursor from `pages.next` to fetch the next page. When `pages.next` is absent, you have reached the last page.
       responses:
         '200':
           description: successful
@@ -10308,8 +10325,27 @@ paths:
                       created_at: '2025-11-15T09:30:00Z'
                       updated_at: '2026-01-20T14:22:15Z'
                       execution_results_url: "/data_connectors/12345/execution_results"
+                    pages:
+                      type: pages
+                      per_page: 20
+                      next:
+                        starting_after: WzE3MDc1OTQ3MTUuMCwxMjM0NV0=
               schema:
                 "$ref": "#/components/schemas/data_connector_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid cursor:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: client_error
+                      message: Invalid starting_after param. Please try again using a starting_after value from a paginated response
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -22596,7 +22632,7 @@ components:
     data_connector_list:
       title: Data Connector List
       type: object
-      description: A list of data connectors.
+      description: A paginated list of data connectors.
       properties:
         type:
           type: string
@@ -22609,6 +22645,28 @@ components:
           description: An array of data connector objects.
           items:
             "$ref": "#/components/schemas/data_connector"
+        pages:
+          type: object
+          description: Pagination information.
+          properties:
+            type:
+              type: string
+              example: pages
+              enum:
+              - pages
+            per_page:
+              type: integer
+              description: The number of results per page.
+              example: 20
+            next:
+              type: object
+              nullable: true
+              description: Cursor for the next page of results.
+              properties:
+                starting_after:
+                  type: string
+                  description: The cursor value to use for the next page.
+                  example: WzE3MDc1OTQ3MTUuMCwxMjM0NV0=
     deleted_data_connector_object:
       title: Deleted Data Connector Object
       type: object
