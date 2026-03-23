@@ -10491,6 +10491,16 @@ paths:
         required: true
         schema:
           type: string
+      - name: state_version
+        in: query
+        required: false
+        description: Which version of the data connector to return. Defaults to live.
+        schema:
+          type: string
+          enum:
+          - draft
+          - live
+          default: live
       tags:
       - Data Connectors
       operationId: RetrieveDataConnector
@@ -10526,7 +10536,7 @@ paths:
                       type: string
                       description: The Intercom conversation ID
                       required: true
-                      source: fin
+                      default_value: ''
                     response_fields:
                     - path: status
                       type: string
@@ -10544,6 +10554,20 @@ paths:
                     execution_results_url: "/data_connectors/12345/execution_results"
               schema:
                 "$ref": "#/components/schemas/data_connector_detail"
+        '400':
+          description: Invalid state_version parameter
+          content:
+            application/json:
+              examples:
+                Invalid state_version:
+                  value:
+                    type: error.list
+                    request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid state_version. Must be one of: live, draft"
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Data connector not found
           content:
@@ -22141,8 +22165,7 @@ components:
                 example: true
               default_value:
                 type: string
-                nullable: true
-                description: The default value for the parameter.
+                description: The default value for the parameter. Defaults to an empty string if omitted.
         customer_authentication:
           type: boolean
           description: Whether the connector requires customer authentication before executing. Defaults to false.
@@ -22348,17 +22371,8 @@ components:
                 description: Whether this input is required.
                 example: true
               default_value:
-                nullable: true
-                description: The default value for this input, if any.
-              source:
                 type: string
-                nullable: true
-                description: The source context for this input.
-                enum:
-                - fin
-                - custom
-                - attribute
-                example: fin
+                description: The default value for this input, if any.
         response_fields:
           type: array
           description: The fields returned in the connector response.
