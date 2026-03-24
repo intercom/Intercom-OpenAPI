@@ -12383,6 +12383,88 @@ paths:
                       message: Whatsapp message not found
               schema:
                 "$ref": "#/components/schemas/error"
+  "/teams/{team_id}/metrics":
+    get:
+      summary: Retrieve team metrics
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: team_id
+        in: path
+        required: true
+        description: The unique identifier of the team to retrieve metrics for. Use `GET /teams` to list available team IDs.
+        example: "42"
+        schema:
+          type: string
+      - name: idle_threshold
+        in: query
+        required: false
+        description: The number of seconds after which an open conversation is considered idle. Clamped to the range 1–86400. Defaults to 1800 (30 minutes).
+        schema:
+          type: integer
+          default: 1800
+          example: 1800
+      tags:
+      - Monitoring
+      operationId: getTeamMetrics
+      description: |
+        Returns real-time activity metrics for admins in the specified team. For each admin, the response includes counts of open, idle, and snoozed conversations.
+
+        This endpoint requires the `realtime_monitoring` feature to be enabled for your workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/team_metric_list"
+              examples:
+                successful_response:
+                  value:
+                    type: team_metric.list
+                    data:
+                    - type: team_metric
+                      admin_id: "123"
+                      open: 5
+                      idle: 2
+                      snoozed: 1
+                    - type: team_metric
+                      admin_id: "456"
+                      open: 3
+                      idle: 0
+                      snoozed: 2
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: Feature not enabled
+          content:
+            application/json:
+              examples:
+                feature_disabled:
+                  value:
+                    type: error.list
+                    request_id: "req-456"
+                    errors:
+                    - code: api_plan_restricted
+                      message: "Real-time monitoring is not enabled for your workspace."
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              examples:
+                team_not_found:
+                  value:
+                    type: error.list
+                    request_id: "req-789"
+                    errors:
+                    - code: team_not_found
+                      message: "Team not found"
+              schema:
+                "$ref": "#/components/schemas/error"
   "/news/news_items":
     get:
       summary: List all news items
@@ -18600,6 +18682,40 @@ components:
                 "$ref": "#/components/schemas/customer_request"
             required:
             - email
+    team_metric:
+      type: object
+      description: Per-admin activity metrics within a team.
+      properties:
+        type:
+          type: string
+          example: "team_metric"
+        admin_id:
+          type: string
+          description: The unique identifier for the admin.
+          example: "123"
+        open:
+          type: integer
+          description: The number of open conversations assigned to the admin.
+          example: 5
+        idle:
+          type: integer
+          description: The number of idle conversations assigned to the admin. A conversation is idle when it has been open and waiting for an admin reply longer than the idle_threshold.
+          example: 2
+        snoozed:
+          type: integer
+          description: The number of snoozed conversations assigned to the admin.
+          example: 1
+    team_metric_list:
+      type: object
+      description: A list of team metrics.
+      properties:
+        type:
+          type: string
+          example: "team_metric.list"
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/team_metric"
     away_status_reason:
       type: object
       properties:
@@ -27387,6 +27503,8 @@ tags:
   x-displayName: Macros
 - name: Messages
   description: Everything about your messages
+- name: Monitoring
+  description: Real-time monitoring metrics for your workspace. Use these endpoints to track admin workload and conversation activity in real time.
 - name: News
   description: Everything about your News
   externalDocs:
