@@ -6799,6 +6799,13 @@ paths:
         example: true
         schema:
           type: boolean
+      - name: include_email_history
+        in: query
+        required: false
+        description: If set to true, the source of the conversation will include the email history.
+        example: true
+        schema:
+          type: boolean
       tags:
       - Conversations
       operationId: retrieveConversation
@@ -6841,6 +6848,183 @@ paths:
                       attachments: []
                       url:
                       redacted: false
+                    contacts:
+                      type: contact.list
+                      contacts:
+                      - type: contact
+                        id: 6762f1261bb69f9f2193bba7
+                        external_id: '70'
+                    first_contact_reply:
+                    admin_assignee_id:
+                    team_assignee_id:
+                    open: false
+                    state: closed
+                    read: false
+                    tags:
+                      type: tag.list
+                      tags:
+                      - type: tag
+                        id: '123456'
+                        name: Test tag
+                        applied_at: 1663597223
+                        applied_by:
+                          type: contact
+                          id: '1a2b3c'
+                    priority: not_priority
+                    sla_applied:
+                    statistics:
+                    conversation_rating:
+                    teammates:
+                    title:
+                    custom_attributes: {}
+                    topics: {}
+                    ticket:
+                    linked_objects:
+                      type: list
+                      data: []
+                      total_count: 0
+                      has_more: false
+                    ai_topics:
+                    ai_agent:
+                    ai_agent_participated: false
+                    conversation_parts:
+                      type: conversation_part.list
+                      conversation_parts:
+                      - type: conversation_part
+                        id: 1
+                        part_type: comment
+                        body: <p>Okay!</p>
+                        created_at: 1663597223
+                        updated_at: 1663597260
+                        notified_at: 1663597260
+                        assigned_to:
+                          type: contact
+                          id: '1a2b3c'
+                        author:
+                          type: admin
+                          id: '274'
+                          name: Operator
+                          email: operator+abcd1234@intercom.io
+                        attachments: []
+                        external_id: 'abcd1234'
+                        redacted: false
+                        email_message_metadata: null
+                        state: open
+                        tags:
+                          - type: tag
+                            id: '123456'
+                            name: Test tag
+                        event_details:
+                        app_package_code: null
+                      - type: conversation_part
+                        id: 2
+                        part_type: custom_action_started
+                        body:
+                        created_at: 1740141842
+                        updated_at: 1740141842
+                        notified_at: 1740141842
+                        assigned_to:
+                        author:
+                          type: admin
+                          id: '274'
+                          name: Jamie Oliver
+                          email: jamie+abcd1234@intercom.io
+                        attachments: []
+                        external_id:
+                        redacted: false
+                        email_message_metadata: null
+                        state: open
+                        tags: []
+                        event_details:
+                          action:
+                            name: Jira Create Issue
+                        app_package_code: test-integration
+                      - type: conversation_part
+                        id: 3
+                        part_type: conversation_attribute_updated_by_admin
+                        body:
+                        created_at: 1740141851
+                        updated_at: 1740141851
+                        notified_at: 1740141851
+                        assigned_to:
+                        author:
+                          type: bot
+                          id: '278'
+                          name: Fin
+                          email: operator+abcd1234@intercom.io
+                        attachments: []
+                        external_id:
+                        redacted: false
+                        email_message_metadata: null
+                        state: open
+                        tags: []
+                        event_details:
+                          attribute:
+                            name: jira_issue_key
+                          value:
+                            name: PROJ-007
+                        app_package_code: null
+                      - type: conversation_part
+                        id: 4
+                        part_type: custom_action_finished
+                        body:
+                        created_at: 1740141857
+                        updated_at: 1740141857
+                        notified_at: 1740141857
+                        assigned_to:
+                        author:
+                          type: admin
+                          id: '274'
+                          name: Jamie Oliver
+                          email: jamie+abcd1234@intercom.io
+                        attachments: []
+                        external_id:
+                        redacted: false
+                        email_message_metadata: null
+                        state: closed
+                        tags: []
+                        event_details:
+                          action:
+                            name: Jira Create Issue
+                            result: success
+                        app_package_code: null
+                      total_count: 4
+                email conversation with history found:
+                  value:
+                    type: conversation
+                    id: '504'
+                    created_at: 1774370019
+                    updated_at: 1774370019
+                    waiting_since: 1774370020
+                    snoozed_until: null
+                    source:
+                      type: email
+                      id: '403918334'
+                      delivered_as: customer_initiated
+                      subject: '<p>Re: Bug query</p>'
+                      body: '<p>This is the message body</p>'
+                      recipients:
+                      - type: to
+                        email: testing-workspace@email.com
+                      author:
+                        type: lead
+                        id: '991267645'
+                        name: Ciaran176 Lee
+                        email: admin176@email.com
+                      attachments: []
+                      url: null
+                      redacted: false
+                      email_message_metadata:
+                        message_id: 'abc-123@mail.example.com'
+                        subject: 'Re: Bug query'
+                        email_address_headers:
+                        - type: from
+                          name: User Name
+                          email_address: user@example.com
+                        - type: to
+                          name: Another Name
+                          email_address: anotheruser@example.com
+                        history: '<div><span>On Jan 28, wrote:</span><blockquote>Previous thread</blockquote></div>'
                     contacts:
                       type: contact.list
                       contacts:
@@ -20544,6 +20728,8 @@ components:
           description: Whether or not the source message has been redacted. Only applicable
             for contact initiated messages.
           example: false
+        email_message_metadata:
+          "$ref": "#/components/schemas/source_email_message_metadata"
     conversation_statistics:
       title: Conversation statistics
       type: object
@@ -23100,6 +23286,30 @@ components:
           nullable: true
           description: The unique identifier for the email message as specified in the Message-ID header
           example: "<CADKw7xrXzqSn8v3mP8K8Q8yZ6K8Q8yZ6@mail.gmail.com>"
+    source_email_message_metadata:
+      title: Email Message Metadata
+      type: object
+      description: Contains metadata if the message was sent as an email
+      properties:
+        message_id:
+          type: string
+          nullable: true
+          description: The unique identifier for the email message as specified in the Message-ID header
+          example: "<CADKw7xrXzqSn8v3mP8K8Q8yZ6K8Q8yZ6@mail.gmail.com>"
+        subject:
+          type: string
+          description: The subject of the email
+          example: Question about my order
+        email_address_headers:
+          title: Email Address Headers
+          type: array
+          description: A list of an email address headers.
+          items:
+            "$ref": "#/components/schemas/email_address_header"
+        history:
+          type: string
+          description: The HTML content of any quoted or forwarded email history from the initial inbound message
+          example: '<div><span>On Jan 28, wrote:</span><blockquote>Previous thread</blockquote></div>'
     metadata:
           "$ref": "#/components/schemas/conversation_part_metadata"
     conversation_attribute_updated_by_workflow:
