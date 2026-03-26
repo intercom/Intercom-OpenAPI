@@ -4582,7 +4582,10 @@ paths:
                     message_type: inapp
                     conversation_id: '33'
               schema:
-                "$ref": "#/components/schemas/message"
+                allOf:
+                - "$ref": "#/components/schemas/message"
+                required:
+                - conversation_id
         '404':
           description: Contact Not Found
           content:
@@ -13106,7 +13109,6 @@ components:
       - created_at
       - body
       - message_type
-      - conversation_id
     multiple_or_single_filter_search_request:
       title: Multiple or Single Filter Search Request
       oneOf:
