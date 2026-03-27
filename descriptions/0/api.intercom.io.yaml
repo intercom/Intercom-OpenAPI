@@ -3683,11 +3683,11 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/companies/{id}/notes":
+  "/companies/{company_id}/notes":
     get:
       summary: List all company notes
       parameters:
-      - name: id
+      - name: company_id
         in: path
         required: true
         description: The unique identifier for the company which is given by Intercom
@@ -3793,7 +3793,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: id
+      - name: company_id
         in: path
         required: true
         description: The unique identifier for the company which is given by Intercom
@@ -25284,7 +25284,8 @@ components:
       type: object
       x-tags:
       - Notes
-      description: Notes allow you to annotate and comment on your contacts.
+      description: Notes allow you to annotate and comment on your contacts and companies.
+        A note is attached to either a contact or a company, never both.
       properties:
         type:
           type: string
@@ -25313,6 +25314,19 @@ components:
               type: string
               description: The id of the contact.
               example: 214656d0c743eafcfde7f248
+        company:
+          type: object
+          description: Represents the company that the note was created about.
+          nullable: true
+          properties:
+            type:
+              type: string
+              description: String representing the object's type. Always has the value
+                `company`.
+            id:
+              type: string
+              description: The id of the company.
+              example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
         author:
           "$ref": "#/components/schemas/admin"
           description: Optional. Represents the Admin that created the note.
