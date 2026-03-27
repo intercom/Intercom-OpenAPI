@@ -10553,7 +10553,7 @@ paths:
       - Data Connectors
       operationId: createDataConnector
       description: |
-        Create a new data connector. The connector is created in `draft` state. Configure its URL, headers, data inputs, and other settings, then publish it to `live` when ready.
+        Create a new data connector. The connector is created in `draft` state. Configure its URL, headers, data inputs, and other settings, then set it to `live` when ready.
       responses:
         '201':
           description: Data connector created
@@ -10848,6 +10848,156 @@ paths:
                     errors:
                     - code: conflict
                       message: Data connector must be in draft state to be deleted
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    patch:
+      summary: Update a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the data connector.
+        example: '12345'
+        schema:
+          type: string
+      tags:
+      - Data Connectors
+      operationId: updateDataConnector
+      description: |
+        Update an existing data connector. Only provided fields are changed. Set `state` to `live` or `draft` to change the connector's state.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_data_connector_request"
+            examples:
+              Update name and description:
+                summary: Update basic fields
+                value:
+                  name: Updated Connector Name
+                  description: Updated description
+              Set state to live:
+                summary: Set a connector to live
+                value:
+                  state: live
+              Set state to draft:
+                summary: Set a connector to draft
+                value:
+                  state: draft
+      responses:
+        '200':
+          description: Data connector updated
+          content:
+            application/json:
+              examples:
+                Data connector updated:
+                  value:
+                    type: data_connector
+                    id: '12345'
+                    name: Updated Connector Name
+                    description: Updated description
+                    state: draft
+                    http_method: post
+                    direct_fin_usage: false
+                    audiences:
+                    - users
+                    - leads
+                    execution_type: server_side
+                    configuration_response_type: test_response_type
+                    data_transformation_type:
+                    client_function_name:
+                    client_function_timeout_ms:
+                    data_inputs:
+                    - name: conversation_id
+                      type: string
+                      description: The Intercom conversation ID
+                      required: true
+                      default_value: ''
+                    response_fields: []
+                    object_mappings: []
+                    token_ids: []
+                    customer_authentication: false
+                    bypass_authentication: false
+                    validate_missing_attributes: false
+                    created_by_admin_id: '456'
+                    updated_by_admin_id: '456'
+                    created_at: '2025-11-15T09:30:00Z'
+                    updated_at: '2026-03-24T14:22:15Z'
+                    execution_results_url: "/data_connectors/12345/execution_results"
+              schema:
+                "$ref": "#/components/schemas/data_connector_detail"
+        '404':
+          description: Data connector not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              examples:
+                Data connector in use:
+                  value:
+                    type: error.list
+                    request_id: d6c78e4f-1a2b-3c4d-5e6f-7a8b9c0d1e2f
+                    errors:
+                    - code: data_connector_in_use
+                      message: Data connector is in use by other resources and cannot be set to draft
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Invalid audiences:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid audiences. Must be a subset of: leads, users, visitors"
+                Invalid field value:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d
+                    errors:
+                    - code: parameter_invalid
+                      message: "Http Method isn't an option"
+                Invalid state:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid state. Must be one of: draft, live"
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -22485,6 +22635,116 @@ components:
           example: false
       required:
       - name
+    update_data_connector_request:
+      title: Update Data Connector Request
+      type: object
+      description: |
+        Update an existing data connector. All fields are optional — only provided fields will be updated. Set `state` to `live` or `draft` to change the connector's state.
+      properties:
+        name:
+          type: string
+          description: The name of the data connector.
+          example: Updated Connector Name
+        description:
+          type: string
+          description: A description of what this data connector does.
+          example: Updated description
+        state:
+          type: string
+          description: The desired state of the connector.
+          enum:
+          - draft
+          - live
+        http_method:
+          type: string
+          description: The HTTP method used by the data connector.
+          enum:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          example: post
+        url:
+          type: string
+          description: The URL of the external API endpoint. Supports template variables like `{{order_id}}`.
+          example: "https://api.example.com/orders/{{order_id}}/status"
+        body:
+          type: string
+          nullable: true
+          description: The request body template. Supports template variables.
+        direct_fin_usage:
+          type: boolean
+          description: Whether this connector is used directly by Fin.
+          example: false
+        audiences:
+          type: array
+          description: The audience types this connector targets.
+          items:
+            type: string
+            enum:
+            - leads
+            - users
+            - visitors
+          example:
+          - leads
+          - users
+        headers:
+          type: array
+          description: HTTP headers to include in the request.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The header name.
+                example: Content-Type
+              value:
+                type: string
+                description: The header value. Supports template variables.
+                example: application/json
+        data_inputs:
+          type: array
+          description: The input parameters accepted by this data connector. Replaces all existing inputs.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The name of the input parameter.
+                example: order_id
+              type:
+                type: string
+                description: The data type of the input.
+                enum:
+                - string
+                - integer
+                - decimal
+                - boolean
+                example: string
+              description:
+                type: string
+                description: A description of the input parameter. Required for each input.
+                example: The order ID to look up
+              required:
+                type: boolean
+                description: Whether this input is required.
+                example: true
+              default_value:
+                type: string
+                description: The default value for this input, if any.
+        customer_authentication:
+          type: boolean
+          description: Whether OTP authentication is enabled for this connector.
+          example: false
+        bypass_authentication:
+          type: boolean
+          description: Whether authentication is bypassed for this connector.
+          example: false
+        validate_missing_attributes:
+          type: boolean
+          description: Whether to validate missing attributes before execution.
+          example: true
     data_connector:
       title: Data Connector
       type: object
