@@ -10663,6 +10663,14 @@ paths:
                 summary: Minimal - name only
                 value:
                   name: My Connector
+              with_mock_response:
+                summary: With mock response
+                value:
+                  name: Order Lookup
+                  mock_response:
+                    order:
+                      id: 12345
+                      status: shipped
   "/data_connectors/{id}":
     get:
       summary: Retrieve a data connector
@@ -10902,6 +10910,13 @@ paths:
                 summary: Set a connector to draft
                 value:
                   state: draft
+              with_mock_response:
+                summary: Update with mock response
+                value:
+                  mock_response:
+                    user:
+                      name: Alice
+                      email: alice@example.com
       responses:
         '200':
           description: Data connector updated
@@ -22633,6 +22648,13 @@ components:
           type: boolean
           description: Whether to validate that all required data inputs have values before executing.
           example: false
+        mock_response:
+          type: object
+          description: A sample JSON response from the external API. Auto-generates `response_fields` and sets `configuration_response_type` to `mock_response_type`.
+          example:
+            order:
+              id: 12345
+              status: shipped
       required:
       - name
     update_data_connector_request:
@@ -22745,6 +22767,13 @@ components:
           type: boolean
           description: Whether to validate missing attributes before execution.
           example: true
+        mock_response:
+          type: object
+          description: A sample JSON response from the external API. Auto-generates `response_fields` and sets `configuration_response_type` to `mock_response_type`.
+          example:
+            order:
+              id: 12345
+              status: shipped
     data_connector:
       title: Data Connector
       type: object
