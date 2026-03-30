@@ -10186,7 +10186,7 @@ paths:
       tags:
       - Data Attributes
       operationId: createDataAttribute
-      description: You can create a data attributes for a `contact` or a `company`.
+      description: You can create data attributes for a `contact`, a `company`, or a `conversation`.
       responses:
         '200':
           description: Successful
@@ -10210,6 +10210,27 @@ paths:
                     created_at: 1734537756
                     updated_at: 1734537756
                     model: company
+                Successful conversation attribute:
+                  value:
+                    id: 38
+                    type: data_attribute
+                    name: Priority
+                    full_name: custom_attributes.Priority
+                    label: Priority
+                    data_type: list
+                    api_writable: true
+                    ui_writable: false
+                    messenger_writable: false
+                    custom: true
+                    archived: false
+                    admin_id: '991267786'
+                    created_at: 1734537756
+                    updated_at: 1734537756
+                    model: conversation
+                    list_options:
+                    - label: Low
+                    - label: Medium
+                    - label: High
               schema:
                 "$ref": "#/components/schemas/data_attribute"
         '400':
@@ -10256,6 +10277,27 @@ paths:
                     - code: parameter_invalid
                       message: The Data Attribute model field must be either contact
                         or company
+                Duplicate conversation attribute:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: parameter_invalid
+                      message: A conversation attribute with that name already exists
+                List options required:
+                  value:
+                    type: error.list
+                    request_id: b2c3d4e5-f6a7-8901-bcde-f12345678901
+                    errors:
+                    - code: parameter_invalid
+                      message: Data type is list but no list options were given
+                List options wrong type:
+                  value:
+                    type: error.list
+                    request_id: c3d4e5f6-a7b8-9012-cdef-123456789012
+                    errors:
+                    - code: parameter_invalid
+                      message: list_options can only be used with data_type list
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -10315,6 +10357,32 @@ paths:
                   options:
                   - value: 1-10
                   archived: false
+              conversation_list_attribute:
+                summary: Conversation list attribute
+                value:
+                  name: Priority
+                  model: conversation
+                  data_type: list
+                  list_options:
+                  - label: Low
+                  - label: Medium
+                  - label: High
+              conversation_relationship_attribute:
+                summary: Conversation relationship attribute
+                value:
+                  name: Related Company
+                  model: conversation
+                  data_type: relationship
+                  reference:
+                    reference_type: references_one
+                    referenced_object_type_identifier: company
+              conversation_string_attribute:
+                summary: Conversation string attribute
+                value:
+                  name: Notes
+                  model: conversation
+                  data_type: string
+                  multiline: true
   "/data_attributes/{id}":
     put:
       summary: Update a data attribute
@@ -10336,7 +10404,9 @@ paths:
       description: "\nYou can update a data attribute.\n\n> \U0001F6A7 Updating the
         data type is not possible\n>\n> It is currently a dangerous action to execute
         changing a data attribute's type via the API. You will need to update the
-        type via the UI instead.\n"
+        type via the UI instead.\n\n> \U0001F6A7 Conversation attributes cannot be
+        updated\n>\n> Updating conversation attributes via the API is not supported.
+        Attempting to update a conversation attribute will return a 400 error.\n"
       responses:
         '200':
           description: Successful
@@ -10378,6 +10448,13 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: Options isn't an array
+                Conversation attribute update not supported:
+                  value:
+                    type: error.list
+                    request_id: d4e5f6a7-b8c9-0123-defa-234567890123
+                    errors:
+                    - code: parameter_invalid
+                      message: Updating conversation attributes is not supported
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -21506,10 +21583,11 @@ components:
           example: My Data Attribute
         model:
           type: string
-          description: The model that the data attribute belongs to.
+          description: The model that the data attribute belongs to. Use 'conversation' to create conversation-specific attributes.
           enum:
           - contact
           - company
+          - conversation
           example: contact
         description:
           type: string
@@ -21518,6 +21596,10 @@ components:
         messenger_writable:
           type: boolean
           description: Can this attribute be updated by the Messenger
+          example: false
+        multiline:
+          type: boolean
+          description: Whether a string-type conversation attribute supports multiline text. Only applicable when model is conversation and data_type is string.
           example: false
       required:
         - name
@@ -21552,7 +21634,54 @@ components:
                 - boolean
                 - datetime
                 - date
+                - decimal
+                - files
           title: 'other type'
+        - properties:
+            data_type:
+              enum:
+                - list
+            list_options:
+              type: array
+              description: An array of options for a list-type conversation attribute. Each option must have a label key. At least two options are required.
+              items:
+                type: object
+                properties:
+                  label:
+                    type: string
+                    description: The display label for this list option.
+                    example: Option A
+              example:
+                - label: Option A
+                - label: Option B
+          required:
+            - list_options
+          title: 'conversation list attribute'
+        - properties:
+            data_type:
+              enum:
+                - relationship
+            reference:
+              type: object
+              description: Defines the relationship configuration for a relationship-type conversation attribute.
+              properties:
+                reference_type:
+                  type: string
+                  description: Whether this attribute references one or many related objects.
+                  enum:
+                    - references_one
+                    - references_many
+                  example: references_one
+                referenced_object_type_identifier:
+                  type: string
+                  description: The identifier of the object type this attribute references.
+                  example: company
+              required:
+                - reference_type
+                - referenced_object_type_identifier
+          required:
+            - reference
+          title: 'conversation relationship attribute'
     create_data_event_request:
       description: ''
       type: object
@@ -22452,11 +22581,11 @@ components:
           example: 12878
         model:
           type: string
-          description: Value is `contact` for user/lead attributes and `company` for
-            company attributes.
+          description: Value is `contact` for user/lead attributes, `company` for company attributes, and `conversation` for conversation attributes.
           enum:
           - contact
           - company
+          - conversation
           example: contact
         name:
           type: string
@@ -22485,6 +22614,11 @@ components:
           - float
           - boolean
           - date
+          - decimal
+          - datetime
+          - list
+          - relationship
+          - files
           example: boolean
         options:
           type: array
@@ -22494,6 +22628,44 @@ components:
           example:
           - 'true'
           - 'false'
+        multiline:
+          type: boolean
+          nullable: true
+          description: Whether this string-type conversation attribute supports multiline text. Only present for conversation attributes.
+          example: false
+        list_options:
+          type: array
+          nullable: true
+          description: List of options for a list-type conversation attribute. Each option has a label key. Only present for conversation attributes with data_type list.
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+                description: The display label for this list option.
+                example: Option A
+          example:
+          - label: Option A
+          - label: Option B
+        reference:
+          type: object
+          nullable: true
+          description: The relationship configuration for a relationship-type conversation attribute. Only present for conversation attributes with data_type relationship.
+          properties:
+            reference_type:
+              type: string
+              description: Whether this attribute references one or many related objects.
+              enum:
+              - references_one
+              - references_many
+              example: references_one
+            referenced_object_type_identifier:
+              type: string
+              description: The identifier of the object type this attribute references.
+              example: company
+          example:
+            reference_type: references_one
+            referenced_object_type_identifier: company
         api_writable:
           type: boolean
           description: Can this attribute be updated through API
