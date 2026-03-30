@@ -22655,6 +22655,14 @@ components:
             order:
               id: 12345
               status: shipped
+        token_ids:
+          type: array
+          description: IDs of authentication tokens to attach to this data connector.
+          items:
+            type: string
+          example:
+          - '1234'
+          - '5678'
       required:
       - name
     update_data_connector_request:
@@ -22774,6 +22782,14 @@ components:
             order:
               id: 12345
               status: shipped
+        token_ids:
+          type: array
+          description: IDs of authentication tokens to attach to this data connector. An empty array removes all tokens.
+          items:
+            type: string
+          example:
+          - '1234'
+          - '5678'
     data_connector:
       title: Data Connector
       type: object
@@ -22879,6 +22895,33 @@ components:
           - draft
           - live
           example: live
+        url:
+          type: string
+          nullable: true
+          description: The URL of the external API endpoint. Supports template variables like `{{order_id}}`.
+          example: "https://api.example.com/orders/{{order_id}}/status"
+        body:
+          type: string
+          nullable: true
+          description: The request body template. Supports template variables.
+          example: '{"text": "{{message}}"}'
+        headers:
+          type: array
+          description: HTTP headers for the request. Header values are always redacted as `"****"` in responses.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The header name.
+                example: Authorization
+              value:
+                type: string
+                description: Always `"****"` in responses.
+                example: "****"
+          example:
+          - name: Authorization
+            value: "****"
         http_method:
           type: string
           description: The HTTP method used by the data connector.
