@@ -6448,6 +6448,8 @@ paths:
                     errors:
                     - code: validation_error
                       message: The language is not currently supported for Fin
+              schema:
+                "$ref": "#/components/schemas/error"
   "/content_snippets/{id}":
     get:
       summary: Retrieve a content snippet
@@ -6499,6 +6501,8 @@ paths:
                     errors:
                     - code: not_found
                       message: Content snippet not found
+              schema:
+                "$ref": "#/components/schemas/error"
     put:
       summary: Update a content snippet
       parameters:
@@ -6562,6 +6566,8 @@ paths:
                     errors:
                     - code: not_found
                       message: Content snippet not found
+              schema:
+                "$ref": "#/components/schemas/error"
         '422':
           description: Validation error
           content:
@@ -6573,6 +6579,8 @@ paths:
                     errors:
                     - code: validation_error
                       message: The language is not currently supported for Fin
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/{conversation_id}/tags":
     post:
       summary: Add tag to a conversation
@@ -20682,6 +20690,9 @@ components:
       type: object
       description: The request payload for creating or updating a content snippet.
       nullable: false
+      required:
+      - title
+      - json_blocks
       properties:
         title:
           type: string
@@ -28362,6 +28373,8 @@ tags:
   description: Everything about your Companies
 - name: Contacts
   description: Everything about your contacts
+- name: Content Snippets
+  description: Everything about your Content Snippets
 - name: Conversations
   description: Everything about your Conversations
   externalDocs:
