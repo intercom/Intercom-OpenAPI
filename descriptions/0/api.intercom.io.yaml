@@ -6439,6 +6439,249 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/contact_blocked"
+  "/content_snippets":
+    get:
+      summary: List all content snippets
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch.
+        schema:
+          type: integer
+          example: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Max value of 50.
+        schema:
+          type: integer
+          example: 20
+      tags:
+      - Content Snippets
+      operationId: listContentSnippets
+      description: You can fetch a list of all content snippets for a workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - type: content_snippet
+                      id: '123'
+                      title: How to reset your password
+                      locale: en
+                      json_blocks:
+                      - type: paragraph
+                        text: Navigate to Settings > Security > Reset password.
+                      chatbot_availability: 1
+                      copilot_availability: 1
+                      created_at: 1663597223
+                      updated_at: 1663597223
+                    total_count: 1
+                    page: 1
+                    per_page: 50
+                    total_pages: 1
+              schema:
+                "$ref": "#/components/schemas/content_snippet_list"
+    post:
+      summary: Create a content snippet
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Content Snippets
+      operationId: createContentSnippet
+      description: You can create a new content snippet.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/content_snippet_create_request"
+            examples:
+              Create a content snippet:
+                value:
+                  title: How to reset your password
+                  json_blocks:
+                  - type: paragraph
+                    text: Navigate to Settings > Security > Reset password.
+                  locale: en
+      responses:
+        '201':
+          description: Content snippet created
+          content:
+            application/json:
+              examples:
+                Content snippet created:
+                  value:
+                    type: content_snippet
+                    id: '456'
+                    title: How to reset your password
+                    locale: en
+                    json_blocks:
+                    - type: paragraph
+                      text: Navigate to Settings > Security > Reset password.
+                    chatbot_availability: 1
+                    copilot_availability: 1
+                    created_at: 1663597223
+                    updated_at: 1663597223
+              schema:
+                "$ref": "#/components/schemas/content_snippet"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Validation error:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: validation_error
+                      message: The language is not currently supported for Fin
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/content_snippets/{id}":
+    get:
+      summary: Retrieve a content snippet
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the content snippet.
+        schema:
+          type: string
+          example: '123'
+      tags:
+      - Content Snippets
+      operationId: getContentSnippet
+      description: You can fetch a single content snippet by its id.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: content_snippet
+                    id: '123'
+                    title: How to reset your password
+                    locale: en
+                    json_blocks:
+                    - type: paragraph
+                      text: Navigate to Settings > Security > Reset password.
+                    chatbot_availability: 1
+                    copilot_availability: 1
+                    created_at: 1663597223
+                    updated_at: 1663597223
+              schema:
+                "$ref": "#/components/schemas/content_snippet"
+        '404':
+          description: Content snippet not found
+          content:
+            application/json:
+              examples:
+                Content snippet not found:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: not_found
+                      message: Content snippet not found
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update a content snippet
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the content snippet.
+        schema:
+          type: string
+          example: '123'
+      tags:
+      - Content Snippets
+      operationId: updateContentSnippet
+      description: You can update an existing content snippet.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/content_snippet_update_request"
+            examples:
+              Update a content snippet:
+                value:
+                  title: How to reset your password (updated)
+                  json_blocks:
+                  - type: paragraph
+                    text: Go to Settings > Security > Reset password and follow the steps.
+      responses:
+        '200':
+          description: Content snippet updated
+          content:
+            application/json:
+              examples:
+                Content snippet updated:
+                  value:
+                    type: content_snippet
+                    id: '123'
+                    title: How to reset your password (updated)
+                    locale: en
+                    json_blocks:
+                    - type: paragraph
+                      text: Go to Settings > Security > Reset password and follow the steps.
+                    chatbot_availability: 1
+                    copilot_availability: 1
+                    created_at: 1663597223
+                    updated_at: 1663597300
+              schema:
+                "$ref": "#/components/schemas/content_snippet"
+        '404':
+          description: Content snippet not found
+          content:
+            application/json:
+              examples:
+                Content snippet not found:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: not_found
+                      message: Content snippet not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Validation error:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: validation_error
+                      message: The language is not currently supported for Fin
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/{conversation_id}/tags":
     post:
       summary: Add tag to a conversation
@@ -20459,6 +20702,141 @@ components:
           description: The content sources used by AI Agent in the conversation.
           items:
             "$ref": "#/components/schemas/content_source"
+    content_snippet:
+      title: Content Snippet
+      type: object
+      x-tags:
+      - Content Snippets
+      description: A content snippet is a reusable piece of content for your AI agent
+        and Copilot.
+      nullable: false
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `content_snippet`.
+          example: content_snippet
+        id:
+          type: string
+          description: The unique identifier for the content snippet.
+          example: '123'
+        title:
+          type: string
+          description: The title of the content snippet.
+          nullable: true
+          example: How to reset your password
+        locale:
+          type: string
+          description: The locale of the content snippet.
+          example: en
+        json_blocks:
+          type: array
+          description: The content blocks that make up the body of the snippet.
+          items:
+            type: object
+          example:
+          - type: paragraph
+            text: Navigate to Settings > Security > Reset password.
+        chatbot_availability:
+          type: integer
+          description: Whether this snippet is available for Fin (1 = on, 0 = off).
+          example: 1
+        copilot_availability:
+          type: integer
+          description: Whether this snippet is available for Copilot (1 = on, 0 =
+            off).
+          example: 1
+        created_at:
+          type: integer
+          description: The time the snippet was created as a UNIX timestamp.
+          example: 1663597223
+        updated_at:
+          type: integer
+          description: The time the snippet was last updated as a UNIX timestamp.
+          example: 1663597223
+    content_snippet_list:
+      title: Content Snippet List
+      type: object
+      description: A paginated list of content snippets.
+      nullable: false
+      properties:
+        type:
+          type: string
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of content snippet objects.
+          items:
+            "$ref": "#/components/schemas/content_snippet"
+        total_count:
+          type: integer
+          description: The total number of content snippets.
+          example: 1
+        page:
+          type: integer
+          description: The current page number.
+          example: 1
+        per_page:
+          type: integer
+          description: The number of results per page.
+          example: 50
+        total_pages:
+          type: integer
+          description: The total number of pages.
+          example: 1
+    content_snippet_create_request:
+      title: Create Content Snippet Request
+      type: object
+      description: The request payload for creating a content snippet.
+      nullable: false
+      required:
+      - title
+      - json_blocks
+      properties:
+        title:
+          type: string
+          description: The title of the content snippet.
+          maxLength: 255
+          example: How to reset your password
+        json_blocks:
+          type: array
+          description: The content blocks that make up the body of the snippet.
+          items:
+            type: object
+          example:
+          - type: paragraph
+            text: Navigate to Settings > Security > Reset password.
+        locale:
+          type: string
+          description: The locale of the content snippet. Defaults to `en`.
+          default: en
+          example: en
+    content_snippet_update_request:
+      title: Update Content Snippet Request
+      type: object
+      description: The request payload for updating a content snippet. All fields
+        are optional — only provided fields will be updated.
+      nullable: false
+      properties:
+        title:
+          type: string
+          description: The title of the content snippet.
+          maxLength: 255
+          example: How to reset your password
+        json_blocks:
+          type: array
+          description: The content blocks that make up the body of the snippet.
+          items:
+            type: object
+          example:
+          - type: paragraph
+            text: Navigate to Settings > Security > Reset password.
+        locale:
+          type: string
+          description: The locale of the content snippet.
+          example: en
     conversation_list_item:
       title: Conversation List Item
       type: object
@@ -28121,6 +28499,8 @@ tags:
   description: Everything about your Companies
 - name: Contacts
   description: Everything about your contacts
+- name: Content Snippets
+  description: Everything about your Content Snippets
 - name: Conversations
   description: Everything about your Conversations
   externalDocs:
