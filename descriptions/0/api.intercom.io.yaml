@@ -192,7 +192,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       - name: created_at_after
         in: query
-        required: true
+        required: false
         description: The start date that you request data for. It must be formatted
           as a UNIX timestamp.
         example: '1677253093'
@@ -206,19 +206,6 @@ paths:
         example: '1677861493'
         schema:
           type: string
-      - name: event_types
-        in: query
-        required: false
-        description: An optional list of event types to filter activity logs by. When
-          provided, only logs matching the specified event types are returned. Use
-          the List all activity log event types endpoint to retrieve available values.
-        schema:
-          type: array
-          items:
-            type: string
-        example:
-        - admin_login_success
-        - app_name_change
       tags:
       - Admins
       operationId: listActivityLogs
@@ -269,6 +256,120 @@ paths:
                       activity_description: Ciaran5 Lee changed your Initial message
                         title message from Initial message title to Eventual message
                         title.
+              schema:
+                "$ref": "#/components/schemas/activity_log_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 57cc6148-2c0a-471b-bd9e-859538110958
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/admins/activity_logs/search":
+    post:
+      summary: Search activity logs
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Admins
+      operationId: searchActivityLogs
+      description: Search and filter admin activity logs using a POST request
+        with event type filter in the request body. You can find more details
+        about the available event types in the List all activity log event
+        types endpoint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                created_at_after:
+                  type: string
+                  description: The start date that you request data for. It must
+                    be formatted as a UNIX timestamp.
+                  example: '1677253093'
+                created_at_before:
+                  type: string
+                  description: The end date that you request data for. It must
+                    be formatted as a UNIX timestamp.
+                  example: '1677861493'
+                event_types:
+                  type: array
+                  description: An optional list of event types to filter activity
+                    logs by. Use the list all activity log event types endpoint
+                    to retrieve available values.
+                  items:
+                    type: string
+                  example:
+                  - app_name_change
+                  - message_state_change
+                page:
+                  type: integer
+                  description: The page number of results to return.
+                  default: 1
+                  example: 1
+                per_page:
+                  type: integer
+                  description: The number of results per page. Must be between
+                    1 and 250.
+                  default: 20
+                  minimum: 1
+                  maximum: 250
+                  example: 20
+            examples:
+              search_with_event_types:
+                summary: Search with event types filter
+                value:
+                  created_at_after: '1677253093'
+                  created_at_before: '1677861493'
+                  event_types:
+                  - app_name_change
+                  - message_state_change
+              search_without_filters:
+                summary: Search with date range only
+                value:
+                  created_at_after: '1677253093'
+                  created_at_before: '1677861493'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: activity_log.list
+                    pages:
+                      type: pages
+                      next:
+                      page: 1
+                      per_page: 20
+                      total_pages: 1
+                    activity_logs:
+                    - id: fca05814-4b72-4dce-ad4f-77a786a2c136
+                      performed_by:
+                        type: admin
+                        id: '991267464'
+                        email: admin5@email.com
+                        ip: 127.0.0.1
+                      metadata:
+                        before: before
+                        after: after
+                      created_at: 1734537253
+                      activity_type: app_name_change
+                      activity_description: Ciaran5 Lee changed your app name
+                        from before to after.
               schema:
                 "$ref": "#/components/schemas/activity_log_list"
         '401':
