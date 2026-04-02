@@ -6417,7 +6417,7 @@ paths:
                     text: Navigate to Settings > Security > Reset password.
                   locale: en
       responses:
-        '200':
+        '201':
           description: Content snippet created
           content:
             application/json:
@@ -6526,7 +6526,7 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/content_snippet_create_request"
+              "$ref": "#/components/schemas/content_snippet_update_request"
             examples:
               Update a content snippet:
                 value:
@@ -20686,9 +20686,9 @@ components:
           description: The total number of pages.
           example: 1
     content_snippet_create_request:
-      title: Content Snippet Request
+      title: Create Content Snippet Request
       type: object
-      description: The request payload for creating or updating a content snippet.
+      description: The request payload for creating a content snippet.
       nullable: false
       required:
       - title
@@ -20710,6 +20710,31 @@ components:
         locale:
           type: string
           description: The locale of the content snippet. Defaults to `en`.
+          default: en
+          example: en
+    content_snippet_update_request:
+      title: Update Content Snippet Request
+      type: object
+      description: The request payload for updating a content snippet. All fields
+        are optional — only provided fields will be updated.
+      nullable: false
+      properties:
+        title:
+          type: string
+          description: The title of the content snippet.
+          maxLength: 255
+          example: How to reset your password
+        json_blocks:
+          type: array
+          description: The content blocks that make up the body of the snippet.
+          items:
+            type: object
+          example:
+          - type: paragraph
+            text: Navigate to Settings > Security > Reset password.
+        locale:
+          type: string
+          description: The locale of the content snippet.
           example: en
     conversation_list_item:
       title: Conversation List Item
