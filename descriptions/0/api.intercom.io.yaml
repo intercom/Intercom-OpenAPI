@@ -9430,6 +9430,89 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/conversations/{id}/side_conversations":
+    get:
+      summary: List side conversations
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The identifier for the conversation as given by Intercom.
+        example: '123'
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: The page number of results to return (starting from 1).
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of side conversations to return per page (max 50).
+        schema:
+          type: integer
+          default: 25
+          maximum: 50
+      tags:
+      - Conversations
+      operationId: listSideConversations
+      description: |
+        List side conversations for a given conversation. Side conversations are internal threads created by teammates from within a conversation.
+
+        Each side conversation includes its conversation parts (messages). Results are paginated.
+
+        Requires the `read_conversations` OAuth scope.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/side_conversation_list"
+              examples:
+                Successful response:
+                  value:
+                    type: side_conversation.list
+                    side_conversations:
+                    - side_conversation_id: '456'
+                      conversation_parts:
+                      - type: conversation_part
+                        id: '789'
+                        part_type: comment
+                        body: "<p>Internal note about this issue</p>"
+                        author:
+                          type: admin
+                          id: '123'
+                          name: Jane Example
+                          email: jane@example.com
+                        created_at: 1663597223
+                        updated_at: 1663597223
+                      total_count: 1
+                    total_count: 1
+                    pages:
+                      type: pages
+                      page: 1
+                      per_page: 25
+                      total_pages: 1
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/redact":
     post:
       summary: Redact a conversation part
@@ -25123,6 +25206,65 @@ components:
           description: Array of handling events
           items:
             "$ref": "#/components/schemas/handling_event"
+    side_conversation_summary:
+      title: Side Conversation Summary
+      type: object
+      description: A side conversation with its conversation parts.
+      properties:
+        side_conversation_id:
+          type: string
+          description: The unique identifier for the side conversation.
+          example: '456'
+        conversation_parts:
+          type: array
+          description: The conversation parts (messages) in this side conversation.
+          items:
+            "$ref": "#/components/schemas/conversation_part"
+        total_count:
+          type: integer
+          description: The total number of conversation parts in this side conversation.
+          example: 1
+    side_conversation_list:
+      title: Side Conversation List
+      type: object
+      description: A paginated list of side conversations for a conversation.
+      properties:
+        type:
+          type: string
+          description: The type of the response object.
+          enum:
+          - side_conversation.list
+          example: side_conversation.list
+        side_conversations:
+          type: array
+          description: An array of side conversation objects.
+          items:
+            "$ref": "#/components/schemas/side_conversation_summary"
+        total_count:
+          type: integer
+          description: The total number of side conversations.
+          example: 1
+        pages:
+          type: object
+          description: Pagination metadata.
+          properties:
+            type:
+              type: string
+              enum:
+              - pages
+              example: pages
+            page:
+              type: integer
+              description: The current page number.
+              example: 1
+            per_page:
+              type: integer
+              description: The number of results per page.
+              example: 25
+            total_pages:
+              type: integer
+              description: The total number of pages.
+              example: 1
     help_center:
       title: Help Center
       type: object
