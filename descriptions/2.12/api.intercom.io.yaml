@@ -11647,6 +11647,15 @@ paths:
                   type: user
 components:
   schemas:
+    datetime:
+      oneOf:
+        - title: string
+          type: string
+          format: date-time
+          description: A date and time following the ISO8601 notation.
+        - title: integer
+          type: integer
+          description: A date and time as UNIX timestamp notation.
     activity_log:
       title: Activity Log
       type: object
@@ -14534,7 +14543,7 @@ components:
           type: integer
           description: Total number of conversation parts.
           example: 1
-        assigned_team_first_response_time_by_team:
+        assigned_team_first_response_time:
           type: array
           description: An array of conversation response time objects
           items:
@@ -14556,6 +14565,92 @@ components:
             (wrote at least one conversation part).
           items:
             "$ref": "#/components/schemas/reference"
+    custom_attributes:
+      title: Custom Attributes
+      type: object
+      description: An object containing the different custom attributes associated
+        to the conversation as key-value pairs. For relationship attributes the value
+        will be a list of custom object instance models.
+      additionalProperties:
+        anyOf:
+        - type: string
+        - type: integer
+        - $ref: "#/components/schemas/datetime"
+        - "$ref": "#/components/schemas/custom_object_instance_list"
+      example:
+        paid_subscriber: true
+        monthly_spend: 155.5
+        team_mates: 9
+        start_date_iso8601: "2023-03-04T09:46:14Z"
+        end_date_timestamp: 1677923174
+    custom_object_instance_list:
+      title: Custom Object Instances
+      type: object
+      description: The list of associated custom object instances for a given reference
+        attribute on the parent object.
+      properties:
+        type:
+          type: string
+          example: order.list
+        instances:
+          type: array
+          description: The list of associated custom object instances for a given
+            reference attribute on the parent object.
+          items:
+            "$ref": "#/components/schemas/custom_object_instance"
+    custom_object_instance:
+      title: Custom Object Instance
+      type: object
+      x-tags:
+      - Custom Object Instances
+      nullable: true
+      description: A Custom Object Instance represents an instance of a custom object
+        type. This allows you to create and set custom attributes to store data about
+        your customers that is not already captured by Intercom. The parent object
+        includes recommended default attributes and you can add your own custom attributes.
+      properties:
+        id:
+          type: string
+          description: The Intercom defined id representing the custom object instance.
+          example: 16032025
+        external_id:
+          type: string
+          description: The id you have defined for the custom object instance.
+          example: 0001d1c1e65a7a19e9f59ae2
+        external_created_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The time when the Custom Object instance was created in the
+            external system it originated from.
+          example: 1571672154
+        external_updated_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The time when the Custom Object instance was last updated in
+            the external system it originated from.
+          example: 1571672154
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the attribute was created as a UTC Unix timestamp
+          example: 1671028894
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time the attribute was last updated as a UTC Unix timestamp
+          example: 1671028894
+        type:
+          type: string
+          description: The identifier of the custom object type that defines the structure
+            of the custom object instance.
+          example: Order
+        custom_attributes:
+          type: object
+          description: The custom attributes you have set on the custom object instance.
+          additionalProperties:
+            type: string
     convert_conversation_to_ticket_request:
       description: You can convert a Conversation to a Ticket
       type: object
