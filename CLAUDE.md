@@ -9,11 +9,11 @@ Owner: `team-data-foundations` (see `REPO_OWNER`)
 ```
 descriptions/
   2.7/ ... 2.15/            # Stable versioned API specs (one YAML each)
-  0/                         # Unstable version (version "0" internally)
+  0/                         # Preview version (version "0" internally)
 fern/
   generators.yml             # SDK generation config (TS, Java, Python, PHP)
   openapi-overrides.yml      # Fern overrides for stable spec (v2.14)
-  unstable-openapi-overrides.yml  # Fern overrides for Unstable
+  preview-openapi-overrides.yml  # Fern overrides for Preview
   fern.config.json           # Fern org config
 scripts/
   run-sync.js                # Entry point for spec upload (CI only)
@@ -94,14 +94,14 @@ When a change applies to multiple API versions, you must edit each version's YAM
 ### Version Numbering
 
 - Stable versions: `2.7`, `2.8`, ..., `2.15` (current latest)
-- Unstable: stored as `descriptions/0/` (mapped from "Unstable" in upload scripts)
+- Preview: stored as `descriptions/0/` (mapped from "Preview" in upload scripts)
 - Every endpoint requires an `Intercom-Version` header parameter
 
 ## SDK Generation (Fern)
 
 SDKs are generated from the spec using [Fern](https://buildwithfern.com/). The `fern/generators.yml` configures:
 - **Stable SDK source**: `descriptions/2.14/api.intercom.io.yaml` (note: v2.14, not v2.15)
-- **Unstable SDK source**: `descriptions/0/api.intercom.io.yaml` (namespace: `unstable`)
+- **Preview SDK source**: `descriptions/0/api.intercom.io.yaml` (namespace: `preview`)
 
 ### DANGER: Never run `fern generate` without `--preview` locally
 

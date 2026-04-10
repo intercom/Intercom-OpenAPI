@@ -2,7 +2,7 @@
 openapi: 3.0.1
 info:
   title: Intercom API
-  version: Unstable
+  version: Preview
   description: The intercom API reference.
   contact:
     name: Intercom Developer Hub
@@ -9907,7 +9907,7 @@ paths:
           in: header
           required: true
           schema:
-            $ref: '#/components/schemas/intercom_version_unstable'
+            $ref: '#/components/schemas/intercom_version_preview'
       requestBody:
         required: true
         content:
@@ -9950,7 +9950,7 @@ paths:
           in: header
           required: true
           schema:
-            $ref: '#/components/schemas/intercom_version_unstable'
+            $ref: '#/components/schemas/intercom_version_preview'
       requestBody:
         required: true
         content:
@@ -10002,7 +10002,7 @@ paths:
           in: header
           required: true
           schema:
-            $ref: '#/components/schemas/intercom_version_unstable'
+            $ref: '#/components/schemas/intercom_version_preview'
       requestBody:
         required: true
         content:
@@ -10054,7 +10054,7 @@ paths:
           in: header
           required: true
           schema:
-            $ref: '#/components/schemas/intercom_version_unstable'
+            $ref: '#/components/schemas/intercom_version_preview'
       requestBody:
         required: true
         content:
@@ -12078,8 +12078,8 @@ paths:
 
         This endpoint is designed for EU Data Act compliance, allowing customers to export their workflow configurations.
 
-        {% admonition type="warning" name="Unstable API" %}
-          This API is currently in the Unstable version. Its behavior may change in future releases.
+        {% admonition type="warning" name="Preview API" %}
+          This API is currently in the Preview version. Its behavior may change in future releases.
         {% /admonition %}
       responses:
         '200':
@@ -12277,14 +12277,14 @@ paths:
             curl -X GET 'https://api.intercom.io/macros?per_page=25&starting_after=WzE3MTk0OTM3NTcuMCwgIjEyMyJd' \
               -H 'Authorization: Bearer <YOUR_ACCESS_TOKEN>' \
               -H 'Accept: application/json' \
-              -H 'Intercom-Version: @Unstable'
+              -H 'Intercom-Version: @Preview'
         - lang: 'Node.js'
           source: |
             const response = await fetch('https://api.intercom.io/macros?per_page=25&starting_after=WzE3MTk0OTM3NTcuMCwgIjEyMyJd', {
               headers: {
                 'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
                 'Accept': 'application/json',
-                'Intercom-Version': '@Unstable'
+                'Intercom-Version': '@Preview'
               }
             });
             const macros = await response.json();
@@ -12295,7 +12295,7 @@ paths:
             headers = {
                 'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
                 'Accept': 'application/json',
-                'Intercom-Version': '@Unstable'
+                'Intercom-Version': '@Preview'
             }
 
             params = {
@@ -12325,7 +12325,7 @@ paths:
             request = Net::HTTP::Get.new(uri)
             request['Authorization'] = 'Bearer <YOUR_ACCESS_TOKEN>'
             request['Accept'] = 'application/json'
-            request['Intercom-Version'] = '@Unstable'
+            request['Intercom-Version'] = '@Preview'
 
             response = http.request(request)
             macros = JSON.parse(response.body)
@@ -12550,14 +12550,14 @@ paths:
             curl -X GET 'https://api.intercom.io/macros/123' \
               -H 'Authorization: Bearer <YOUR_ACCESS_TOKEN>' \
               -H 'Accept: application/json' \
-              -H 'Intercom-Version: @Unstable'
+              -H 'Intercom-Version: @Preview'
         - lang: 'Node.js'
           source: |
             const response = await fetch('https://api.intercom.io/macros/123', {
               headers: {
                 'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
                 'Accept': 'application/json',
-                'Intercom-Version': '@Unstable'
+                'Intercom-Version': '@Preview'
               }
             });
             const macro = await response.json();
@@ -12568,7 +12568,7 @@ paths:
             headers = {
                 'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
                 'Accept': 'application/json',
-                'Intercom-Version': '@Unstable'
+                'Intercom-Version': '@Preview'
             }
 
             response = requests.get('https://api.intercom.io/macros/123',
@@ -12587,7 +12587,7 @@ paths:
             request = Net::HTTP::Get.new(uri)
             request['Authorization'] = 'Bearer <YOUR_ACCESS_TOKEN>'
             request['Accept'] = 'application/json'
-            request['Intercom-Version'] = '@Unstable'
+            request['Intercom-Version'] = '@Preview'
 
             response = http.request(request)
             macro = JSON.parse(response.body)
@@ -25379,8 +25379,8 @@ components:
       description: Intercom API version.</br>By default, it's equal to the version
         set in the app package.
       type: string
-      example: Unstable
-      default: Unstable
+      example: Preview
+      default: Preview
       enum:
       - '1.0'
       - '1.1'
@@ -25402,7 +25402,7 @@ components:
       - '2.12'
       - '2.13'
       - '2.14'
-      - Unstable
+      - Preview
     linked_object:
       title: Linked Object
       type: object
@@ -25429,13 +25429,13 @@ components:
           -
           example: Customer
           nullable: true
-    intercom_version_unstable:
-      description: Unstable Intercom API version. Used for closed beta endpoints or other features under managed availability.
+    intercom_version_preview:
+      description: Preview Intercom API version. Used for closed beta endpoints or other features under managed availability.
       type: string
-      example: unstable
-      default: unstable
+      example: preview
+      default: preview
       enum:
-        - unstable
+        - preview
     linked_object_list:
       title: Linked Objects
       type: object
