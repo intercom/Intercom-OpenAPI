@@ -1,6 +1,6 @@
-# Intercom API Unstable Postman Collection
+# Intercom API Preview Postman Collection
 
-This directory contains the Postman collection for Intercom API version Unstable.
+This directory contains the Postman collection for Intercom API version Preview.
 
 ## Files
 - `intercom-api.postman_collection.json`: The main Postman collection
