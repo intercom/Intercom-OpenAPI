@@ -18683,6 +18683,60 @@ components:
           nullable: true
         content_sources:
           "$ref": "#/components/schemas/content_sources_list"
+    sales_agent:
+      title: Sales Agent
+      type: object
+      x-tags:
+      - Sales Agent
+      description: Data related to Sales Agent involvement in the conversation.
+      properties:
+        outcome:
+          type: string
+          nullable: true
+          description: The fixed outcome of the sales agent interaction, used for
+            billing and tracking.
+          enum:
+          - qualified
+          - disqualified
+          - product_discovery
+          - escalated_to_support
+          - spam
+          example: qualified
+        routing_outcome_identifier:
+          type: string
+          nullable: true
+          description: The identifier of the user-defined routing outcome selected
+            by the sales agent.
+          example: sales
+        routing_outcome_title:
+          type: string
+          nullable: true
+          description: The human-readable title of the user-defined routing outcome.
+          example: Sales Qualified Lead
+        collected_data:
+          type: object
+          description: A key-value map of data collected by the sales agent during
+            the conversation. Keys are attribute identifiers, values are the collected
+            values.
+          additionalProperties: true
+          example:
+            email: user@example.com
+            custom_data.fin_sdr_phone: "+1234567890"
+        source_type:
+          type: string
+          nullable: true
+          description: The type of the source that triggered Sales Agent involvement
+            in the conversation.
+          enum:
+          - workflow
+          - workflow_preview
+          example: workflow
+        source_title:
+          type: string
+          nullable: true
+          description: The title of the workflow that triggered Sales Agent involvement
+            in the conversation.
+          example: Sales Qualification Workflow
     ai_subtopic:
       title: AI Subtopic
       type: object
@@ -21046,6 +21100,13 @@ components:
         ai_agent:
           "$ref": "#/components/schemas/ai_agent"
           nullable: true
+        sales_agent_participated:
+          type: boolean
+          description: Indicates whether the Sales Agent participated in the conversation.
+          example: false
+        sales_agent:
+          "$ref": "#/components/schemas/sales_agent"
+          nullable: true
     conversation:
       title: Conversation
       type: object
@@ -21163,6 +21224,13 @@ components:
           example: true
         ai_agent:
           "$ref": "#/components/schemas/ai_agent"
+          nullable: true
+        sales_agent_participated:
+          type: boolean
+          description: Indicates whether the Sales Agent participated in the conversation.
+          example: false
+        sales_agent:
+          "$ref": "#/components/schemas/sales_agent"
           nullable: true
     conversation_attachment_files:
       title: Conversation attachment files
