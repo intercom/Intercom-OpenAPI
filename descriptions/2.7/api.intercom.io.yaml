@@ -3545,7 +3545,7 @@ paths:
         You can fetch the details of a single contact.
 
         {% admonition type="warning" name="Merged contacts" %}
-          If a contact has been merged into another contact via the [Merge endpoint](/reference/merge-a-lead-and-a-user), requesting it by its original ID will return a `404 Not Found` error. Use the merged-into contact's ID instead.
+          If a contact has been merged into another contact via the Merge endpoint (POST /contacts/merge), requesting it by its original ID will return a `404 Not Found` error. Use the merged-into contact's ID instead.
         {% /admonition %}
       responses:
         '200':
@@ -3868,7 +3868,7 @@ paths:
         {% /admonition %}
         ### Merged Contacts
 
-        Contacts that have been [merged](/reference/merge-a-lead-and-a-user) are excluded from search results. If a contact was recently merged into another, it will no longer appear in queries filtered by `updated_at` or any other field. Only the target contact from the merge remains searchable.
+        Contacts that have been merged (via POST /contacts/merge) are excluded from search results. If a contact was recently merged into another, it will no longer appear in queries filtered by `updated_at` or any other field. Only the target contact from the merge remains searchable.
 
         ### Contact Creation Delay
 
@@ -4020,7 +4020,7 @@ paths:
       description: |
         You can fetch a list of all contacts (ie. users or leads) in your workspace.
         {% admonition type="info" name="Merged contacts" %}
-          Contacts that have been [merged](/reference/merge-a-lead-and-a-user) will not appear in list results. Only the target contact from the merge remains accessible.
+          Contacts that have been merged (via POST /contacts/merge) will not appear in list results. Only the target contact from the merge remains accessible.
         {% /admonition %}
         {% admonition type="warning" name="Pagination" %}
           You can use pagination to limit the number of results returned. The default is `50` results per page.
