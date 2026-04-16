@@ -2020,6 +2020,360 @@ paths:
                       message: "Export job not found for identifier: job1"
               schema:
                 "$ref": "#/components/schemas/error"
+  "/fin/start":
+    post:
+      summary: Start a conversation with Fin
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Fin Agent
+      operationId: startFinConversation
+      description: |
+        Initialize Fin by passing it the user's message along with conversation history and user details.
+
+        These additional pieces of context will be used by Fin to provide a better and more contextual answer to the user.
+
+        {% admonition type="warning" %}
+        Please reach out to your accounts team to discuss access.
+        {% /admonition %}
+
+        Once Fin is initialized, it progresses through a series of statuses such as *thinking*, *replying*, *awaiting_user_reply*, or *resolved* before ending with a status of *complete*.
+
+        During this workflow, the client should allow Fin to continue uninterrupted until a final *complete* status is returned, at which point control of the conversation passes back to the client.
+
+        Events can be received via webhooks or Server-Sent Events (SSE) using the `sse_subscription_url` in the response.
+      responses:
+        '200':
+          description: Fin conversation started successfully
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    conversation_id: ext-123
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+                Response with attribute errors:
+                  value:
+                    conversation_id: ext-123
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+                    errors:
+                      user:
+                        attributes:
+                          invalid_attr: User attribute 'invalid_attr' does not exist
+                      conversation:
+                        attributes:
+                          bad_attr: Conversation attribute 'bad_attr' does not exist
+              schema:
+                type: object
+                properties:
+                  conversation_id:
+                    type: string
+                    description: The ID of the conversation.
+                    example: ext-123
+                  user_id:
+                    type: string
+                    description: The ID of the user.
+                    example: user-456
+                  status:
+                    type: string
+                    enum:
+                    - thinking
+                    - replying
+                    - awaiting_user_reply
+                    - escalated
+                    - resolved
+                    - complete
+                    description: |
+                      Fin's current status in the conversation workflow.
+                    example: thinking
+                  created_at_ms:
+                    type: string
+                    format: date-time
+                    description: The timestamp the response was created at, with millisecond precision.
+                    example: '2025-01-24T10:00:00.123Z'
+                  errors:
+                    "$ref": "#/components/schemas/fin_agent_attribute_errors"
+                  sse_subscription_url:
+                    type: string
+                    description: |
+                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status.
+                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid request:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: conversation_id is required
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conversation_id:
+                  type: string
+                  description: The ID of the conversation that is calling Fin via this API.
+                  example: ext-123
+                message:
+                  "$ref": "#/components/schemas/fin_agent_message"
+                user:
+                  "$ref": "#/components/schemas/fin_agent_user"
+                attachments:
+                  type: array
+                  description: An array of attachments to include with the message. Maximum of 10 attachments.
+                  maxItems: 10
+                  items:
+                    "$ref": "#/components/schemas/fin_agent_attachment"
+                conversation_metadata:
+                  "$ref": "#/components/schemas/fin_agent_conversation_metadata"
+              required:
+              - conversation_id
+              - message
+              - user
+            examples:
+              Basic request:
+                value:
+                  conversation_id: ext-123
+                  message:
+                    author: user
+                    body: How can I see my account details?
+                    timestamp: '2025-01-24T10:01:20.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+              Request with conversation history:
+                value:
+                  conversation_id: ext-123
+                  message:
+                    author: user
+                    body: How can I see my account details?
+                    timestamp: '2025-01-24T10:01:20.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+                    attributes:
+                      plan_type: Pro
+                      subscription_status: active
+                  conversation_metadata:
+                    history:
+                    - author: user
+                      body: I need help
+                      timestamp: '2025-01-24T10:00:01Z'
+                    - author: agent
+                      body: What do you need help with?
+                      timestamp: '2025-01-24T10:01:00Z'
+                    attributes:
+                      priority_level: high
+                      department: sales
+              Request with attachments:
+                value:
+                  conversation_id: ext-123
+                  message:
+                    author: user
+                    body: Here is a screenshot of the issue
+                    timestamp: '2025-01-24T10:01:20.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+                  attachments:
+                  - type: url
+                    url: https://example.com/document.pdf
+                  - type: file
+                    name: screenshot.png
+                    content_type: image/png
+                    data: iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk...
+  "/fin/reply":
+    post:
+      summary: Reply to Fin
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Fin Agent
+      operationId: replyToFin
+      description: |
+        Once Fin has returned a response to a user's message, its status will be `awaiting_user_reply`.
+
+        If a user replies, use this endpoint to send this response to Fin.
+
+        {% admonition type="warning" %}
+        Please reach out to your accounts team to discuss access.
+        {% /admonition %}
+      responses:
+        '200':
+          description: Reply sent successfully
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    conversation_id: ext-123
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
+                Response with attribute errors:
+                  value:
+                    conversation_id: ext-123
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
+                    errors:
+                      user:
+                        attributes:
+                          invalid_attr: User attribute 'invalid_attr' does not exist
+              schema:
+                type: object
+                properties:
+                  conversation_id:
+                    type: string
+                    description: The ID of the conversation.
+                    example: ext-123
+                  user_id:
+                    type: string
+                    description: The ID of the user.
+                    example: user-456
+                  status:
+                    type: string
+                    enum:
+                    - thinking
+                    - replying
+                    - awaiting_user_reply
+                    - escalated
+                    - resolved
+                    - complete
+                    description: |
+                      Fin's current status in the conversation workflow.
+                    example: thinking
+                  created_at_ms:
+                    type: string
+                    format: date-time
+                    description: The timestamp the response was created at, with millisecond precision.
+                    example: '2025-01-24T10:00:00.123Z'
+                  errors:
+                    "$ref": "#/components/schemas/fin_agent_attribute_errors"
+                  sse_subscription_url:
+                    type: string
+                    description: |
+                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status.
+                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid request:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: conversation_id is required
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conversation_id:
+                  type: string
+                  description: The ID of the conversation.
+                  example: '123456'
+                message:
+                  "$ref": "#/components/schemas/fin_agent_message"
+                user:
+                  "$ref": "#/components/schemas/fin_agent_user"
+                attachments:
+                  type: array
+                  description: An array of attachments to include with the message. Maximum of 10 attachments.
+                  maxItems: 10
+                  items:
+                    "$ref": "#/components/schemas/fin_agent_attachment"
+              required:
+              - conversation_id
+              - message
+              - user
+            examples:
+              Basic reply:
+                value:
+                  conversation_id: '123456'
+                  message:
+                    author: user
+                    body: Here's the information you requested.
+                    timestamp: '2025-01-24T09:01:00.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+              Reply with attachments:
+                value:
+                  conversation_id: '123456'
+                  message:
+                    author: user
+                    body: Here's the invoice you asked for.
+                    timestamp: '2025-01-24T09:01:00.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+                  attachments:
+                  - type: url
+                    url: https://example.com/invoice.pdf
   "/help_center/collections":
     get:
       summary: List all collections
@@ -25067,6 +25421,366 @@ components:
           description: An array of External Page objects
           items:
             "$ref": "#/components/schemas/external_page"
+    fin_agent_message:
+      title: Fin Agent Message
+      type: object
+      description: A message exchanged within a Fin Agent conversation.
+      x-tags:
+      - Fin Agent
+      properties:
+        author:
+          type: string
+          enum:
+          - user
+          - agent
+          - fin
+          description: The author that created the message.
+          example: user
+        body:
+          type: string
+          description: |
+            The body of the message. Accepts both plain text and HTML format.
+            When sending a message to Fin, this should contain the user's message.
+            Fin's response will be returned as HTML.
+          example: How can I see my account details?
+        timestamp:
+          type: string
+          format: date-time
+          description: |
+            The timestamp when the message was created.
+            Used to deduplicate messages sent within a 5 minute window.
+            Ideally should include milliseconds for higher precision.
+          example: '2025-01-24T10:01:20.000Z'
+        timestamp_ms:
+          type: string
+          format: date-time
+          description: |
+            The timestamp when the message was created, with millisecond precision.
+            Only present in event responses (fin_replied).
+          example: '2025-01-24T10:01:20.456Z'
+      required:
+      - author
+      - body
+      - timestamp
+    fin_agent_user:
+      title: Fin Agent User
+      type: object
+      description: A user object representing the user in a Fin Agent conversation.
+      x-tags:
+      - Fin Agent
+      properties:
+        id:
+          type: string
+          description: |
+            The ID of the user. This value will be used to uniquely identify the user
+            during a conversation with Fin. Maps to the user_id field on the Intercom User object.
+          example: '123456'
+        name:
+          type: string
+          description: The name of the user.
+          example: John Doe
+        email:
+          type: string
+          format: email
+          description: The email of the user.
+          example: john.doe@example.com
+        attributes:
+          type: object
+          description: |
+            A hash of attributes associated with the user.
+            Attributes can be used by Fin to target content and responses.
+            Limit to 10 attributes.
+          additionalProperties: true
+          example:
+            plan_type: Pro
+            subscription_status: active
+      required:
+      - id
+    fin_agent_attachment:
+      title: Fin Agent Attachment
+      type: object
+      description: |
+        An attachment object representing a file or URL attachment included with a message.
+        Attachments can be used to provide additional context to Fin.
+        Maximum of 10 attachments per request.
+      x-tags:
+      - Fin Agent
+      properties:
+        type:
+          type: string
+          enum:
+          - url
+          - file
+          description: The type of attachment.
+          example: url
+        url:
+          type: string
+          format: uri
+          description: The URL of the attachment. Required when type is 'url'. Must be publicly accessible.
+          example: https://example.com/document.pdf
+        name:
+          type: string
+          description: The name of the file. Required when type is 'file'.
+          example: screenshot.png
+        content_type:
+          type: string
+          description: The MIME type of the file. Required when type is 'file'.
+          example: image/png
+        data:
+          type: string
+          format: byte
+          description: Base64-encoded file data. Required when type is 'file'.
+          example: iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk...
+      required:
+      - type
+    fin_agent_conversation_metadata:
+      title: Fin Agent Conversation Metadata
+      type: object
+      description: Metadata about the conversation, including history and attributes.
+      x-tags:
+      - Fin Agent
+      properties:
+        history:
+          type: array
+          description: |
+            An array of previous messages in the conversation before Fin is initialized.
+            This data provides context to Fin and helps generate a better answer.
+            Limit to the last 10 messages.
+          maxItems: 10
+          items:
+            "$ref": "#/components/schemas/fin_agent_message"
+        attributes:
+          type: object
+          description: |
+            A hash of attributes associated with the conversation.
+            These attributes can be used by Fin to provide more contextual responses.
+            Limit to 10 attributes.
+          additionalProperties: true
+          example:
+            priority_level: high
+            department: sales
+    fin_agent_attribute_errors:
+      title: Fin Agent Attribute Errors
+      type: object
+      description: Contains error details if any user or conversation attribute updates failed.
+      x-tags:
+      - Fin Agent
+      properties:
+        user:
+          type: object
+          description: User-related attribute errors.
+          properties:
+            attributes:
+              type: object
+              description: Map of user attribute names to error messages.
+              additionalProperties:
+                type: string
+              example:
+                invalid_attr: User attribute 'invalid_attr' does not exist
+        conversation:
+          type: object
+          description: Conversation-related attribute errors.
+          properties:
+            attributes:
+              type: object
+              description: Map of conversation attribute names to error messages.
+              additionalProperties:
+                type: string
+              example:
+                bad_attr: Conversation attribute 'bad_attr' does not exist
+    fin_agent_status_updated_event:
+      title: Fin Agent Status Updated Event
+      type: object
+      description: |
+        Event fired when Fin's status changes during a conversation.
+        Fin will report its status to the client via this event.
+      x-tags:
+      - Fin Agent
+      properties:
+        event_name:
+          type: string
+          enum:
+          - fin_status_updated
+          description: The name of the event.
+          example: fin_status_updated
+        conversation_id:
+          type: string
+          description: The ID of the conversation.
+          example: '123456'
+        user_id:
+          type: string
+          description: The ID of the user.
+          example: '7891'
+        status:
+          type: string
+          enum:
+          - awaiting_user_reply
+          - escalated
+          - resolved
+          - complete
+          description: |
+            Fin's current status.
+            - awaiting_user_reply: Fin has finished replying and is waiting for the user to respond
+            - escalated: The conversation has been escalated to a human
+            - resolved: The user's query has been resolved
+            - complete: Fin has completed its workflow
+          example: escalated
+        reason:
+          type: string
+          description: |
+            Optional. A human-readable explanation of why the conversation was escalated.
+            Only present when status is 'escalated'.
+            Possible values include:
+            - "Escalation requested by user"
+            - "Escalation rule: {rule_name}"
+            - "Escalation rule matched"
+            - "Routed to team"
+            - "Conversation finished without resolution"
+          example: Escalation requested by user
+        created_at_ms:
+          type: string
+          format: date-time
+          description: The timestamp the event was created at, with millisecond precision.
+          example: '2025-01-24T10:00:00.123Z'
+      required:
+      - event_name
+      - conversation_id
+      - user_id
+      - status
+      - created_at_ms
+    fin_agent_replied_event:
+      title: Fin Agent Replied Event
+      type: object
+      description: |
+        Event fired when Fin replies to a user.
+        The content of the response will be contained in the message object.
+        Intermediate replies have status 'replying'; a separate fin_status_updated
+        event with 'awaiting_user_reply' fires as a done signal.
+      x-tags:
+      - Fin Agent
+      properties:
+        event_name:
+          type: string
+          enum:
+          - fin_replied
+          description: The name of the event.
+          example: fin_replied
+        conversation_id:
+          type: string
+          description: The ID of the conversation.
+          example: '123456'
+        user_id:
+          type: string
+          description: The ID of the user.
+          example: '7891'
+        message:
+          type: object
+          description: Fin's answer to the user's query.
+          properties:
+            author:
+              type: string
+              enum:
+              - fin
+              description: The author of the message (always 'fin' for this event).
+              example: fin
+            body:
+              type: string
+              description: The HTML body of Fin's response.
+              example: <p>You can see your account details by clicking on the <em>Account</em> tab in the top right corner of the screen.</p>
+            timestamp_ms:
+              type: string
+              format: date-time
+              description: The timestamp the message was created at, with millisecond precision.
+              example: '2025-01-24T09:01:00.456Z'
+          required:
+          - author
+          - body
+          - timestamp_ms
+        status:
+          type: string
+          enum:
+          - replying
+          - awaiting_user_reply
+          description: |
+            Fin's current status.
+            - replying: Intermediate reply part; more parts may follow
+            - awaiting_user_reply: Legacy status; use fin_status_updated event as the done signal instead
+          example: replying
+        stream_id:
+          type: string
+          description: |
+            Optional. Present when the reply was generated via streaming.
+            Correlates this event with the fin_reply_chunk events that preceded it.
+            Use this to know when to replace streamed chunk_text with the final message body.
+          example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+        created_at_ms:
+          type: string
+          format: date-time
+          description: The timestamp the event was created at, with millisecond precision.
+          example: '2025-01-24T10:00:00.123Z'
+      required:
+      - event_name
+      - conversation_id
+      - user_id
+      - message
+      - status
+      - created_at_ms
+    fin_agent_reply_chunk_event:
+      title: Fin Agent Reply Chunk Event
+      type: object
+      description: |
+        SSE-only event fired during streaming reply generation.
+        Each chunk contains the full accumulated plain text of Fin's answer so far (cumulative, not a delta).
+        Only delivered over SSE when streaming is enabled. Not available via webhooks.
+        When the fin_replied event arrives with the same stream_id, replace streamed text with the final HTML body.
+      x-tags:
+      - Fin Agent
+      properties:
+        event_name:
+          type: string
+          enum:
+          - fin_reply_chunk
+          description: The name of the event.
+          example: fin_reply_chunk
+        conversation_id:
+          type: string
+          description: The ID of the conversation.
+          example: '123456'
+        stream_id:
+          type: string
+          description: |
+            A unique identifier for this streaming response.
+            Correlates chunks with each other and with the eventual fin_replied event.
+          example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+        chunk_index:
+          type: integer
+          description: |
+            0-based counter for this chunk within the stream. Contiguous.
+          example: 3
+        chunk_text:
+          type: string
+          description: |
+            The full accumulated plain text of Fin's answer so far.
+            Each chunk supersedes the previous — replace rather than append.
+          example: You can see your account details by clicking
+        status:
+          type: string
+          enum:
+          - replying
+          description: Fin's current status (always 'replying' for this event).
+          example: replying
+        created_at_ms:
+          type: string
+          format: date-time
+          description: The timestamp the event was created at, with millisecond precision.
+          example: '2025-01-24T10:00:00.123Z'
+      required:
+      - event_name
+      - conversation_id
+      - stream_id
+      - chunk_index
+      - chunk_text
+      - created_at_ms
     file_attribute:
       title: File
       type: object
@@ -28763,6 +29477,31 @@ tags:
   description: Everything about your Data Exports
 - name: Emails
   description: Everything about your Emails
+- name: Fin Agent
+  description: |
+    Access Fin programmatically via the Fin Agent API endpoints.
+
+    &nbsp;
+
+    {% admonition type="warning" %}
+    Please reach out to your accounts team to discuss access and tailored, hands-on support.
+    {% /admonition %}
+
+    &nbsp;
+
+    Integration is centered around two endpoints (`/fin/start` and `/fin/reply`) and a set of events that notify your application of Fin's status and responses. Events can be delivered via webhooks or Server-Sent Events (SSE).
+
+    &nbsp;
+
+    **Events**
+
+    Configure a webhook endpoint in the Fin Agent API settings to receive events, or use the `sse_subscription_url` from the API response to subscribe via SSE. See the [setup guide](/docs/guides/fin-agent-api/setup) for configuration details.
+
+    - `fin_status_updated` - Fired when Fin's status changes (awaiting_user_reply, escalated, resolved, complete)
+    - `fin_replied` - Fired when Fin sends a reply to the user
+    - `fin_reply_chunk` - SSE-only streaming event fired during reply generation (requires streaming enabled)
+
+    All webhook requests include an `X-Fin-Agent-API-Webhook-Signature` header for request validation.
 - name: Help Center
   description: Everything about your Help Center
 - name: Internal Articles

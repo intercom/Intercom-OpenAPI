@@ -1,6 +1,6 @@
-# Intercom API 2.14 Postman Collection
+# Intercom API 2.15 Postman Collection
 
-This directory contains the Postman collection for Intercom API version 2.14.
+This directory contains the Postman collection for Intercom API version 2.15.
 
 ## Files
 - `intercom-api.postman_collection.json`: The main Postman collection
@@ -12,4 +12,4 @@ This directory contains the Postman collection for Intercom API version 2.14.
 3. Set your access token in the environment variables
 4. Start making API calls!
 
-Last updated: 2026-04-16T09:25:37.595Z
+Last updated: 2026-04-16T09:25:37.788Z
