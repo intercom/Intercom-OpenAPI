@@ -18702,6 +18702,41 @@ components:
           nullable: true
         content_sources:
           "$ref": "#/components/schemas/content_sources_list"
+    sales_agent:
+      title: Sales Agent
+      type: object
+      x-tags:
+      - Sales Agent
+      description: Data related to Sales Agent involvement in the conversation.
+      properties:
+        outcome:
+          type: string
+          nullable: true
+          description: The fixed outcome of the sales agent interaction, used for
+            billing and tracking.
+          enum:
+          - qualified
+          - disqualified
+          - product_discovery
+          - escalated_to_support
+          - spam
+          example: qualified
+        routing_outcome:
+          type: string
+          nullable: true
+          description: The identifier of the user-defined routing outcome selected
+            by the sales agent.
+          example: enterprise_sales
+        collected_data:
+          type: object
+          nullable: true
+          description: A flat key-value map of memory fields collected by the sales
+            agent during the conversation.
+          additionalProperties:
+            type: string
+          example:
+            email: user@example.com
+            company.name: Acme Inc
     ai_subtopic:
       title: AI Subtopic
       type: object
@@ -21054,6 +21089,13 @@ components:
         ai_agent:
           "$ref": "#/components/schemas/ai_agent"
           nullable: true
+        sales_agent_participated:
+          type: boolean
+          description: Indicates whether the Sales Agent participated in the conversation.
+          example: false
+        sales_agent:
+          "$ref": "#/components/schemas/sales_agent"
+          nullable: true
     conversation:
       title: Conversation
       type: object
@@ -21171,6 +21213,13 @@ components:
           example: true
         ai_agent:
           "$ref": "#/components/schemas/ai_agent"
+          nullable: true
+        sales_agent_participated:
+          type: boolean
+          description: Indicates whether the Sales Agent participated in the conversation.
+          example: false
+        sales_agent:
+          "$ref": "#/components/schemas/sales_agent"
           nullable: true
     conversation_attachment_files:
       title: Conversation attachment files
