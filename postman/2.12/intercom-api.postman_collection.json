@@ -8,7 +8,7 @@
       "url": "https://developers.intercom.com"
     },
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "updatedAt": "2025-08-27T09:13:42.189Z"
+    "updatedAt": "2026-04-16T10:19:18.260Z"
   },
   "item": [
     {
@@ -745,7 +745,13 @@
               "path": [
                 "admins"
               ],
-              "query": [],
+              "query": [
+                {
+                  "key": "display_avatar",
+                  "value": "true",
+                  "description": "If set to true, the response will include the admin's avatar object containing the image URL. Defaults to false."
+                }
+              ],
               "variable": []
             },
             "auth": {
@@ -2614,7 +2620,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"role\": \"\",\n  \"external_id\": \"\",\n  \"email\": \"jdoe@example.com\",\n  \"phone\": \"+353871234567\",\n  \"name\": \"John Doe\",\n  \"avatar\": \"https://www.example.com/avatar_image.jpg\",\n  \"signed_up_at\": 1571672154,\n  \"last_seen_at\": 1571672154,\n  \"owner_id\": 123,\n  \"unsubscribed_from_emails\": true,\n  \"custom_attributes\": \"\"\n}",
+              "raw": "{\n  \"role\": \"user\",\n  \"external_id\": \"625e90fc55ab113b6d92175f\",\n  \"email\": \"jdoe@example.com\",\n  \"phone\": \"+353871234567\",\n  \"name\": \"John Doe\",\n  \"avatar\": \"https://www.example.com/avatar_image.jpg\",\n  \"signed_up_at\": 1571672154,\n  \"last_seen_at\": 1571672154,\n  \"owner_id\": 123,\n  \"unsubscribed_from_emails\": true,\n  \"custom_attributes\": {\n    \"paid_subscriber\": true,\n    \"monthly_spend\": 155.5,\n    \"team_mates\": 1\n  }\n}",
               "urlencoded": [],
               "formdata": []
             }
@@ -3074,7 +3080,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"from\": {\n    \"type\": \"user\",\n    \"id\": \"536e564f316c83104c000020\"\n  },\n  \"body\": \"Hello\",\n  \"created_at\": 1671028894\n}",
+              "raw": "{\n  \"from\": {\n    \"type\": \"user\",\n    \"id\": \"536e564f316c83104c000020\"\n  },\n  \"body\": \"Hello\",\n  \"subject\": \"Thanks for everything\",\n  \"attachment_urls\": \"\",\n  \"created_at\": 1671028894\n}",
               "urlencoded": [],
               "formdata": []
             }
@@ -3567,7 +3573,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"read\": true,\n  \"custom_attributes\": \"\"\n}",
+              "raw": "{\n  \"read\": true,\n  \"custom_attributes\": {\n    \"paid_subscriber\": true,\n    \"monthly_spend\": 155.5,\n    \"team_mates\": 9,\n    \"start_date_iso8601\": \"2023-03-04T09:46:14Z\",\n    \"end_date_timestamp\": 1677923174\n  }\n}",
               "urlencoded": [],
               "formdata": []
             }
@@ -5925,7 +5931,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phone\": \"+1 1234567890\",\n  \"custom_attributes\": \"\"\n}",
+              "raw": "{\n  \"phone\": \"+1 1234567890\",\n  \"custom_attributes\": {\n    \"paid_subscriber\": true,\n    \"monthly_spend\": 155.5,\n    \"team_mates\": 9,\n    \"start_date_iso8601\": \"2023-03-04T09:46:14Z\",\n    \"end_date_timestamp\": 1677923174\n  }\n}",
               "urlencoded": [],
               "formdata": []
             }
@@ -7246,7 +7252,7 @@
                   "key": "id",
                   "value": "id",
                   "disabled": false,
-                  "description": "The unique identifier for the ticket which is given by Intercom."
+                  "description": "The unique identifier for the ticket which is given by Intercom.\n{% admonition type=\"info\" name=\"Not the Inbox ticket ID\" %}\nThis is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.\n{% /admonition %}\n"
                 }
               ]
             },
@@ -7350,7 +7356,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"message_type\": \"comment\",\n  \"type\": \"admin\",\n  \"body\": \"Hello there!\",\n  \"created_at\": 1590000000,\n  \"attachment_urls\": \"\",\n  \"admin_id\": \"3156780\",\n  \"reply_options\": [\n    {\n      \"text\": \"\",\n      \"uuid\": \"\"\n    }\n  ]\n}",
+              "raw": "{\n  \"message_type\": \"comment\",\n  \"type\": \"admin\",\n  \"body\": \"Hello there!\",\n  \"created_at\": 1590000000,\n  \"attachment_urls\": \"\",\n  \"admin_id\": \"3156780\",\n  \"reply_options\": [\n    {\n      \"text\": \"\",\n      \"uuid\": \"\"\n    }\n  ],\n  \"cross_post\": true\n}",
               "urlencoded": [],
               "formdata": []
             }
@@ -7460,7 +7466,7 @@
               ]
             },
             "method": "POST",
-            "description": "You can search for multiple tickets by the value of their attributes in order to fetch exactly which ones you want.\n\nTo search for tickets, you send a `POST` request to `https://api.intercom.io/tickets/search`.\n\nThis will accept a query object in the body which will define your filters.\n{% admonition type=\"warning\" name=\"Optimizing search queries\" %}\n  Search queries can be complex, so optimizing them can help the performance of your search.\n  Use the `AND` and `OR` operators to combine multiple filters to get the exact results you need and utilize\n  pagination to limit the number of results returned. The default is `20` results per page.\n  See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#example-search-conversations-request) for more details on how to use the `starting_after` param.\n{% /admonition %}\n\n### Nesting & Limitations\n\nYou can nest these filters in order to get even more granular insights that pinpoint exactly what you need. Example: (1 OR 2) AND (3 OR 4).\nThere are some limitations to the amount of multiples there can be:\n- There's a limit of max 2 nested filters\n- There's a limit of max 15 filters for each AND or OR group\n\n### Accepted Fields\n\nMost keys listed as part of the Ticket model are searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `\"foobar\"`).\nThe `source.body` field is unique as the search will not be performed against the entire value, but instead against every element of the value separately. For example, when searching for a conversation with a `\"I need support\"` body - the query should contain a `=` operator with the value `\"support\"` for such conversation to be returned. A query with a `=` operator and a `\"need support\"` value will not yield a result.\n\n| Field                                     | Type                                                                                     |\n| :---------------------------------------- | :--------------------------------------------------------------------------------------- |\n| id                                        | String                                                                                   |\n| created_at                                | Date (UNIX timestamp)                                                                    |\n| updated_at                                | Date (UNIX timestamp)                                                                    |\n| _default_title_                           | String                                                                                   |\n| _default_description_                     | String                                                                                   |\n| category                                  | String                                                                                   |\n| ticket_type_id                            | String                                                                                   |\n| contact_ids                               | String                                                                                   |\n| teammate_ids                              | String                                                                                   |\n| admin_assignee_id                         | String                                                                                   |\n| team_assignee_id                          | String                                                                                   |\n| open                                      | Boolean                                                                                  |\n| state                                     | String                                                                                   |\n| snoozed_until                             | Date (UNIX timestamp)                                                                    |\n| ticket_attribute.{id}                     | String or Boolean or Date (UNIX timestamp) or Float or Integer                           |\n\n### Accepted Operators\n\n{% admonition type=\"info\" name=\"Searching based on `created_at`\" %}\n  You may use the `<=` or `>=` operators to search by `created_at`.\n{% /admonition %}\n\nThe table below shows the operators you can use to define how you want to search for the value.  The operator should be put in as a string (`\"=\"`). The operator has to be compatible with the field's type  (eg. you cannot search with `>` for a given string value as it's only compatible for integer's and dates).\n\n| Operator | Valid Types                    | Description                                                  |\n| :------- | :----------------------------- | :----------------------------------------------------------- |\n| =        | All                            | Equals                                                       |\n| !=       | All                            | Doesn't Equal                                                |\n| IN       | All                            | In  Shortcut for `OR` queries  Values most be in Array       |\n| NIN      | All                            | Not In  Shortcut for `OR !` queries  Values must be in Array |\n| >        | Integer  Date (UNIX Timestamp) | Greater (or equal) than                                      |\n| <       | Integer  Date (UNIX Timestamp) | Lower (or equal) than                                        |\n| ~        | String                         | Contains                                                     |\n| !~       | String                         | Doesn't Contain                                              |\n| ^        | String                         | Starts With                                                  |\n| $        | String                         | Ends With                                                    |\n",
+            "description": "You can search for multiple tickets by the value of their attributes in order to fetch exactly which ones you want.\n\nTo search for tickets, you send a `POST` request to `https://api.intercom.io/tickets/search`.\n\nThis will accept a query object in the body which will define your filters.\n{% admonition type=\"warning\" name=\"Optimizing search queries\" %}\n  Search queries can be complex, so optimizing them can help the performance of your search.\n  Use the `AND` and `OR` operators to combine multiple filters to get the exact results you need and utilize\n  pagination to limit the number of results returned. The default is `20` results per page.\n  See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#example-search-conversations-request) for more details on how to use the `starting_after` param.\n{% /admonition %}\n\n### Nesting & Limitations\n\nYou can nest these filters in order to get even more granular insights that pinpoint exactly what you need. Example: (1 OR 2) AND (3 OR 4).\nThere are some limitations to the amount of multiples there can be:\n- There's a limit of max 2 nested filters\n- There's a limit of max 15 filters for each AND or OR group\n\n### Accepted Fields\n\nMost keys listed as part of the Ticket model are searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `\"foobar\"`).\nThe `source.body` field is unique as the search will not be performed against the entire value, but instead against every element of the value separately. For example, when searching for a conversation with a `\"I need support\"` body - the query should contain a `=` operator with the value `\"support\"` for such conversation to be returned. A query with a `=` operator and a `\"need support\"` value will not yield a result.\n\n| Field                                     | Type                                                                                     |\n| :---------------------------------------- | :--------------------------------------------------------------------------------------- |\n| id                                        | String                                                                                   |\n| created_at                                | Date (UNIX timestamp)                                                                    |\n| updated_at                                | Date (UNIX timestamp)                                                                    |\n| title                           | String                                                                                   |\n| description                     | String                                                                                   |\n| category                                  | String                                                                                   |\n| ticket_type_id                            | String                                                                                   |\n| contact_ids                               | String                                                                                   |\n| teammate_ids                              | String                                                                                   |\n| admin_assignee_id                         | String                                                                                   |\n| team_assignee_id                          | String                                                                                   |\n| open                                      | Boolean                                                                                  |\n| state                                     | String                                                                                   |\n| snoozed_until                             | Date (UNIX timestamp)                                                                    |\n| ticket_attribute.{id}                     | String or Boolean or Date (UNIX timestamp) or Float or Integer                           |\n\n### Accepted Operators\n\n{% admonition type=\"info\" name=\"Searching based on `created_at`\" %}\n  You may use the `<=` or `>=` operators to search by `created_at`.\n{% /admonition %}\n\nThe table below shows the operators you can use to define how you want to search for the value.  The operator should be put in as a string (`\"=\"`). The operator has to be compatible with the field's type  (eg. you cannot search with `>` for a given string value as it's only compatible for integer's and dates).\n\n| Operator | Valid Types                    | Description                                                  |\n| :------- | :----------------------------- | :----------------------------------------------------------- |\n| =        | All                            | Equals                                                       |\n| !=       | All                            | Doesn't Equal                                                |\n| IN       | All                            | In  Shortcut for `OR` queries  Values most be in Array       |\n| NIN      | All                            | Not In  Shortcut for `OR !` queries  Values must be in Array |\n| >        | Integer  Date (UNIX Timestamp) | Greater (or equal) than                                      |\n| <       | Integer  Date (UNIX Timestamp) | Lower (or equal) than                                        |\n| ~        | String                         | Contains                                                     |\n| !~       | String                         | Doesn't Contain                                              |\n| ^        | String                         | Starts With                                                  |\n| $        | String                         | Ends With                                                    |\n",
             "header": [
               {
                 "key": "Intercom-Version",
@@ -7506,7 +7512,7 @@
                   "key": "id",
                   "value": "id",
                   "disabled": false,
-                  "description": "The unique identifier for the ticket which is given by Intercom"
+                  "description": "The unique identifier for the ticket which is given by Intercom.\n{% admonition type=\"info\" name=\"Not the Inbox ticket ID\" %}\nThis is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.\n{% /admonition %}\n"
                 }
               ]
             },
@@ -7753,7 +7759,7 @@
   "event": [],
   "variable": [
     {
-      "id": "8ba2d811-73b8-4785-a0a9-e256111d5e3f",
+      "id": "cd0d0e08-928c-42ad-adc3-87e39e1204e6",
       "key": "bearerToken",
       "value": "{{bearerToken}}",
       "type": "string",
