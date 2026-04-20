@@ -11751,15 +11751,6 @@ paths:
           enum:
           - 'true'
           - 'false'
-      - name: include_request_url
-        in: query
-        required: false
-        description: Include the request URL in the response (default false).
-        schema:
-          type: string
-          enum:
-          - 'true'
-          - 'false'
       tags:
       - Data Connectors
       operationId: listDataConnectorExecutionResults
@@ -11767,9 +11758,7 @@ paths:
         Retrieve paginated execution logs for a specific data connector.
         Results from the last hour are returned by default. Use `start_ts` and `end_ts` to customize the time range.
 
-        Request/response bodies and request URL are excluded by default.
-        Use `include_bodies=true` to include bodies.
-        Use `include_request_url=true` to include the sanitised request URL.
+        Request/response bodies are excluded by default. Use `include_bodies=true` to include them.
       responses:
         '200':
           description: successful
@@ -11786,6 +11775,7 @@ paths:
                       success: true
                       http_status: 200
                       http_method: post
+                      request_url: https://api.vendor.com/webhook
                       execution_time_ms: 150
                       source_type: workflow
                       source_id: '5001'
