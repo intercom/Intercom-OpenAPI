@@ -642,7 +642,7 @@ paths:
                       sync_behavior: automatic
                       created_at: 1734537259
                       updated_at: 1734537259
-                      audience_id: null
+                      audience_ids: []
                     - id: 34
                       type: content_import_source
                       last_synced_at: 1734537259
@@ -651,7 +651,7 @@ paths:
                       sync_behavior: automatic
                       created_at: 1734537259
                       updated_at: 1734537259
-                      audience_id: null
+                      audience_ids: []
                     - id: 35
                       type: content_import_source
                       last_synced_at: 1734537259
@@ -660,7 +660,7 @@ paths:
                       sync_behavior: automatic
                       created_at: 1734537259
                       updated_at: 1734537259
-                      audience_id: null
+                      audience_ids: []
                     pages:
                       type: pages
                       page: 1
@@ -712,7 +712,7 @@ paths:
                     sync_behavior: api
                     created_at: 1734537261
                     updated_at: 1734537261
-                    audience_id: null
+                    audience_ids: []
               schema:
                 "$ref": "#/components/schemas/content_import_source"
         '401':
@@ -805,7 +805,7 @@ paths:
                     sync_behavior: api
                     created_at: 1734537265
                     updated_at: 1734537265
-                    audience_id: null
+                    audience_ids: []
               schema:
                 "$ref": "#/components/schemas/content_import_source"
         '401':
@@ -849,7 +849,7 @@ paths:
                     sync_behavior: api
                     created_at: 1734537267
                     updated_at: 1734537267
-                    audience_id: null
+                    audience_ids: []
               schema:
                 "$ref": "#/components/schemas/content_import_source"
         '401':
@@ -20963,11 +20963,13 @@ components:
           format: date-time
           description: The time when the content import source was last updated.
           example: 1672928610
-        audience_id:
-          type: integer
-          nullable: true
-          description: The unique identifier for the audience associated with this content import source.
-          example: 5678
+        audience_ids:
+          type: array
+          items:
+            type: integer
+          description: The unique identifiers for the audiences associated with this content import source.
+          example:
+          - 5678
       required:
       - id
       - type
@@ -22298,11 +22300,16 @@ components:
           type: string
           description: The URL of the content import source.
           example: https://help.example.com
-        audience_id:
-          type: integer
+        audience_ids:
           nullable: true
-          description: The unique identifier for the audience to associate with this content import source.
-          example: 5678
+          description: The unique identifiers for the audiences to associate with this content import source. Can be a single integer or an array of integers.
+          example:
+          - 5678
+          oneOf:
+          - type: integer
+          - type: array
+            items:
+              type: integer
       required:
       - sync_behavior
       - url
@@ -28411,11 +28418,16 @@ components:
           description: The URL of the content import source. This may only be different
             from the existing value if the sync behavior is API.
           example: https://help.example.com
-        audience_id:
-          type: integer
+        audience_ids:
           nullable: true
-          description: The unique identifier for the audience to associate with this content import source. Set to null to remove the audience.
-          example: 5678
+          description: The unique identifiers for the audiences to associate with this content import source. Can be a single integer or an array of integers. Set to null or an empty array to remove all audiences.
+          example:
+          - 5678
+          oneOf:
+          - type: integer
+          - type: array
+            items:
+              type: integer
         apply_audience_to_existing_content:
           type: boolean
           description: When true, the audience will be applied to all existing external pages belonging to this content import source.
