@@ -3607,7 +3607,7 @@ paths:
                       has_more: false
                     plan: {}
                     custom_attributes:
-                      creation_source: api
+                      industry: manufacturing
               schema:
                 "$ref": "#/components/schemas/company"
         '400':
@@ -11757,15 +11757,6 @@ paths:
           enum:
           - 'true'
           - 'false'
-      - name: include_request_url
-        in: query
-        required: false
-        description: Include the request URL in the response (default false).
-        schema:
-          type: string
-          enum:
-          - 'true'
-          - 'false'
       tags:
       - Data Connectors
       operationId: listDataConnectorExecutionResults
@@ -11773,9 +11764,7 @@ paths:
         Retrieve paginated execution logs for a specific data connector.
         Results from the last hour are returned by default. Use `start_ts` and `end_ts` to customize the time range.
 
-        Request/response bodies and request URL are excluded by default.
-        Use `include_bodies=true` to include bodies.
-        Use `include_request_url=true` to include the sanitised request URL.
+        Request/response bodies are excluded by default. Use `include_bodies=true` to include them.
       responses:
         '200':
           description: successful
@@ -11792,6 +11781,7 @@ paths:
                       success: true
                       http_status: 200
                       http_method: post
+                      request_url: https://api.vendor.com/webhook
                       execution_time_ms: 150
                       source_type: workflow
                       source_id: '5001'
@@ -12169,7 +12159,12 @@ paths:
       - Data Export
       operationId: createDataExport
       description: "To create your export job, you need to send a `POST` request to
-        the export endpoint `https://api.intercom.io/export/content/data`.\n\nThe
+        the export endpoint `https://api.intercom.io/export/content/data`.\n\nThis
+        endpoint exports **message delivery and engagement data** for outbound content
+        (Emails, Posts, Custom Bots, Surveys, Tours, Series, and more). The exported
+        data includes who received each message, when they received it, and how they
+        engaged with it (opens, clicks, replies, completions, dismissals, unsubscribes,
+        and bounces). It does not export raw message or conversation content.\n\nThe
         only parameters you need to provide are the range of dates that you want exported.\n\n>\U0001F6A7
         Limit of one active job\n>\n> You can only have one active job per workspace.
         You will receive a HTTP status code of 429 with the message Exceeded rate
@@ -22257,10 +22252,7 @@ components:
         custom_attributes:
           type: object
           nullable: true
-          description: The custom attributes which are set for the contact.
-            For list-type attributes, the value must be one of the attribute's
-            predefined allowed values. Setting a value not in the allowed list
-            will return a 400 Bad Request error.
+          description: The custom attributes which are set for the contact
           example:
             paid_subscriber: true
             monthly_spend: 155.5
@@ -22763,10 +22755,7 @@ components:
         custom_attributes:
           type: object
           description: A hash of key/value pairs containing any other data about the
-            company you want Intercom to store. For list-type attributes, the
-            value must be one of the attribute's predefined allowed values.
-            Setting a value not in the allowed list will return a 400 Bad
-            Request error.
+            company you want Intercom to store.
           additionalProperties:
             type: string
           example:
@@ -24372,8 +24361,11 @@ components:
       type: object
       x-tags:
       - Data Export
-      description: The data export api is used to view all message sent & viewed in
-        a given timeframe.
+      description: The data export API is used to export message delivery and engagement
+        statistics for outbound content (Emails, Posts, Custom Bots, Surveys, Tours,
+        Series, and more) sent in a given timeframe. The exported data includes who
+        received each message, when they received it, and how they engaged with it
+        (opens, clicks, replies, completions, dismissals, unsubscribes, and bounces).
       properties:
         job_identfier:
           type: string
@@ -28386,10 +28378,7 @@ components:
         custom_attributes:
           type: object
           nullable: true
-          description: The custom attributes which are set for the contact.
-            For list-type attributes, the value must be one of the attribute's
-            predefined allowed values. Setting a value not in the allowed list
-            will return a 400 Bad Request error.
+          description: The custom attributes which are set for the contact
     update_content_import_source_request:
       title: Create Content Import Source Payload
       type: object
@@ -29300,7 +29289,7 @@ tags:
 - name: Data Events
   description: Everything about your Data Events
 - name: Data Export
-  description: Everything about your Data Exports
+  description: Export message delivery and engagement statistics (opens, clicks, replies, completions, dismissals, unsubscribes, bounces) for outbound content such as Emails, Posts, Custom Bots, Surveys, Tours, and Series.
 - name: Emails
   description: Everything about your Emails
 - name: Fin Agent
