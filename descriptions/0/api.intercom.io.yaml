@@ -16345,6 +16345,218 @@ paths:
                 summary: Tag not found
                 value:
                   admin_id: 991267983
+  "/tickets/{ticket_id}/jira_links":
+    post:
+      summary: Link a Jira issue to a ticket
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: ticket_id
+        in: path
+        description: The unique identifier for the ticket.
+        example: '64619700005694'
+        required: true
+        schema:
+          type: string
+      tags:
+      - Tickets
+      operationId: linkJiraIssueToTicket
+      description: Links a Jira issue to an Intercom ticket. The Jira integration must
+        be configured for the workspace. Each ticket can only be linked to one Jira issue
+        at a time.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: jira_link
+                    jira_issue_id: '10001'
+                    jira_issue_key: PROJ-123
+                    jira_issue_url: https://your-site.atlassian.net/browse/PROJ-123
+                    jira_issue_summary: Fix login page bug
+                    jira_issue_type: Task
+                    jira_issue_status: To Do
+                    ticket_id: '123'
+              schema:
+                "$ref": "#/components/schemas/jira_link"
+        '404':
+          description: Ticket or Jira issue not found
+          content:
+            application/json:
+              examples:
+                Ticket not found:
+                  value:
+                    type: error.list
+                    request_id: b44cff1d-c6f8-4d60-ab6f-33522cd739d8
+                    errors:
+                    - code: ticket_not_found
+                      message: Ticket not found
+                Jira issue not found:
+                  value:
+                    type: error.list
+                    request_id: a3658b9a-3562-48a7-8afe-362284632d67
+                    errors:
+                    - code: jira_issue_not_found
+                      message: Jira issue not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Jira link already exists
+          content:
+            application/json:
+              examples:
+                Ticket already linked:
+                  value:
+                    type: error.list
+                    request_id: 734019dc-1d61-4fad-a86e-e3fb06244c4d
+                    errors:
+                    - code: jira_link_already_exists
+                      message: A Jira issue is already linked to this ticket
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Jira integration not configured
+          content:
+            application/json:
+              examples:
+                Integration not configured:
+                  value:
+                    type: error.list
+                    request_id: 2e87c98e-4ffc-407e-b7bc-065d4d456ea7
+                    errors:
+                    - code: jira_integration_not_configured
+                      message: Jira integration is not configured for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2bed74fe-1b04-4c07-8813-02c700e8dcad
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                jira_issue_key:
+                  type: string
+                  description: The key of the Jira issue to link (e.g. PROJ-123). Required
+                    if jira_issue_id is not provided.
+                  example: PROJ-123
+                jira_issue_id:
+                  type: string
+                  description: The numeric ID of the Jira issue to link. Required if
+                    jira_issue_key is not provided.
+                  example: '10001'
+            examples:
+              successful:
+                summary: successful
+                value:
+                  jira_issue_key: PROJ-123
+  "/tickets/{ticket_id}/jira_links/{jira_issue_key}":
+    delete:
+      summary: Unlink a Jira issue from a ticket
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: ticket_id
+        in: path
+        description: The unique identifier for the ticket.
+        example: '64619700005694'
+        required: true
+        schema:
+          type: string
+      - name: jira_issue_key
+        in: path
+        description: The key of the Jira issue to unlink (e.g. PROJ-123).
+        example: PROJ-123
+        required: true
+        schema:
+          type: string
+      tags:
+      - Tickets
+      operationId: unlinkJiraIssueFromTicket
+      description: Removes the link between a Jira issue and an Intercom ticket.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: jira_link
+                    jira_issue_key: PROJ-123
+                    ticket_id: '123'
+                    deleted: true
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: jira_link
+                  jira_issue_key:
+                    type: string
+                    example: PROJ-123
+                  ticket_id:
+                    type: string
+                    example: '123'
+                  deleted:
+                    type: boolean
+                    example: true
+        '404':
+          description: Ticket or Jira link not found
+          content:
+            application/json:
+              examples:
+                Ticket not found:
+                  value:
+                    type: error.list
+                    request_id: b44cff1d-c6f8-4d60-ab6f-33522cd739d8
+                    errors:
+                    - code: ticket_not_found
+                      message: Ticket not found
+                Jira link not found:
+                  value:
+                    type: error.list
+                    request_id: a3658b9a-3562-48a7-8afe-362284632d67
+                    errors:
+                    - code: jira_issue_not_found
+                      message: No Jira link found for this ticket matching the provided
+                        issue
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2e87c98e-4ffc-407e-b7bc-065d4d456ea7
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/tickets":
     post:
       summary: Create a ticket
@@ -27215,6 +27427,46 @@ components:
             .
           items:
             "$ref": "#/components/schemas/subscription_type"
+    jira_link:
+      title: Jira Link
+      type: object
+      x-tags:
+      - Tickets
+      description: A Jira link represents a connection between an Intercom ticket and
+        a Jira issue.
+      properties:
+        type:
+          type: string
+          description: value is "jira_link"
+          example: jira_link
+        jira_issue_id:
+          type: string
+          description: The numeric ID of the linked Jira issue.
+          example: '10001'
+        jira_issue_key:
+          type: string
+          description: The key of the linked Jira issue (e.g. PROJ-123).
+          example: PROJ-123
+        jira_issue_url:
+          type: string
+          description: The URL to the Jira issue in your Jira instance.
+          example: https://your-site.atlassian.net/browse/PROJ-123
+        jira_issue_summary:
+          type: string
+          description: The summary/title of the Jira issue.
+          example: Fix login page bug
+        jira_issue_type:
+          type: string
+          description: The issue type name in Jira (e.g. Task, Bug, Story).
+          example: Task
+        jira_issue_status:
+          type: string
+          description: The current status of the Jira issue.
+          example: To Do
+        ticket_id:
+          type: string
+          description: The ID of the Intercom ticket linked to this Jira issue.
+          example: '123'
     tag:
       title: Tag
       type: object
