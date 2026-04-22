@@ -10098,8 +10098,8 @@ paths:
                       - type: contact
                         id: 6762f2041bb69f9f2193bc0c
                         external_id: '70'
-                    admin_assignee_id: '0'
-                    team_assignee_id: '0'
+                    admin_assignee_id: 0
+                    team_assignee_id: 0
                     created_at: 1734537732
                     updated_at: 1734537737
                     ticket_parts:
@@ -16426,8 +16426,8 @@ paths:
                       - type: contact
                         id: 6762f2d81bb69f9f2193bc54
                         external_id: '70'
-                    admin_assignee_id: '0'
-                    team_assignee_id: '0'
+                    admin_assignee_id: 0
+                    team_assignee_id: 0
                     created_at: 1734537944
                     updated_at: 1734537946
                     ticket_parts:
@@ -16668,8 +16668,8 @@ paths:
                       - type: contact
                         id: 6762f2dd1bb69f9f2193bc55
                         external_id: 8df1fa21-b41d-4621-9229-d6f7a3a590ce
-                    admin_assignee_id: '991268013'
-                    team_assignee_id: '0'
+                    admin_assignee_id: 991268013
+                    team_assignee_id: 0
                     created_at: 1734537950
                     updated_at: 1734537955
                     ticket_parts:
@@ -16974,8 +16974,8 @@ paths:
                       - type: contact
                         id: 6762f2f61bb69f9f2193bc59
                         external_id: b16afa36-2637-4880-adee-a46d145bc27f
-                    admin_assignee_id: '0'
-                    team_assignee_id: '0'
+                    admin_assignee_id: 0
+                    team_assignee_id: 0
                     created_at: 1734537974
                     updated_at: 1734537976
                     ticket_parts:
@@ -17159,8 +17159,8 @@ paths:
                       - type: contact
                         id: 667d61c88a68186f43bafe93
                         external_id: '71'
-                    admin_assignee_id: '0'
-                    team_assignee_id: '0'
+                    admin_assignee_id: 0
+                    team_assignee_id: 0
                     created_at: 1719493065
                     updated_at: 1719493068
                     ticket_parts:
@@ -17322,8 +17322,8 @@ paths:
         | ticket_type_id                            | String                                                                                   |
         | contact_ids                               | String                                                                                   |
         | teammate_ids                              | String                                                                                   |
-        | admin_assignee_id                         | String                                                                                   |
-        | team_assignee_id                          | String                                                                                   |
+        | admin_assignee_id                         | Integer                                                                                  |
+        | team_assignee_id                          | Integer                                                                                  |
         | open                                      | Boolean                                                                                  |
         | state                                     | String                                                                                   |
         | snoozed_until                             | Date (UNIX timestamp)                                                                    |
@@ -17439,8 +17439,8 @@ paths:
                         - type: contact
                           id: 6762f3061bb69f9f2193bc5b
                           external_id: 9b913927-c084-4391-b1db-098341b5ffe3
-                      admin_assignee_id: '0'
-                      team_assignee_id: '0'
+                      admin_assignee_id: 0
+                      team_assignee_id: 0
                       created_at: 1734537990
                       updated_at: 1734537992
                       ticket_parts:
@@ -21241,15 +21241,13 @@ components:
           example: priority
         admin_assignee_id:
           type: integer
-          nullable: true
           description: The id of the admin assigned to the conversation. If it's not
-            assigned to an admin it will return null.
+            assigned to an admin it will return 0.
           example: 0
         team_assignee_id:
           type: integer
-          nullable: true
           description: The id of the team assigned to the conversation. If it's not
-            assigned to a team it will return null.
+            assigned to a team it will return 0.
           example: 5017691
         company:
           "$ref": "#/components/schemas/company"
@@ -21362,15 +21360,13 @@ components:
           example: priority
         admin_assignee_id:
           type: integer
-          nullable: true
           description: The id of the admin assigned to the conversation. If it's not
-            assigned to an admin it will return null.
+            assigned to an admin it will return 0.
           example: 0
         team_assignee_id:
           type: integer
-          nullable: true
           description: The id of the team assigned to the conversation. If it's not
-            assigned to a team it will return null.
+            assigned to a team it will return 0.
           example: 5017691
         company:
           "$ref": "#/components/schemas/company"
@@ -27461,13 +27457,13 @@ components:
         contacts:
           "$ref": "#/components/schemas/ticket_contacts"
         admin_assignee_id:
-          type: string
-          description: The id representing the admin assigned to the ticket.
-          example: '1295'
+          type: integer
+          description: The id representing the admin assigned to the ticket. If it's not assigned to an admin it will return 0.
+          example: 1295
         team_assignee_id:
-          type: string
-          description: The id representing the team assigned to the ticket.
-          example: '1295'
+          type: integer
+          description: The id representing the team assigned to the ticket. If it's not assigned to a team it will return 0.
+          example: 1295
         created_at:
           type: integer
           format: date-time
