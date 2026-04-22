@@ -10977,7 +10977,10 @@ paths:
       tags:
       - Data Attributes
       operationId: updateDataAttribute
-      description: "\nYou can update a data attribute.\n\n> \U0001F6A7 Updating the
+      description: "\nYou can update a data attribute.\n\nYou can update contact, company,
+        or conversation data attributes. To update a conversation attribute, include
+        `model: \"conversation\"` in the request body. Without the `model` field, the
+        endpoint updates contact or company attributes.\n\n> \U0001F6A7 Updating the
         data type is not possible\n>\n> It is currently a dangerous action to execute
         changing a data attribute's type via the API. You will need to update the
         type via the UI instead.\n"
@@ -11008,6 +11011,23 @@ paths:
                     created_at: 1734537762
                     updated_at: 1734537763
                     model: company
+                Successful conversation attribute update:
+                  value:
+                    id: 100
+                    type: data_attribute
+                    name: Priority
+                    full_name: custom_attributes.Priority
+                    label: Priority
+                    description: Updated priority description
+                    data_type: string
+                    api_writable: true
+                    ui_writable: true
+                    custom: true
+                    archived: false
+                    admin_id: '991267793'
+                    created_at: 1734537762
+                    updated_at: 1734537763
+                    model: conversation
               schema:
                 "$ref": "#/components/schemas/data_attribute"
         '400':
@@ -11100,6 +11120,16 @@ paths:
                 summary: Has Dependant Object
                 value:
                   description: Trying to archieve
+                  archived: true
+              update_conversation_attribute:
+                summary: Update conversation attribute
+                value:
+                  model: conversation
+                  description: Updated priority description
+              archive_conversation_attribute:
+                summary: Archive conversation attribute
+                value:
+                  model: conversation
                   archived: true
   "/data_connectors":
     get:
@@ -22349,6 +22379,7 @@ components:
           enum:
           - contact
           - company
+          - conversation
           example: contact
         description:
           type: string
@@ -28423,6 +28454,29 @@ components:
         messenger_writable:
           type: boolean
           description: Can this attribute be updated by the Messenger
+          example: false
+        model:
+          type: string
+          description: The model that the data attribute belongs to. Required when updating conversation attributes to distinguish them from contact/company attributes.
+          enum:
+          - conversation
+          example: conversation
+        list_options:
+          type: array
+          description: Array of objects representing the list options for a conversation attribute of type list. Each option requires a `label` field and optionally an `id` for existing options.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              label:
+                type: string
+          example:
+            - label: "Option 1"
+            - label: "Option 2"
+        multiline:
+          type: boolean
+          description: Whether the conversation attribute supports multiline text. Only applicable to conversation attributes of type string.
           example: false
       oneOf:
         - properties:
