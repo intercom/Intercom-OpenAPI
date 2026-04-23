@@ -9408,6 +9408,10 @@ paths:
         {% admonition type="warning" name="Experimental" %}
           This is an experimental endpoint. It requires a valid HMAC secret for authentication in addition to the standard bearer token.
         {% /admonition %}
+
+        {% admonition type="info" name="Ticket Conversations" %}
+          For ticket conversations, the `write_tickets` OAuth scope is required. Requests without this scope will receive a 401 Unauthorized response.
+        {% /admonition %}
       responses:
         '200':
           description: Conversation part updated
@@ -9463,8 +9467,8 @@ paths:
                     type: error.list
                     request_id: a3e5b8e2-1234-5678-9abc-def012345678
                     errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '403':
@@ -13347,9 +13351,11 @@ paths:
               examples:
                 missing message_id:
                   value:
-                    type: error
-                    request_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-                    message: "message_id is required"
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: parameter_not_found
+                      message: message_id is required
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -26323,6 +26329,11 @@ components:
     whatsapp_message_status:
       type: object
       description: The delivery status of a specific WhatsApp message.
+      required:
+        - conversation_id
+        - status
+        - type
+        - message_id
       properties:
         conversation_id:
           type: string
@@ -26335,8 +26346,14 @@ components:
           example: delivered
         type:
           type: string
-          description: Event type
+          description: The type of WhatsApp message.
           example: broadcast_outbound
+          enum:
+            - broadcast_outbound
+            - inbox_outbound
+            - inbound
+            - admin_reply
+            - admin_reply_with_template
         created_at:
           type: integer
           description: Creation timestamp
