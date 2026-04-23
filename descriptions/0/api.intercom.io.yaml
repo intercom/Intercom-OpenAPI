@@ -23472,7 +23472,7 @@ components:
           example: false
         audiences:
           type: array
-          description: The user types this connector is available for.
+          description: The user role types this connector is available for.
           items:
             type: string
             enum:
@@ -23482,6 +23482,13 @@ components:
           example:
           - leads
           - visitors
+        audience_segment_ids:
+          type: array
+          description: IDs of Fin Audience segments to assign to this connector. Replaces any existing segments. Pass an empty array to clear all segments.
+          items:
+            type: string
+          example:
+          - '123'
         headers:
           type: array
           description: HTTP headers to include in the request.
@@ -23598,7 +23605,7 @@ components:
           example: false
         audiences:
           type: array
-          description: The audience types this connector targets.
+          description: The user role types this connector targets. Updating this preserves any existing custom predicate rules.
           items:
             type: string
             enum:
@@ -23608,6 +23615,13 @@ components:
           example:
           - leads
           - users
+        audience_segment_ids:
+          type: array
+          description: IDs of Fin Audience segments to assign. This is a full replacement — the connector will have exactly these segments after the update. Pass an empty array to clear all segments.
+          items:
+            type: string
+          example:
+          - '456'
         headers:
           type: array
           description: HTTP headers to include in the request.
@@ -23826,7 +23840,7 @@ components:
           example: false
         audiences:
           type: array
-          description: The audience types this connector targets.
+          description: The user role types this connector targets.
           items:
             type: string
             enum:
@@ -23836,6 +23850,25 @@ components:
           example:
           - users
           - leads
+        audience_type:
+          type: string
+          description: |
+            The current audience targeting mode. `everyone` targets all users. `custom` means predicate-based rules are configured (edit in the UI). `fin_audience` means Fin Audience segments are assigned.
+          enum:
+          - everyone
+          - custom
+          - fin_audience
+          example: everyone
+        audience_segment_ids:
+          type: array
+          description: IDs of the Fin Audience segments assigned to this connector. Empty when `audience_type` is not `fin_audience`.
+          items:
+            type: string
+          example: []
+        has_custom_predicates:
+          type: boolean
+          description: Whether this connector has custom predicate-based audience rules. When `true`, the rules can only be viewed and edited in the Intercom UI.
+          example: false
         execution_type:
           type: string
           nullable: true
