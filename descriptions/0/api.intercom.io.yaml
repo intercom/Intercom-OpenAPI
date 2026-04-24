@@ -23472,7 +23472,7 @@ components:
           example: false
         audiences:
           type: array
-          description: The user types this connector is available for.
+          description: The user role types this connector is available for.
           items:
             type: string
             enum:
@@ -23482,6 +23482,13 @@ components:
           example:
           - leads
           - visitors
+        fin_audience_ids:
+          type: array
+          description: IDs of Fin Audiences to assign to this connector.
+          items:
+            type: string
+          example:
+          - '123'
         headers:
           type: array
           description: HTTP headers to include in the request.
@@ -23598,7 +23605,7 @@ components:
           example: false
         audiences:
           type: array
-          description: The audience types this connector targets.
+          description: The user role types this connector targets. Updating this preserves any existing custom predicate rules.
           items:
             type: string
             enum:
@@ -23608,6 +23615,13 @@ components:
           example:
           - leads
           - users
+        fin_audience_ids:
+          type: array
+          description: IDs of Fin Audiences to assign to this connector.
+          items:
+            type: string
+          example:
+          - '456'
         headers:
           type: array
           description: HTTP headers to include in the request.
@@ -23826,7 +23840,7 @@ components:
           example: false
         audiences:
           type: array
-          description: The audience types this connector targets.
+          description: The user role types this connector targets.
           items:
             type: string
             enum:
@@ -23836,6 +23850,25 @@ components:
           example:
           - users
           - leads
+        audience_type:
+          type: string
+          description: |
+            The current audience targeting mode. `everyone` targets all users. `custom` means custom targeting rules are configured. `fin_audiences` means Fin Audiences are assigned.
+          enum:
+          - everyone
+          - custom
+          - fin_audiences
+          example: everyone
+        fin_audience_ids:
+          type: array
+          description: IDs of the Fin Audiences assigned to this connector. Empty when `audience_type` is not `fin_audiences`.
+          items:
+            type: string
+          example: []
+        has_custom_targeting_rules:
+          type: boolean
+          description: Whether this connector has custom targeting rules configured.
+          example: false
         execution_type:
           type: string
           nullable: true
