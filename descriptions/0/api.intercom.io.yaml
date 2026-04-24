@@ -23482,9 +23482,9 @@ components:
           example:
           - leads
           - visitors
-        audience_segment_ids:
+        fin_audience_ids:
           type: array
-          description: IDs of Fin Audience segments to assign to this connector. Replaces any existing segments. Pass an empty array to clear all segments.
+          description: IDs of Fin Audiences to assign to this connector.
           items:
             type: string
           example:
@@ -23615,9 +23615,9 @@ components:
           example:
           - leads
           - users
-        audience_segment_ids:
+        fin_audience_ids:
           type: array
-          description: IDs of Fin Audience segments to assign. This is a full replacement — the connector will have exactly these segments after the update. Pass an empty array to clear all segments.
+          description: IDs of Fin Audiences to assign to this connector.
           items:
             type: string
           example:
@@ -23853,21 +23853,21 @@ components:
         audience_type:
           type: string
           description: |
-            The current audience targeting mode. `everyone` targets all users. `custom` means predicate-based rules are configured (edit in the UI). `fin_audience` means Fin Audience segments are assigned.
+            The current audience targeting mode. `everyone` targets all users. `custom` means custom targeting rules are configured. `fin_audiences` means Fin Audiences are assigned.
           enum:
           - everyone
           - custom
-          - fin_audience
+          - fin_audiences
           example: everyone
-        audience_segment_ids:
+        fin_audience_ids:
           type: array
-          description: IDs of the Fin Audience segments assigned to this connector. Empty when `audience_type` is not `fin_audience`.
+          description: IDs of the Fin Audiences assigned to this connector. Empty when `audience_type` is not `fin_audiences`.
           items:
             type: string
           example: []
-        has_custom_predicates:
+        has_custom_targeting_rules:
           type: boolean
-          description: Whether this connector has custom predicate-based audience rules. When `true`, the rules can only be viewed and edited in the Intercom UI.
+          description: Whether this connector has custom targeting rules configured.
           example: false
         execution_type:
           type: string
