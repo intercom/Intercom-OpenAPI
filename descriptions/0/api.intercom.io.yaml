@@ -7063,6 +7063,54 @@ paths:
                       message: The language is not currently supported for Fin
               schema:
                 "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete a content snippet
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the content snippet.
+        schema:
+          type: string
+          example: '123'
+      tags:
+      - Content Snippets
+      operationId: deleteContentSnippet
+      description: You can delete a single content snippet by its id.
+      responses:
+        '204':
+          description: Content snippet deleted
+        '404':
+          description: Content snippet not found
+          content:
+            application/json:
+              examples:
+                Content snippet not found:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: not_found
+                      message: Content snippet not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Content snippet has procedure dependencies
+          content:
+            application/json:
+              examples:
+                Content snippet has procedure dependencies:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: content_has_procedure_dependencies
+                      message: Content snippet has dependent procedures and cannot
+                        be deleted
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/{conversation_id}/tags":
     post:
       summary: Add tag to a conversation
