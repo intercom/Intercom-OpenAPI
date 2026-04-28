@@ -14828,6 +14828,22 @@ paths:
                     type: tag
                     id: '105'
                     name: test
+                    users: []
+                    companies: []
+                Company not found - tag created, entity skipped:
+                  value:
+                    type: tag
+                    id: '105'
+                    name: test
+                    users: []
+                    companies: []
+                User not found - tag created, entity skipped:
+                  value:
+                    type: tag
+                    id: '105'
+                    name: test
+                    users: []
+                    companies: []
               schema:
                 "$ref": "#/components/schemas/tag_basic"
         '400':
@@ -14842,27 +14858,6 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: invalid tag parameters
-              schema:
-                "$ref": "#/components/schemas/error"
-        '404':
-          description: User  not found
-          content:
-            application/json:
-              examples:
-                Company not found:
-                  value:
-                    type: error.list
-                    request_id: 23c998cc-32b8-435d-9653-932c15809460
-                    errors:
-                    - code: company_not_found
-                      message: Company Not Found
-                User  not found:
-                  value:
-                    type: error.list
-                    request_id: 7358f78d-f122-45dd-a2e1-c2261300c38a
-                    errors:
-                    - code: not_found
-                      message: User Not Found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -14897,14 +14892,14 @@ paths:
                 summary: Invalid parameters
                 value:
                   test: invalid
-              company_not_found:
-                summary: Company not found
+              company_not_found_entity_skipped:
+                summary: Company not found - tag created, entity skipped
                 value:
                   name: test
                   companies:
                   - company_id: '123'
-              user_not_found:
-                summary: User  not found
+              user_not_found_entity_skipped:
+                summary: User not found - tag created, entity skipped
                 value:
                   name: test
                   users:
@@ -27333,6 +27328,40 @@ components:
           type: string
           description: The name of the tag
           example: Test tag
+        users:
+          type: array
+          nullable: true
+          description: The users that were tagged or untagged. Only present on preview
+            API versions when tagging or untagging users.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: The Intercom ID of the user.
+                example: '6329e838deab40166d1a53f7'
+              untagged:
+                type: boolean
+                description: Whether the user was untagged (true) or tagged (false).
+                example: false
+          example: []
+        companies:
+          type: array
+          nullable: true
+          description: The companies that were tagged or untagged. Only present on
+            preview API versions when tagging or untagging companies.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: The Intercom ID of the company.
+                example: '6329e838deab40166d1a5400'
+              untagged:
+                type: boolean
+                description: Whether the company was untagged (true) or tagged (false).
+                example: false
+          example: []
     tag_company_request:
       description: You can tag a single company or a list of companies.
       type: object
