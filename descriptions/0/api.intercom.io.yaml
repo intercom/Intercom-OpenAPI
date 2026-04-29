@@ -14829,9 +14829,9 @@ paths:
                     id: '105'
                     name: test
                     users: []
-                    companies: [{ "id": "valid-123" }]
+                    companies: [{ "id": "valid-123", "tagged": true }]
               schema:
-                "$ref": "#/components/schemas/tag_basic"
+                "$ref": "#/components/schemas/tag_create_response"
         '400':
           description: Invalid parameters
           content:
@@ -27302,38 +27302,46 @@ components:
           type: string
           description: The name of the tag
           example: Test tag
-        users:
-          type: array
-          nullable: true
-          description: The users that were tagged or untagged.
-          items:
-            type: object
-            properties:
-              id:
-                type: string
-                description: The Intercom ID of the user.
-                example: '6329e838deab40166d1a53f7'
-              tagged:
-                type: boolean
-                description: Whether the user was tagged (true) or untagged (false).
-                example: true
-          example: []
-        companies:
-          type: array
-          nullable: true
-          description: The companies that were tagged or untagged.
-          items:
-            type: object
-            properties:
-              id:
-                type: string
-                description: The Intercom ID of the company.
-                example: '6329e838deab40166d1a5400'
-              tagged:
-                type: boolean
-                description: Whether the company was tagged (true) or untagged (false).
-                example: true
-          example: []
+    tag_create_response:
+      title: Create or Update Tag Response
+      description: The response for creating or updating a tag, including the entities
+        that were tagged or untagged.
+      allOf:
+        - "$ref": "#/components/schemas/tag_basic"
+        - type: object
+          properties:
+            users:
+              type: array
+              nullable: true
+              description: The users that were tagged or untagged.
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The Intercom ID of the user.
+                    example: '6329e838deab40166d1a53f7'
+                  tagged:
+                    type: boolean
+                    description: Whether the user was tagged (true) or untagged (false).
+                    example: true
+              example: []
+            companies:
+              type: array
+              nullable: true
+              description: The companies that were tagged or untagged.
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The Intercom ID of the company.
+                    example: '6329e838deab40166d1a5400'
+                  tagged:
+                    type: boolean
+                    description: Whether the company was tagged (true) or untagged (false).
+                    example: true
+              example: []
     tag_company_request:
       description: You can tag a single company or a list of companies.
       type: object
