@@ -16484,6 +16484,7 @@ paths:
                       has_more: false
                     category: Back-office
                     is_shared: false
+                    channel: email
               schema:
                 "$ref": "#/components/schemas/ticket"
         '401':
@@ -16521,6 +16522,7 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
+                  channel: email
   "/tickets/enqueue":
     post:
       summary: Enqueue create ticket
@@ -16554,6 +16556,7 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
+                  channel: email
       responses:
         '200':
           description: Successful response
@@ -22946,6 +22949,12 @@ components:
               description: The ID of the team to which the ticket is assigned.
                 If not provided, the ticket will be unassigned.
               example: '8'
+        channel:
+          type: string
+          description: The channel for the ticket. Only supported for customer ticket types. Defaults to messenger if not provided.
+          enum:
+          - email
+          example: email
       required:
       - ticket_type_id
       - contacts
@@ -27546,6 +27555,13 @@ components:
           - Back-office
           - Tracker
           example: Customer
+        channel:
+          type: string
+          description: The channel for the ticket. Only supported for customer ticket types.
+          enum:
+          - email
+          - messenger
+          example: messenger
         ticket_attributes:
           "$ref": "#/components/schemas/ticket_custom_attributes"
         ticket_state:
