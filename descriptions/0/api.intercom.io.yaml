@@ -16592,6 +16592,363 @@ paths:
                 summary: Tag not found
                 value:
                   admin_id: 991267983
+  "/tickets/{ticket_id}/linked_conversations":
+    post:
+      summary: Link a conversation to a ticket
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: ticket_id
+        in: path
+        description: ticket_id
+        example: '64619700005694'
+        required: true
+        schema:
+          type: string
+      tags:
+      - Tickets
+      operationId: linkConversationToTicket
+      description: You can link a conversation to a tracker ticket. This will return
+        the linked conversation.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: conversation
+                    id: '550'
+                    created_at: 1734537600
+                    updated_at: 1734537602
+                    waiting_since:
+                    snoozed_until:
+                    source:
+                      type: conversation
+                      id: '403918370'
+                      delivered_as: admin_initiated
+                      subject: ''
+                      body: "<p>this is the message body</p>"
+                      author:
+                        type: admin
+                        id: '991268100'
+                        name: Ciaran300 Lee
+                        email: admin300@email.com
+                      attachments: []
+                      url:
+                      redacted: false
+                    contacts:
+                      type: contact.list
+                      contacts:
+                      - type: contact
+                        id: 6762f4001bb69f9f2193be00
+                        external_id: '70'
+                    first_contact_reply:
+                    admin_assignee_id: 991267715
+                    team_assignee_id: 5017691
+                    open: false
+                    state: closed
+                    read: true
+                    tags:
+                      type: tag.list
+                      tags: []
+                    priority: not_priority
+                    sla_applied:
+                    statistics:
+                    conversation_rating:
+                    teammates:
+                    title:
+                    custom_attributes: {}
+                    topics: {}
+                    ticket:
+                    linked_objects:
+                      type: list
+                      data: []
+                      total_count: 0
+                      has_more: false
+                    ai_topics:
+                    ai_agent:
+                    ai_agent_participated: false
+                    conversation_parts:
+                      type: conversation_part.list
+                      conversation_parts: []
+                      total_count: 0
+              schema:
+                "$ref": "#/components/schemas/conversation"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Parameter not found:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: parameter_not_found
+                      message: conversation_id is a required parameter
+                Invalid ticket type:
+                  value:
+                    type: error.list
+                    request_id: b2c3d4e5-f6a7-8901-bcde-f12345678901
+                    errors:
+                    - code: invalid_ticket_type
+                      message: Ticket is not a tracker ticket
+                Already linked to tracker:
+                  value:
+                    type: error.list
+                    request_id: c3d4e5f6-a7b8-9012-cdef-123456789012
+                    errors:
+                    - code: already_linked_to_tracker
+                      message: Conversation is already linked to this tracker ticket
+                Linked conversation limit exceeded:
+                  value:
+                    type: error.list
+                    request_id: d4e5f6a7-b8c9-0123-defa-234567890123
+                    errors:
+                    - code: linked_conversation_limit_exceeded
+                      message: Linked conversation limit has been exceeded
+                Intercom version invalid:
+                  value:
+                    type: error.list
+                    request_id: e5f6a7b8-c9d0-1234-efab-345678901234
+                    errors:
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              examples:
+                Ticket not found:
+                  value:
+                    type: error.list
+                    request_id: f6a7b8c9-d0e1-2345-fabc-456789012345
+                    errors:
+                    - code: ticket_not_found
+                      message: Ticket not found
+                Conversation not found:
+                  value:
+                    type: error.list
+                    request_id: a7b8c9d0-e1f2-3456-abcd-567890123456
+                    errors:
+                    - code: conversation_not_found
+                      message: Conversation not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b8c9d0e1-f2a3-4567-bcde-678901234567
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - conversation_id
+              properties:
+                conversation_id:
+                  type: string
+                  description: The unique identifier for the conversation which is given
+                    by Intercom.
+                  example: '123'
+            examples:
+              successful:
+                summary: successful
+                value:
+                  conversation_id: '550'
+              parameter_not_found:
+                summary: Parameter not found
+                value: {}
+              invalid_ticket_type:
+                summary: Invalid ticket type
+                value:
+                  conversation_id: '551'
+              already_linked_to_tracker:
+                summary: Already linked to tracker
+                value:
+                  conversation_id: '552'
+              linked_conversation_limit_exceeded:
+                summary: Linked conversation limit exceeded
+                value:
+                  conversation_id: '553'
+              intercom_version_invalid:
+                summary: Intercom version invalid
+                value:
+                  conversation_id: '554'
+              ticket_not_found:
+                summary: Ticket not found
+                value:
+                  conversation_id: '555'
+              conversation_not_found:
+                summary: Conversation not found
+                value:
+                  conversation_id: '556'
+  "/tickets/{ticket_id}/linked_conversations/{id}":
+    delete:
+      summary: Unlink a conversation from a ticket
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: ticket_id
+        in: path
+        description: ticket_id
+        example: '64619700005694'
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: The unique identifier for the conversation which is given by Intercom.
+        example: '123'
+        required: true
+        schema:
+          type: string
+      tags:
+      - Tickets
+      operationId: unlinkConversationFromTicket
+      description: You can unlink a conversation from a tracker ticket. This will return
+        the unlinked conversation.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: conversation
+                    id: '560'
+                    created_at: 1734537700
+                    updated_at: 1734537702
+                    waiting_since:
+                    snoozed_until:
+                    source:
+                      type: conversation
+                      id: '403918380'
+                      delivered_as: admin_initiated
+                      subject: ''
+                      body: "<p>this is the message body</p>"
+                      author:
+                        type: admin
+                        id: '991268200'
+                        name: Ciaran350 Lee
+                        email: admin350@email.com
+                      attachments: []
+                      url:
+                      redacted: false
+                    contacts:
+                      type: contact.list
+                      contacts:
+                      - type: contact
+                        id: 6762f5001bb69f9f2193bf00
+                        external_id: '70'
+                    first_contact_reply:
+                    admin_assignee_id: 991267715
+                    team_assignee_id: 5017691
+                    open: false
+                    state: closed
+                    read: true
+                    tags:
+                      type: tag.list
+                      tags: []
+                    priority: not_priority
+                    sla_applied:
+                    statistics:
+                    conversation_rating:
+                    teammates:
+                    title:
+                    custom_attributes: {}
+                    topics: {}
+                    ticket:
+                    linked_objects:
+                      type: list
+                      data: []
+                      total_count: 0
+                      has_more: false
+                    ai_topics:
+                    ai_agent:
+                    ai_agent_participated: false
+                    conversation_parts:
+                      type: conversation_part.list
+                      conversation_parts: []
+                      total_count: 0
+              schema:
+                "$ref": "#/components/schemas/conversation"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid ticket type:
+                  value:
+                    type: error.list
+                    request_id: c9d0e1f2-a3b4-5678-cdef-789012345678
+                    errors:
+                    - code: invalid_ticket_type
+                      message: Ticket is not a tracker ticket
+                Intercom version invalid:
+                  value:
+                    type: error.list
+                    request_id: d0e1f2a3-b4c5-6789-defa-890123456789
+                    errors:
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              examples:
+                Ticket not found:
+                  value:
+                    type: error.list
+                    request_id: e1f2a3b4-c5d6-7890-efab-901234567890
+                    errors:
+                    - code: ticket_not_found
+                      message: Ticket not found
+                Conversation not found:
+                  value:
+                    type: error.list
+                    request_id: f2a3b4c5-d6e7-8901-fabc-012345678901
+                    errors:
+                    - code: conversation_not_found
+                      message: Conversation not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a3b4c5d6-e7f8-9012-abcd-123456789012
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/tickets":
     post:
       summary: Create a ticket
