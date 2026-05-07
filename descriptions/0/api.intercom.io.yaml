@@ -14732,6 +14732,10 @@ paths:
                     phone: "+15551234567"
                     fin_recording_url: "https://api.intercom.io/calls/124/recording"
                     fin_transcription_url: "https://api.intercom.io/calls/124/transcript"
+                    duration: 90
+                    talk_time: 85
+                    queue_time: 3
+                    hold_time: null
               schema:
                 "$ref": "#/components/schemas/call"
         '404':
@@ -23528,6 +23532,26 @@ components:
           format: uri
           nullable: true
           description: API URL to the AI Agent (Fin) call transcript if available.
+        duration:
+          type: integer
+          nullable: true
+          description: Total call duration in seconds from the caller's perspective. For inbound calls, measured from initiated to ended. For outbound calls, measured from answered to ended.
+          example: 900
+        talk_time:
+          type: integer
+          nullable: true
+          description: Total time in seconds the agent and customer were connected.
+          example: 300
+        queue_time:
+          type: integer
+          nullable: true
+          description: Total time in seconds the caller waited in queue before connecting, when assigned to a team.
+          example: 45
+        hold_time:
+          type: integer
+          nullable: true
+          description: Total time in seconds the caller was placed on hold during the call.
+          example: 60
     call_list:
       title: Calls
       type: object
