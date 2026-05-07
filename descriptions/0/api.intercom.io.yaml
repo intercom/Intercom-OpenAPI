@@ -1728,6 +1728,74 @@ paths:
                   $ref: "#/components/schemas/away_status_reason"
         '401':
           "$ref": "#/components/responses/Unauthorized"
+  "/audiences":
+    get:
+      summary: List all audiences
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page.
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Defaults to 50. Maximum
+          is 50.
+        example: 50
+        schema:
+          type: integer
+          maximum: 50
+      tags:
+      - Audiences
+      operationId: listAudiences
+      description: You can fetch a list of all audiences for the workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - type: audience
+                      id: '123'
+                      name: VIP Customers
+                      created_at: 1717200000
+                      updated_at: 1717200000
+                    - type: audience
+                      id: '456'
+                      name: Enterprise Accounts
+                      created_at: 1717200000
+                      updated_at: 1717200000
+                    total_count: 2
+                    page: 1
+                    per_page: 50
+                    total_pages: 1
+              schema:
+                "$ref": "#/components/schemas/audience_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b1939528-98f0-4a63-a442-2cc9203fc8c7
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/export/reporting_data/enqueue":
     post:
       summary: Enqueue a new reporting data export job
@@ -19269,6 +19337,68 @@ components:
           type: boolean
           description: Whether or not the app uses identity verification.
           example: false
+    audience:
+      title: Audience
+      type: object
+      x-tags:
+      - Audiences
+      description: An audience represents a group of contacts that can be targeted
+        by Fin.
+      properties:
+        type:
+          type: string
+          description: The type of object.
+          enum:
+          - audience
+          example: audience
+        id:
+          type: string
+          description: The unique identifier representing the audience.
+          example: '123'
+        name:
+          type: string
+          description: The name of the audience.
+          example: VIP Customers
+        created_at:
+          type: integer
+          description: The time the audience was created as a Unix timestamp.
+          example: 1717200000
+        updated_at:
+          type: integer
+          description: The time the audience was last updated as a Unix timestamp.
+          example: 1717200000
+    audience_list:
+      title: Audience List
+      type: object
+      description: A paginated list of audience objects.
+      properties:
+        type:
+          type: string
+          description: The type of the object.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: A list of audience objects.
+          items:
+            "$ref": "#/components/schemas/audience"
+        total_count:
+          type: integer
+          description: The total number of audiences.
+          example: 2
+        page:
+          type: integer
+          description: The current page number.
+          example: 1
+        per_page:
+          type: integer
+          description: The number of results per page.
+          example: 50
+        total_pages:
+          type: integer
+          description: The total number of pages.
+          example: 1
     article:
       title: Article
       type: object
@@ -29701,6 +29831,8 @@ tags:
   description: Everything about your Articles
 - name: Away Status Reasons
   description: Everything about your Away Status Reasons
+- name: Audiences
+  description: Everything about your Audiences
 - name: Brands
   description: Everything about your Brands
 - name: Calls
