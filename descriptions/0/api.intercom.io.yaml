@@ -1248,6 +1248,7 @@ paths:
                       created_at: 1734537283
                       updated_at: 1734537283
                       url: http://help-center.test/myapp-64/en/articles/39-this-is-the-article-title
+                      content_segment_ids: []
               schema:
                 "$ref": "#/components/schemas/article_list"
         '401':
@@ -1309,6 +1310,7 @@ paths:
                     created_at: 1734537288
                     updated_at: 1734537288
                     url: http://help-center.test/myapp-68/en/articles/42-thanks-for-everything
+                    content_segment_ids: []
               schema:
                 "$ref": "#/components/schemas/article"
         '400':
@@ -1423,6 +1425,7 @@ paths:
                     created_at: 1734537292
                     updated_at: 1734537292
                     url: http://help-center.test/myapp-74/en/articles/45-this-is-the-article-title
+                    content_segment_ids: []
               schema:
                 "$ref": "#/components/schemas/article"
         '404':
@@ -1506,6 +1509,7 @@ paths:
                     created_at: 1734537297
                     updated_at: 1734537298
                     url: http://help-center.test/myapp-80/en/articles/48-christmas-is-here
+                    content_segment_ids: []
               schema:
                 "$ref": "#/components/schemas/article"
         '404':
@@ -1683,6 +1687,7 @@ paths:
                         created_at: 1734537306
                         updated_at: 1734537306
                         url:
+                        content_segment_ids: []
                       highlights: []
                     pages:
                       type: pages
@@ -19343,6 +19348,14 @@ components:
           type: string
           description: The URL of the article.
           example: http://intercom.test/help/en/articles/3-default-language
+        content_segment_ids:
+          type: array
+          items:
+            type: integer
+          description: The IDs of the audiences this article is targeted to. When set, only users matching these audiences will be served this article by Fin AI Agent and Copilot.
+          example:
+          - 1
+          - 2
     internal_article_list:
       title: Internal Articles
       type: object
@@ -19548,6 +19561,14 @@ components:
           nullable: true
           description: The ID of the folder this article belongs to, or null if not in a folder.
           example: 6
+        content_segment_ids:
+          type: array
+          items:
+            type: integer
+          description: The IDs of the audiences this article is targeted to. When set, only users matching these audiences will be served this article by Fin AI Agent and Copilot.
+          example:
+          - 1
+          - 2
     internal_article_list_item:
       title: Internal Articles
       type: object
@@ -22506,6 +22527,14 @@ components:
           nullable: true
           description: The ID of the folder to place this article in, or null to leave it without a folder.
           example: 6
+        content_segment_ids:
+          type: array
+          items:
+            type: integer
+          description: The IDs of the audiences to target this article to. When set, only users matching these audiences will be served this article by Fin AI Agent and Copilot.
+          example:
+          - 1
+          - 2
       required:
       - title
       - author_id
@@ -28703,6 +28732,15 @@ components:
           nullable: true
           description: The ID of the folder to place this article in, or null to remove it from its folder.
           example: 6
+        content_segment_ids:
+          type: array
+          items:
+            type: integer
+          nullable: true
+          description: The IDs of the audiences to target this article to. When set, only users matching these audiences will be served this article by Fin AI Agent and Copilot. Set to null or empty array to remove audience targeting.
+          example:
+          - 1
+          - 2
     update_internal_article_request:
       description: You can Update an Internal Article
       type: object
