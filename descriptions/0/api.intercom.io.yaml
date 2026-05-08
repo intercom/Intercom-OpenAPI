@@ -10184,6 +10184,457 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/conversations/attributes":
+    get:
+      summary: List all conversation attributes
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: include_archived
+        in: query
+        required: false
+        description: Include archived attributes in the list.
+        schema:
+          type: boolean
+        example: false
+      tags:
+      - Conversation Attributes
+      operationId: listConversationAttributes
+      description: You can fetch a list of all conversation attributes belonging to a workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - type: conversation_attribute
+                      id: 2
+                      name: test list
+                      description: ''
+                      data_type: list
+                      required: false
+                      visible_to_team_ids: []
+                      archived: false
+                      created_at: 1777472538
+                      updated_at: 1777537799
+                      admin_id: '16'
+                      options:
+                      - '1'
+                      - '2'
+                      - '3'
+                    - type: conversation_attribute
+                      id: 3
+                      name: test 2
+                      description: ''
+                      data_type: string
+                      required: false
+                      visible_to_team_ids: []
+                      archived: false
+                      created_at: 1777473061
+                      updated_at: 1777473061
+                      admin_id: '16'
+                      multiline: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 6d231766-b44b-4e78-bc9e-9c268ff19671
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create a conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Conversation Attributes
+      operationId: createConversationAttribute
+      description: You can create a conversation attribute for a workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 8
+                    name: api_test_attr
+                    description: Created via API test
+                    data_type: string
+                    required: false
+                    visible_to_team_ids: []
+                    archived: false
+                    created_at: 1778239701
+                    updated_at: 1778239701
+                    admin_id: '16'
+                    multiline: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              examples:
+                Invalid data type:
+                  value:
+                    type: error.list
+                    request_id: 4be81317-ba5a-455a-a80d-862fe4ad888b
+                    errors:
+                    - code: parameter_invalid
+                      message: "data_type 'invalid_type' is not valid. Allowed types: string, integer, list, decimal, boolean, datetime, relationship, files"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: fa71b91c-4a25-4fe6-88a9-884f6950860e
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              examples:
+                Invalid parameter:
+                  value:
+                    type: error.list
+                    request_id: e6c58b24-7c83-4a5b-8e8c-0fbe8c4a8f1a
+                    errors:
+                    - code: parameter_invalid
+                      message: name is required
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_conversation_attribute_request"
+            examples:
+              successful:
+                summary: Create a string attribute
+                value:
+                  name: api_test_attr
+                  data_type: string
+                  description: Created via API test
+              with_options:
+                summary: Create a list attribute
+                value:
+                  name: test list
+                  data_type: list
+                  options:
+                  - '1'
+                  - '2'
+                  - '3'
+              with_reference:
+                summary: Create a relationship attribute
+                value:
+                  name: ref_to_test
+                  data_type: relationship
+                  reference:
+                    type: many
+                    object_type_id: Test_Object
+  "/conversations/attributes/{id}":
+    get:
+      summary: Find a conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        description: The conversation attribute id
+        example: '3'
+        required: true
+        schema:
+          type: integer
+      tags:
+      - Conversation Attributes
+      operationId: findConversationAttribute
+      description: You can fetch the details of a conversation attribute by its id.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 3
+                    name: test 2
+                    description: ''
+                    data_type: string
+                    required: false
+                    visible_to_team_ids: []
+                    archived: false
+                    created_at: 1777473061
+                    updated_at: 1777473061
+                    admin_id: '16'
+                    multiline: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '404':
+          description: Conversation attribute not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: Conversation attribute not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: f230e3a7-00a9-456b-bf1c-2ad4b7dc49f6
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update a conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        description: The conversation attribute id
+        example: '8'
+        required: true
+        schema:
+          type: integer
+      tags:
+      - Conversation Attributes
+      operationId: updateConversationAttribute
+      description: You can update a conversation attribute by its id.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 8
+                    name: api_test_renamed
+                    description: Updated via API
+                    data_type: string
+                    required: false
+                    visible_to_team_ids: []
+                    archived: false
+                    created_at: 1778239701
+                    updated_at: 1778239718
+                    admin_id: '16'
+                    multiline: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '404':
+          description: Conversation attribute not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: Conversation attribute not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: f230e3a7-00a9-456b-bf1c-2ad4b7dc49f6
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              examples:
+                Invalid parameter:
+                  value:
+                    type: error.list
+                    request_id: e6c58b24-7c83-4a5b-8e8c-0fbe8c4a8f1a
+                    errors:
+                    - code: parameter_invalid
+                      message: name is required
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the attribute
+                  example: api_test_renamed
+                description:
+                  type: string
+                  description: The description of the attribute
+                  example: Updated via API
+                options:
+                  type: array
+                  items:
+                    type: string
+                  description: Options for list type attributes
+                  example:
+                  - '1'
+                  - '2'
+                  - '3'
+                multiline:
+                  type: boolean
+                  description: Whether the string attribute is multiline
+                  example: false
+                required:
+                  type: boolean
+                  description: Whether the attribute is required
+                  example: false
+                visible_to_team_ids:
+                  type: array
+                  items:
+                    type: string
+                  description: Team IDs that can see this attribute
+                  example: []
+                reference:
+                  type: object
+                  description: Reference configuration for relationship type attributes
+                  properties:
+                    type:
+                      type: string
+                      description: The type of relationship
+                      enum:
+                      - one
+                      - many
+                    object_type_id:
+                      type: string
+                      description: The ID of the referenced object type
+            examples:
+              rename:
+                summary: Update attribute name
+                value:
+                  name: api_test_renamed
+                  description: Updated via API
+    delete:
+      summary: Delete a conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        description: The conversation attribute id
+        example: '8'
+        required: true
+        schema:
+          type: integer
+      tags:
+      - Conversation Attributes
+      operationId: deleteConversationAttribute
+      description: You can delete (archive) a conversation attribute by its id.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 8
+                    name: api_test_renamed
+                    description: Updated via API
+                    data_type: string
+                    required: false
+                    visible_to_team_ids: []
+                    archived: true
+                    created_at: 1778239701
+                    updated_at: 1778239721
+                    admin_id: '16'
+                    multiline: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '404':
+          description: Conversation attribute not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: Conversation attribute not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: f230e3a7-00a9-456b-bf1c-2ad4b7dc49f6
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/redact":
     post:
       summary: Redact a conversation part
@@ -10854,13 +11305,12 @@ paths:
       - name: model
         in: query
         required: false
-        description: Specify the data attribute model to return.
+        description: "Specify the data attribute model to return. For conversation attributes, use `GET /conversations/attributes` instead."
         schema:
           type: string
           enum:
           - contact
           - company
-          - conversation
         example: company
       - name: include_archived
         in: query
@@ -10873,8 +11323,12 @@ paths:
       tags:
       - Data Attributes
       operationId: lisDataAttributes
-      description: You can fetch a list of all data attributes belonging to a workspace
-        for contacts, companies or conversations.
+      description: |
+        You can fetch a list of all data attributes belonging to a workspace for contacts or companies.
+
+        {% admonition type="warning" name="Deprecated: model=conversation" %}
+        The `model=conversation` parameter is deprecated. Use the dedicated `GET /conversations/attributes` endpoint instead. This parameter will return a `422` error in new API versions.
+        {% /admonition %}
       responses:
         '200':
           description: Successful response
@@ -11102,6 +11556,20 @@ paths:
                       model: company
               schema:
                 "$ref": "#/components/schemas/data_attribute_list"
+        '422':
+          description: Unprocessable entity - model=conversation is deprecated
+          content:
+            application/json:
+              examples:
+                Deprecated conversation model:
+                  value:
+                    type: error.list
+                    request_id: b7912266-b12e-4d12-b2ce-9cd44d33f0c0
+                    errors:
+                    - code: parameter_invalid
+                      message: model=conversation is no longer supported. Use GET /conversations/attributes instead
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -21891,6 +22359,190 @@ components:
             conversation feature.
           items:
             "$ref": "#/components/schemas/contact_reference"
+    conversation_attribute:
+      title: Conversation Attribute
+      type: object
+      x-tags:
+      - Conversation Attributes
+      description: A conversation attribute represents a custom data attribute that can be assigned to conversations.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `conversation_attribute`.
+          example: conversation_attribute
+        id:
+          type: integer
+          description: The id of the conversation attribute.
+          example: 3
+        name:
+          type: string
+          description: The name of the attribute.
+          example: test 2
+        description:
+          type: string
+          description: The description of the attribute.
+          example: ''
+          nullable: true
+        data_type:
+          type: string
+          description: The data type of the attribute.
+          enum:
+          - string
+          - integer
+          - list
+          - decimal
+          - boolean
+          - datetime
+          - relationship
+          - files
+          example: string
+        required:
+          type: boolean
+          description: Whether the attribute is required.
+          example: false
+        visible_to_team_ids:
+          type: array
+          description: Team IDs that can see this attribute.
+          items:
+            type: string
+          example: []
+        archived:
+          type: boolean
+          description: Whether the attribute is archived.
+          example: false
+        created_at:
+          type: integer
+          format: date-time
+          description: The timestamp when the attribute was created.
+          example: 1777473061
+        updated_at:
+          type: integer
+          format: date-time
+          description: The timestamp when the attribute was last updated.
+          example: 1777473061
+        admin_id:
+          type: string
+          description: The ID of the admin who created the attribute.
+          example: '16'
+          nullable: true
+        multiline:
+          type: boolean
+          description: Whether the string attribute is multiline (only for string type).
+          example: false
+          nullable: true
+        options:
+          type: array
+          description: Options for list type attributes.
+          items:
+            type: string
+          example:
+          - '1'
+          - '2'
+          - '3'
+          nullable: true
+        reference:
+          type: object
+          description: Reference configuration for relationship type attributes.
+          nullable: true
+          properties:
+            type:
+              type: string
+              description: The type of relationship.
+              enum:
+              - one
+              - many
+              example: many
+            object_type_id:
+              type: string
+              description: The ID of the referenced object type.
+              example: Test_Object
+    conversation_attribute_list:
+      title: Conversation Attribute List
+      type: object
+      description: A paginated list of conversation attributes.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `list`.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: The list of conversation attributes.
+          items:
+            "$ref": "#/components/schemas/conversation_attribute"
+    create_conversation_attribute_request:
+      title: Create Conversation Attribute Request
+      type: object
+      description: Request body for creating a conversation attribute.
+      properties:
+        name:
+          type: string
+          description: The name of the attribute.
+          example: api_test_attr
+        data_type:
+          type: string
+          description: The data type of the attribute.
+          enum:
+          - string
+          - integer
+          - list
+          - decimal
+          - boolean
+          - datetime
+          - relationship
+          - files
+          example: string
+        description:
+          type: string
+          description: The description of the attribute.
+          example: Created via API test
+          nullable: true
+        options:
+          type: array
+          description: Options for list type attributes.
+          items:
+            type: string
+          example:
+          - '1'
+          - '2'
+          - '3'
+          nullable: true
+        multiline:
+          type: boolean
+          description: Whether the string attribute is multiline.
+          example: false
+          nullable: true
+        required:
+          type: boolean
+          description: Whether the attribute is required.
+          example: false
+          nullable: true
+        visible_to_team_ids:
+          type: array
+          description: Team IDs that can see this attribute.
+          items:
+            type: string
+          example: []
+          nullable: true
+        reference:
+          type: object
+          description: Reference configuration for relationship type attributes.
+          nullable: true
+          properties:
+            type:
+              type: string
+              description: The type of relationship.
+              enum:
+              - one
+              - many
+            object_type_id:
+              type: string
+              description: The ID of the referenced object type.
+      required:
+      - name
+      - data_type
     conversation_deleted:
       title: Conversation Deleted
       type: object
@@ -29787,6 +30439,8 @@ tags:
   externalDocs:
     description: What is a conversation?
     url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
+- name: Conversation Attributes
+  description: Everything about your Conversation Attributes
 - name: Custom Object Instances
   description: |
     Everything about your Custom Object instances.
