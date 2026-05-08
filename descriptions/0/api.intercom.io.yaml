@@ -1243,6 +1243,7 @@ paths:
                       title: This is the article title
                       description: ''
                       body: ''
+                      body_markdown: ''
                       author_id: 991267492
                       state: published
                       created_at: 1734537283
@@ -1304,6 +1305,7 @@ paths:
                     title: Thanks for everything
                     description: Description of the Article
                     body: <p class="no-margin">Body of the Article</p>
+                    body_markdown: "Body of the Article\n"
                     author_id: 991267497
                     state: published
                     created_at: 1734537288
@@ -1418,6 +1420,7 @@ paths:
                     title: This is the article title
                     description: ''
                     body: ''
+                    body_markdown: ''
                     author_id: 991267502
                     state: published
                     created_at: 1734537292
@@ -1501,6 +1504,7 @@ paths:
                     title: Christmas is here!
                     description: ''
                     body: <p class="no-margin">New gifts in store for the jolly season</p>
+                    body_markdown: "New gifts in store for the jolly season\n"
                     author_id: 991267508
                     state: published
                     created_at: 1734537297
@@ -2876,6 +2880,7 @@ paths:
                     - id: '39'
                       title: Thanks for everything
                       body: Body of the Article
+                      body_markdown: "Body of the Article\n"
                       owner_id: 991266252
                       author_id: 991266252
                       locale: en
@@ -2917,6 +2922,7 @@ paths:
                     id: '42'
                     title: Thanks for everything
                     body: Body of the Article
+                    body_markdown: "Body of the Article\n"
                     owner_id: 991266252
                     author_id: 991266252
                     locale: en
@@ -3000,6 +3006,7 @@ paths:
                   value:
                     id: '45'
                     body: Body of the Article
+                    body_markdown: "Body of the Article\n"
                     owner_id: 991266252
                     author_id: 991266252
                     locale: en
@@ -3062,6 +3069,7 @@ paths:
                   value:
                     id: '48'
                     body: Body of the Article
+                    body_markdown: "Body of the Article\n"
                     owner_id: 991266252
                     author_id: 991266252
                     locale: en
@@ -7093,6 +7101,7 @@ paths:
                       json_blocks:
                       - type: paragraph
                         text: Navigate to Settings > Security > Reset password.
+                      body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
                       chatbot_availability: 1
                       copilot_availability: 1
                       created_at: 1663597223
@@ -7143,6 +7152,7 @@ paths:
                     json_blocks:
                     - type: paragraph
                       text: Navigate to Settings > Security > Reset password.
+                    body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
                     chatbot_availability: 1
                     copilot_availability: 1
                     created_at: 1663597223
@@ -7196,6 +7206,7 @@ paths:
                     json_blocks:
                     - type: paragraph
                       text: Navigate to Settings > Security > Reset password.
+                    body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
                     chatbot_availability: 1
                     copilot_availability: 1
                     created_at: 1663597223
@@ -7261,6 +7272,7 @@ paths:
                     json_blocks:
                     - type: paragraph
                       text: Go to Settings > Security > Reset password and follow the steps.
+                    body_markdown: "# How to reset your password (updated)\n\nGo to Settings > Security > Reset password and follow the steps.\n"
                     chatbot_availability: 1
                     copilot_availability: 1
                     created_at: 1663597223
@@ -19316,8 +19328,13 @@ components:
           example: This article will show you how to create a new article.
         body:
           type: string
-          description: The body of the article.
+          description: The body of the article in HTML.
           example: This is the body of the article.
+        body_markdown:
+          type: string
+          nullable: true
+          description: The body of the article in markdown.
+          example: "# How to create a new article\n\nThis is the body of the article.\n"
         author_id:
           type: integer
           description: The ID of the author of the article.
@@ -19489,6 +19506,12 @@ components:
           description: The body of the article in HTML. For multilingual articles,
             this will be the body of the default language's content.
           example: Default language body in html
+        body_markdown:
+          type: string
+          nullable: true
+          description: The body of the article in markdown. For multilingual articles,
+            this will be the body of the default language's content.
+          example: "# Default language title\n\nDefault language body in markdown\n"
         author_id:
           type: integer
           description: The id of the author of the article. For multilingual articles,
@@ -19574,6 +19597,11 @@ components:
           nullable: true
           description: The body of the article in HTML.
           example: Default language body in html
+        body_markdown:
+          type: string
+          nullable: true
+          description: The body of the article in markdown.
+          example: "# Internal Guide\n\nBody of the article in markdown\n"
         owner_id:
           type: integer
           description: The id of the owner of the article.
@@ -21464,6 +21492,11 @@ components:
           example:
           - type: paragraph
             text: Navigate to Settings > Security > Reset password.
+        body_markdown:
+          type: string
+          nullable: true
+          description: The body of the content snippet in markdown.
+          example: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
         chatbot_availability:
           type: integer
           description: Whether this snippet is available for Fin (1 = on, 0 = off).
@@ -21516,11 +21549,12 @@ components:
     content_snippet_create_request:
       title: Create Content Snippet Request
       type: object
-      description: The request payload for creating a content snippet.
+      description: The request payload for creating a content snippet. You must provide
+        either `json_blocks` or `body_markdown` for the snippet content — they are
+        mutually exclusive.
       nullable: false
       required:
       - title
-      - json_blocks
       properties:
         title:
           type: string
@@ -21529,12 +21563,19 @@ components:
           example: How to reset your password
         json_blocks:
           type: array
-          description: The content blocks that make up the body of the snippet.
+          description: The content blocks that make up the body of the snippet. Mutually
+            exclusive with `body_markdown`.
           items:
             type: object
           example:
           - type: paragraph
             text: Navigate to Settings > Security > Reset password.
+        body_markdown:
+          type: string
+          description: The content of the snippet in markdown. An alternative to `json_blocks` — you
+            can provide content as markdown instead of structured blocks. Mutually exclusive
+            with `json_blocks`.
+          example: "# Hello\n\nSome content.\n"
         locale:
           type: string
           description: The locale of the content snippet. Defaults to `en`.
@@ -21544,7 +21585,8 @@ components:
       title: Update Content Snippet Request
       type: object
       description: The request payload for updating a content snippet. All fields
-        are optional — only provided fields will be updated.
+        are optional — only provided fields will be updated. `json_blocks` and
+        `body_markdown` are mutually exclusive.
       nullable: false
       properties:
         title:
@@ -21554,12 +21596,19 @@ components:
           example: How to reset your password
         json_blocks:
           type: array
-          description: The content blocks that make up the body of the snippet.
+          description: The content blocks that make up the body of the snippet. Mutually
+            exclusive with `body_markdown`.
           items:
             type: object
           example:
           - type: paragraph
             text: Navigate to Settings > Security > Reset password.
+        body_markdown:
+          type: string
+          description: The content of the snippet in markdown. An alternative to `json_blocks` — you
+            can provide content as markdown instead of structured blocks. Mutually exclusive
+            with `json_blocks`.
+          example: "## Updated heading\n\nNew content.\n"
         locale:
           type: string
           description: The locale of the content snippet.
@@ -22463,9 +22512,15 @@ components:
           example: Description of the Article
         body:
           type: string
-          description: The content of the article. For multilingual articles, this
-            will be the body of the default language's content.
+          description: The content of the article in HTML. For multilingual articles, this
+            will be the body of the default language's content. Mutually exclusive with `body_markdown`.
           example: "<p>This is the body in html</p>"
+        body_markdown:
+          type: string
+          description: The content of the article in markdown. For multilingual articles, this
+            will be the body of the default language's content. An alternative to `body` — you
+            can provide content as markdown instead of HTML. Mutually exclusive with `body`.
+          example: "# Hello\n\nA paragraph with **bold** text.\n"
         author_id:
           type: integer
           description: The id of the author of the article. For multilingual articles,
@@ -22521,8 +22576,13 @@ components:
           example: Thanks for everything
         body:
           type: string
-          description: The content of the article.
+          description: The content of the article in HTML. Mutually exclusive with `body_markdown`.
           example: "<p>This is the body in html</p>"
+        body_markdown:
+          type: string
+          description: The content of the article in markdown. An alternative to `body` — you
+            can provide content as markdown instead of HTML. Mutually exclusive with `body`.
+          example: "# Internal Guide\n\nSome instructions.\n"
         author_id:
           type: integer
           description: The id of the author of the article.
@@ -28660,9 +28720,15 @@ components:
           example: Description of the Article
         body:
           type: string
-          description: The content of the article. For multilingual articles, this
-            will be the body of the default language's content.
+          description: The content of the article in HTML. For multilingual articles, this
+            will be the body of the default language's content. Mutually exclusive with `body_markdown`.
           example: "<p>This is the body in html</p>"
+        body_markdown:
+          type: string
+          description: The content of the article in markdown. For multilingual articles, this
+            will be the body of the default language's content. An alternative to `body` — you
+            can provide content as markdown instead of HTML. Mutually exclusive with `body`.
+          example: "## Updated heading\n\nNew content.\n"
         author_id:
           type: integer
           description: The id of the author of the article. For multilingual articles,
@@ -28715,7 +28781,12 @@ components:
           example: Thanks for everything
         body:
           type: string
-          description: The content of the article.
+          description: The content of the article in HTML. Mutually exclusive with `body_markdown`.
+        body_markdown:
+          type: string
+          description: The content of the article in markdown. An alternative to `body` — you
+            can provide content as markdown instead of HTML. Mutually exclusive with `body`.
+          example: "## Updated\n\nNew content.\n"
         author_id:
           type: integer
           description: The id of the author of the article.
