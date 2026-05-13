@@ -10225,9 +10225,15 @@ paths:
                       updated_at: 1777537799
                       admin_id: '16'
                       options:
-                      - '1'
-                      - '2'
-                      - '3'
+                      - id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                        label: '1'
+                        archived: false
+                      - id: b2c3d4e5-f6a7-8901-bcde-f01234567891
+                        label: '2'
+                        archived: false
+                      - id: c3d4e5f6-a7b8-9012-cdef-012345678912
+                        label: '3'
+                        archived: false
                     - type: conversation_attribute
                       id: 3
                       name: test 2
@@ -10612,6 +10618,355 @@ paths:
                     errors:
                     - code: conversation_attribute_not_found
                       message: Conversation attribute not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: f230e3a7-00a9-456b-bf1c-2ad4b7dc49f6
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/conversations/attributes/{id}/options":
+    post:
+      summary: Add an option to a list conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The conversation attribute id
+        example: 2
+        schema:
+          type: integer
+      tags:
+      - Conversations/Attributes
+      operationId: createConversationAttributeOption
+      description: Add a new option to a list-type conversation attribute. Returns the full attribute with the updated options array.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 2
+                    name: test list
+                    description: ''
+                    data_type: list
+                    required: false
+                    visible_to_team_ids: []
+                    archived: false
+                    created_at: 1777472538
+                    updated_at: 1778240000
+                    admin_id: '16'
+                    options:
+                    - id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      label: '1'
+                      archived: false
+                    - id: b2c3d4e5-f6a7-8901-bcde-f01234567891
+                      label: '2'
+                      archived: false
+                    - id: c3d4e5f6-a7b8-9012-cdef-012345678912
+                      label: '3'
+                      archived: false
+                    - id: d4e5f6a7-b8c9-0123-defa-123456789023
+                      label: High
+                      archived: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '404':
+          description: Conversation attribute not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: Conversation attribute not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              examples:
+                Not a list type:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: parameter_invalid
+                      message: Options can only be managed on list attributes
+                Label required:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: parameter_invalid
+                      message: label is required
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: f230e3a7-00a9-456b-bf1c-2ad4b7dc49f6
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_conversation_attribute_option_request"
+            examples:
+              Add option:
+                summary: Add a new list option
+                value:
+                  label: High
+  "/conversations/attributes/{id}/options/{option_id}":
+    put:
+      summary: Update an option on a list conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The conversation attribute id
+        example: 2
+        schema:
+          type: integer
+      - name: option_id
+        in: path
+        required: true
+        description: The UUID of the list option to update (from the `id` field in the options array)
+        example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        schema:
+          type: string
+      tags:
+      - Conversations/Attributes
+      operationId: updateConversationAttributeOption
+      description: Update the label of a single option on a list-type conversation attribute. Returns the full attribute with the updated options array.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 2
+                    name: test list
+                    description: ''
+                    data_type: list
+                    required: false
+                    visible_to_team_ids: []
+                    archived: false
+                    created_at: 1777472538
+                    updated_at: 1778240001
+                    admin_id: '16'
+                    options:
+                    - id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      label: Renamed
+                      archived: false
+                    - id: b2c3d4e5-f6a7-8901-bcde-f01234567891
+                      label: '2'
+                      archived: false
+                    - id: c3d4e5f6-a7b8-9012-cdef-012345678912
+                      label: '3'
+                      archived: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '404':
+          description: Conversation attribute or option not found
+          content:
+            application/json:
+              examples:
+                Attribute not found:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: Conversation attribute not found
+                Option not found:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: List option not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              examples:
+                Not a list type:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: parameter_invalid
+                      message: Options can only be managed on list attributes
+                Label required:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: parameter_invalid
+                      message: label is required
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: f230e3a7-00a9-456b-bf1c-2ad4b7dc49f6
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_conversation_attribute_option_request"
+            examples:
+              Rename option:
+                summary: Rename an existing option
+                value:
+                  label: Renamed
+    delete:
+      summary: Archive an option on a list conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The conversation attribute id
+        example: 2
+        schema:
+          type: integer
+      - name: option_id
+        in: path
+        required: true
+        description: The UUID of the list option to archive (from the `id` field in the options array)
+        example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        schema:
+          type: string
+      tags:
+      - Conversations/Attributes
+      operationId: deleteConversationAttributeOption
+      description: Archive a single option on a list-type conversation attribute (soft delete). The option remains in the response with `archived: true`. Returns the full attribute with the updated options array.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 2
+                    name: test list
+                    description: ''
+                    data_type: list
+                    required: false
+                    visible_to_team_ids: []
+                    archived: false
+                    created_at: 1777472538
+                    updated_at: 1778240002
+                    admin_id: '16'
+                    options:
+                    - id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      label: '1'
+                      archived: true
+                    - id: b2c3d4e5-f6a7-8901-bcde-f01234567891
+                      label: '2'
+                      archived: false
+                    - id: c3d4e5f6-a7b8-9012-cdef-012345678912
+                      label: '3'
+                      archived: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '404':
+          description: Conversation attribute or option not found
+          content:
+            application/json:
+              examples:
+                Attribute not found:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: Conversation attribute not found
+                Option not found:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: List option not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              examples:
+                Not a list type:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: parameter_invalid
+                      message: Options can only be managed on list attributes
+                Minimum options:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: parameter_invalid
+                      message: A list attribute must have at least 2 active options
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -22425,13 +22780,9 @@ components:
           nullable: true
         options:
           type: array
-          description: Options for list type attributes.
+          description: "(List data type only) Options for this attribute. Each option has a unique UUID used to identify it in the options management endpoints."
           items:
-            type: string
-          example:
-          - '1'
-          - '2'
-          - '3'
+            "$ref": "#/components/schemas/conversation_attribute_option"
           nullable: true
         reference:
           type: object
@@ -22465,6 +22816,45 @@ components:
           description: The list of conversation attributes.
           items:
             "$ref": "#/components/schemas/conversation_attribute"
+    conversation_attribute_option:
+      title: Conversation Attribute Option
+      type: object
+      description: A single option on a list-type conversation attribute.
+      properties:
+        id:
+          type: string
+          description: The unique UUID identifier for this option. Use this value as `option_id` in the options management endpoints.
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        label:
+          type: string
+          description: The display label for the option.
+          example: High
+        archived:
+          type: boolean
+          description: Whether this option is archived (soft-deleted).
+          example: false
+    create_conversation_attribute_option_request:
+      title: Create Conversation Attribute Option Request
+      type: object
+      description: Payload for adding a new option to a list-type conversation attribute.
+      required:
+      - label
+      properties:
+        label:
+          type: string
+          description: The label for the new option.
+          example: High
+    update_conversation_attribute_option_request:
+      title: Update Conversation Attribute Option Request
+      type: object
+      description: Payload for renaming a list option on a conversation attribute.
+      required:
+      - label
+      properties:
+        label:
+          type: string
+          description: The updated label for the option.
+          example: Renamed
     create_conversation_attribute_request:
       title: Create Conversation Attribute Request
       type: object
