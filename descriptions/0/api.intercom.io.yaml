@@ -19373,6 +19373,19 @@ components:
           type: string
           description: The URL of the article.
           example: http://intercom.test/help/en/articles/3-default-language
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs this article content is targeted to for Fin AI Agent.
+            On multilingual help centers this field appears per-locale inside `translated_content`.
+            On single-language help centers it appears at the article root level.
+            Empty array means no audience targeting is set.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
     internal_article_list:
       title: Internal Articles
       type: object
@@ -22574,6 +22587,20 @@ components:
           nullable: true
           description: The ID of the folder to place this article in, or null to leave it without a folder.
           example: 6
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to assign to this article for Fin AI Agent targeting.
+            Sending a top-level `audience_ids` broadcasts the same set to every locale.
+            For per-locale targeting, use `translated_content.<locale>.audience_ids` instead.
+            Sending both top-level and per-locale in the same request causes top-level to win.
+            Unknown audience IDs return a 404 error. No partial commit occurs.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
       required:
       - title
       - author_id
@@ -28802,6 +28829,21 @@ components:
           nullable: true
           description: The ID of the folder to place this article in, or null to remove it from its folder.
           example: 6
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to assign to this article for Fin AI Agent targeting.
+            Sending a top-level `audience_ids` broadcasts the same set to every locale.
+            Sending `audience_ids: []` clears all audience memberships from every locale.
+            For per-locale targeting, use `translated_content.<locale>.audience_ids` instead.
+            Sending both top-level and per-locale in the same request causes top-level to win.
+            Unknown audience IDs return a 404 error. No partial commit occurs.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
     update_internal_article_request:
       description: You can Update an Internal Article
       type: object
