@@ -7085,6 +7085,86 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/content/search":
+    get:
+      summary: Search Knowledge Hub content
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: query
+        in: query
+        required: false
+        description: The keyword search query. Returns all content when omitted.
+        schema:
+          type: string
+          example: password reset
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to 1.
+        schema:
+          type: integer
+          example: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results per page. Defaults to 10, maximum 50.
+        schema:
+          type: integer
+          example: 10
+      tags:
+      - Knowledge
+      operationId: searchContent
+      description: |
+        Search across Knowledge Hub content types — content snippets, external pages,
+        uploaded files, and internal articles — using a keyword query.
+
+        Requires the `read_content` OAuth scope.
+
+        {% admonition type="info" name="Preview" %}
+          This endpoint is available in the Preview API version only. Content type support,
+          filtering, and response fields will expand in future releases.
+        {% /admonition %}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    total_count: 2
+                    pages:
+                      type: pages
+                      page: 1
+                      per_page: 10
+                      total_pages: 1
+                    data:
+                    - type: content_snippet
+                      id: '123'
+                      title: Billing FAQ
+                    - type: external_content
+                      id: '456'
+                      title: How to reset your password
+              schema:
+                "$ref": "#/components/schemas/content_search_result_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 4a1b2c3d-0000-0000-0000-000000000000
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/content_snippets":
     get:
       summary: List all content snippets
@@ -21684,6 +21764,80 @@ components:
           type: string
           description: The locale of the content snippet.
           example: en
+    content_search_result:
+      title: Content Search Result
+      type: object
+      x-tags:
+      - Knowledge
+      description: A single Knowledge Hub content item returned by the content search endpoint.
+      properties:
+        type:
+          type: string
+          description: |
+            The type of the content item. One of `content_snippet`, `external_content`,
+            `file_source_content`, or `internal_article`.
+          example: content_snippet
+        id:
+          type: string
+          description: The unique identifier of the content item.
+          example: '123'
+        title:
+          type: string
+          description: The title of the content item.
+          example: Billing FAQ
+    content_search_result_list:
+      title: Content Search Result List
+      type: object
+      x-tags:
+      - Knowledge
+      description: A paginated list of Knowledge Hub content items matching a keyword search.
+      properties:
+        type:
+          type: string
+          description: Always `list`.
+          enum:
+          - list
+          example: list
+        total_count:
+          type: integer
+          description: The total number of matching content items across all pages.
+          example: 2
+        pages:
+          type: object
+          description: Pagination metadata.
+          nullable: true
+          properties:
+            type:
+              type: string
+              description: Always `pages`.
+              example: pages
+            page:
+              type: integer
+              description: The current page number.
+              example: 1
+            per_page:
+              type: integer
+              description: The number of results per page.
+              example: 10
+            total_pages:
+              type: integer
+              description: The total number of pages.
+              example: 1
+            next:
+              type: string
+              nullable: true
+              description: URL to fetch the next page of results. Absent on the last page.
+              example: https://api.intercom.io/content/search?page=2&per_page=10&query=billing
+            prev:
+              type: string
+              nullable: true
+              description: URL to fetch the previous page of results. Absent on the first page.
+              example: https://api.intercom.io/content/search?page=1&per_page=10&query=billing
+        data:
+          type: array
+          description: The list of content items matching the search query.
+          items:
+            "$ref": "#/components/schemas/content_search_result"
     conversation_list_item:
       title: Conversation List Item
       type: object
@@ -29912,6 +30066,8 @@ tags:
   description: Everything about your Companies
 - name: Contacts
   description: Everything about your contacts
+- name: Knowledge
+  description: Search across Knowledge Hub content types — content snippets, external pages, uploaded files, and internal articles.
 - name: Content Snippets
   description: Everything about your Content Snippets
 - name: Conversations
