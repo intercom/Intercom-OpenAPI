@@ -22378,13 +22378,14 @@ components:
           example: operator_initiated
         subject:
           type: string
-          description: Optional. The message subject. For Twitter, this will show
-            a generic message regarding why the subject is obscured.
+          nullable: true
+          description: The message subject. Only present for email conversations.
           example: ''
         body:
           type: string
-          description: The message body, which may contain HTML. For Twitter, this
-            will show a generic message regarding why the body is obscured.
+          nullable: true
+          description: The message body, which may contain HTML. Null when the conversation
+            was started without an explicit message.
           example: "<p>Hey there!</p>"
         author:
           "$ref": "#/components/schemas/conversation_part_author"
@@ -22396,16 +22397,17 @@ components:
         url:
           type: string
           nullable: true
-          description: The URL where the conversation was started. For Twitter, Email,
-            and Bots, this will be blank.
+          description: The URL where the conversation was started. Null for conversations
+            started via email, bots, or admin-initiated flows.
           example:
         redacted:
           type: boolean
-          description: Whether or not the source message has been redacted. Only applicable
-            for contact initiated messages.
+          description: Whether or not the source message has been redacted.
           example: false
         email_message_metadata:
           "$ref": "#/components/schemas/source_email_message_metadata"
+          nullable: true
+          description: Email metadata. Only present for email conversations.
     conversation_statistics:
       title: Conversation statistics
       type: object
