@@ -22358,12 +22358,12 @@ components:
     conversation_source:
       title: Conversation source
       type: object
-      description: The type of the conversation part that started this conversation. Can be Contact, Admin, Campaign, Automated or Operator initiated.
+      description: The first message that started this conversation. Describes the
+        channel it arrived on (`type`) and who initiated it (`delivered_as`).
       properties:
         type:
           type: string
-          description: This includes conversation, email, facebook, instagram, phone_call,
-            phone_switch, push, sms, twitter and whatsapp.
+          description: The channel through which the conversation was started.
           example: conversation
           enum:
           - conversation
@@ -22378,16 +22378,21 @@ components:
           - whatsapp
         id:
           type: string
-          description: The id representing the message.
+          nullable: true
+          description: The id of the source message or conversation part. May be
+            null for conversations started without an explicit message (e.g. admin-created
+            via the Inbox, phone calls, or ticket integrations).
           example: '3'
         delivered_as:
           type: string
-          description: The conversation's initiation type. Possible values are customer_initiated,
-            campaigns_initiated (legacy campaigns), operator_initiated (Custom bot),
-            automated (Series and other outbounds with dynamic audience message) and
-            admin_initiated (fixed audience message, ticket initiated by an admin,
-            group email).
+          description: How the conversation was initiated.
           example: operator_initiated
+          enum:
+          - customer_initiated
+          - operator_initiated
+          - admin_initiated
+          - campaigns_initiated
+          - automated
         subject:
           type: string
           description: Optional. The message subject. For Twitter, this will show
