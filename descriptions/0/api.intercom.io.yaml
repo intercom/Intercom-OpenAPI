@@ -5144,6 +5144,106 @@ paths:
                   contact_id: 123
                   admin_id: 991267585
                   body: Hello
+  "/contacts/{contact_id}/merge_histories":
+    get:
+      summary: List merge history for a contact
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: contact_id
+        in: path
+        description: The unique identifier for the contact.
+        example: 63a07ddf05a32042dffac965
+        required: true
+        schema:
+          type: string
+      - name: per_page
+        in: query
+        description: How many results to return per page. Defaults to 50. Max 1000.
+        required: false
+        schema:
+          type: integer
+          default: 50
+      - name: cursor
+        in: query
+        description: Cursor for pagination, returned as `next_cursor` in the previous response.
+        required: false
+        schema:
+          type: string
+      - name: order
+        in: query
+        description: Sort direction for results. `desc` (default) returns most recently merged first.
+        required: false
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+      tags:
+      - Contacts
+      operationId: ListContactMergeHistories
+      description: |
+        Returns the full paginated merge history for a contact — all contacts that were
+        merged into this one. Only available on the `Unstable` API version. Requires
+        the workspace to have the `api-merge-data-in-contact-response` feature enabled.
+
+        This contact must have a `role` of `user` (not `lead` or `visitor`).
+
+        Use this endpoint instead of the inline `merge_history` field on the contact
+        response when you need more than 10 entries.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: merge_history
+                      source_contact_id: 64a1f3c9e2b17a0012cd8f45
+                      source_contact_role: lead
+                      merged_at: 1714000000
+                    - type: merge_history
+                      source_contact_id: 61b3d8f1c0a4120009ef2317
+                      source_contact_role: lead
+                      merged_at: 1698000000
+                    next_cursor:
+                    has_more: false
+              schema:
+                "$ref": "#/components/schemas/contact_merge_history_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 89ce96d9-aae9-4eec-ace2-d68cc4f74879
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              examples:
+                not_found:
+                  value:
+                    type: error.list
+                    request_id: 89ce96d9-aae9-4eec-ace2-d68cc4f74880
+                    errors:
+                    - code: not_found
+                      message: Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/contacts/{contact_id}/segments":
     get:
       summary: List attached segments for contact
@@ -5776,6 +5876,15 @@ paths:
         required: true
         schema:
           type: string
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include merge history in the contact response. Only
+          available on the `Unstable` API version. Requires the workspace to have the
+          `api-merge-data-in-contact-response` feature enabled. Defaults to `false`.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       - Custom Object Instances
@@ -6039,6 +6148,15 @@ paths:
         required: true
         schema:
           type: string
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include merge history in the contact response. Only
+          available on the `Unstable` API version. Requires the workspace to have the
+          `api-merge-data-in-contact-response` feature enabled. Defaults to `false`.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: ShowContact
@@ -6249,6 +6367,15 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include merge history in the contact response. Only
+          available on the `Unstable` API version. Requires the workspace to have the
+          `api-merge-data-in-contact-response` feature enabled. Defaults to `false`.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: MergeContact
@@ -6400,6 +6527,15 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include merge history in the contact response. Only
+          available on the `Unstable` API version. Requires the workspace to have the
+          `api-merge-data-in-contact-response` feature enabled. Defaults to `false`.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: SearchContacts
@@ -6565,6 +6701,15 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include merge history in the contact response. Only
+          available on the `Unstable` API version. Requires the workspace to have the
+          `api-merge-data-in-contact-response` feature enabled. Defaults to `false`.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: ListContacts
@@ -20911,6 +21056,67 @@ components:
           "$ref": "#/components/schemas/contact_location"
         social_profiles:
           "$ref": "#/components/schemas/contact_social_profiles"
+        merge_history:
+          type: array
+          nullable: true
+          description: |
+            A list of contacts that were merged into this contact. Only present when
+            using the `Unstable` API version with `?include_merge_history=true`.
+            Capped at 10 entries inline; use `GET /contacts/{id}/merge_histories`
+            for full paginated history.
+          items:
+            "$ref": "#/components/schemas/merge_history_entry"
+    merge_history_entry:
+      title: Merge History Entry
+      type: object
+      description: A record of a contact that was merged into another contact.
+      properties:
+        type:
+          type: string
+          description: The type of object.
+          example: merge_history
+        source_contact_id:
+          type: string
+          description: The ID of the contact that was merged in.
+          example: 64a1f3c9e2b17a0012cd8f45
+        source_contact_role:
+          type: string
+          description: The role the source contact had before being merged.
+          enum:
+          - visitor
+          - lead
+          - user
+          example: lead
+        merged_at:
+          type: integer
+          format: date-time
+          description: "(UNIX timestamp) The time when the merge occurred."
+          example: 1714000000
+    contact_merge_history_list:
+      title: Contact Merge History List
+      type: object
+      description: A paginated list of merge history entries for a contact.
+      properties:
+        type:
+          type: string
+          description: The type of object.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: The merge history entries.
+          items:
+            "$ref": "#/components/schemas/merge_history_entry"
+        next_cursor:
+          type: string
+          nullable: true
+          description: Cursor to fetch the next page of results. Null when there are no more pages.
+          example: eyJkeW5hbW9faWQiOiI2NGExZjNjOWUyYjE3YTAwMTJjZDhmNDUifQ==
+        has_more:
+          type: boolean
+          description: Whether there are more results available.
+          example: false
     contact_attached_companies:
       title: Contact Attached Companies
       type: object
