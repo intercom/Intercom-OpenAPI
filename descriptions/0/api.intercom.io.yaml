@@ -1877,6 +1877,55 @@ paths:
                       message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete an audience
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the audience to delete.
+        example: 123
+        schema:
+          type: integer
+      tags:
+      - Audiences
+      operationId: deleteAudience
+      description: You can delete a single audience by its ID.
+      responses:
+        '204':
+          description: Audience deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b1939528-98f0-4a63-a442-2cc9203fc8c7
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id: b1939528-98f0-4a63-a442-2cc9203fc8c7
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/export/reporting_data/enqueue":
     post:
       summary: Enqueue a new reporting data export job
