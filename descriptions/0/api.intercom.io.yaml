@@ -10416,6 +10416,199 @@ paths:
                   type: conversation_part
                   conversation_id: really_123_doesnt_exist
                   conversation_part_id: really_123_doesnt_exist
+  "/conversations/{id}/merge":
+    post:
+      summary: Merge a conversation
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The identifier for the secondary (source) conversation to merge away.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: mergeConversation
+      description: |
+        Merge a secondary (source) conversation into a primary (target) conversation.
+        The secondary conversation is closed and linked to the primary, which
+        becomes the surviving thread. Returns the primary conversation on success.
+
+        Requires `write_conversations` OAuth scope. When the secondary is a ticket,
+        `write_tickets` scope is also required.
+      responses:
+        '200':
+          description: Conversation merged
+          content:
+            application/json:
+              examples:
+                Conversation merged:
+                  value:
+                    type: conversation
+                    id: '456'
+                    created_at: 1734537559
+                    updated_at: 1734537561
+                    waiting_since: 1734537561
+                    snoozed_until:
+                    source:
+                      type: conversation
+                      id: '403918349'
+                      delivered_as: admin_initiated
+                      subject: ''
+                      body: "<p>this is the message body</p>"
+                      author:
+                        type: admin
+                        id: '991267694'
+                        name: Ciaran212 Lee
+                        email: admin212@email.com
+                      attachments: []
+                      url:
+                      redacted: false
+                    contacts:
+                      type: contact.list
+                      contacts:
+                      - type: contact
+                        id: 6762f1571bb69f9f2193bbbb
+                        external_id: '70'
+                    first_contact_reply:
+                      created_at: 1734537561
+                      type: conversation
+                      url:
+                    admin_assignee_id:
+                    team_assignee_id:
+                    open: false
+                    state: closed
+                    read: true
+                    tags:
+                      type: tag.list
+                      tags: []
+                    priority: not_priority
+                    sla_applied:
+                    statistics:
+                    conversation_rating:
+                    teammates:
+                    title:
+                    custom_attributes: {}
+                    topics: {}
+                    ticket:
+                    linked_objects:
+                      type: list
+                      data: []
+                      total_count: 0
+                      has_more: false
+                    ai_topics:
+                    ai_agent:
+                    ai_agent_participated: false
+                    conversation_parts:
+                      type: conversation_part.list
+                      conversation_parts:
+                      - type: conversation_part
+                        id: '133'
+                        part_type: merged_primary_conversation
+                        body:
+                        created_at: 1734537561
+                        updated_at: 1734537561
+                        notified_at: 1734537561
+                        assigned_to:
+                        author:
+                          id: '991267694'
+                          type: bot
+                          name: Operator
+                          email: operator@intercom.io
+                        attachments: []
+                        external_id:
+                        redacted: false
+                        metadata: {}
+                        email_message_metadata:
+                        app_package_code: null
+                      total_count: 1
+              schema:
+                "$ref": "#/components/schemas/conversation"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Bad request:
+                  value:
+                    type: error.list
+                    request_id: 450e0b22-ccc2-40dd-bf54-bc0faaa28f57
+                    errors:
+                    - code: parameter_invalid
+                      message: merge_into_conversation_id must be a valid integer conversation ID
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: b4f6c9d3-2345-6789-abcd-ef0123456789
+                    errors:
+                    - code: forbidden
+                      message: Forbidden request
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Merge failed
+          content:
+            application/json:
+              examples:
+                Primary not found:
+                  value:
+                    type: error.list
+                    request_id: c5a7d0e4-3456-789a-bcde-f01234567890
+                    errors:
+                    - code: merge_failed
+                      message: Primary conversation not found
+                Already merged:
+                  value:
+                    type: error.list
+                    request_id: d6b8e1f5-4567-890b-cdef-012345678901
+                    errors:
+                    - code: merge_failed
+                      message: Secondary conversation has already been merged
+                Self-merge:
+                  value:
+                    type: error.list
+                    request_id: e7c9f2a6-5678-901c-def0-123456789012
+                    errors:
+                    - code: merge_failed
+                      message: Cannot merge a conversation into itself
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/merge_conversations_request"
+            examples:
+              merge_a_conversation:
+                summary: Merge a conversation
+                value:
+                  merge_into_conversation_id: 456
   "/conversations/{id}/convert":
     post:
       summary: Convert a conversation to a ticket
@@ -26821,6 +27014,19 @@ components:
           description: The unique identifier for the contact to merge into. Must be
             a user.
           example: 5ba682d23d7cf92bef87bfd4
+    merge_conversations_request:
+      title: Merge Conversations Request
+      type: object
+      description: Payload to merge a secondary conversation into a primary conversation.
+      x-tags:
+      - Conversations
+      properties:
+        merge_into_conversation_id:
+          type: integer
+          description: The ID of the primary (target) conversation to merge into.
+          example: 456
+      required:
+      - merge_into_conversation_id
     message:
       type: object
       title: Message
