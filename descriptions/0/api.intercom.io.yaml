@@ -7750,6 +7750,9 @@ paths:
                         has_more: false
                       ai_agent:
                       ai_agent_participated: false
+                      channel:
+                        initial: messenger
+                        current: messenger
               schema:
                 "$ref": "#/components/schemas/conversation_list"
         '401':
@@ -7998,6 +8001,9 @@ paths:
                       has_more: false
                     ai_agent:
                     ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -8174,6 +8180,9 @@ paths:
                       has_more: false
                     ai_agent:
                     ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -8421,6 +8430,9 @@ paths:
                       has_more: false
                     ai_agent:
                     ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -8527,6 +8539,9 @@ paths:
                       has_more: false
                     ai_agent:
                     ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts: []
@@ -8864,6 +8879,9 @@ paths:
                         has_more: false
                       ai_agent:
                       ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
               schema:
                 "$ref": "#/components/schemas/conversation_list"
       requestBody:
@@ -8966,6 +8984,9 @@ paths:
                       has_more: false
                     ai_agent:
                     ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9042,6 +9063,9 @@ paths:
                       has_more: false
                     ai_agent:
                     ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9130,6 +9154,9 @@ paths:
                       has_more: false
                     ai_agent:
                     ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9209,6 +9236,9 @@ paths:
                       has_more: false
                     ai_agent:
                     ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9409,6 +9439,9 @@ paths:
                       has_more: false
                     ai_agent:
                     ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9485,6 +9518,9 @@ paths:
                       has_more: false
                     ai_agent:
                     ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9561,6 +9597,9 @@ paths:
                       has_more: false
                     ai_agent:
                     ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9637,6 +9676,9 @@ paths:
                       has_more: false
                     ai_agent:
                     ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -10345,6 +10387,9 @@ paths:
                       has_more: false
                     ai_agent:
                     ai_agent_participated: false
+                    channel:
+                      initial: messenger
+                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -22059,6 +22104,10 @@ components:
         sales_agent:
           "$ref": "#/components/schemas/sales_agent"
           nullable: true
+        channel:
+          "$ref": "#/components/schemas/conversation_channel"
+          nullable: true
+          description: The channel through which the conversation was initiated and its current channel.
     conversation:
       title: Conversation
       type: object
@@ -22180,6 +22229,10 @@ components:
         sales_agent:
           "$ref": "#/components/schemas/sales_agent"
           nullable: true
+        channel:
+          "$ref": "#/components/schemas/conversation_channel"
+          nullable: true
+          description: The channel through which the conversation was initiated and its current channel.
     conversation_attachment_files:
       title: Conversation attachment files
       type: object
@@ -22197,6 +22250,21 @@ components:
           type: string
           description: The name of the file.
           example: test.json
+    conversation_channel:
+      title: Conversation Channel
+      type: object
+      description: The channel through which a conversation was originally initiated and its current channel.
+      properties:
+        initial:
+          type: string
+          nullable: true
+          description: The channel through which the conversation was originally initiated. Possible values include `messenger`, `zendesk_sunshine`, `zendesk_ticket`, `twitter`, `email`. Returns `null` if channel data is unavailable.
+          example: messenger
+        current:
+          type: string
+          nullable: true
+          description: The current channel of the conversation. May differ from `initial` if the conversation was migrated between channels. Returns `null` if channel data is unavailable.
+          example: messenger
     conversation_contacts:
       title: Contacts
       type: object
