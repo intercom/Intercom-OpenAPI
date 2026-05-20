@@ -21838,9 +21838,6 @@ components:
           "$ref": "#/components/schemas/conversation_rating"
         source:
           "$ref": "#/components/schemas/conversation_source"
-          description: The source of the conversation — the first message that started
-            it. Reflects the channel (`type`) and who initiated it (`delivered_as`).
-            Always present.
         contacts:
           "$ref": "#/components/schemas/conversation_contacts"
         teammates:
@@ -21960,9 +21957,6 @@ components:
           "$ref": "#/components/schemas/conversation_rating"
         source:
           "$ref": "#/components/schemas/conversation_source"
-          description: The source of the conversation — the first message that started
-            it. Reflects the channel (`type`) and who initiated it (`delivered_as`).
-            Always present.
         contacts:
           "$ref": "#/components/schemas/conversation_contacts"
         teammates:
@@ -22229,8 +22223,8 @@ components:
     conversation_part_author:
       title: Conversation part author
       type: object
-      description: The object who initiated the conversation, which can be a Contact,
-        Admin or Team. Bots and campaigns send messages on behalf of Admins or Teams.
+      description: The author of this conversation part. Can be a Contact, Admin,
+        or Bot.
         For Twitter, this will be blank.
       properties:
         type:
@@ -22358,8 +22352,8 @@ components:
     conversation_source:
       title: Conversation source
       type: object
-      description: The first message that started this conversation. Describes the
-        channel it arrived on (`type`) and who initiated it (`delivered_as`).
+      description: The first message or event that started this conversation. Describes
+        the origin and who initiated it.
       properties:
         type:
           type: string
@@ -22368,14 +22362,34 @@ components:
         id:
           type: string
           nullable: true
-          description: The id of the source message or conversation part. May be
-            null for conversations started without an explicit message (e.g. admin-created
-            via the Inbox, phone calls, or ticket integrations).
+          description: The id of the source message.
           example: '3'
         delivered_as:
           type: string
           description: How the conversation was initiated.
           example: operator_initiated
+        recipients:
+          type: array
+          nullable: true
+          description: The recipients of the source message. Only present for email
+            conversations.
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: The recipient type. One of `to`, `cc`, or `bcc`.
+                example: to
+              email:
+                type: string
+                format: email
+                description: The recipient email address.
+                example: user@example.com
+              drop_reason:
+                type: string
+                nullable: true
+                description: The reason this recipient was dropped, if applicable.
+                example:
         subject:
           type: string
           nullable: true
@@ -22384,30 +22398,52 @@ components:
         body:
           type: string
           nullable: true
-          description: The message body, which may contain HTML. Null when the conversation
-            was started without an explicit message.
+          description: The message body, which may contain HTML.
           example: "<p>Hey there!</p>"
         author:
-          "$ref": "#/components/schemas/conversation_part_author"
+          "$ref": "#/components/schemas/conversation_source_author"
         attachments:
           type: array
-          description: A list of attachments for the part.
+          description: A list of attachments on the source message.
           items:
             "$ref": "#/components/schemas/part_attachment"
         url:
           type: string
           nullable: true
-          description: The URL where the conversation was started. Null for conversations
-            started via email, bots, or admin-initiated flows.
-          example:
+          description: The URL where the conversation was started.
+          example: https://intercom.help/company/article/123
         redacted:
           type: boolean
-          description: Whether or not the source message has been redacted.
+          description: Whether or not the source content has been redacted.
           example: false
         email_message_metadata:
           "$ref": "#/components/schemas/source_email_message_metadata"
+    conversation_source_author:
+      title: Conversation source author
+      type: object
+      description: The author who started the conversation. Can be a Contact, Admin,
+        or Bot.
+      properties:
+        type:
+          type: string
+          description: The type of the author.
+          example: admin
+        id:
+          type: string
           nullable: true
-          description: Email metadata. Only present for email conversations.
+          description: The id of the author.
+          example: '274'
+        name:
+          type: string
+          nullable: true
+          description: The name of the author.
+          example: Jane Doe
+        email:
+          type: string
+          format: email
+          nullable: true
+          description: The email of the author.
+          example: jane.doe@example.com
     conversation_statistics:
       title: Conversation statistics
       type: object
