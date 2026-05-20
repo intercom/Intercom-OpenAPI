@@ -6382,10 +6382,10 @@ paths:
       description: |
         You can merge a contact with a `role` of `lead` into a contact with a `role` of `user`.
 
-        {% admonition type="warning" name="Merged contacts are not retrievable via the API" %}
-          Once a merge is completed, the source contact (`from`) is permanently removed from the active contact list. This means:
-          - **GET /contacts/{id}** — Requesting the source contact by its original ID will return a `404 Not Found` error.
-          - **POST /contacts/search** — The source contact will not appear in search results, including queries filtered by `updated_at`.
+        {% admonition type="warning" name="Merged contacts are permanently deleted" %}
+          Once a merge is completed, the source contact (`from`) is **permanently deleted** and cannot be restored. This means:
+          - **GET /contacts/{id}** — Returns `410 Gone` with a `Link` header pointing to the canonical (surviving) contact. See [Get a contact](#tag/Contacts/operation/ShowContact) for the full response format.
+          - **POST /contacts/search** — The source contact will not appear in search results.
           - **GET /contacts** — The source contact will not appear in list results.
 
           Only the target contact (`into`) remains accessible. If your application stores contact IDs, update them to use the target contact's ID after a merge.
