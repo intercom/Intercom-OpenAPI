@@ -192,7 +192,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       - name: created_at_after
         in: query
-        required: false
+        required: true
         description: The start date that you request data for. It must be formatted
           as a UNIX timestamp.
         example: '1677253093'
@@ -293,17 +293,21 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+              - created_at_after
               properties:
                 created_at_after:
-                  type: string
+                  type: integer
+                  format: date-time
                   description: The start date that you request data for. It must
                     be formatted as a UNIX timestamp.
-                  example: '1677253093'
+                  example: 1677253093
                 created_at_before:
-                  type: string
+                  type: integer
+                  format: date-time
                   description: The end date that you request data for. It must
                     be formatted as a UNIX timestamp.
-                  example: '1677861493'
+                  example: 1677861493
                 event_types:
                   type: array
                   description: An optional list of event types to filter activity
@@ -331,16 +335,16 @@ paths:
               search_with_event_types:
                 summary: Search with event types filter
                 value:
-                  created_at_after: '1677253093'
-                  created_at_before: '1677861493'
+                  created_at_after: 1677253093
+                  created_at_before: 1677861493
                   event_types:
                   - app_name_change
                   - message_state_change
               search_without_filters:
                 summary: Search with date range only
                 value:
-                  created_at_after: '1677253093'
-                  created_at_before: '1677861493'
+                  created_at_after: 1677253093
+                  created_at_before: 1677861493
       responses:
         '200':
           description: Successful response
@@ -1362,8 +1366,6 @@ paths:
                   body: Body of the Article
                   author_id: 991267497
                   state: published
-                  parent_id: 145
-                  parent_type: collection
                   parent_ids:
                   - 145
                   translated_content:
@@ -1694,6 +1696,7 @@ paths:
                         title: Title 1
                         description: ''
                         body: ''
+                        body_markdown: ''
                         author_id: 991267521
                         state: draft
                         created_at: 1734537306
@@ -2118,360 +2121,6 @@ paths:
                       message: "Export job not found for identifier: job1"
               schema:
                 "$ref": "#/components/schemas/error"
-  "/fin/start":
-    post:
-      summary: Start a conversation with Fin
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      tags:
-      - Fin Agent
-      operationId: startFinConversation
-      description: |
-        Initialize Fin by passing it the user's message along with conversation history and user details.
-
-        These additional pieces of context will be used by Fin to provide a better and more contextual answer to the user.
-
-        {% admonition type="warning" %}
-        Please reach out to your accounts team to discuss access.
-        {% /admonition %}
-
-        Once Fin is initialized, it progresses through a series of statuses such as *thinking*, *replying*, *awaiting_user_reply*, or *resolved* before ending with a status of *complete*.
-
-        During this workflow, the client should allow Fin to continue uninterrupted until a final *complete* status is returned, at which point control of the conversation passes back to the client.
-
-        Events can be received via webhooks or Server-Sent Events (SSE) using the `sse_subscription_url` in the response.
-      responses:
-        '200':
-          description: Fin conversation started successfully
-          content:
-            application/json:
-              examples:
-                Successful response:
-                  value:
-                    conversation_id: ext-123
-                    user_id: user-456
-                    status: thinking
-                    created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
-                Response with attribute errors:
-                  value:
-                    conversation_id: ext-123
-                    user_id: user-456
-                    status: thinking
-                    created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
-                    errors:
-                      user:
-                        attributes:
-                          invalid_attr: User attribute 'invalid_attr' does not exist
-                      conversation:
-                        attributes:
-                          bad_attr: Conversation attribute 'bad_attr' does not exist
-              schema:
-                type: object
-                properties:
-                  conversation_id:
-                    type: string
-                    description: The ID of the conversation.
-                    example: ext-123
-                  user_id:
-                    type: string
-                    description: The ID of the user.
-                    example: user-456
-                  status:
-                    type: string
-                    enum:
-                    - thinking
-                    - replying
-                    - awaiting_user_reply
-                    - escalated
-                    - resolved
-                    - complete
-                    description: |
-                      Fin's current status in the conversation workflow.
-                    example: thinking
-                  created_at_ms:
-                    type: string
-                    format: date-time
-                    description: The timestamp the response was created at, with millisecond precision.
-                    example: '2025-01-24T10:00:00.123Z'
-                  errors:
-                    "$ref": "#/components/schemas/fin_agent_attribute_errors"
-                  sse_subscription_url:
-                    type: string
-                    description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status.
-                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              examples:
-                Invalid request:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: conversation_id is required
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                conversation_id:
-                  type: string
-                  description: The ID of the conversation that is calling Fin via this API.
-                  example: ext-123
-                message:
-                  "$ref": "#/components/schemas/fin_agent_message"
-                user:
-                  "$ref": "#/components/schemas/fin_agent_user"
-                attachments:
-                  type: array
-                  description: An array of attachments to include with the message. Maximum of 10 attachments.
-                  maxItems: 10
-                  items:
-                    "$ref": "#/components/schemas/fin_agent_attachment"
-                conversation_metadata:
-                  "$ref": "#/components/schemas/fin_agent_conversation_metadata"
-              required:
-              - conversation_id
-              - message
-              - user
-            examples:
-              Basic request:
-                value:
-                  conversation_id: ext-123
-                  message:
-                    author: user
-                    body: How can I see my account details?
-                    timestamp: '2025-01-24T10:01:20.000Z'
-                  user:
-                    id: '123456'
-                    name: John Doe
-                    email: john.doe@example.com
-              Request with conversation history:
-                value:
-                  conversation_id: ext-123
-                  message:
-                    author: user
-                    body: How can I see my account details?
-                    timestamp: '2025-01-24T10:01:20.000Z'
-                  user:
-                    id: '123456'
-                    name: John Doe
-                    email: john.doe@example.com
-                    attributes:
-                      plan_type: Pro
-                      subscription_status: active
-                  conversation_metadata:
-                    history:
-                    - author: user
-                      body: I need help
-                      timestamp: '2025-01-24T10:00:01Z'
-                    - author: agent
-                      body: What do you need help with?
-                      timestamp: '2025-01-24T10:01:00Z'
-                    attributes:
-                      priority_level: high
-                      department: sales
-              Request with attachments:
-                value:
-                  conversation_id: ext-123
-                  message:
-                    author: user
-                    body: Here is a screenshot of the issue
-                    timestamp: '2025-01-24T10:01:20.000Z'
-                  user:
-                    id: '123456'
-                    name: John Doe
-                    email: john.doe@example.com
-                  attachments:
-                  - type: url
-                    url: https://example.com/document.pdf
-                  - type: file
-                    name: screenshot.png
-                    content_type: image/png
-                    data: iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk...
-  "/fin/reply":
-    post:
-      summary: Reply to Fin
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      tags:
-      - Fin Agent
-      operationId: replyToFin
-      description: |
-        Once Fin has returned a response to a user's message, its status will be `awaiting_user_reply`.
-
-        If a user replies, use this endpoint to send this response to Fin.
-
-        {% admonition type="warning" %}
-        Please reach out to your accounts team to discuss access.
-        {% /admonition %}
-      responses:
-        '200':
-          description: Reply sent successfully
-          content:
-            application/json:
-              examples:
-                Successful response:
-                  value:
-                    conversation_id: ext-123
-                    user_id: user-456
-                    status: thinking
-                    created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
-                Response with attribute errors:
-                  value:
-                    conversation_id: ext-123
-                    user_id: user-456
-                    status: thinking
-                    created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
-                    errors:
-                      user:
-                        attributes:
-                          invalid_attr: User attribute 'invalid_attr' does not exist
-              schema:
-                type: object
-                properties:
-                  conversation_id:
-                    type: string
-                    description: The ID of the conversation.
-                    example: ext-123
-                  user_id:
-                    type: string
-                    description: The ID of the user.
-                    example: user-456
-                  status:
-                    type: string
-                    enum:
-                    - thinking
-                    - replying
-                    - awaiting_user_reply
-                    - escalated
-                    - resolved
-                    - complete
-                    description: |
-                      Fin's current status in the conversation workflow.
-                    example: thinking
-                  created_at_ms:
-                    type: string
-                    format: date-time
-                    description: The timestamp the response was created at, with millisecond precision.
-                    example: '2025-01-24T10:00:00.123Z'
-                  errors:
-                    "$ref": "#/components/schemas/fin_agent_attribute_errors"
-                  sse_subscription_url:
-                    type: string
-                    description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status.
-                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              examples:
-                Invalid request:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: conversation_id is required
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                conversation_id:
-                  type: string
-                  description: The ID of the conversation.
-                  example: '123456'
-                message:
-                  "$ref": "#/components/schemas/fin_agent_message"
-                user:
-                  "$ref": "#/components/schemas/fin_agent_user"
-                attachments:
-                  type: array
-                  description: An array of attachments to include with the message. Maximum of 10 attachments.
-                  maxItems: 10
-                  items:
-                    "$ref": "#/components/schemas/fin_agent_attachment"
-              required:
-              - conversation_id
-              - message
-              - user
-            examples:
-              Basic reply:
-                value:
-                  conversation_id: '123456'
-                  message:
-                    author: user
-                    body: Here's the information you requested.
-                    timestamp: '2025-01-24T09:01:00.000Z'
-                  user:
-                    id: '123456'
-                    name: John Doe
-                    email: john.doe@example.com
-              Reply with attachments:
-                value:
-                  conversation_id: '123456'
-                  message:
-                    author: user
-                    body: Here's the invoice you asked for.
-                    timestamp: '2025-01-24T09:01:00.000Z'
-                  user:
-                    id: '123456'
-                    name: John Doe
-                    email: john.doe@example.com
-                  attachments:
-                  - type: url
-                    url: https://example.com/invoice.pdf
   "/help_center/collections":
     get:
       summary: List all collections
@@ -7748,11 +7397,9 @@ paths:
                         data: []
                         total_count: 0
                         has_more: false
+                      ai_topics:
                       ai_agent:
                       ai_agent_participated: false
-                      channel:
-                        initial: messenger
-                        current: messenger
               schema:
                 "$ref": "#/components/schemas/conversation_list"
         '401':
@@ -7999,11 +7646,9 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
+                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -8178,11 +7823,9 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
+                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -8428,11 +8071,9 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
+                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -8537,11 +8178,9 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
+                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts: []
@@ -8877,11 +8516,9 @@ paths:
                         data: []
                         total_count: 0
                         has_more: false
+                      ai_topics:
                       ai_agent:
                       ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
               schema:
                 "$ref": "#/components/schemas/conversation_list"
       requestBody:
@@ -8982,11 +8619,9 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
+                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9061,11 +8696,9 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
+                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9152,11 +8785,9 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
+                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9234,11 +8865,9 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
+                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9437,11 +9066,9 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
+                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9516,11 +9143,9 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
+                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9595,11 +9220,9 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
+                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -9674,11 +9297,9 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
+                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -10385,11 +10006,9 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
+                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
-                    channel:
-                      initial: messenger
-                      current: messenger
                     conversation_parts:
                       type: conversation_part.list
                       conversation_parts:
@@ -12904,8 +12523,8 @@ paths:
 
         This endpoint is designed for EU Data Act compliance, allowing customers to export their workflow configurations.
 
-        {% admonition type="warning" name="Preview API" %}
-          This API is currently in the Preview version. Its behavior may change in future releases.
+        {% admonition type="info" name="Preview API" %}
+          This endpoint is available in the Preview API version. We may make iterative improvements, including adding new fields or refining existing ones.
         {% /admonition %}
       responses:
         '200':
@@ -13103,14 +12722,14 @@ paths:
             curl -X GET 'https://api.intercom.io/macros?per_page=25&starting_after=WzE3MTk0OTM3NTcuMCwgIjEyMyJd' \
               -H 'Authorization: Bearer <YOUR_ACCESS_TOKEN>' \
               -H 'Accept: application/json' \
-              -H 'Intercom-Version: @Preview'
+              -H 'Intercom-Version: Preview'
         - lang: 'Node.js'
           source: |
             const response = await fetch('https://api.intercom.io/macros?per_page=25&starting_after=WzE3MTk0OTM3NTcuMCwgIjEyMyJd', {
               headers: {
                 'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
                 'Accept': 'application/json',
-                'Intercom-Version': '@Preview'
+                'Intercom-Version': 'Preview'
               }
             });
             const macros = await response.json();
@@ -13121,7 +12740,7 @@ paths:
             headers = {
                 'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
                 'Accept': 'application/json',
-                'Intercom-Version': '@Preview'
+                'Intercom-Version': 'Preview'
             }
 
             params = {
@@ -13151,7 +12770,7 @@ paths:
             request = Net::HTTP::Get.new(uri)
             request['Authorization'] = 'Bearer <YOUR_ACCESS_TOKEN>'
             request['Accept'] = 'application/json'
-            request['Intercom-Version'] = '@Preview'
+            request['Intercom-Version'] = 'Preview'
 
             response = http.request(request)
             macros = JSON.parse(response.body)
@@ -13376,14 +12995,14 @@ paths:
             curl -X GET 'https://api.intercom.io/macros/123' \
               -H 'Authorization: Bearer <YOUR_ACCESS_TOKEN>' \
               -H 'Accept: application/json' \
-              -H 'Intercom-Version: @Preview'
+              -H 'Intercom-Version: Preview'
         - lang: 'Node.js'
           source: |
             const response = await fetch('https://api.intercom.io/macros/123', {
               headers: {
                 'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
                 'Accept': 'application/json',
-                'Intercom-Version': '@Preview'
+                'Intercom-Version': 'Preview'
               }
             });
             const macro = await response.json();
@@ -13394,7 +13013,7 @@ paths:
             headers = {
                 'Authorization': 'Bearer <YOUR_ACCESS_TOKEN>',
                 'Accept': 'application/json',
-                'Intercom-Version': '@Preview'
+                'Intercom-Version': 'Preview'
             }
 
             response = requests.get('https://api.intercom.io/macros/123',
@@ -13413,7 +13032,7 @@ paths:
             request = Net::HTTP::Get.new(uri)
             request['Authorization'] = 'Bearer <YOUR_ACCESS_TOKEN>'
             request['Accept'] = 'application/json'
-            request['Intercom-Version'] = '@Preview'
+            request['Intercom-Version'] = 'Preview'
 
             response = http.request(request)
             macro = JSON.parse(response.body)
@@ -14683,6 +14302,185 @@ paths:
                   value:
                     type: error.list
                     request_id: 81384687-5818-4df9-b421-fba77edd6c17
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/secure_mode_secrets":
+    get:
+      summary: List all identity verification secrets
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Identity Verification Secrets
+      operationId: listIdentityVerificationSecrets
+      description: |
+        Returns the identity verification secrets configured for your workspace.
+
+        Each entry includes metadata only — the HMAC signing material itself is **never** returned by this endpoint. The raw secret is only available once, in the response to `POST /secure_mode_secrets`. Persist it at that moment.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - type: identity_verification_secret
+                      id: '102'
+                      name: Production Web
+                      supports_android: false
+                      supports_ios: false
+                      supports_web: true
+                      created_at: 1734537243
+              schema:
+                "$ref": "#/components/schemas/identity_verification_secret_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 6f8e61d8-6a9a-4f1e-bfbb-6c7c0c0aef1c
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create an identity verification secret
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Identity Verification Secrets
+      operationId: createIdentityVerificationSecret
+      description: |
+        Creates a new identity verification secret for your workspace. Intercom generates a 256-bit, cryptographically random value server-side and returns it once in the response.
+
+        **This is the only opportunity to capture the secret.** Store it in your secure configuration immediately. The `secret` field is omitted from all subsequent responses (including `GET /secure_mode_secrets`) — if you lose it, you must rotate a new secret in and delete this one.
+
+        You must enable the secret for at least one platform (`supports_android`, `supports_ios`, or `supports_web`). Rotation flow: create the new secret, roll it out to every client signing `user_hash` values, then delete the old secret with `DELETE /secure_mode_secrets/{id}` once traffic has cut over.
+      responses:
+        '201':
+          description: Secret created
+          content:
+            application/json:
+              examples:
+                Secret created:
+                  value:
+                    type: identity_verification_secret
+                    id: '103'
+                    name: Production Web
+                    secret: 9Zw0xNs3vKk0fPz9rwKqNbzH3mPVQmQxL9vhSm9Tk4A
+                    supports_android: false
+                    supports_ios: false
+                    supports_web: true
+                    created_at: 1734537500
+              schema:
+                "$ref": "#/components/schemas/identity_verification_secret_with_material"
+        '422':
+          description: Invalid parameters
+          content:
+            application/json:
+              examples:
+                Invalid parameters:
+                  value:
+                    type: error.list
+                    request_id: 2fda7f9b-4a31-4c59-8b3f-3e5c4f8a1d22
+                    errors:
+                    - code: parameter_invalid
+                      message: name is required
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_identity_verification_secret_request"
+            examples:
+              web_only:
+                summary: Create a web-only secret
+                value:
+                  name: Production Web
+                  supports_web: true
+              multi_platform:
+                summary: Create a secret for web and mobile
+                value:
+                  name: Production all-platform
+                  supports_web: true
+                  supports_ios: true
+                  supports_android: true
+  "/secure_mode_secrets/{id}":
+    delete:
+      summary: Delete an identity verification secret
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        description: The unique identifier of the identity verification secret
+        example: '102'
+        required: true
+        schema:
+          type: string
+      tags:
+      - Identity Verification Secrets
+      operationId: deleteIdentityVerificationSecret
+      description: |
+        Soft-deletes an identity verification secret. After deletion, any `user_hash` values signed with that secret will no longer verify — Messenger sessions depending on it will be rejected on their next request. Use this to complete a rotation: create a new secret, roll it out, then delete the old one.
+      responses:
+        '204':
+          description: Secret deleted
+        '404':
+          description: Secret not found
+          content:
+            application/json:
+              examples:
+                Secret not found:
+                  value:
+                    type: error.list
+                    request_id: 77b9d3c0-09e1-4d5f-8e6c-7d4a2f1b9a12
+                    errors:
+                    - code: identity_verification_secret_not_found
+                      message: Identity verification secret not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: c1c0477c-5b80-4874-be65-01ec8a9ffe14
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
@@ -18824,6 +18622,514 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/error"
+  "/fin/start":
+    post:
+      summary: Start a conversation with Fin
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Fin Agent
+      operationId: startFinConversation
+      description: |
+        Initialize Fin by passing it the user's message along with conversation history and user details.
+
+        These additional pieces of context will be used by Fin to provide a better and more contextual answer to the user.
+
+        {% admonition type="warning" %}
+        Please reach out to your accounts team to discuss access.
+        {% /admonition %}
+
+        Once Fin is initialized, it progresses through a series of statuses such as *thinking*, *replying*, *awaiting_user_reply*, or *resolved* before ending with a status of *complete*.
+
+        During this workflow, the client should allow Fin to continue uninterrupted until a final *complete* status is returned, at which point control of the conversation passes back to the client.
+
+        Events can be received via webhooks or Server-Sent Events (SSE) using the `sse_subscription_url` in the response.
+      responses:
+        '200':
+          description: Fin conversation started successfully
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    conversation_id: ext-123
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+                Response with attribute errors:
+                  value:
+                    conversation_id: ext-123
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+                    errors:
+                      user:
+                        attributes:
+                          invalid_attr: User attribute 'invalid_attr' does not exist
+                      conversation:
+                        attributes:
+                          bad_attr: Conversation attribute 'bad_attr' does not exist
+              schema:
+                type: object
+                properties:
+                  conversation_id:
+                    type: string
+                    description: The ID of the conversation.
+                    example: ext-123
+                  user_id:
+                    type: string
+                    description: The ID of the user.
+                    example: user-456
+                  status:
+                    type: string
+                    enum:
+                    - thinking
+                    - replying
+                    - awaiting_user_reply
+                    - escalated
+                    - resolved
+                    - complete
+                    description: |
+                      Fin's current status in the conversation workflow.
+                    example: thinking
+                  created_at_ms:
+                    type: string
+                    format: date-time
+                    description: The timestamp the response was created at, with millisecond precision.
+                    example: '2025-01-24T10:00:00.123Z'
+                  errors:
+                    "$ref": "#/components/schemas/fin_agent_attribute_errors"
+                  sse_subscription_url:
+                    type: string
+                    description: |
+                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status.
+                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid request:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: conversation_id is required
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conversation_id:
+                  type: string
+                  description: The ID of the conversation that is calling Fin via this API.
+                  example: ext-123
+                message:
+                  "$ref": "#/components/schemas/fin_agent_message"
+                user:
+                  "$ref": "#/components/schemas/fin_agent_user"
+                attachments:
+                  type: array
+                  description: An array of attachments to include with the message. Maximum of 10 attachments.
+                  maxItems: 10
+                  items:
+                    "$ref": "#/components/schemas/fin_agent_attachment"
+                conversation_metadata:
+                  "$ref": "#/components/schemas/fin_agent_conversation_metadata"
+                settings:
+                  "$ref": "#/components/schemas/fin_agent_settings"
+              required:
+              - conversation_id
+              - message
+              - user
+            examples:
+              Basic request:
+                value:
+                  conversation_id: ext-123
+                  message:
+                    author: user
+                    body: How can I see my account details?
+                    timestamp: '2025-01-24T10:01:20.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+              Request with settings:
+                value:
+                  conversation_id: ext-123
+                  message:
+                    author: user
+                    body: How can I resolve my outstanding invoice?
+                    timestamp: '2025-01-24T10:01:20.000Z'
+                  user:
+                    id: '123456'
+                    name: Jane Smith
+                    email: jane.smith@example.com
+                  settings:
+                    follow_up_questions: false
+                    email: true
+              Request with conversation history:
+                value:
+                  conversation_id: ext-123
+                  message:
+                    author: user
+                    body: How can I see my account details?
+                    timestamp: '2025-01-24T10:01:20.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+                    attributes:
+                      plan_type: Pro
+                      subscription_status: active
+                  conversation_metadata:
+                    history:
+                    - author: user
+                      body: I need help
+                      timestamp: '2025-01-24T10:00:01Z'
+                    - author: agent
+                      body: What do you need help with?
+                      timestamp: '2025-01-24T10:01:00Z'
+                    attributes:
+                      priority_level: high
+                      department: sales
+              Request with attachments:
+                value:
+                  conversation_id: ext-123
+                  message:
+                    author: user
+                    body: Here is a screenshot of the issue
+                    timestamp: '2025-01-24T10:01:20.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+                  attachments:
+                  - type: url
+                    url: https://example.com/document.pdf
+                  - type: file
+                    name: screenshot.png
+                    content_type: image/png
+                    data: iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk...
+  "/fin/reply":
+    post:
+      summary: Reply to Fin
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Fin Agent
+      operationId: replyToFin
+      description: |
+        Once Fin has returned a response to a user's message, its status will be `awaiting_user_reply`.
+
+        If a user replies, use this endpoint to send this response to Fin.
+
+        {% admonition type="warning" %}
+        Please reach out to your accounts team to discuss access.
+        {% /admonition %}
+      responses:
+        '200':
+          description: Reply sent successfully
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    conversation_id: ext-123
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
+                Response with attribute errors:
+                  value:
+                    conversation_id: ext-123
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
+                    errors:
+                      user:
+                        attributes:
+                          invalid_attr: User attribute 'invalid_attr' does not exist
+              schema:
+                type: object
+                properties:
+                  conversation_id:
+                    type: string
+                    description: The ID of the conversation.
+                    example: ext-123
+                  user_id:
+                    type: string
+                    description: The ID of the user.
+                    example: user-456
+                  status:
+                    type: string
+                    enum:
+                    - thinking
+                    - replying
+                    - awaiting_user_reply
+                    - escalated
+                    - resolved
+                    - complete
+                    description: |
+                      Fin's current status in the conversation workflow.
+                    example: thinking
+                  created_at_ms:
+                    type: string
+                    format: date-time
+                    description: The timestamp the response was created at, with millisecond precision.
+                    example: '2025-01-24T10:00:00.123Z'
+                  errors:
+                    "$ref": "#/components/schemas/fin_agent_attribute_errors"
+                  sse_subscription_url:
+                    type: string
+                    description: |
+                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status.
+                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid request:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: conversation_id is required
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conversation_id:
+                  type: string
+                  description: The ID of the conversation.
+                  example: '123456'
+                message:
+                  "$ref": "#/components/schemas/fin_agent_message"
+                user:
+                  "$ref": "#/components/schemas/fin_agent_user"
+                attachments:
+                  type: array
+                  description: An array of attachments to include with the message. Maximum of 10 attachments.
+                  maxItems: 10
+                  items:
+                    "$ref": "#/components/schemas/fin_agent_attachment"
+                settings:
+                  "$ref": "#/components/schemas/fin_agent_settings"
+              required:
+              - conversation_id
+              - message
+              - user
+            examples:
+              Basic reply:
+                value:
+                  conversation_id: '123456'
+                  message:
+                    author: user
+                    body: Here's the information you requested.
+                    timestamp: '2025-01-24T09:01:00.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+              Reply with settings:
+                value:
+                  conversation_id: '123456'
+                  message:
+                    author: user
+                    body: Thanks, here is my order number.
+                    timestamp: '2025-01-24T09:01:00.000Z'
+                  user:
+                    id: '123456'
+                    name: Jane Smith
+                    email: jane.smith@example.com
+                  settings:
+                    follow_up_questions: false
+                    email: true
+              Reply with attachments:
+                value:
+                  conversation_id: '123456'
+                  message:
+                    author: user
+                    body: Here's the invoice you asked for.
+                    timestamp: '2025-01-24T09:01:00.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+                  attachments:
+                  - type: url
+                    url: https://example.com/invoice.pdf
+  "/procedures/{conversation_id}/collect_agent_input":
+    post:
+      summary: Submit human input to a Fin Procedure HITL step
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: conversation_id
+        in: path
+        required: true
+        description: The ID of the conversation where the HITL step was triggered.
+        example: '215473853299345'
+        schema:
+          type: string
+      tags:
+      - Procedures
+      operationId: collectProcedureAgentInput
+      description: |
+        Submit human-collected input to a Fin Procedure that is paused at a Human in the Loop (HITL) step.
+
+        When a procedure reaches a HITL step with the API channel enabled, Intercom sends a `procedure.hitl_notification.created` webhook. Use the `callback_url` from that webhook payload to call this endpoint with the collected attribute values.
+
+        The `step_id` must match the one from the webhook payload, and `attribute_values` must include a value for every attribute listed in `attributes_to_collect`.
+
+        {% admonition type="info" name="Authentication" %}
+        This endpoint requires an OAuth token with the `write_conversations` scope. The admin associated with the token must have access to the conversation.
+        {% /admonition %}
+
+        {% admonition type="warning" name="Feature access" %}
+        This endpoint requires the Procedures HITL API feature to be enabled for your workspace.
+        {% /admonition %}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/collect_agent_input_request"
+            examples:
+              Submit boolean and list values:
+                value:
+                  step_id: d5b81f72-adb9-4317-b973-75b3c3624c09
+                  attribute_values:
+                  - identifier: workflow_local_variables.72c5a6b3-3cce-41d8-8e30-14da40791958
+                    value: true
+                  - identifier: workflow_local_variables.5adb55fb-f549-44a0-8ee9-7e652ad77c25
+                    value: 85f00ba7-558c-4b02-a397-6f5c3659941c
+              Submit string value:
+                value:
+                  step_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                  attribute_values:
+                  - identifier: workflow_local_variables.11111111-2222-3333-4444-555555555555
+                    value: Approved by manager
+      responses:
+        '200':
+          description: Successful response — the procedure resumes with the provided
+            values.
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value: {}
+              schema:
+                type: object
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Admin lacks conversation access:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Admin does not have access to this conversation
+                Feature not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Procedures HITL API is not enabled for your app.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                Resource not found:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+                HITL request expired:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: not_found
+                      message: This HITL request has expired
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              examples:
+                Already fulfilled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: conflict
+                      message: This HITL request has already been fulfilled
+              schema:
+                "$ref": "#/components/schemas/error"
 components:
   schemas:
     datetime:
@@ -18921,6 +19227,7 @@ components:
           - conversation_topic_change
           - conversation_topic_creation
           - conversation_topic_deletion
+          - customer_facing_name_change
           - help_center_settings_change
           - inbound_conversations_change
           - inbox_access_change
@@ -19517,6 +19824,57 @@ components:
           example:
             email: user@example.com
             company.name: Acme Inc
+    ai_subtopic:
+      title: AI Subtopic
+      type: object
+      description: An AI-generated subtopic under a topic.
+      properties:
+        type:
+          type: string
+          description: Always ai_subtopic.
+          example: ai_subtopic
+        name:
+          type: string
+          description: The name of the subtopic.
+          example: Payment Issues
+        id:
+          type: integer
+          description: The ID of the subtopic.
+          example: 42
+    ai_topic:
+      title: AI Topic
+      type: object
+      description: An AI-generated topic assigned to the conversation.
+      properties:
+        type:
+          type: string
+          description: Always ai_topic.
+          example: ai_topic
+        topic_name:
+          type: string
+          description: The name of the AI-generated topic.
+          example: Billing
+        subtopics:
+          type: array
+          description: The subtopics under this topic.
+          items:
+            $ref: '#/components/schemas/ai_subtopic'
+    ai_topics:
+      title: AI Topics
+      type: object
+      x-tags:
+      - AI Topics
+      description: AI-generated topics and subtopics for the conversation.
+      properties:
+        type:
+          type: string
+          description: Always ai_topics.
+          example: ai_topics
+        topics:
+          type: array
+          description: The list of AI-generated topics for this conversation.
+          items:
+            $ref: '#/components/schemas/ai_topic'
     app:
       title: App
       type: object
@@ -19907,7 +20265,7 @@ components:
           example: http://intercom.test/help/en/articles/3-default-language
         parent_ids:
           type: array
-          description: The ids of the article's parent collections. An
+          description: The ids of the article's parent collections or sections. An
             article without this field stands alone.
           items:
             type: integer
@@ -20685,6 +21043,42 @@ components:
               type: string
               description: The ID of an existing bulk job to append to.
               example: job_v2_1
+    collect_agent_input_request:
+      title: Collect Agent Input Request
+      type: object
+      x-tags:
+      - Procedures
+      description: Request body for submitting human-collected input to a HITL procedure
+        step.
+      properties:
+        step_id:
+          type: string
+          description: The step_id from the webhook payload, identifying which HITL
+            step this response is for.
+          example: d5b81f72-adb9-4317-b973-75b3c3624c09
+        attribute_values:
+          type: array
+          description: Array of attribute values matching the attributes_to_collect
+            from the webhook payload. Must include a value for every attribute listed.
+          items:
+            type: object
+            properties:
+              identifier:
+                type: string
+                description: Must exactly match an identifier from the webhook's attributes_to_collect
+                  array.
+                example: workflow_local_variables.72c5a6b3-3cce-41d8-8e30-14da40791958
+              value:
+                description: The value for this attribute. Must be type-compatible
+                  with the attribute's data_type from the webhook (e.g., boolean for
+                  boolean attributes, option ID string for list attributes).
+                example: true
+            required:
+            - identifier
+            - value
+      required:
+      - step_id
+      - attribute_values
     company:
       title: Company
       type: object
@@ -20968,7 +21362,7 @@ components:
           nullable: true
           description: The id of an admin that has been assigned account ownership
             of the contact.
-          example: '123'
+          example: "321"
         has_hard_bounced:
           type: boolean
           description: Whether the contact has had an email sent to them hard bounce.
@@ -22104,10 +22498,6 @@ components:
         sales_agent:
           "$ref": "#/components/schemas/sales_agent"
           nullable: true
-        channel:
-          "$ref": "#/components/schemas/conversation_channel"
-          nullable: true
-          description: The channel through which the conversation was initiated and its current channel.
     conversation:
       title: Conversation
       type: object
@@ -22215,6 +22605,8 @@ components:
           "$ref": "#/components/schemas/conversation_parts"
         linked_objects:
           "$ref": "#/components/schemas/linked_object_list"
+        ai_topics:
+          "$ref": "#/components/schemas/ai_topics"
         ai_agent_participated:
           type: boolean
           description: Indicates whether the AI Agent participated in the conversation.
@@ -22229,10 +22621,6 @@ components:
         sales_agent:
           "$ref": "#/components/schemas/sales_agent"
           nullable: true
-        channel:
-          "$ref": "#/components/schemas/conversation_channel"
-          nullable: true
-          description: The channel through which the conversation was initiated and its current channel.
     conversation_attachment_files:
       title: Conversation attachment files
       type: object
@@ -22250,21 +22638,6 @@ components:
           type: string
           description: The name of the file.
           example: test.json
-    conversation_channel:
-      title: Conversation Channel
-      type: object
-      description: The channel through which a conversation was originally initiated and its current channel.
-      properties:
-        initial:
-          type: string
-          nullable: true
-          description: The channel through which the conversation was originally initiated. Possible values include `messenger`, `zendesk_sunshine`, `zendesk_ticket`, `twitter`, `email`. Returns `null` if channel data is unavailable.
-          example: messenger
-        current:
-          type: string
-          nullable: true
-          description: The current channel of the conversation. May differ from `initial` if the conversation was migrated between channels. Returns `null` if channel data is unavailable.
-          example: messenger
     conversation_contacts:
       title: Contacts
       type: object
@@ -22486,7 +22859,6 @@ components:
       type: object
       description: The author of this conversation part. Can be a Contact, Admin,
         or Bot.
-        For Twitter, this will be blank.
       properties:
         type:
           type: string
@@ -22973,8 +23345,9 @@ components:
           example: collection
         parent_ids:
           type: array
-          description: The ids of the article's parent collections.
-            An article without this field stands alone.
+          description: The ids of the parent collections to place this article in.
+            Send an empty array to leave the article without a collection. When
+            provided, this takes precedence over `parent_id` and `parent_type`.
           items:
             type: integer
           example:
@@ -23122,7 +23495,7 @@ components:
           nullable: true
           description: The id of an admin that has been assigned account ownership
             of the contact
-          example: '123'
+          example: "321"
         unsubscribed_from_emails:
           type: boolean
           nullable: true
@@ -26315,6 +26688,45 @@ components:
                 type: string
               example:
                 bad_attr: Conversation attribute 'bad_attr' does not exist
+    fin_agent_settings:
+      title: Fin Agent Settings
+      type: object
+      description: Optional settings to control Fin's behaviour for this request.
+      x-tags:
+      - Fin Agent
+      properties:
+        follow_up_questions:
+          type: boolean
+          default: true
+          description: |
+            When `true` (default), Fin may ask clarifying questions and escalate to a human agent
+            as needed.
+
+            When `false`, Fin operates in non-conversational mode: it will not ask follow-up
+            questions and will not escalate to a human agent. Use this when you want Fin to respond
+            with a single, self-contained answer — for example, in asynchronous channels where
+            back-and-forth conversation is not practical.
+          example: true
+        procedures:
+          type: boolean
+          default: true
+          description: |
+            When `true` (default), Fin will follow any configured procedures during the
+            conversation.
+
+            When `false`, Fin skips procedures and responds using its general knowledge and
+            configured content only.
+          example: false
+        email:
+          type: boolean
+          default: false
+          description: |
+            When `true`, Fin formats its replies as email-style responses, suitable for sending
+            directly to users via email. This adjusts tone and structure to match email conventions
+            rather than chat.
+
+            Defaults to `false`, which produces chat-style responses.
+          example: true
     fin_agent_status_updated_event:
       title: Fin Agent Status Updated Event
       type: object
@@ -26910,6 +27322,94 @@ components:
           nullable: true
       required:
       - id
+    identity_verification_secret:
+      title: Identity Verification Secret
+      type: object
+      x-tags:
+      - Identity Verification Secrets
+      description: Metadata for an HMAC secret used to sign `user_hash` values for Messenger identity verification. The `secret` field is intentionally omitted — it is only returned once, in the response to `POST /secure_mode_secrets`.
+      properties:
+        type:
+          type: string
+          description: value is "identity_verification_secret"
+          example: identity_verification_secret
+        id:
+          type: string
+          description: The id of the secret
+          example: '102'
+        name:
+          type: string
+          description: Human-readable name for the secret, used to identify it in rotation flows
+          example: Production Web
+        supports_android:
+          type: boolean
+          description: Whether the secret is enabled for the Android SDK
+          example: false
+        supports_ios:
+          type: boolean
+          description: Whether the secret is enabled for the iOS SDK
+          example: false
+        supports_web:
+          type: boolean
+          description: Whether the secret is enabled for the Messenger on web
+          example: true
+        created_at:
+          type: integer
+          description: The time the secret was created, as a Unix timestamp
+          example: 1734537243
+    identity_verification_secret_with_material:
+      title: Identity Verification Secret (with material)
+      type: object
+      x-tags:
+      - Identity Verification Secrets
+      description: Returned once, at creation time, from `POST /secure_mode_secrets`. Includes the raw `secret` field. Persist the secret immediately — it is never retrievable again.
+      allOf:
+      - "$ref": "#/components/schemas/identity_verification_secret"
+      - type: object
+        properties:
+          secret:
+            type: string
+            description: The 256-bit HMAC signing key, base64url-encoded. Returned ONCE at creation time and never surfaced again.
+            example: 9Zw0xNs3vKk0fPz9rwKqNbzH3mPVQmQxL9vhSm9Tk4A
+    identity_verification_secret_list:
+      title: Identity Verification Secrets
+      type: object
+      description: A list of identity verification secrets for the workspace. The `secret` field is intentionally omitted from each entry.
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: The identity verification secrets configured for the workspace.
+          items:
+            "$ref": "#/components/schemas/identity_verification_secret"
+    create_identity_verification_secret_request:
+      title: Create Identity Verification Secret Request
+      type: object
+      description: Request payload for creating a new identity verification secret. At least one platform flag must be `true`.
+      properties:
+        name:
+          type: string
+          description: Human-readable name for the secret.
+          example: Production Web
+        supports_android:
+          type: boolean
+          description: Enable this secret for the Android SDK.
+          example: false
+        supports_ios:
+          type: boolean
+          description: Enable this secret for the iOS SDK.
+          example: false
+        supports_web:
+          type: boolean
+          description: Enable this secret for the Messenger on web.
+          example: true
+      required:
+      - name
     intercom_version:
       description: Intercom API version.</br>By default, it's equal to the version
         set in the app package.
@@ -29240,8 +29740,9 @@ components:
           example: collection
         parent_ids:
           type: array
-          description: The ids of the article's parent collections.
-            An article without this field stands alone.
+          description: The ids of the parent collections to place this article in.
+            Send an empty array to remove the article from all collections. When
+            provided, this takes precedence over `parent_id` and `parent_type`.
           items:
             type: integer
           example:
@@ -29372,7 +29873,7 @@ components:
           nullable: true
           description: The id of an admin that has been assigned account ownership
             of the contact
-          example: '123'
+          example: "321"
         unsubscribed_from_emails:
           type: boolean
           nullable: true
@@ -30332,6 +30833,8 @@ tags:
     All webhook requests include an `X-Fin-Agent-API-Webhook-Signature` header for request validation.
 - name: Help Center
   description: Everything about your Help Center
+- name: Identity Verification Secrets
+  description: Manage HMAC signing secrets for Messenger identity verification — list, create, and rotate out. Signing material is returned only once, at creation time.
 - name: Internal Articles
   description: Everything about your Internal Articles
 - name: Jobs
@@ -30348,6 +30851,19 @@ tags:
     url: https://www.intercom.com/help/en/articles/6362251-news-explained
 - name: Notes
   description: Everything about your Notes
+- name: Procedures
+  description: |
+    Submit human-collected input to Fin Procedures via the HITL (Human in the Loop) API.
+
+    &nbsp;
+
+    When a Fin Procedure reaches a HITL step with the API channel enabled, Intercom sends a `procedure.hitl_notification.created` webhook to your system. Your system collects the required input and responds via the callback endpoint documented here.
+
+    &nbsp;
+
+    {% admonition type="warning" %}
+    This API requires the Procedures HITL API feature to be enabled for your workspace and an OAuth token with the `write_conversations` scope.
+    {% /admonition %}
 - name: Segments
   description: Everything about your Segments
 - name: Subscription Types
