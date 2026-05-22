@@ -20360,6 +20360,17 @@ components:
           nullable: true
           description: The ID of the folder this article belongs to, or null if not in a folder.
           example: 6
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs this internal article is targeted to for Fin AI Agent.
+            Empty array means no audience targeting is set.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
     article_search_highlights:
       title: Article Search Highlights
       type: object
@@ -23409,6 +23420,18 @@ components:
           nullable: true
           description: The ID of the folder to place this article in, or null to leave it without a folder.
           example: 6
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to target this internal article to for Fin AI Agent.
+            Pass an empty array or omit the field for no audience targeting.
+            Unknown audience IDs return a `404` error with no partial commit.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
       required:
       - title
       - owner_id
@@ -29801,6 +29824,19 @@ components:
           nullable: true
           description: The ID of the folder to place this article in, or null to remove it from its folder.
           example: 6
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to target this internal article to for Fin AI Agent.
+            Omitting the field leaves existing audience memberships unchanged (PATCH semantics).
+            Pass `[]` to clear all audience memberships.
+            Unknown audience IDs return a `404` error with no partial commit.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
     update_collection_request:
       description: You can update a collection
       type: object
