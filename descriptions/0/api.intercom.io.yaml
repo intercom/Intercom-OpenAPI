@@ -22281,6 +22281,17 @@ components:
           type: integer
           description: The time the snippet was last updated as a UNIX timestamp.
           example: 1663597223
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs this content snippet is targeted to for Fin AI Agent.
+            Empty array means no audience targeting is set.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
     content_snippet_list:
       title: Content Snippet List
       type: object
@@ -22348,6 +22359,18 @@ components:
           description: The locale of the content snippet. Defaults to `en`.
           default: en
           example: en
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to target this content snippet to for Fin AI Agent.
+            Pass an empty array or omit the field for no audience targeting.
+            Unknown audience IDs return a `404` error with no partial commit.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
     content_snippet_update_request:
       title: Update Content Snippet Request
       type: object
@@ -22380,6 +22403,19 @@ components:
           type: string
           description: The locale of the content snippet.
           example: en
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to target this content snippet to for Fin AI Agent.
+            Omitting the field leaves existing audience memberships unchanged (PATCH semantics).
+            Pass `[]` to clear all audience memberships.
+            Unknown audience IDs return a `404` error with no partial commit.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
     conversation_list_item:
       title: Conversation List Item
       type: object
