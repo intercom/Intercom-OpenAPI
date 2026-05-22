@@ -23839,6 +23839,20 @@ components:
           description: The identifier for the external page which was given by the
             source. Must be unique for the source.
           example: '5678'
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to target this external page to for Fin AI Agent.
+            Omitting the field preserves any default audience segments inherited from the parent content import source.
+            Pass an explicit array to override inherited defaults with the given set.
+            Pass `[]` to clear all audience memberships (even if the source has defaults).
+            Unknown audience IDs return a `404` error with no partial commit.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
       required:
       - title
       - html
@@ -26483,6 +26497,17 @@ components:
           format: date-time
           description: The time when the external page was last ingested.
           example: 1672928610
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs this external page is targeted to for Fin AI Agent.
+            Empty array means no audience targeting is set.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
       required:
       - id
       - type
@@ -30038,6 +30063,19 @@ components:
           description: The identifier for the external page which was given by the
             source. Must be unique for the source.
           example: '5678'
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to target this external page to for Fin AI Agent.
+            Omitting the field leaves existing audience memberships unchanged (PATCH semantics).
+            Pass `[]` to clear all audience memberships.
+            Unknown audience IDs return a `404` error with no partial commit.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
       required:
       - title
       - html
