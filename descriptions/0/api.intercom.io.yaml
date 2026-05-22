@@ -6802,6 +6802,98 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/content/search":
+    get:
+      summary: Search Knowledge Hub content
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: query
+        in: query
+        required: true
+        description: The keyword(s) to search for across Knowledge Hub content.
+        example: billing
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: The page number to fetch. Defaults to 1. Values below 1 are
+          clamped to 1.
+        example: 1
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - name: per_page
+        in: query
+        required: false
+        description: Number of results per page. Defaults to 10. Maximum 50.
+        example: 10
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
+          maximum: 50
+      tags:
+      - Knowledge Hub
+      operationId: searchContent
+      description: |
+        Search across Knowledge Hub content (content snippets, external pages, uploaded files, internal articles, and help center articles) using a keyword query.
+
+        Each result row has a `type` discriminator. Most types (`content_snippet`, `external_content`, `file_source_content`, `internal_article`) return a flat `{ type, id, title }` shape. Help center articles return a nested shape with a `contents[]` array, one entry per locale.
+
+        Requires the `read_content` OAuth scope.
+      responses:
+        '200':
+          description: Search successful
+          content:
+            application/json:
+              examples:
+                Search successful:
+                  value:
+                    type: list
+                    total_count: 5
+                    pages:
+                      type: pages
+                      page: 1
+                      per_page: 10
+                      total_pages: 1
+                      next:
+                      prev:
+                    data:
+                    - type: content_snippet
+                      id: '123'
+                      title: Billing FAQ
+                    - type: external_content
+                      id: '456'
+                      title: How to reset your password
+                    - type: file_source_content
+                      id: '789'
+                      title: billing-guide.pdf
+                    - type: internal_article
+                      id: '012'
+                      title: 'Internal SOP: Refunds'
+                    - type: article
+                      id: '345'
+                      title: Billing FAQ
+                      contents:
+                      - type: article_content
+                        id: '678'
+                        title: Billing FAQ
+                        locale: en
+                      - type: article_content
+                        id: '910'
+                        title: Facturation FAQ
+                        locale: fr
+              schema:
+                "$ref": "#/components/schemas/content_search_response"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '422':
+          $ref: "#/components/responses/ValidationError"
   "/content_snippets":
     get:
       summary: List all content snippets
@@ -22224,6 +22316,155 @@ components:
           description: The content sources used by AI Agent in the conversation.
           items:
             "$ref": "#/components/schemas/content_source"
+    content_search_article_content_item:
+      title: Content Search Article Content Item
+      type: object
+      description: A single locale variant of a help center article returned from
+        Knowledge Hub search.
+      properties:
+        type:
+          type: string
+          description: Always `article_content`.
+          enum:
+          - article_content
+          example: article_content
+        id:
+          type: string
+          description: The unique identifier of the article content.
+          example: '678'
+        title:
+          type: string
+          description: The localized title of the article.
+          example: Billing FAQ
+        locale:
+          type: string
+          description: The locale of this article content.
+          example: en
+    content_search_article_item:
+      title: Content Search Article Item
+      type: object
+      description: A help center article result from Knowledge Hub search, with
+        one nested `article_content` entry per locale.
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          description: Always `article`.
+          enum:
+          - article
+          example: article
+        id:
+          type: string
+          description: The unique identifier of the article.
+          example: '345'
+        title:
+          type: string
+          description: The article's canonical title.
+          example: Billing FAQ
+        contents:
+          type: array
+          description: One entry per locale of the article.
+          items:
+            "$ref": "#/components/schemas/content_search_article_content_item"
+    content_search_default_item:
+      title: Content Search Default Item
+      type: object
+      description: The flat result shape returned from Knowledge Hub search for
+        content snippets, external pages, uploaded files, and internal articles.
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          description: The kind of content item.
+          enum:
+          - content_snippet
+          - external_content
+          - file_source_content
+          - internal_article
+          example: content_snippet
+        id:
+          type: string
+          description: The unique identifier of the content item.
+          example: '123'
+        title:
+          type: string
+          description: The display title of the content item.
+          example: Billing FAQ
+    content_search_response:
+      title: Content Search Response
+      type: object
+      description: A paginated list of Knowledge Hub content results matching a
+        search query.
+      properties:
+        type:
+          type: string
+          description: Always `list`.
+          enum:
+          - list
+          example: list
+        total_count:
+          type: integer
+          description: Total number of results matching the query.
+          example: 5
+        pages:
+          type: object
+          description: Pagination metadata, including links to neighbouring pages.
+          properties:
+            type:
+              type: string
+              enum:
+              - pages
+              example: pages
+            page:
+              type: integer
+              description: The current page number.
+              example: 1
+            per_page:
+              type: integer
+              description: Number of results per page.
+              example: 10
+            total_pages:
+              type: integer
+              description: Total number of pages of results.
+              example: 1
+            next:
+              type: string
+              format: uri
+              description: A link to the next page of results, or null when on
+                the last page.
+              nullable: true
+              example: https://api.intercom.io/content/search?query=billing&page=2
+            prev:
+              type: string
+              format: uri
+              description: A link to the previous page of results, or null when
+                on the first page.
+              nullable: true
+              example:
+        data:
+          type: array
+          description: The list of matched content items. Each item's `type`
+            field determines its shape.
+          items:
+            "$ref": "#/components/schemas/content_search_result"
+    content_search_result:
+      title: Content Search Result
+      description: A single search result. The `type` field discriminates between
+        the flat shape used for snippets, external pages, files, and internal
+        articles, and the nested shape used for help center articles.
+      oneOf:
+      - "$ref": "#/components/schemas/content_search_default_item"
+      - "$ref": "#/components/schemas/content_search_article_item"
+      discriminator:
+        propertyName: type
+        mapping:
+          content_snippet: "#/components/schemas/content_search_default_item"
+          external_content: "#/components/schemas/content_search_default_item"
+          file_source_content: "#/components/schemas/content_search_default_item"
+          internal_article: "#/components/schemas/content_search_default_item"
+          article: "#/components/schemas/content_search_article_item"
     content_snippet:
       title: Content Snippet
       type: object
@@ -30839,6 +31080,8 @@ tags:
   description: Everything about your Internal Articles
 - name: Jobs
   description: Everything about jobs
+- name: Knowledge Hub
+  description: Search and operations across Knowledge Hub content (content snippets, external pages, uploaded files, internal articles, and help center articles).
 - name: Macros
   description: Operations related to saved replies (macros) in conversations
   x-displayName: Macros
