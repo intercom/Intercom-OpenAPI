@@ -1788,11 +1788,17 @@ paths:
                     - type: audience
                       id: '123'
                       name: VIP Customers
+                      predicates: []
+                      role_predicates: []
+                      default_predicates: []
                       created_at: 1717200000
                       updated_at: 1717200000
                     - type: audience
                       id: '456'
                       name: Enterprise Accounts
+                      predicates: []
+                      role_predicates: []
+                      default_predicates: []
                       created_at: 1717200000
                       updated_at: 1717200000
                     total_count: 2
@@ -1815,6 +1821,84 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+    post:
+      summary: Create an audience
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Audiences
+      operationId: createAudience
+      description: You can create a new audience by providing a name and optional targeting
+        predicates.
+      responses:
+        '201':
+          description: Audience created
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: audience
+                    id: '789'
+                    name: Irish Users
+                    predicates:
+                    - attribute: geoip.country_code
+                      type: string
+                      comparison: eq
+                      value: IE
+                    role_predicates: []
+                    default_predicates: []
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/audience"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b1939528-98f0-4a63-a442-2cc9203fc8c7
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Validation error:
+                  value:
+                    type: error.list
+                    request_id: b1939528-98f0-4a63-a442-2cc9203fc8c7
+                    errors:
+                    - code: validation_error
+                      message: Name is required
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_audience_request"
+            examples:
+              successful:
+                summary: Successful response
+                value:
+                  name: Irish Users
+                  predicates:
+                  - attribute: geoip.country_code
+                    type: string
+                    comparison: eq
+                    value: IE
   "/audiences/{id}":
     get:
       summary: Retrieve an audience
@@ -1827,12 +1911,12 @@ paths:
         in: path
         required: true
         description: The unique identifier of the audience to retrieve.
-        example: 123
+        example: '123'
         schema:
-          type: integer
+          type: string
       tags:
       - Audiences
-      operationId: getAudience
+      operationId: retrieveAudience
       description: You can fetch the details of a single audience by ID.
       responses:
         '200':
@@ -1845,6 +1929,9 @@ paths:
                     type: audience
                     id: '123'
                     name: VIP Customers
+                    predicates: []
+                    role_predicates: []
+                    default_predicates: []
                     created_at: 1717200000
                     updated_at: 1717200000
               schema:
@@ -1888,9 +1975,9 @@ paths:
         in: path
         required: true
         description: The unique identifier of the audience to delete.
-        example: 123
+        example: '123'
         schema:
-          type: integer
+          type: string
       tags:
       - Audiences
       operationId: deleteAudience
@@ -1926,6 +2013,105 @@ paths:
                       message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
+    put:
+      summary: Update an audience
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the audience to update.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Audiences
+      operationId: updateAudience
+      description: You can update an existing audience by changing its name or targeting
+        predicates.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: audience
+                    id: '123'
+                    name: Premium Customers
+                    predicates:
+                    - attribute: name
+                      type: string
+                      comparison: eq
+                      value: VIP
+                    role_predicates: []
+                    default_predicates: []
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/audience"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b1939528-98f0-4a63-a442-2cc9203fc8c7
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id: b1939528-98f0-4a63-a442-2cc9203fc8c7
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Validation error:
+                  value:
+                    type: error.list
+                    request_id: b1939528-98f0-4a63-a442-2cc9203fc8c7
+                    errors:
+                    - code: validation_error
+                      message: Name cannot be blank
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_audience_request"
+            examples:
+              successful:
+                summary: Successful response
+                value:
+                  name: Premium Customers
+                  predicates:
+                  - attribute: name
+                    type: string
+                    comparison: eq
+                    value: VIP
   "/export/reporting_data/enqueue":
     post:
       summary: Enqueue a new reporting data export job
@@ -19521,6 +19707,122 @@ components:
           type: integer
           description: The time the audience was last updated as a Unix timestamp.
           example: 1717200000
+        predicates:
+          type: array
+          description: The predicates that define the audience targeting rules.
+          items:
+            type: object
+            properties:
+              attribute:
+                type: string
+                description: The attribute to target.
+              type:
+                type: string
+                description: The data type of the attribute.
+              comparison:
+                type: string
+                description: The comparison operator.
+              value:
+                type: string
+                description: The value to compare against.
+          example: []
+        role_predicates:
+          type: array
+          description: The role-based predicates for the audience.
+          items:
+            type: object
+            properties:
+              attribute:
+                type: string
+              type:
+                type: string
+              comparison:
+                type: string
+              value:
+                type: string
+          example: []
+        default_predicates:
+          type: array
+          description: The default predicates applied to the audience.
+          items:
+            type: object
+            properties:
+              attribute:
+                type: string
+              type:
+                type: string
+              comparison:
+                type: string
+              value:
+                type: string
+          example: []
+    create_audience_request:
+      title: Create Audience Request
+      type: object
+      description: The request body for creating an audience.
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          description: The name of the audience.
+          example: Irish Users
+        predicates:
+          type: array
+          description: The predicates that define audience targeting rules.
+          items:
+            type: object
+            properties:
+              attribute:
+                type: string
+                description: The attribute to target.
+              type:
+                type: string
+                description: The data type of the attribute.
+              comparison:
+                type: string
+                description: The comparison operator.
+              value:
+                type: string
+                description: The value to compare against.
+    update_audience_request:
+      title: Update Audience Request
+      type: object
+      description: The request body for updating an audience. At least one field must
+        be provided.
+      properties:
+        name:
+          type: string
+          description: The name of the audience.
+          example: Premium Customers
+        predicates:
+          type: array
+          description: The predicates that define audience targeting rules.
+          items:
+            type: object
+            properties:
+              attribute:
+                type: string
+              type:
+                type: string
+              comparison:
+                type: string
+              value:
+                type: string
+        role_predicates:
+          type: array
+          description: The role-based predicates for the audience.
+          items:
+            type: object
+            properties:
+              attribute:
+                type: string
+              type:
+                type: string
+              comparison:
+                type: string
+              value:
+                type: string
     audience_list:
       title: Audience List
       type: object
