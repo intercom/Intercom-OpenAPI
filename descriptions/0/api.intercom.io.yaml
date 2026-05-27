@@ -9581,7 +9581,7 @@ paths:
         schema:
           type: string
       tags:
-      - Conversations
+      - Conversation Parts
       operationId: updateConversationPart
       description: |
         You can update properties of a conversation part. Currently supports updating the send state of an external reply or marking a part as seen by an admin.
@@ -9712,7 +9712,7 @@ paths:
         schema:
           type: string
       tags:
-      - Conversations
+      - Conversation Participants
       operationId: attachContactToConversation
       description: |+
         You can add participants who are contacts to a conversation, on behalf of either another contact or an admin.
@@ -9817,13 +9817,13 @@ paths:
         schema:
           type: string
       tags:
-      - Conversations
+      - Conversation Participants
       operationId: detachContactFromConversation
       description: |+
-        You can add participants who are contacts to a conversation, on behalf of either another contact or an admin.
+        You can remove participants who are contacts from a group conversation, on behalf of an admin.
 
-        {% admonition type="warning" name="Contacts without an email" %}
-        If you add a contact via the email parameter and there is no user/lead found on that workspace with he given email, then we will create a new contact with `role` set to `lead`.
+        {% admonition type="warning" name="Removing the last participant" %}
+        You cannot remove the last remaining contact from a conversation.
         {% /admonition %}
 
       responses:
@@ -10084,7 +10084,7 @@ paths:
         schema:
           "$ref": "#/components/schemas/intercom_version"
       tags:
-      - Conversations
+      - Conversation Parts
       operationId: redactConversation
       description: |+
         You can redact a conversation part or the source message of a conversation (as seen in the source object).
@@ -32416,6 +32416,10 @@ tags:
   externalDocs:
     description: What is a conversation?
     url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
+- name: Conversation Parts
+  description: Update and redact individual conversation parts
+- name: Conversation Participants
+  description: Manage contacts participating in conversations
 - name: Conversations Attributes
   description: Manage custom attributes for conversations
 - name: Custom Object Instances
