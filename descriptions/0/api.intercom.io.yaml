@@ -481,6 +481,7 @@ paths:
                     - temporary_expectation_change
                     - upfront_email_collection_change
                     - welcome_message_change
+                    - hide_csat_from_agents_setting_change
               schema:
                 "$ref": "#/components/schemas/activity_log_event_type_list"
         '401':
@@ -5481,6 +5482,14 @@ paths:
         required: true
         schema:
           type: string
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include the contact's merge history in the response.
+          Only returned for contacts with a `user` role.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       - Custom Object Instances
@@ -5744,6 +5753,14 @@ paths:
         required: true
         schema:
           type: string
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include the contact's merge history in the response.
+          Only returned for contacts with a `user` role.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: ShowContact
@@ -5954,6 +5971,14 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include the merge history of the resulting contact
+          in the response. Only returned for contacts with a `user` role.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: MergeContact
@@ -5962,7 +5987,7 @@ paths:
 
         {% admonition type="warning" name="Merged contacts are not retrievable via the API" %}
           Once a merge is completed, the source contact (`from`) is permanently removed from the active contact list. This means:
-          - **GET /contacts/{id}** — Requesting the source contact by its original ID will return a `404 Not Found` error.
+          - **GET /contacts/{id}** — Requesting the source contact by its original ID will return `410 Gone` with a `Link` header pointing to the canonical (merged-into) contact.
           - **POST /contacts/search** — The source contact will not appear in search results, including queries filtered by `updated_at`.
           - **GET /contacts** — The source contact will not appear in list results.
 
@@ -6105,6 +6130,14 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include a `merge_history` array on each contact
+          in the response. Only returned for contacts with a `user` role.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: SearchContacts
@@ -6270,6 +6303,14 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include a `merge_history` array on each contact
+          in the response. Only returned for contacts with a `user` role.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: ListContacts
@@ -6469,6 +6510,14 @@ paths:
         description: The external ID of the user that you want to retrieve
         schema:
           type: string
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include the contact's merge history in the response.
+          Only returned for contacts with a `user` role.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: ShowContactByExternalId
@@ -6696,6 +6745,98 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/contact_blocked"
+  "/contacts/{contact_id}/merge_history":
+    get:
+      summary: Get contact merge history
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: contact_id
+        in: path
+        description: The id of the contact to fetch merge history for.
+        example: 63a07ddf05a32042dffac965
+        required: true
+        schema:
+          type: string
+      - name: cursor
+        in: query
+        description: A cursor for pagination. Pass the `next_cursor` value from a
+          previous response to fetch the next page.
+        required: false
+        schema:
+          type: string
+      - name: per_page
+        in: query
+        description: The number of results to return per page (default 50, max 150).
+        required: false
+        schema:
+          type: integer
+          default: 50
+          maximum: 150
+      - name: order
+        in: query
+        description: The order to return results in. Defaults to descending.
+        required: false
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+      tags:
+      - Contacts
+      operationId: ListContactMergeHistory
+      description: |
+        Retrieve the paginated list of contacts that have been merged into a given contact.
+
+        Only available for contacts with a `user` role. Returns a `404` if the contact is not found or has a `lead` role.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: merge_history
+                      source_contact_id: 5ba682d23d7cf92bef87bfd3
+                      source_contact_role: lead
+                      merged_at: 1571672154
+                    next_cursor:
+                    has_more: false
+              schema:
+                "$ref": "#/components/schemas/merge_history_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 45b30bd1-75d2-40cc-bb39-74ac133a2836
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 45b30bd1-75d2-40cc-bb39-74ac133a2836
+                    errors:
+                    - code: not_found
+                      message: Contact not found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/contacts/bulk":
     post:
       summary: Bulk update contacts
@@ -20178,6 +20319,7 @@ components:
           - temporary_expectation_change
           - upfront_email_collection_change
           - welcome_message_change
+          - hide_csat_from_agents_setting_change
           example: app_name_change
         activity_description:
           type: string
@@ -22493,6 +22635,66 @@ components:
           "$ref": "#/components/schemas/contact_location"
         social_profiles:
           "$ref": "#/components/schemas/contact_social_profiles"
+        merge_history:
+          type: array
+          nullable: true
+          description: A list of contacts that were merged into this contact. Only
+            included in the response when `include_merge_history=true` is passed as
+            a query parameter. Only available for contacts with a `user` role.
+          items:
+            "$ref": "#/components/schemas/merge_history_item"
+    merge_history_item:
+      title: Merge History Item
+      type: object
+      description: A record of a contact that was merged into another contact.
+      properties:
+        type:
+          type: string
+          description: The type of object.
+          example: merge_history
+        source_contact_id:
+          type: string
+          description: The Intercom ID of the contact that was merged into this contact.
+          example: 5ba682d23d7cf92bef87bfd3
+        source_contact_role:
+          type: string
+          description: The role of the contact that was merged in.
+          enum:
+          - lead
+          - user
+          example: lead
+        merged_at:
+          type: integer
+          nullable: true
+          format: date-time
+          description: "(UNIX timestamp) The time when the merge occurred."
+          example: 1571672154
+    merge_history_list:
+      title: Merge History List
+      type: object
+      description: A paginated list of merge history entries for a contact.
+      properties:
+        type:
+          type: string
+          description: The type of object.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of merge history entries.
+          items:
+            "$ref": "#/components/schemas/merge_history_item"
+        next_cursor:
+          type: string
+          nullable: true
+          description: A cursor to pass as the `cursor` query parameter to fetch
+            the next page of results. Absent when there are no more pages.
+          example: WyIxNjM0NTY3ODkwIl0
+        has_more:
+          type: boolean
+          description: Whether there are more results to fetch.
+          example: false
     contact_attached_companies:
       title: Contact Attached Companies
       type: object
