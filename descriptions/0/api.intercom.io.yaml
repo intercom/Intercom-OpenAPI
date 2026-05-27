@@ -1790,7 +1790,6 @@ paths:
                       name: VIP Customers
                       predicates: []
                       role_predicates: []
-                      default_predicates: []
                       created_at: 1717200000
                       updated_at: 1717200000
                     - type: audience
@@ -1798,7 +1797,6 @@ paths:
                       name: Enterprise Accounts
                       predicates: []
                       role_predicates: []
-                      default_predicates: []
                       created_at: 1717200000
                       updated_at: 1717200000
                     total_count: 2
@@ -1849,8 +1847,14 @@ paths:
                       type: string
                       comparison: eq
                       value: IE
-                    role_predicates: []
-                    default_predicates: []
+                    role_predicates:
+                    - attribute: role
+                      type: role
+                      comparison: in
+                      value:
+                      - user_role
+                      - contact_role
+                      - visitor_role
                     created_at: 1717200000
                     updated_at: 1717200000
               schema:
@@ -1931,7 +1935,6 @@ paths:
                     name: VIP Customers
                     predicates: []
                     role_predicates: []
-                    default_predicates: []
                     created_at: 1717200000
                     updated_at: 1717200000
               schema:
@@ -2049,7 +2052,6 @@ paths:
                       comparison: eq
                       value: VIP
                     role_predicates: []
-                    default_predicates: []
                     created_at: 1717200000
                     updated_at: 1717200000
               schema:
@@ -19722,12 +19724,6 @@ components:
           items:
             "$ref": "#/components/schemas/predicate"
           example: []
-        default_predicates:
-          type: array
-          description: The default predicates applied to the audience.
-          items:
-            "$ref": "#/components/schemas/predicate"
-          example: []
     create_audience_request:
       title: Create Audience Request
       type: object
@@ -19742,6 +19738,12 @@ components:
         predicates:
           type: array
           description: The predicates that define audience targeting rules.
+          items:
+            "$ref": "#/components/schemas/predicate"
+        role_predicates:
+          type: array
+          description: The role-based predicates for the audience. When omitted,
+            defaults to targeting all end-user roles (user, contact, visitor).
           items:
             "$ref": "#/components/schemas/predicate"
     update_audience_request:
