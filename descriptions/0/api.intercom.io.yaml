@@ -19695,6 +19695,7 @@ components:
           type: string
           description: The unique identifier representing the audience.
           example: '123'
+          readOnly: true
         name:
           type: string
           description: The name of the audience.
@@ -19703,58 +19704,29 @@ components:
           type: integer
           description: The time the audience was created as a Unix timestamp.
           example: 1717200000
+          readOnly: true
         updated_at:
           type: integer
           description: The time the audience was last updated as a Unix timestamp.
           example: 1717200000
+          readOnly: true
         predicates:
           type: array
           description: The predicates that define the audience targeting rules.
           items:
-            type: object
-            properties:
-              attribute:
-                type: string
-                description: The attribute to target.
-              type:
-                type: string
-                description: The data type of the attribute.
-              comparison:
-                type: string
-                description: The comparison operator.
-              value:
-                type: string
-                description: The value to compare against.
+            "$ref": "#/components/schemas/predicate"
           example: []
         role_predicates:
           type: array
           description: The role-based predicates for the audience.
           items:
-            type: object
-            properties:
-              attribute:
-                type: string
-              type:
-                type: string
-              comparison:
-                type: string
-              value:
-                type: string
+            "$ref": "#/components/schemas/predicate"
           example: []
         default_predicates:
           type: array
           description: The default predicates applied to the audience.
           items:
-            type: object
-            properties:
-              attribute:
-                type: string
-              type:
-                type: string
-              comparison:
-                type: string
-              value:
-                type: string
+            "$ref": "#/components/schemas/predicate"
           example: []
     create_audience_request:
       title: Create Audience Request
@@ -19771,20 +19743,7 @@ components:
           type: array
           description: The predicates that define audience targeting rules.
           items:
-            type: object
-            properties:
-              attribute:
-                type: string
-                description: The attribute to target.
-              type:
-                type: string
-                description: The data type of the attribute.
-              comparison:
-                type: string
-                description: The comparison operator.
-              value:
-                type: string
-                description: The value to compare against.
+            "$ref": "#/components/schemas/predicate"
     update_audience_request:
       title: Update Audience Request
       type: object
@@ -19799,30 +19758,33 @@ components:
           type: array
           description: The predicates that define audience targeting rules.
           items:
-            type: object
-            properties:
-              attribute:
-                type: string
-              type:
-                type: string
-              comparison:
-                type: string
-              value:
-                type: string
+            "$ref": "#/components/schemas/predicate"
         role_predicates:
           type: array
           description: The role-based predicates for the audience.
           items:
-            type: object
-            properties:
-              attribute:
-                type: string
-              type:
-                type: string
-              comparison:
-                type: string
-              value:
-                type: string
+            "$ref": "#/components/schemas/predicate"
+    predicate:
+      title: Predicate
+      type: object
+      description: A targeting rule used to define audience membership criteria.
+      properties:
+        attribute:
+          type: string
+          description: The attribute to target.
+          example: custom_attributes.country
+        type:
+          type: string
+          description: The data type of the attribute.
+          example: string
+        comparison:
+          type: string
+          description: The comparison operator.
+          example: eq
+        value:
+          type: string
+          description: The value to compare against.
+          example: Ireland
     audience_list:
       title: Audience List
       type: object
