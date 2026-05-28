@@ -8837,6 +8837,10 @@ paths:
           See _`update a conversation with an association to a custom object instance`_ in the request/response examples to see the custom object association format.
         {% /admonition %}
 
+        {% admonition type="danger" name="Breaking change: duplicate custom attribute names" %}
+        The `PUT /conversations/{id}` endpoint now returns a `400 INVALID_PARAMETER` error when the request includes `custom_attributes` and your workspace contains multiple non-archived conversation custom attributes with the same name. Previously, the update would silently apply to a non-deterministic attribute. To resolve, rename or archive the duplicate attribute in your workspace settings, then retry the request.
+        {% /admonition %}
+
       responses:
         '200':
           description: update a conversation with an association to a custom object
