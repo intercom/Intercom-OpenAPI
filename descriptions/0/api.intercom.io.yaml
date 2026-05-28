@@ -7328,6 +7328,128 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/content/bulk_actions":
+    post:
+      summary: Run a bulk action on Knowledge Hub content (Preview)
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Content
+      operationId: bulkContentActions
+      description: |
+        Asynchronously run a bulk action over up to 1,000 Knowledge Hub content items.
+
+        Five actions are supported:
+          * `publish` and `unpublish` — apply to `article_content` only.
+          * `delete` — permanently delete content (excludes synced sources and `external_content`).
+          * `set_availability` — toggle Fin AI Agent, Copilot, and Sales Agent availability flags.
+          * `set_audience` — manage segment membership on content.
+
+        The endpoint validates the request, enqueues background work, and returns 202 with a
+        placeholder envelope. Items whose `type` is not in the action's allowlist are silently
+        dropped before processing. Articles imported from synced sources (Confluence, Notion,
+        Zendesk, Salesforce Knowledge, etc.) are silently skipped on `delete` — they can only be
+        removed by disconnecting the underlying import source.
+
+        Requires the `write_content` OAuth scope. Set `Intercom-Version: Preview`.
+      responses:
+        '202':
+          description: Accepted — work has been enqueued
+          content:
+            application/json:
+              examples:
+                Queued:
+                  summary: Queued
+                  value:
+                    type: content_bulk_action
+                    status: queued
+              schema:
+                "$ref": "#/components/schemas/content_bulk_action_response"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2e760b85-9020-471b-89dc-f579ec8a0104
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden — token is missing the `write_content` OAuth scope
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Invalid action, content_ids, or action-specific parameters
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/content_bulk_action_request"
+            examples:
+              publish:
+                summary: Publish articles
+                value:
+                  action: publish
+                  content_ids:
+                  - type: article_content
+                    id: '12345678'
+                  - type: article_content
+                    id: '12345679'
+              unpublish:
+                summary: Unpublish articles
+                value:
+                  action: unpublish
+                  content_ids:
+                  - type: article_content
+                    id: '12345678'
+              delete:
+                summary: Delete content across types
+                value:
+                  action: delete
+                  content_ids:
+                  - type: article_content
+                    id: '12345678'
+                  - type: internal_article
+                    id: '12345679'
+                  - type: content_snippet
+                    id: '12345680'
+              set_availability:
+                summary: Toggle Fin AI Agent on, Copilot off
+                value:
+                  action: set_availability
+                  content_ids:
+                  - type: article_content
+                    id: '12345678'
+                  availability:
+                    ai_agent: true
+                    copilot: false
+              set_audience:
+                summary: Add and remove segments
+                value:
+                  action: set_audience
+                  content_ids:
+                  - type: article_content
+                    id: '12345678'
+                  audience:
+                    add_segment_ids:
+                    - 100
+                    remove_segment_ids:
+                    - 200
   "/content_snippets":
     get:
       summary: List all content snippets
@@ -23605,6 +23727,100 @@ components:
           type: boolean
           description: Always true.
           example: true
+    content_bulk_action_request:
+      title: Content Bulk Action Request Payload
+      type: object
+      required:
+      - action
+      - content_ids
+      properties:
+        action:
+          type: string
+          description: |
+            The bulk action to perform. Allowed `content_ids[].type` values vary per action:
+              * `publish`, `unpublish`: `article_content`
+              * `delete`: `article_content`, `content_snippet`, `file_source_content`, `internal_article`
+              * `set_availability`, `set_audience`: `article_content`, `content_snippet`, `external_content`, `file_source_content`, `internal_article`
+          enum:
+          - publish
+          - unpublish
+          - delete
+          - set_availability
+          - set_audience
+          example: publish
+        content_ids:
+          type: array
+          maxItems: 1000
+          description: Up to 1,000 content items to apply the action to.
+          items:
+            type: object
+            required:
+            - type
+            - id
+            properties:
+              type:
+                type: string
+                enum:
+                - article_content
+                - content_snippet
+                - external_content
+                - file_source_content
+                - internal_article
+                example: article_content
+              id:
+                type: string
+                example: '12345678'
+        availability:
+          type: object
+          description: |
+            Required when `action` is `set_availability`. Each field is optional — only the
+            properties present in the request are toggled.
+          properties:
+            ai_agent:
+              type: boolean
+              description: Toggle Fin AI Agent availability.
+            copilot:
+              type: boolean
+              description: Toggle Copilot availability.
+            sales_agent:
+              type: boolean
+              description: Toggle Sales Agent availability.
+        audience:
+          type: object
+          description: Required when `action` is `set_audience`. Manages segment membership.
+          properties:
+            add_segment_ids:
+              type: array
+              description: Segment IDs to assign to the selected content.
+              items:
+                type: integer
+              example:
+              - 100
+            remove_segment_ids:
+              type: array
+              description: Segment IDs to remove from the selected content.
+              items:
+                type: integer
+              example:
+              - 200
+            remove_all:
+              type: boolean
+              description: When `true`, removes all segments from the selected content.
+              example: false
+    content_bulk_action_response:
+      title: Content Bulk Action Response Envelope
+      type: object
+      description: |
+        Phase 1 envelope returned immediately after the request is enqueued. A future
+        Preview release will replace this with a polling-friendly job resource that
+        surfaces progress and per-item results (updated, unchanged, skipped, failed).
+      properties:
+        type:
+          type: string
+          example: content_bulk_action
+        status:
+          type: string
+          example: queued
     content_import_source:
       title: Content Import Source
       type: object
