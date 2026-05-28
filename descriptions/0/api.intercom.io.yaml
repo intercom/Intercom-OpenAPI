@@ -8838,7 +8838,12 @@ paths:
         {% /admonition %}
 
         {% admonition type="danger" name="Breaking change: duplicate custom attribute names" %}
-        The `PUT /conversations/{id}` endpoint now returns a `400 INVALID_PARAMETER` error when the request includes `custom_attributes` and your workspace contains multiple non-archived conversation custom attributes with the same name. Previously, the update would silently apply to a non-deterministic attribute. To resolve, rename or archive the duplicate attribute in your workspace settings, then retry the request.
+        The `PUT /conversations/{id}` endpoint now returns a `400 INVALID_PARAMETER` error when the request includes `custom_attributes` and your workspace contains multiple non-archived conversation custom attributes with the same name. Previously, the update would silently apply to a non-deterministic attribute.
+
+        To resolve, rename or archive the duplicate attribute so each name is unique, then retry the request. You can do this through:
+
+        - The Conversation Attributes API — list with `GET /conversations/attributes`, then rename with `PUT /conversations/attributes/{id}` or archive with `DELETE /conversations/attributes/{id}`
+        - Your workspace settings (Settings → Data → Conversation attributes)
         {% /admonition %}
 
       responses:
