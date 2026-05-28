@@ -1825,6 +1825,285 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+    post:
+      summary: Create an audience
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Audiences
+      operationId: createAudience
+      description: You can create a new audience by making a POST request to `https://api.intercom.io/audiences`.
+      responses:
+        '200':
+          description: Audience created
+          content:
+            application/json:
+              examples:
+                Audience created:
+                  value:
+                    type: audience
+                    id: '789'
+                    name: VIP Customers
+                    predicates:
+                    - attribute: role
+                      type: role
+                      comparison: eq
+                      value: user
+                    role_predicates:
+                    - attribute: role
+                      type: role
+                      comparison: eq
+                      value: user
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/audience"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a3e6b0c1-4f2d-4e8a-9c7b-1d2e3f4a5b6c
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_audience_request"
+            examples:
+              audience_created:
+                summary: Audience created
+                value:
+                  name: VIP Customers
+                  predicates:
+                  - attribute: role
+                    type: role
+                    comparison: eq
+                    value: user
+                  role_predicates:
+                  - attribute: role
+                    type: role
+                    comparison: eq
+                    value: user
+  "/audiences/{id}":
+    get:
+      summary: Retrieve an audience
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the audience.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Audiences
+      operationId: retrieveAudience
+      description: You can fetch the details of a single audience by making a GET request
+        to `https://api.intercom.io/audiences/<id>`.
+      responses:
+        '200':
+          description: Audience found
+          content:
+            application/json:
+              examples:
+                Audience found:
+                  value:
+                    type: audience
+                    id: '123'
+                    name: VIP Customers
+                    predicates:
+                    - attribute: role
+                      type: role
+                      comparison: eq
+                      value: user
+                    role_predicates:
+                    - attribute: role
+                      type: role
+                      comparison: eq
+                      value: user
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/audience"
+        '404':
+          description: Audience not found
+          content:
+            application/json:
+              examples:
+                Audience not found:
+                  value:
+                    type: error.list
+                    request_id: d5e6f7a8-1b2c-3d4e-5f6a-7b8c9d0e1f2a
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: c4d5e6f7-8a9b-0c1d-2e3f-4a5b6c7d8e9f
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update an audience
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the audience.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Audiences
+      operationId: updateAudience
+      description: You can update the details of a single audience by making a PUT request
+        to `https://api.intercom.io/audiences/<id>`.
+      responses:
+        '200':
+          description: Audience updated
+          content:
+            application/json:
+              examples:
+                Audience updated:
+                  value:
+                    type: audience
+                    id: '123'
+                    name: Enterprise Accounts
+                    predicates:
+                    - attribute: role
+                      type: role
+                      comparison: eq
+                      value: user
+                    role_predicates:
+                    - attribute: role
+                      type: role
+                      comparison: eq
+                      value: user
+                    created_at: 1717200000
+                    updated_at: 1717200100
+              schema:
+                "$ref": "#/components/schemas/audience"
+        '404':
+          description: Audience not found
+          content:
+            application/json:
+              examples:
+                Audience not found:
+                  value:
+                    type: error.list
+                    request_id: e7f8a9b0-1c2d-3e4f-5a6b-7c8d9e0f1a2b
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: f8a9b0c1-2d3e-4f5a-6b7c-8d9e0f1a2b3c
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_audience_request"
+            examples:
+              audience_updated:
+                summary: Audience updated
+                value:
+                  name: Enterprise Accounts
+                  predicates:
+                  - attribute: role
+                    type: role
+                    comparison: eq
+                    value: user
+    delete:
+      summary: Delete an audience
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the audience.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Audiences
+      operationId: deleteAudience
+      description: You can delete a single audience by making a DELETE request to `https://api.intercom.io/audiences/<id>`.
+      responses:
+        '204':
+          description: Audience deleted
+        '404':
+          description: Audience not found
+          content:
+            application/json:
+              examples:
+                Audience not found:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b2c3d4e5-6f7a-8b9c-0d1e-2f3a4b5c6d7e
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/export/reporting_data/enqueue":
     post:
       summary: Enqueue a new reporting data export job
@@ -20855,18 +21134,41 @@ components:
           type: string
           description: The unique identifier representing the audience.
           example: '123'
+          readOnly: true
         name:
           type: string
           description: The name of the audience.
           example: VIP Customers
+        predicates:
+          type: array
+          description: The predicates that define which contacts belong to the audience.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: role
+            type: role
+            comparison: eq
+            value: user
+        role_predicates:
+          type: array
+          description: Additional role-based predicates for the audience.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: role
+            type: role
+            comparison: eq
+            value: user
         created_at:
           type: integer
           description: The time the audience was created as a Unix timestamp.
           example: 1717200000
+          readOnly: true
         updated_at:
           type: integer
           description: The time the audience was last updated as a Unix timestamp.
           example: 1717200000
+          readOnly: true
     audience_list:
       title: Audience List
       type: object
@@ -20899,6 +21201,27 @@ components:
           type: integer
           description: The total number of pages.
           example: 1
+    predicate:
+      title: Predicate
+      type: object
+      description: A condition used to filter contacts in an audience.
+      properties:
+        attribute:
+          type: string
+          description: The attribute to filter on.
+          example: role
+        type:
+          type: string
+          description: The type of the attribute.
+          example: role
+        comparison:
+          type: string
+          description: The comparison operator.
+          example: eq
+        value:
+          type: string
+          description: The value to compare against.
+          example: user
     article:
       title: Article
       type: object
@@ -24352,6 +24675,37 @@ components:
       - type
       - user
       - visitor
+    create_audience_request:
+      title: Create Audience Request
+      type: object
+      description: The request payload for creating an audience.
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          description: The name of the audience.
+          example: VIP Customers
+        predicates:
+          type: array
+          description: The predicates that define which contacts belong to the audience.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: role
+            type: role
+            comparison: eq
+            value: user
+        role_predicates:
+          type: array
+          description: Additional role-based predicates for the audience.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: role
+            type: role
+            comparison: eq
+            value: user
     create_article_request:
       description: You can create an Article
       type: object
@@ -31257,6 +31611,36 @@ components:
       required:
       - name
       - companies
+    update_audience_request:
+      title: Update Audience Request
+      type: object
+      description: The request payload for updating an audience. All fields are optional
+        — only provided fields will be updated.
+      properties:
+        name:
+          type: string
+          description: The name of the audience.
+          example: VIP Customers
+        predicates:
+          type: array
+          description: The predicates that define which contacts belong to the audience.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: role
+            type: role
+            comparison: eq
+            value: user
+        role_predicates:
+          type: array
+          description: Additional role-based predicates for the audience.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: role
+            type: role
+            comparison: eq
+            value: user
     update_article_request:
       description: You can Update an Article
       type: object
