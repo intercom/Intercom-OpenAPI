@@ -22092,6 +22092,21 @@ components:
           readOnly: true
           description: Whether the article is excluded from Fin AI Agent article suggestions.
           example: false
+        help_center_audience:
+          type: string
+          nullable: true
+          readOnly: true
+          enum:
+          - everyone
+          - all_users
+          - all_visitors
+          - all_leads
+          - all_visitors_and_leads
+          - restricted
+          description: The audience that can view this article in the Help Center. `everyone`
+            means all users and visitors can view it; `restricted` indicates a custom audience
+            ruleset. For multilingual articles, this is the article-level audience.
+          example: everyone
     internal_article_list_item:
       title: Internal Articles
       type: object
@@ -22329,6 +22344,22 @@ components:
           description: The percentage of sad reactions the article has received against
             other types of reaction.
           example: 20.0
+        fin_involvements:
+          type: integer
+          description: The number of conversations in which Fin AI Agent used this article,
+            summed across all of the article's locales.
+          example: 10
+        fin_resolutions:
+          type: integer
+          description: The number of conversations Fin AI Agent resolved using this article,
+            summed across all of the article's locales.
+          example: 8
+        fin_resolution_rate:
+          type: number
+          format: float
+          description: The percentage of Fin AI Agent involvements that resulted in a resolution
+            (fin_resolutions / fin_involvements * 100).
+          example: 80.0
     article_translated_content:
       title: Article Translated Content
       type: object
