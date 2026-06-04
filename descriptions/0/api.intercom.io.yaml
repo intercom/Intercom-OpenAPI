@@ -2154,6 +2154,669 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/office_hours_schedules":
+    get:
+      summary: List all office hours schedules
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Office Hours
+      operationId: listOfficeHoursSchedules
+      description: You can fetch a list of all office hours schedules for the workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: office_hours_schedule.list
+                    data:
+                    - type: office_hours_schedule
+                      id: '123'
+                      name: Standard Support Hours
+                      time_zone_name: America/New_York
+                      time_intervals:
+                      - start_minute: 540
+                        end_minute: 1020
+                        day_of_week: 0
+                      - start_minute: 1980
+                        end_minute: 2460
+                        day_of_week: 1
+                      twenty_four_seven: false
+                      created_at: 1717200000
+                      updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_schedule_list"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Office Hours API feature not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create an office hours schedule
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Office Hours
+      operationId: createOfficeHoursSchedule
+      description: You can create a new office hours schedule for the workspace.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_office_hours_schedule_request"
+            examples:
+              Create schedule:
+                value:
+                  name: Standard Support Hours
+                  time_zone_name: America/New_York
+                  time_intervals:
+                  - start_minute: 540
+                    end_minute: 1020
+      responses:
+        '201':
+          description: Office hours schedule created
+          content:
+            application/json:
+              examples:
+                Office hours schedule created:
+                  value:
+                    type: office_hours_schedule
+                    id: '125'
+                    name: Standard Support Hours
+                    time_zone_name: America/New_York
+                    time_intervals:
+                    - start_minute: 540
+                      end_minute: 1020
+                      day_of_week: 0
+                    twenty_four_seven: false
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_schedule"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Office Hours API feature not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/office_hours_schedules/{id}":
+    get:
+      summary: Retrieve an office hours schedule
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: getOfficeHoursSchedule
+      description: You can fetch the details of a single office hours schedule.
+      responses:
+        '200':
+          description: Office hours schedule found
+          content:
+            application/json:
+              examples:
+                Office hours schedule found:
+                  value:
+                    type: office_hours_schedule
+                    id: '123'
+                    name: Standard Support Hours
+                    time_zone_name: America/New_York
+                    time_intervals:
+                    - start_minute: 540
+                      end_minute: 1020
+                      day_of_week: 0
+                    twenty_four_seven: false
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_schedule"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Office Hours API feature not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+    put:
+      summary: Update an office hours schedule
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: updateOfficeHoursSchedule
+      description: You can update an existing office hours schedule.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_office_hours_schedule_request"
+            examples:
+              Update schedule:
+                value:
+                  name: Extended Support Hours
+                  time_intervals:
+                  - start_minute: 480
+                    end_minute: 1080
+      responses:
+        '200':
+          description: Office hours schedule updated
+          content:
+            application/json:
+              examples:
+                Office hours schedule updated:
+                  value:
+                    type: office_hours_schedule
+                    id: '123'
+                    name: Extended Support Hours
+                    time_zone_name: America/New_York
+                    time_intervals:
+                    - start_minute: 480
+                      end_minute: 1080
+                      day_of_week: 0
+                    twenty_four_seven: false
+                    created_at: 1717200000
+                    updated_at: 1717203600
+              schema:
+                "$ref": "#/components/schemas/office_hours_schedule"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Office Hours API feature not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    delete:
+      summary: Delete an office hours schedule
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: deleteOfficeHoursSchedule
+      description: You can delete a single office hours schedule.
+      responses:
+        '200':
+          description: Office hours schedule deleted
+          content:
+            application/json:
+              examples:
+                Office hours schedule deleted:
+                  value:
+                    id: '123'
+                    object: office_hours_schedule
+                    deleted: true
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: '123'
+                  object:
+                    type: string
+                    example: office_hours_schedule
+                  deleted:
+                    type: boolean
+                    example: true
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Office Hours API feature not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+  "/office_hours_schedules/{office_hours_schedule_id}/office_hours_exceptions":
+    get:
+      summary: List all office hours exceptions
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: office_hours_schedule_id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: listOfficeHoursExceptions
+      description: You can fetch a list of all exceptions for an office hours schedule.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: office_hours_exception.list
+                    data:
+                    - type: office_hours_exception
+                      id: '456'
+                      office_hours_schedule_id: '123'
+                      exception_date: '2026-12-25'
+                      exception_type: closed
+                      name: Christmas Day
+                      time_intervals:
+                      recurring_annually: true
+                      created_at: 1717200000
+                      updated_at: 1717200000
+                    - type: office_hours_exception
+                      id: '457'
+                      office_hours_schedule_id: '123'
+                      exception_date: '2026-12-24'
+                      exception_type: custom_hours
+                      name: Christmas Eve
+                      time_intervals:
+                      - start_minute: 540
+                        end_minute: 780
+                        day_of_week: 3
+                      recurring_annually: true
+                      created_at: 1717200000
+                      updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_exception_list"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Office Hours API feature not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+    post:
+      summary: Create an office hours exception
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: office_hours_schedule_id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: createOfficeHoursException
+      description: You can create an exception for an office hours schedule. Use `closed`
+        to mark the day closed (omit `time_intervals`) or `custom_hours` to supply
+        replacement intervals.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_office_hours_exception_request"
+            examples:
+              Create exception:
+                value:
+                  exception_date: '2026-12-25'
+                  exception_type: closed
+                  name: Christmas Day
+                  recurring_annually: true
+      responses:
+        '201':
+          description: Office hours exception created
+          content:
+            application/json:
+              examples:
+                Office hours exception created:
+                  value:
+                    type: office_hours_exception
+                    id: '458'
+                    office_hours_schedule_id: '123'
+                    exception_date: '2026-12-25'
+                    exception_type: closed
+                    name: Christmas Day
+                    time_intervals:
+                    recurring_annually: true
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_exception"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Office Hours API feature not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/office_hours_schedules/{office_hours_schedule_id}/office_hours_exceptions/{id}":
+    get:
+      summary: Retrieve an office hours exception
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: office_hours_schedule_id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the office hours exception.
+        example: '456'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: getOfficeHoursException
+      description: You can fetch the details of a single office hours exception.
+      responses:
+        '200':
+          description: Office hours exception found
+          content:
+            application/json:
+              examples:
+                Office hours exception found:
+                  value:
+                    type: office_hours_exception
+                    id: '456'
+                    office_hours_schedule_id: '123'
+                    exception_date: '2026-12-25'
+                    exception_type: closed
+                    name: Christmas Day
+                    time_intervals:
+                    recurring_annually: true
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_exception"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Office Hours API feature not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+    put:
+      summary: Update an office hours exception
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: office_hours_schedule_id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the office hours exception.
+        example: '456'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: updateOfficeHoursException
+      description: You can update an existing office hours exception.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_office_hours_exception_request"
+            examples:
+              Update exception:
+                value:
+                  exception_type: custom_hours
+                  name: Christmas Day (reduced hours)
+                  time_intervals:
+                  - start_minute: 540
+                    end_minute: 780
+                  recurring_annually: true
+      responses:
+        '200':
+          description: Office hours exception updated
+          content:
+            application/json:
+              examples:
+                Office hours exception updated:
+                  value:
+                    type: office_hours_exception
+                    id: '456'
+                    office_hours_schedule_id: '123'
+                    exception_date: '2026-12-25'
+                    exception_type: custom_hours
+                    name: Christmas Day (reduced hours)
+                    time_intervals:
+                    - start_minute: 540
+                      end_minute: 780
+                      day_of_week: 4
+                    recurring_annually: true
+                    created_at: 1717200000
+                    updated_at: 1717203600
+              schema:
+                "$ref": "#/components/schemas/office_hours_exception"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Office Hours API feature not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    delete:
+      summary: Delete an office hours exception
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: office_hours_schedule_id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the office hours exception.
+        example: '456'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: deleteOfficeHoursException
+      description: You can delete a single office hours exception.
+      responses:
+        '200':
+          description: Office hours exception deleted
+          content:
+            application/json:
+              examples:
+                Office hours exception deleted:
+                  value:
+                    id: '456'
+                    object: office_hours_exception
+                    deleted: true
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: '456'
+                  object:
+                    type: string
+                    example: office_hours_exception
+                  deleted:
+                    type: boolean
+                    example: true
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Office Hours API feature not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
   "/export/reporting_data/enqueue":
     post:
       summary: Enqueue a new reporting data export job
@@ -20844,6 +21507,272 @@ paths:
                 "$ref": "#/components/schemas/error"
 components:
   schemas:
+    office_hours_time_interval:
+      type: object
+      title: Office Hours Time Interval
+      x-tags:
+      - Office Hours
+      description: A single open interval. For schedules, `start_minute` and `end_minute`
+        are minute offsets from the start of the week (Monday 00:00 = 0), in the range
+        0 to 10080. For exceptions, they are minute offsets from midnight on `exception_date`,
+        in the range 0 to 1440.
+      properties:
+        start_minute:
+          type: integer
+          description: Minute the interval starts. For schedules, offset from the start
+            of the week (Monday 00:00 = 0); for exceptions, offset from midnight on
+            `exception_date`.
+          example: 540
+        end_minute:
+          type: integer
+          description: Minute the interval ends. For schedules, offset from the start
+            of the week (Monday 00:00 = 0); for exceptions, offset from midnight on
+            `exception_date`.
+          example: 1020
+        day_of_week:
+          type: integer
+          readOnly: true
+          description: Derived day of the week the interval falls on (0 = Monday … 6
+            = Sunday). For exceptions, this is derived from `exception_date`.
+          example: 0
+    office_hours_schedule:
+      type: object
+      title: Office Hours Schedule
+      x-tags:
+      - Office Hours
+      description: An office hours schedule defines the recurring weekly hours during
+        which the workspace is open.
+      properties:
+        type:
+          type: string
+          description: The type of the object - always `office_hours_schedule`.
+          example: office_hours_schedule
+        id:
+          type: string
+          description: The unique identifier for the office hours schedule.
+          example: '123'
+        name:
+          type: string
+          description: The name of the office hours schedule.
+          example: Standard Support Hours
+        time_zone_name:
+          type: string
+          description: The IANA time zone the schedule's hours are evaluated in.
+          example: America/New_York
+        time_intervals:
+          type: array
+          description: The open intervals that make up the weekly schedule.
+          items:
+            "$ref": "#/components/schemas/office_hours_time_interval"
+        twenty_four_seven:
+          type: boolean
+          description: Whether the schedule is open 24/7.
+          example: false
+        created_at:
+          type: integer
+          description: The time the schedule was created as a Unix timestamp.
+          example: 1717200000
+        updated_at:
+          type: integer
+          description: The time the schedule was last updated as a Unix timestamp.
+          example: 1717200000
+    office_hours_schedule_list:
+      type: object
+      title: Office Hours Schedule List
+      description: A list of office hours schedules.
+      properties:
+        type:
+          type: string
+          description: The type of the object - always `office_hours_schedule.list`.
+          example: office_hours_schedule.list
+        data:
+          type: array
+          description: An array of office hours schedules.
+          items:
+            "$ref": "#/components/schemas/office_hours_schedule"
+    office_hours_exception:
+      type: object
+      title: Office Hours Exception
+      x-tags:
+      - Office Hours
+      description: An exception overrides a schedule's regular hours on a specific date,
+        such as a public holiday.
+      properties:
+        type:
+          type: string
+          description: The type of the object - always `office_hours_exception`.
+          example: office_hours_exception
+        id:
+          type: string
+          description: The unique identifier for the office hours exception.
+          example: '456'
+        office_hours_schedule_id:
+          type: string
+          description: The unique identifier for the schedule this exception belongs to.
+          example: '123'
+        exception_date:
+          type: string
+          format: date
+          description: The date the exception applies to, in `YYYY-MM-DD` format.
+          example: '2026-12-25'
+        exception_type:
+          type: string
+          description: '`closed` means the workspace is closed all day; `custom_hours`
+            replaces the regular hours with `time_intervals`.'
+          enum:
+          - closed
+          - custom_hours
+          example: closed
+        name:
+          type: string
+          nullable: true
+          description: An optional name for the exception.
+          example: Christmas Day
+        time_intervals:
+          type: array
+          nullable: true
+          description: The open intervals for the exception date. `null` when `exception_type`
+            is `closed`.
+          items:
+            "$ref": "#/components/schemas/office_hours_time_interval"
+        recurring_annually:
+          type: boolean
+          description: Whether the exception repeats every year on the same date.
+          example: true
+        created_at:
+          type: integer
+          description: The time the exception was created as a Unix timestamp.
+          example: 1717200000
+        updated_at:
+          type: integer
+          description: The time the exception was last updated as a Unix timestamp.
+          example: 1717200000
+    office_hours_exception_list:
+      type: object
+      title: Office Hours Exception List
+      description: A list of office hours exceptions.
+      properties:
+        type:
+          type: string
+          description: The type of the object - always `office_hours_exception.list`.
+          example: office_hours_exception.list
+        data:
+          type: array
+          description: An array of office hours exceptions.
+          items:
+            "$ref": "#/components/schemas/office_hours_exception"
+    create_office_hours_schedule_request:
+      type: object
+      title: Create Office Hours Schedule Request
+      description: The request payload for creating an office hours schedule.
+      required:
+      - name
+      - time_zone_name
+      - time_intervals
+      properties:
+        name:
+          type: string
+          description: The name of the office hours schedule.
+          example: Standard Support Hours
+        time_zone_name:
+          type: string
+          description: The IANA time zone the schedule's hours are evaluated in.
+          example: America/New_York
+        time_intervals:
+          type: array
+          description: The open intervals for the schedule. `start_minute` and `end_minute`
+            must be on a 15-minute boundary.
+          items:
+            "$ref": "#/components/schemas/office_hours_time_interval"
+    update_office_hours_schedule_request:
+      type: object
+      title: Update Office Hours Schedule Request
+      description: The request payload for updating an office hours schedule. Only the
+        provided fields are updated.
+      properties:
+        name:
+          type: string
+          description: The name of the office hours schedule.
+          example: Extended Support Hours
+        time_zone_name:
+          type: string
+          description: The IANA time zone the schedule's hours are evaluated in.
+          example: America/New_York
+        time_intervals:
+          type: array
+          description: The open intervals for the schedule. `start_minute` and `end_minute`
+            must be on a 15-minute boundary.
+          items:
+            "$ref": "#/components/schemas/office_hours_time_interval"
+    create_office_hours_exception_request:
+      type: object
+      title: Create Office Hours Exception Request
+      description: The request payload for creating an office hours exception. Omit
+        `time_intervals` when `exception_type` is `closed`.
+      required:
+      - exception_date
+      - exception_type
+      properties:
+        exception_date:
+          type: string
+          format: date
+          description: The date the exception applies to, in `YYYY-MM-DD` format.
+          example: '2026-12-25'
+        exception_type:
+          type: string
+          enum:
+          - closed
+          - custom_hours
+          description: The type of exception.
+          example: closed
+        name:
+          type: string
+          description: An optional name for the exception.
+          example: Christmas Day
+        time_intervals:
+          type: array
+          nullable: true
+          description: The open intervals for the exception date. Required for `custom_hours`;
+            omit for `closed`.
+          items:
+            "$ref": "#/components/schemas/office_hours_time_interval"
+        recurring_annually:
+          type: boolean
+          description: Whether the exception repeats every year on the same date.
+          example: true
+    update_office_hours_exception_request:
+      type: object
+      title: Update Office Hours Exception Request
+      description: The request payload for updating an office hours exception. Only
+        the provided fields are updated.
+      properties:
+        exception_date:
+          type: string
+          format: date
+          description: The date the exception applies to, in `YYYY-MM-DD` format.
+          example: '2026-12-25'
+        exception_type:
+          type: string
+          enum:
+          - closed
+          - custom_hours
+          description: The type of exception.
+          example: custom_hours
+        name:
+          type: string
+          description: An optional name for the exception.
+          example: Christmas Day (reduced hours)
+        time_intervals:
+          type: array
+          nullable: true
+          description: The open intervals for the exception date. Required for `custom_hours`;
+            omit for `closed`.
+          items:
+            "$ref": "#/components/schemas/office_hours_time_interval"
+        recurring_annually:
+          type: boolean
+          description: Whether the exception repeats every year on the same date.
+          example: true
     datetime:
       oneOf:
         - title: string
@@ -33776,6 +34705,12 @@ tags:
     url: https://www.intercom.com/help/en/articles/6362251-news-explained
 - name: Notes
   description: Everything about your Notes
+- name: Office Hours
+  description: |
+    Manage office hours schedules and their exceptions. These endpoints are part of
+    the `Preview` API version and require an OAuth token with the `read_write_office_hours`
+    scope. The API is in limited availability — the scope becomes available once the
+    feature is enabled for your workspace; until then requests return `403 api_plan_restricted`.
 - name: Procedures
   description: |
     Submit human-collected input to Fin Procedures via the HITL (Human in the Loop) API.
