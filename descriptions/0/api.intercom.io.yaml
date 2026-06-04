@@ -21512,24 +21512,28 @@ components:
       title: Office Hours Time Interval
       x-tags:
       - Office Hours
-      description: A single open interval. `start_minute` and `end_minute` are minute
-        offsets from the start of the week (Monday 00:00 = 0), in the range 0 to 10080.
+      description: A single open interval. For schedules, `start_minute` and `end_minute`
+        are minute offsets from the start of the week (Monday 00:00 = 0), in the range
+        0 to 10080. For exceptions, they are minute offsets from midnight on `exception_date`,
+        in the range 0 to 1440.
       properties:
         start_minute:
           type: integer
-          description: Minute the interval starts, offset from the start of the week
-            (Monday 00:00 = 0).
+          description: Minute the interval starts. For schedules, offset from the start
+            of the week (Monday 00:00 = 0); for exceptions, offset from midnight on
+            `exception_date`.
           example: 540
         end_minute:
           type: integer
-          description: Minute the interval ends, offset from the start of the week
-            (Monday 00:00 = 0).
+          description: Minute the interval ends. For schedules, offset from the start
+            of the week (Monday 00:00 = 0); for exceptions, offset from midnight on
+            `exception_date`.
           example: 1020
         day_of_week:
           type: integer
           readOnly: true
           description: Derived day of the week the interval falls on (0 = Monday … 6
-            = Sunday).
+            = Sunday). For exceptions, this is derived from `exception_date`.
           example: 0
     office_hours_schedule:
       type: object
@@ -21609,7 +21613,6 @@ components:
         exception_date:
           type: string
           format: date
-          nullable: true
           description: The date the exception applies to, in `YYYY-MM-DD` format.
           example: '2026-12-25'
         exception_type:
