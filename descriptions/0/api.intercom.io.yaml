@@ -7841,13 +7841,16 @@ paths:
       - Contacts
       operationId: BulkUpdateContacts
       description: |
-        You can bulk update contacts by submitting an array of contact objects with the fields to update. Each contact must include an `id` field identifying the contact to update.
+        You can bulk update contacts by submitting an array of contact objects with the fields to update. Each contact must include an `id` field identifying the contact to update. You can also add or remove tags on each contact by including a `tags` object.
+
+        Only the fields listed in the request schema below can be set. Any other fields in a contact object are ignored.
 
         The endpoint creates an async job that processes the updates in the background. Use the returned job ID with `GET /contacts/bulk/{id}` to check the job status.
 
         {% admonition type="info" name="Limits" %}
           - Maximum of 100 contacts per request.
           - You can append tasks to an existing job by including `job.id` in the request body.
+          - Tag application is best-effort and processed asynchronously: unknown tag IDs are skipped, and per-tag results are not returned in the job status.
         {% /admonition %}
       requestBody:
         content:
@@ -7866,6 +7869,17 @@ paths:
                   - id: ghi789
                     language_override: es
                     name: "María García"
+              with_tags:
+                summary: Add and remove tags
+                value:
+                  contacts:
+                  - id: abc123
+                    name: Updated Name
+                    tags:
+                      add:
+                      - id: '123'
+                      remove:
+                      - id: '456'
               append_to_existing_job:
                 summary: Append to existing job
                 value:
@@ -7924,6 +7938,13 @@ paths:
                     errors:
                     - code: missing_field
                       message: contacts field must be supplied
+                missing_id:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: missing_field
+                      message: contacts must be identified by id
                 too_many_contacts:
                   value:
                     type: error.list
@@ -23808,9 +23829,84 @@ components:
                 description: A preferred language setting for the contact, used by
                   the Intercom Messenger.
                 example: fr
+              user_id:
+                type: string
+                description: A unique identifier for the contact that you provide. Maps to the contact's external user ID.
+                example: '25'
+              phone:
+                type: string
+                description: The contact's phone number.
+                example: "+353871234567"
+              owner_id:
+                type: integer
+                description: The ID of the teammate who owns the contact.
+                example: 123
+              unsubscribed_from_emails:
+                type: boolean
+                description: Whether the contact is unsubscribed from emails.
+                example: true
+              avatar:
+                type: string
+                description: An image URL for the contact's avatar. You can also pass an object with an `image_url` field.
+                example: https://www.example.com/avatar.png
               custom_attributes:
                 type: object
                 description: Custom attributes to update on the contact.
+              companies:
+                type: array
+                description: A list of companies to associate with the contact. Each company is identified by the `company_id` you have defined. Companies that do not exist are created.
+                items:
+                  type: object
+                  properties:
+                    company_id:
+                      type: string
+                      description: The company ID you have defined for the company.
+                      example: '6'
+                    name:
+                      type: string
+                      description: The name of the company.
+                      example: Blue Sun
+              company:
+                type: object
+                description: A single company to associate with the contact, identified by the `company_id` you have defined. Created if it does not exist.
+                properties:
+                  company_id:
+                    type: string
+                    description: The company ID you have defined for the company.
+                    example: '6'
+                  name:
+                    type: string
+                    description: The name of the company.
+                    example: Blue Sun
+              tags:
+                type: object
+                description: |
+                  Tags to add to or remove from the contact. Each tag is identified by its `id`, which must be a positive integer for a tag that already exists in your workspace. Tag application is best-effort: unknown tag IDs are skipped while the rest of the contact update still applies. Per-tag results are not yet returned in the job status.
+                properties:
+                  add:
+                    type: array
+                    description: Tags to add to the contact.
+                    items:
+                      type: object
+                      required:
+                      - id
+                      properties:
+                        id:
+                          type: string
+                          description: The ID of an existing tag to add to the contact.
+                          example: '123'
+                  remove:
+                    type: array
+                    description: Tags to remove from the contact.
+                    items:
+                      type: object
+                      required:
+                      - id
+                      properties:
+                        id:
+                          type: string
+                          description: The ID of an existing tag to remove from the contact.
+                          example: '456'
         job:
           type: object
           description: Optional. Include to append tasks to an existing job.
