@@ -1640,6 +1640,296 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/articles/{id}/draft":
+    get:
+      summary: Retrieve an article draft
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the article which is given by Intercom.
+        example: 123
+        schema:
+          type: integer
+      tags:
+      - Articles
+      operationId: retrieveArticleDraft
+      description: |
+        Fetch the staged draft of a published article by making a GET request to
+        `https://api.intercom.io/articles/<id>/draft`. The response is the article
+        rendered with its draft content, leaving the live article untouched.
+
+        A draft exists only when a published article has unpublished changes staged
+        on top of it. Returns `404` when the article has no staged draft.
+      responses:
+        '200':
+          description: Article draft found
+          content:
+            application/json:
+              examples:
+                Article draft found:
+                  value:
+                    id: '45'
+                    type: article
+                    workspace_id: this_is_an_id74_that_should_be_at_least_4
+                    parent_ids: []
+                    title: This is the draft title
+                    description: ''
+                    body: <p class="no-margin">Unpublished changes staged as a draft</p>
+                    body_markdown: "Unpublished changes staged as a draft\n"
+                    author_id: 991267502
+                    state: published
+                    created_at: 1734537292
+                    updated_at: 1734537292
+                    url: http://help-center.test/myapp-74/en/articles/45-this-is-the-article-title
+                    ai_chatbot_availability: true
+                    ai_copilot_availability: true
+                    ai_sales_agent_availability: true
+              schema:
+                "$ref": "#/components/schemas/article"
+        '404':
+          description: Article has no draft
+          content:
+            application/json:
+              examples:
+                Article has no draft:
+                  value:
+                    type: error.list
+                    request_id: 79abd27a-1bfb-42ec-a404-5728c76ba773
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2eab07fb-5092-49a4-ba74-44094f31f264
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Stage an article draft
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the article which is given by Intercom.
+        example: 123
+        schema:
+          type: integer
+      tags:
+      - Articles
+      operationId: stageArticleDraft
+      description: |
+        Stage changes to a published article as a draft by making a PUT request to
+        `https://api.intercom.io/articles/<id>/draft`. The live article remains
+        unchanged until the draft is published.
+
+        The article must already be published; staging a draft on an article that
+        has never been published returns `422`.
+      responses:
+        '200':
+          description: Draft staged
+          content:
+            application/json:
+              examples:
+                Draft staged:
+                  value:
+                    id: '48'
+                    type: article
+                    workspace_id: this_is_an_id80_that_should_be_at_least_4
+                    parent_ids: []
+                    title: Christmas is here!
+                    description: ''
+                    body: <p class="no-margin">New gifts in store for the jolly season</p>
+                    body_markdown: "New gifts in store for the jolly season\n"
+                    author_id: 991267508
+                    state: published
+                    created_at: 1734537297
+                    updated_at: 1734537298
+                    url: http://help-center.test/myapp-80/en/articles/48-christmas-is-here
+                    ai_chatbot_availability: true
+                    ai_copilot_availability: true
+                    ai_sales_agent_availability: true
+              schema:
+                "$ref": "#/components/schemas/article"
+        '404':
+          description: Article Not Found
+          content:
+            application/json:
+              examples:
+                Article Not Found:
+                  value:
+                    type: error.list
+                    request_id: f9adccb2-9fca-4b87-bbb7-65f2af5e1d78
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Article must be published before a draft can be staged
+          content:
+            application/json:
+              examples:
+                Article not published:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: parameter_invalid
+                      message: Article must be published before a draft can be staged
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: d1ea223d-bb62-42e3-8bcf-30fdcf7dbd99
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_article_request"
+            examples:
+              Draft staged:
+                summary: Stage a draft
+                value:
+                  title: Christmas is here!
+                  body: "<p>New gifts in store for the jolly season</p>"
+  "/articles/{id}/draft/publish":
+    post:
+      summary: Publish an article draft
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the article which is given by Intercom.
+        example: 123
+        schema:
+          type: integer
+      tags:
+      - Articles
+      operationId: publishArticleDraft
+      description: |
+        Publish a staged draft by making a POST request to
+        `https://api.intercom.io/articles/<id>/draft/publish`, promoting the draft
+        content to live.
+
+        On a single-language workspace no body is required. On a multilingual
+        workspace you must list which locales to publish via the `locales` array;
+        omitting it returns `422`. Returns `422` when there is no staged draft to
+        publish, or when a requested locale has no pending changes.
+      responses:
+        '200':
+          description: Draft published
+          content:
+            application/json:
+              examples:
+                Draft published:
+                  value:
+                    id: '48'
+                    type: article
+                    workspace_id: this_is_an_id80_that_should_be_at_least_4
+                    parent_ids: []
+                    title: Christmas is here!
+                    description: ''
+                    body: <p class="no-margin">New gifts in store for the jolly season</p>
+                    body_markdown: "New gifts in store for the jolly season\n"
+                    author_id: 991267508
+                    state: published
+                    created_at: 1734537297
+                    updated_at: 1734537299
+                    url: http://help-center.test/myapp-80/en/articles/48-christmas-is-here
+                    ai_chatbot_availability: true
+                    ai_copilot_availability: true
+                    ai_sales_agent_availability: true
+              schema:
+                "$ref": "#/components/schemas/article"
+        '404':
+          description: Article Not Found
+          content:
+            application/json:
+              examples:
+                Article Not Found:
+                  value:
+                    type: error.list
+                    request_id: f9adccb2-9fca-4b87-bbb7-65f2af5e1d78
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: No draft to publish, or locales not specified on a multilingual workspace
+          content:
+            application/json:
+              examples:
+                No draft to publish:
+                  value:
+                    type: error.list
+                    request_id: 8a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d
+                    errors:
+                    - code: parameter_invalid
+                      message: Article has no draft to publish
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: c6e86ce8-9402-4196-89c5-f1b2912b4bac
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/publish_article_draft_request"
+            examples:
+              Publish specific locales:
+                summary: Publish specific locales on a multilingual workspace
+                value:
+                  locales:
+                  - en
+                  - fr
   "/articles/search":
     get:
       summary: Search for articles
@@ -33575,6 +33865,25 @@ components:
             type: role
             comparison: eq
             value: user
+    publish_article_draft_request:
+      description: |
+        Optional body for publishing a staged article draft. On a single-language
+        workspace the body can be omitted. On a multilingual workspace, `locales`
+        is required and lists which locales' drafts to publish.
+      type: object
+      title: Publish Article Draft Request Payload
+      nullable: true
+      properties:
+        locales:
+          type: array
+          description: |
+            The locales whose staged drafts should be published. Required on
+            multilingual workspaces; each locale must have a pending draft.
+          items:
+            type: string
+          example:
+          - en
+          - fr
     update_article_request:
       description: You can Update an Article
       type: object
