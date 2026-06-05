@@ -32038,8 +32038,43 @@ components:
           properties:
             type:
               type: string
-              description: The kind of action.
+              description: The kind of action. One of `url`, `reaction`, `email_collector`,
+                or `product_tour`.
               example: url
+            label:
+              type: string
+              nullable: true
+              description: For `url` actions, the label shown on the action link or button.
+              example: Learn more
+            target:
+              type: string
+              nullable: true
+              description: For `url` actions, the URL the contact is sent to.
+              example: https://www.intercom.com/pricing
+            reaction_set:
+              type: array
+              description: For `reaction` actions, the reactions a contact can choose from.
+              items:
+                type: object
+                properties:
+                  index:
+                    type: integer
+                    description: The reaction's position in the set.
+                    example: 0
+                  unicode_emoticon:
+                    type: string
+                    description: The reaction's unicode emoji.
+                    example: "\U0001F44D"
+            tour_id:
+              type: string
+              nullable: true
+              description: For `product_tour` actions, the id of the product tour to launch.
+              example: '12345'
+            tour_url:
+              type: string
+              nullable: true
+              description: For `product_tour` actions, the URL that launches the product tour.
+              example: https://app.intercom.com/tours/12345
         client_targeting:
           type: array
           nullable: true
