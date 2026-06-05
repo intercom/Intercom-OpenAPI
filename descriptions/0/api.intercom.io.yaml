@@ -1344,6 +1344,23 @@ paths:
                     - code: parameter_not_found
                       message: author_id must be in the main body or default locale
                         translated_content object
+                Scheduling conflict:
+                  value:
+                    type: error.list
+                    request_id: 8d11c1f4-0a55-4f7f-8e2f-4f6c1f3b2c11
+                    errors:
+                    - code: parameter_invalid
+                      field: scheduled_publish_at
+                      message: Cannot schedule a publish while setting state to draft
+                Conflicting pending schedules:
+                  value:
+                    type: error.list
+                    request_id: 0a82a3a4-94f1-4f1a-bea1-aaf41a8d3c22
+                    errors:
+                    - code: parameter_invalid
+                      field: scheduled_unpublish_at
+                      message: Cannot set scheduled_publish_at and scheduled_unpublish_at
+                        in the same request
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -1534,6 +1551,39 @@ paths:
                     ai_sales_agent_availability: true
               schema:
                 "$ref": "#/components/schemas/article"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Scheduling conflict:
+                  value:
+                    type: error.list
+                    request_id: 8d11c1f4-0a55-4f7f-8e2f-4f6c1f3b2c11
+                    errors:
+                    - code: parameter_invalid
+                      field: scheduled_publish_at
+                      message: Cannot schedule a publish while setting state to draft
+                Conflicting pending schedules:
+                  value:
+                    type: error.list
+                    request_id: 0a82a3a4-94f1-4f1a-bea1-aaf41a8d3c22
+                    errors:
+                    - code: parameter_invalid
+                      field: scheduled_unpublish_at
+                      message: Cannot set scheduled_publish_at and scheduled_unpublish_at
+                        in the same request
+                Unpublish before publish:
+                  value:
+                    type: error.list
+                    request_id: 11aa22bb-33cc-44dd-55ee-66ff77889900
+                    errors:
+                    - code: parameter_invalid
+                      field: scheduled_unpublish_at
+                      message: Cannot schedule unpublish for an article that has never
+                        been published
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Article Not Found
           content:
@@ -23036,6 +23086,26 @@ components:
             means all users and visitors can view it; `restricted` indicates a custom audience
             ruleset. For multilingual articles, this is the article-level audience.
           example: everyone
+        scheduled_publish_at:
+          type: integer
+          format: date-time
+          nullable: true
+          readOnly: true
+          description: >-
+            The Unix timestamp (in seconds) at which the article is scheduled to be
+            published. `null` when no publish is scheduled. Mutually exclusive with
+            `scheduled_unpublish_at` — at most one pending schedule exists per article.
+          example: 1769443200
+        scheduled_unpublish_at:
+          type: integer
+          format: date-time
+          nullable: true
+          readOnly: true
+          description: >-
+            The Unix timestamp (in seconds) at which the article is scheduled to be
+            unpublished. `null` when no unpublish is scheduled. Mutually exclusive
+            with `scheduled_publish_at` — at most one pending schedule exists per article.
+          example: 1769443200
     internal_article_list_item:
       title: Internal Articles
       type: object
@@ -26639,6 +26709,30 @@ components:
           description: Whether the article should be available for AI Sales Agent.
             For multilingual articles, this sets the default language's availability.
           example: true
+        scheduled_publish_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            ISO 8601 timestamp at which to schedule a future publish of the article.
+            When set together with `state: "published"`, the article is scheduled
+            instead of published immediately. Setting `null` cancels a pending
+            publish schedule. Combining with `state: "draft"` returns 400
+            `INVALID_PARAMETER`. Sending in the same request as `scheduled_unpublish_at`
+            returns 400 — only one pending schedule per article. Empty string returns
+            400 `INVALID_PARAMETER`.
+          example: '2026-12-31T09:00:00Z'
+        scheduled_unpublish_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            ISO 8601 timestamp at which to schedule a future unpublish of the article.
+            Setting `null` cancels a pending unpublish schedule. Rejected with 400
+            `INVALID_PARAMETER` if the article has never been published. Sending in
+            the same request as `scheduled_publish_at` returns 400 — only one pending
+            schedule per article. Empty string returns 400 `INVALID_PARAMETER`.
+          example: '2026-12-31T17:00:00Z'
       required:
       - title
       - author_id
@@ -33577,6 +33671,30 @@ components:
           description: Whether the article should be available for AI Sales Agent.
             For multilingual articles, this sets the default language's availability.
           example: true
+        scheduled_publish_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            ISO 8601 timestamp at which to schedule a future publish of the article.
+            When set together with `state: "published"`, the article is scheduled
+            instead of published immediately. Setting `null` cancels a pending
+            publish schedule. Combining with `state: "draft"` returns 400
+            `INVALID_PARAMETER`. Sending in the same request as `scheduled_unpublish_at`
+            returns 400 — only one pending schedule per article. Empty string returns
+            400 `INVALID_PARAMETER`.
+          example: '2026-12-31T09:00:00Z'
+        scheduled_unpublish_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            ISO 8601 timestamp at which to schedule a future unpublish of the article.
+            Setting `null` cancels a pending unpublish schedule. Rejected with 400
+            `INVALID_PARAMETER` if the article has never been published. Sending in
+            the same request as `scheduled_publish_at` returns 400 — only one pending
+            schedule per article. Empty string returns 400 `INVALID_PARAMETER`.
+          example: '2026-12-31T17:00:00Z'
     update_internal_article_request:
       description: You can Update an Internal Article
       type: object
