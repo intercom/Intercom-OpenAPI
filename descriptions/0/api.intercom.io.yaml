@@ -1696,36 +1696,9 @@ paths:
               schema:
                 "$ref": "#/components/schemas/article"
         '404':
-          description: |
-            The article does not exist, or it exists but has no staged draft. When the
-            article exists but has no draft the response body is empty; the example
-            below shows the article-not-found case.
-          content:
-            application/json:
-              examples:
-                Article not found:
-                  value:
-                    type: error.list
-                    request_id: 79abd27a-1bfb-42ec-a404-5728c76ba773
-                    errors:
-                    - code: not_found
-                      message: Resource Not Found
-              schema:
-                "$ref": "#/components/schemas/error"
+          "$ref": "#/components/responses/ObjectNotFound"
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 2eab07fb-5092-49a4-ba74-44094f31f264
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
+          "$ref": "#/components/responses/Unauthorized"
     put:
       summary: Stage an article draft
       parameters:
@@ -1785,19 +1758,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/article"
         '404':
-          description: Article Not Found
-          content:
-            application/json:
-              examples:
-                Article Not Found:
-                  value:
-                    type: error.list
-                    request_id: f9adccb2-9fca-4b87-bbb7-65f2af5e1d78
-                    errors:
-                    - code: not_found
-                      message: Resource Not Found
-              schema:
-                "$ref": "#/components/schemas/error"
+          "$ref": "#/components/responses/ObjectNotFound"
         '422':
           description: Article must be published before a draft can be staged
           content:
@@ -1808,24 +1769,12 @@ paths:
                     type: error.list
                     request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
                     errors:
-                    - message: Article must be published before a draft can be staged
-                      status: 422
+                    - code: parameter_invalid
+                      message: Article must be published before a draft can be staged
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: d1ea223d-bb62-42e3-8bcf-30fdcf7dbd99
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
+          "$ref": "#/components/responses/Unauthorized"
       requestBody:
         content:
           application/json:
@@ -1895,19 +1844,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/article"
         '404':
-          description: Article Not Found
-          content:
-            application/json:
-              examples:
-                Article Not Found:
-                  value:
-                    type: error.list
-                    request_id: f9adccb2-9fca-4b87-bbb7-65f2af5e1d78
-                    errors:
-                    - code: not_found
-                      message: Resource Not Found
-              schema:
-                "$ref": "#/components/schemas/error"
+          "$ref": "#/components/responses/ObjectNotFound"
         '422':
           description: No draft to publish, locales not specified on a multilingual workspace, or a requested locale has no pending changes
           content:
@@ -1918,8 +1855,8 @@ paths:
                     type: error.list
                     request_id: 8a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d
                     errors:
-                    - message: Article has no draft to publish
-                      status: 422
+                    - code: parameter_invalid
+                      message: Article has no draft to publish
                 Locales required on a multilingual workspace:
                   value:
                     type: error.list
@@ -1937,19 +1874,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: c6e86ce8-9402-4196-89c5-f1b2912b4bac
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
+          "$ref": "#/components/responses/Unauthorized"
       requestBody:
         required: false
         content:
