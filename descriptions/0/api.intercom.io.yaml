@@ -7829,6 +7829,127 @@ paths:
                       message: Contact not found
               schema:
                 "$ref": "#/components/schemas/error"
+  "/contacts/{id}/banners":
+    get:
+      summary: List banners for a contact
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of a contact.
+        schema:
+          type: string
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Banners
+      - Contacts
+      operationId: listContactBanners
+      description: |
+        Returns the banners a contact currently matches, so you can display them on
+        surfaces outside the Messenger (native mobile apps, kiosks, embedded tools).
+
+        Each banner in the response includes a `view_id`. Use it to record a dismissal
+        with the dismiss endpoint. A returned banner is treated as shown: requesting
+        this endpoint records an impression for each banner returned, so call it at the
+        point you are about to display the banners, not speculatively.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - type: banner
+                      id: '486517'
+                      view_id: '645719311'
+                      title: Hi there
+                      body: "<p class=\"no-margin\">Hi there!</p>"
+                      style: inline
+                      position: top
+                      show_dismiss_button: true
+                      action:
+                      client_targeting:
+                      created_at: 1780580493
+              schema:
+                "$ref": "#/components/schemas/banner_list"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 57055cde-3d0d-4c67-b5c9-b20b80340bf0
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/contacts/{id}/banners/{view_id}/dismiss":
+    post:
+      summary: Dismiss a banner for a contact
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of a contact.
+        schema:
+          type: string
+      - name: view_id
+        in: path
+        required: true
+        description: The `view_id` of the banner to dismiss, as returned by the list banners endpoint.
+        schema:
+          type: string
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Banners
+      - Contacts
+      operationId: dismissContactBanner
+      description: |
+        Records that a contact has dismissed a banner. Dismissals are shared across
+        surfaces, so a banner dismissed through this endpoint will also stop appearing
+        in the web Messenger for that contact, and vice versa.
+
+        The request is idempotent: dismissing an already-dismissed banner succeeds and
+        returns the same response.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: banner_dismiss
+                    view_id: '645719311'
+                    dismissed: true
+              schema:
+                "$ref": "#/components/schemas/banner_dismiss"
+        '404':
+          description: Banner view not found
+          content:
+            application/json:
+              examples:
+                Banner view not found:
+                  value:
+                    type: error.list
+                    request_id: 57055cde-3d0d-4c67-b5c9-b20b80340bf0
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/contacts/bulk":
     post:
       summary: Bulk update contacts
@@ -32592,6 +32713,147 @@ components:
           type: string
           description: The body text of the note.
           example: "<p>Text for the note.</p>"
+    banner_list:
+      title: Banner List
+      type: object
+      description: A list of banners a contact currently matches.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `list`.
+          example: list
+        data:
+          type: array
+          description: An array of banners.
+          items:
+            "$ref": "#/components/schemas/banner"
+    banner:
+      title: Banner
+      type: object
+      x-tags:
+      - Banners
+      description: A banner the contact currently matches, with the content and view
+        identifier needed to display and dismiss it.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `banner`.
+          example: banner
+        id:
+          type: string
+          description: The id of the banner.
+          example: '486517'
+        view_id:
+          type: string
+          description: The id of the contact's view of this banner. Pass this to the
+            dismiss endpoint to record a dismissal.
+          example: '645719311'
+        title:
+          type: string
+          nullable: true
+          description: The banner's title. `null` when the banner has no title.
+          example: Hi there
+        body:
+          type: string
+          nullable: true
+          description: The banner's body content as HTML.
+          example: "<p class=\"no-margin\">Hi there!</p>"
+        style:
+          type: string
+          description: How the banner is displayed.
+          example: inline
+        position:
+          type: string
+          description: Where the banner is positioned.
+          example: top
+        show_dismiss_button:
+          type: boolean
+          description: Whether the banner should display a dismiss control.
+          example: true
+        action:
+          type: object
+          nullable: true
+          description: |
+            The action a contact can take on the banner, or `null` when the banner has
+            no action. The fields present depend on `type`:
+            `url` (`label`, `target`), `reaction` (`reaction_set`),
+            `email_collector`, or `product_tour` (`tour_id`, `tour_url`).
+          properties:
+            type:
+              type: string
+              description: The kind of action. One of `url`, `reaction`, `email_collector`,
+                or `product_tour`.
+              example: url
+            label:
+              type: string
+              nullable: true
+              description: For `url` actions, the label shown on the action link or button.
+              example: Learn more
+            target:
+              type: string
+              nullable: true
+              description: For `url` actions, the URL the contact is sent to.
+              example: https://www.intercom.com/pricing
+            reaction_set:
+              type: array
+              description: For `reaction` actions, the reactions a contact can choose from.
+              items:
+                type: object
+                properties:
+                  index:
+                    type: integer
+                    description: The reaction's position in the set.
+                    example: 0
+                  unicode_emoticon:
+                    type: string
+                    description: The reaction's unicode emoji.
+                    example: "\U0001F44D"
+            tour_id:
+              type: string
+              nullable: true
+              description: For `product_tour` actions, the id of the product tour to launch.
+              example: '12345'
+            tour_url:
+              type: string
+              nullable: true
+              description: For `product_tour` actions, the URL that launches the product tour.
+              example: https://app.intercom.com/tours/12345
+        client_targeting:
+          type: array
+          nullable: true
+          description: |
+            Reserved for future use. Always `null` in the current version — banners
+            that depend on client-side targeting rules (such as page URL or time on
+            page) are not returned by this endpoint.
+          items:
+            type: object
+        created_at:
+          type: integer
+          format: timestamp
+          description: The time the contact's view of this banner was created.
+          example: 1780580493
+    banner_dismiss:
+      title: Banner Dismiss
+      type: object
+      x-tags:
+      - Banners
+      description: The result of dismissing a banner for a contact.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `banner_dismiss`.
+          example: banner_dismiss
+        view_id:
+          type: string
+          description: The id of the dismissed banner view.
+          example: '645719311'
+        dismissed:
+          type: boolean
+          description: Whether the banner view is dismissed.
+          example: true
     note_list:
       title: Paginated Response
       type: object
@@ -35368,6 +35630,13 @@ tags:
   description: Everything about your Away Status Reasons
 - name: Audiences
   description: Everything about your Audiences
+- name: Banners
+  description: |
+    Retrieve the banners a contact matches and record dismissals, so you can display
+    banners on surfaces outside the Messenger (native mobile apps, kiosks, embedded
+    tools). These endpoints are part of the `Preview` API version and require an OAuth
+    token with the `read_write_users` scope. Requesting a contact's banners records an
+    impression for each banner returned, and dismissals are shared with the web Messenger.
 - name: Brands
   description: Everything about your Brands
 - name: Calls
