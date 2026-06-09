@@ -678,6 +678,7 @@ paths:
                       url: https://support.example.com/us/3
                       ai_agent_availability: true
                       ai_copilot_availability: true
+                      ai_sales_agent_availability: true
                       fin_availability: true
                       locale: en
                       source_id: 42
@@ -692,6 +693,7 @@ paths:
                       url: https://support.example.com/us/2
                       ai_agent_availability: true
                       ai_copilot_availability: true
+                      ai_sales_agent_availability: true
                       fin_availability: true
                       locale: en
                       source_id: 41
@@ -706,6 +708,7 @@ paths:
                       url: https://support.example.com/us/1
                       ai_agent_availability: true
                       ai_copilot_availability: true
+                      ai_sales_agent_availability: true
                       fin_availability: true
                       locale: en
                       source_id: 40
@@ -764,6 +767,7 @@ paths:
                     url: https://www.example.com
                     ai_agent_availability: true
                     ai_copilot_availability: true
+                    ai_sales_agent_availability: true
                     fin_availability: true
                     locale: en
                     source_id: 44
@@ -837,6 +841,7 @@ paths:
                     url: https://support.example.com/us/5
                     ai_agent_availability: true
                     ai_copilot_availability: true
+                    ai_sales_agent_availability: true
                     fin_availability: true
                     locale: en
                     source_id: 45
@@ -886,6 +891,7 @@ paths:
                     url: https://support.example.com/us/6
                     ai_agent_availability: true
                     ai_copilot_availability: true
+                    ai_sales_agent_availability: true
                     fin_availability: true
                     locale: en
                     source_id: 46
@@ -936,6 +942,7 @@ paths:
                     url: https://www.example.com
                     ai_agent_availability: true
                     ai_copilot_availability: true
+                    ai_sales_agent_availability: true
                     fin_availability: true
                     locale: en
                     source_id: 47
@@ -3521,7 +3528,16 @@ paths:
       tags:
       - Companies
       operationId: deleteCompany
-      description: You can delete a single company.
+      description: |
+        Delete a single company.
+
+        This endpoint does not permanently remove the company. It archives the company record and detaches any contacts attached to it; the contacts themselves are not deleted. A `company.deleted` webhook is sent once archival completes.
+
+        The endpoint returns `200` with `"deleted": true` as soon as the request is accepted — archival is processed asynchronously.
+
+        {% admonition type="warning" %}
+        Third-party integrations that sync companies into Intercom (for example, Salesforce or Chargebee) will recreate any company deleted through this endpoint on their next sync. To prevent recreation, remove or filter the company at the source integration before deleting it via the API.
+        {% /admonition %}
       responses:
         '200':
           description: Successful
@@ -6930,6 +6946,10 @@ paths:
           See _`update a conversation with an association to a custom object instance`_ in the request/response examples to see the custom object association format.
         {% /admonition %}
 
+        {% admonition type="danger" name="Breaking change: duplicate custom attribute names" %}
+        The `PUT /conversations/{id}` endpoint now returns a `400 INVALID_PARAMETER` error when the request includes `custom_attributes` and your workspace contains multiple non-archived conversation custom attributes with the same name. Previously, the update would silently apply to a non-deterministic attribute. To resolve, rename or archive the duplicate attribute in your workspace settings, then retry the request.
+        {% /admonition %}
+
       responses:
         '200':
           description: update a conversation with an association to a custom object
@@ -8424,10 +8444,10 @@ paths:
       - Conversations
       operationId: detachContactFromConversation
       description: |+
-        You can add participants who are contacts to a conversation, on behalf of either another contact or an admin.
+        You can remove participants who are contacts from a group conversation, on behalf of an admin.
 
-        {% admonition type="warning" name="Contacts without an email" %}
-        If you add a contact via the email parameter and there is no user/lead found on that workspace with he given email, then we will create a new contact with `role` set to `lead`.
+        {% admonition type="warning" name="Removing the last participant" %}
+        You cannot remove the last remaining contact from a conversation.
         {% /admonition %}
 
       responses:
@@ -15079,6 +15099,7 @@ components:
           - user_voice_notes_setting_change
           - welcome_message_change
           - workspace_deletion_request
+          - hide_csat_from_agents_setting_change
           example: app_name_change
         activity_description:
           type: string
@@ -16867,51 +16888,51 @@ components:
         created_at:
           type: integer
           format: date-time
-          description: "(UNIX timestamp) The time when the contact was created."
+          description: "(Unix timestamp in seconds) The time when the contact was created."
           example: 1571672154
         updated_at:
           type: integer
           format: date-time
-          description: "(UNIX timestamp) The time when the contact was last updated."
+          description: "(Unix timestamp in seconds) The time when the contact was last updated."
           example: 1571672154
         signed_up_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time specified for when a contact signed
+          description: "(Unix timestamp in seconds) The time specified for when a contact signed
             up."
           example: 1571672154
         last_seen_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact was last seen (either
+          description: "(Unix timestamp in seconds) The time when the contact was last seen (either
             where the Intercom Messenger was installed or when specified manually)."
           example: 1571672154
         last_replied_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact last messaged in."
+          description: "(Unix timestamp in seconds) The time when the contact last messaged in."
           example: 1571672154
         last_contacted_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact was last messaged."
+          description: "(Unix timestamp in seconds) The time when the contact was last messaged."
           example: 1571672154
         last_email_opened_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact last opened an
+          description: "(Unix timestamp in seconds) The time when the contact last opened an
             email."
           example: 1571672154
         last_email_clicked_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact last clicked a
+          description: "(Unix timestamp in seconds) The time when the contact last clicked a
             link in an email."
           example: 1571672154
         language_override:
@@ -16969,7 +16990,7 @@ components:
           type: integer
           nullable: true
           format: date-time
-          description: "(UNIX timestamp) The time when the contact was last seen on
+          description: "(Unix timestamp in seconds) The time when the contact was last seen on
             an Android device."
           example: 1571672154
         ios_app_name:
@@ -17001,7 +17022,7 @@ components:
           type: integer
           nullable: true
           format: date-time
-          description: "(UNIX timestamp) The last time the contact used the iOS app."
+          description: "(Unix timestamp in seconds) The last time the contact used the iOS app."
           example: 1571672154
         custom_attributes:
           type: object
@@ -18580,14 +18601,14 @@ components:
           type: integer
           format: date-time
           nullable: true
-          description: The time specified for when a contact signed up
+          description: (Unix timestamp in seconds) The time specified for when a contact signed up.
           example: 1571672154
         last_seen_at:
           type: integer
           format: date-time
           nullable: true
-          description: The time when the contact was last seen (either where the Intercom
-            Messenger was installed or when specified manually)
+          description: (Unix timestamp in seconds) The time when the contact was last seen
+            (either where the Intercom Messenger was installed or when specified manually).
           example: 1571672154
         owner_id:
           type: integer
@@ -20480,6 +20501,11 @@ components:
           description: Whether the external page should be used to answer questions
             by AI Copilot.
           example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the external page should be used to answer questions
+            by AI Sales Agent.
+          example: true
         fin_availability:
           type: boolean
           description: Deprecated. Use ai_agent_availability and ai_copilot_availability
@@ -21236,8 +21262,8 @@ components:
       description: Intercom API version.</br>By default, it's equal to the version
         set in the app package.
       type: string
-      example: '2.14'
-      default: '2.14'
+      example: '2.15'
+      default: '2.15'
       enum:
       - '1.0'
       - '1.1'
@@ -21259,6 +21285,7 @@ components:
       - '2.12'
       - '2.13'
       - '2.14'
+      - '2.15'
     linked_object:
       title: Linked Object
       type: object
@@ -23339,14 +23366,14 @@ components:
           type: integer
           format: date-time
           nullable: true
-          description: The time specified for when a contact signed up
+          description: (Unix timestamp in seconds) The time specified for when a contact signed up.
           example: 1571672154
         last_seen_at:
           type: integer
           format: date-time
           nullable: true
-          description: The time when the contact was last seen (either where the Intercom
-            Messenger was installed or when specified manually)
+          description: (Unix timestamp in seconds) The time when the contact was last seen
+            (either where the Intercom Messenger was installed or when specified manually).
           example: 1571672154
         owner_id:
           type: integer
