@@ -8590,6 +8590,198 @@ paths:
           default: 10
           minimum: 1
           maximum: 50
+      - name: states
+        in: query
+        required: false
+        description: Filter by publication state. Accepts a comma-separated list
+          or repeated params.
+        example: published,draft
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - published
+            - draft
+        style: form
+        explode: false
+      - name: locales
+        in: query
+        required: false
+        description: Filter by locale codes (e.g. `en`, `fr`, `de`). Accepts a
+          comma-separated list or repeated params.
+        example: en,fr
+        schema:
+          type: array
+          items:
+            type: string
+        style: form
+        explode: false
+      - name: tag_ids
+        in: query
+        required: false
+        description: Filter by tag IDs. Pairs with `tag_operator` to control match
+          semantics. Accepts a comma-separated list or repeated params.
+        example: 1,2,3
+        schema:
+          type: array
+          items:
+            type: integer
+        style: form
+        explode: false
+      - name: tag_operator
+        in: query
+        required: false
+        description: Match operator paired with `tag_ids`. `IN` returns content
+          matching any of the given tags; `NIN` excludes content matching any
+          of them.
+        example: IN
+        schema:
+          type: string
+          enum:
+          - IN
+          - NIN
+      - name: any_tag_ids
+        in: query
+        required: false
+        description: Filter by tag IDs using OR semantics — returns content
+          matching any of the given tags. Alternative to `tag_ids` + `tag_operator`.
+          Accepts a comma-separated list or repeated params.
+        example: 1,2,3
+        schema:
+          type: array
+          items:
+            type: integer
+        style: form
+        explode: false
+      - name: folder_ids
+        in: query
+        required: false
+        description: Filter by folder IDs. Must be sent together with
+          `folder_entity_type`. Accepts a comma-separated list or repeated params.
+        example: 10,20
+        schema:
+          type: array
+          items:
+            type: integer
+        style: form
+        explode: false
+      - name: folder_entity_type
+        in: query
+        required: false
+        description: Required when `folder_ids` is provided. Identifies the entity
+          type the folder IDs refer to.
+        example: folder
+        schema:
+          type: string
+          enum:
+          - folder
+      - name: content_types
+        in: query
+        required: false
+        description: Restrict the search to specific content types. When provided,
+          this REPLACES the default content type set rather than filtering on top
+          of it. Accepts a comma-separated list or repeated params.
+        example: article,snippet
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - snippet
+            - external_content
+            - file_source_content
+            - internal_article
+            - article
+        style: form
+        explode: false
+      - name: copilot_state
+        in: query
+        required: false
+        description: Filter by whether the content is enabled for Copilot.
+        example: 'on'
+        schema:
+          type: string
+          enum:
+          - 'on'
+          - 'off'
+      - name: fin_service_state
+        in: query
+        required: false
+        description: Filter by whether the content is enabled for Fin AI Agent
+          (customer-facing service).
+        example: 'on'
+        schema:
+          type: string
+          enum:
+          - 'on'
+          - 'off'
+      - name: fin_sales_state
+        in: query
+        required: false
+        description: Filter by whether the content is enabled for Fin Sales Agent.
+        example: 'on'
+        schema:
+          type: string
+          enum:
+          - 'on'
+          - 'off'
+      - name: created_by_ids
+        in: query
+        required: false
+        description: Filter by the admin IDs that created the content. Accepts a
+          comma-separated list or repeated params.
+        example: 991267464,991267465
+        schema:
+          type: array
+          items:
+            type: integer
+        style: form
+        explode: false
+      - name: last_updated_by_ids
+        in: query
+        required: false
+        description: Filter by the admin IDs that last updated the content.
+          Accepts a comma-separated list or repeated params.
+        example: 991267464,991267465
+        schema:
+          type: array
+          items:
+            type: integer
+        style: form
+        explode: false
+      - name: created_at_after
+        in: query
+        required: false
+        description: Return content created at or after this time. Unix epoch
+          seconds.
+        example: 1677253093
+        schema:
+          type: integer
+      - name: created_at_before
+        in: query
+        required: false
+        description: Return content created at or before this time. Unix epoch
+          seconds.
+        example: 1677861493
+        schema:
+          type: integer
+      - name: updated_at_after
+        in: query
+        required: false
+        description: Return content last updated at or after this time. Unix
+          epoch seconds.
+        example: 1677253093
+        schema:
+          type: integer
+      - name: updated_at_before
+        in: query
+        required: false
+        description: Return content last updated at or before this time. Unix
+          epoch seconds.
+        example: 1677861493
+        schema:
+          type: integer
       tags:
       - Content
       operationId: searchContent
