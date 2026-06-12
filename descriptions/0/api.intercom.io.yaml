@@ -25109,42 +25109,23 @@ components:
                 description: Whether the contact is unsubscribed from emails.
                 example: true
               avatar:
-                type: string
-                description: An image URL for the contact's avatar. You can also pass an object with an `image_url` field.
-                example: https://www.example.com/avatar.png
+                description: An image URL for the contact's avatar, or an object with an `image_url` field.
+                oneOf:
+                - type: string
+                  example: https://www.example.com/avatar.png
+                - type: object
+                  properties:
+                    image_url:
+                      type: string
+                      description: A URL pointing to the contact's avatar image.
+                      example: https://www.example.com/avatar.png
               custom_attributes:
                 type: object
                 description: Custom attributes to update on the contact.
-              companies:
-                type: array
-                description: A list of companies to associate with the contact. Each company is identified by the `company_id` you have defined. Companies that do not exist are created.
-                items:
-                  type: object
-                  properties:
-                    company_id:
-                      type: string
-                      description: The company ID you have defined for the company.
-                      example: '6'
-                    name:
-                      type: string
-                      description: The name of the company.
-                      example: Blue Sun
-              company:
-                type: object
-                description: A single company to associate with the contact, identified by the `company_id` you have defined. Created if it does not exist.
-                properties:
-                  company_id:
-                    type: string
-                    description: The company ID you have defined for the company.
-                    example: '6'
-                  name:
-                    type: string
-                    description: The name of the company.
-                    example: Blue Sun
               tags:
                 type: object
                 description: |
-                  Tags to add to or remove from the contact. Each tag is identified by its `id`, which must be a positive integer for a tag that already exists in your workspace. Tag application is best-effort: unknown tag IDs are skipped while the rest of the contact update still applies. Per-tag results are not yet returned in the job status.
+                  Tags to add to or remove from the contact. Each tag is identified by its `id`, a string containing a positive integer for a tag that already exists in your workspace. Tag application is best-effort: unknown tag IDs are skipped while the rest of the contact update still applies. Per-tag results are not yet returned in the job status.
                 properties:
                   add:
                     type: array
