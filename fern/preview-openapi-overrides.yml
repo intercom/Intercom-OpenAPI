@@ -22,6 +22,21 @@ paths:
               $ref: '#/components/schemas/CreateArticleRequestBody'
   '/articles/{id}':
     put: null
+  '/articles/{article_id}/versions':
+    get:
+      x-fern-pagination:
+        offset: $request.page
+        results: $response.data
+      x-fern-sdk-group-name:
+        - articles
+      x-fern-sdk-method-name: listVersions
+      x-fern-request-name: ListArticleVersionsRequest
+  '/articles/{article_id}/versions/{id}':
+    get:
+      x-fern-sdk-group-name:
+        - articles
+      x-fern-sdk-method-name: findVersion
+      x-fern-request-name: FindArticleVersionRequest
   '/tickets':
     post: null
   '/ticket_types/{id}':
