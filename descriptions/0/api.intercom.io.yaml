@@ -3608,6 +3608,335 @@ paths:
                       message: "Export job not found for identifier: job1"
               schema:
                 "$ref": "#/components/schemas/error"
+  "/help_center/help_centers/{help_center_id}/redirects":
+    get:
+      summary: List all redirects for a help center
+      parameters:
+      - name: help_center_id
+        in: path
+        required: true
+        description: The unique identifier for the help center.
+        example: '123'
+        schema:
+          type: string
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Help Center
+      operationId: listHelpCenterRedirects
+      description: |
+        You can fetch a list of all URL redirects for a help center by making a GET request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects`.
+
+        Redirects are returned in descending order on the `updated_at` attribute.
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              examples:
+                Successful:
+                  value:
+                    type: list
+                    data:
+                    - id: '26'
+                      type: help_center_redirect
+                      from_url: http://help-center.test/lovelyhelpcenter/legacy-page
+                      locale: en
+                      help_center_id: '7'
+                      target_type: article
+                      target_id: '11'
+                      created_at: 1781619405
+                      updated_at: 1781619405
+                    total_count: 1
+                    pages:
+                      type: pages
+                      page: 1
+                      per_page: 50
+                      total_pages: 1
+              schema:
+                "$ref": "#/components/schemas/help_center_redirect_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 12c2d3a0-77ef-462e-a5ed-e67ddff50b6e
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Help center not found
+          content:
+            application/json:
+              examples:
+                Not Found:
+                  value:
+                    type: error.list
+                    request_id: 6c2d3a0a-77ef-462e-a5ed-e67ddff50b6e
+                    errors:
+                    - code: not_found
+                      message: Resource not found
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create a redirect
+      parameters:
+      - name: help_center_id
+        in: path
+        required: true
+        description: The unique identifier for the help center.
+        example: '123'
+        schema:
+          type: string
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Help Center
+      operationId: createHelpCenterRedirect
+      description: You can create a new URL redirect by making a POST request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects`.
+      responses:
+        '200':
+          description: redirect created
+          content:
+            application/json:
+              examples:
+                redirect created:
+                  value:
+                    id: '26'
+                    type: help_center_redirect
+                    from_url: http://help-center.test/lovelyhelpcenter/old-page
+                    locale: en
+                    help_center_id: '7'
+                    target_type: article
+                    target_id: '11'
+                    created_at: 1781619405
+                    updated_at: 1781619405
+              schema:
+                "$ref": "#/components/schemas/help_center_redirect"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Missing parameter:
+                  value:
+                    type: error.list
+                    request_id: 816186b3-3187-4b47-adf8-e201bea32208
+                    errors:
+                    - code: parameter_not_found
+                      message: from_url is required
+                Invalid target_type:
+                  value:
+                    type: error.list
+                    request_id: 816186b3-3187-4b47-adf8-e201bea32209
+                    errors:
+                    - code: parameter_invalid
+                      message: target_type must be 'article' or 'collection'
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 25d96ec2-641f-4354-b24e-83a85d33bd30
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              examples:
+                Conflict:
+                  value:
+                    type: error.list
+                    request_id: 35d96ec2-641f-4354-b24e-83a85d33bd31
+                    errors:
+                    - code: resource_conflict
+                      message: A redirect with that URL already exists
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                Invalid data:
+                  value:
+                    type: error.list
+                    request_id: 45d96ec2-641f-4354-b24e-83a85d33bd32
+                    errors:
+                    - code: data_invalid
+                      message: from_url must be an absolute URL within this help center's URL space
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_help_center_redirect_request"
+            examples:
+              redirect_created:
+                summary: redirect created
+                value:
+                  from_url: http://help-center.test/lovelyhelpcenter/old-page
+                  locale: en
+                  target_type: article
+                  target_id: '11'
+  "/help_center/help_centers/{help_center_id}/redirects/{id}":
+    get:
+      summary: Retrieve a redirect
+      parameters:
+      - name: help_center_id
+        in: path
+        required: true
+        description: The unique identifier for the help center.
+        example: '123'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the redirect.
+        example: '26'
+        schema:
+          type: string
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Help Center
+      operationId: retrieveHelpCenterRedirect
+      description: You can fetch the details of a single redirect by making a GET request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects/{id}`.
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              examples:
+                Successful:
+                  value:
+                    id: '26'
+                    type: help_center_redirect
+                    from_url: http://help-center.test/lovelyhelpcenter/old-page
+                    locale: en
+                    help_center_id: '7'
+                    target_type: article
+                    target_id: '11'
+                    created_at: 1781619405
+                    updated_at: 1781619405
+              schema:
+                "$ref": "#/components/schemas/help_center_redirect"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 12c2d3a0-77ef-462e-a5ed-e67ddff50b6e
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                Not Found:
+                  value:
+                    type: error.list
+                    request_id: 6c2d3a0a-77ef-462e-a5ed-e67ddff50b6e
+                    errors:
+                    - code: not_found
+                      message: Resource not found
+              schema:
+                "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete a redirect
+      parameters:
+      - name: help_center_id
+        in: path
+        required: true
+        description: The unique identifier for the help center.
+        example: '123'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the redirect.
+        example: '26'
+        schema:
+          type: string
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Help Center
+      operationId: deleteHelpCenterRedirect
+      description: You can delete a single redirect by making a DELETE request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects/{id}`.
+      responses:
+        '200':
+          description: redirect deleted
+          content:
+            application/json:
+              examples:
+                redirect deleted:
+                  value:
+                    id: '26'
+                    object: help_center_redirect
+                    deleted: true
+              schema:
+                "$ref": "#/components/schemas/deleted_help_center_redirect_object"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 25d96ec2-641f-4354-b24e-83a85d33bd30
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                Not Found:
+                  value:
+                    type: error.list
+                    request_id: 6c2d3a0a-77ef-462e-a5ed-e67ddff50b6e
+                    errors:
+                    - code: not_found
+                      message: Resource not found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/help_center/collections":
     get:
       summary: List all collections
@@ -25338,6 +25667,135 @@ components:
           nullable: true
           description: The id of the help center the collection is in.
           example: '123'
+    help_center_redirect:
+      title: Help Center Redirect
+      type: object
+      x-tags:
+      - Help Center
+      description: |
+        A redirect maps a source URL (`from_url`) to an article or collection within a
+        help center, so that links to old or external URLs resolve to live content.
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the redirect.
+          example: '26'
+        type:
+          type: string
+          description: The type of the object - `help_center_redirect`.
+          enum:
+          - help_center_redirect
+          example: help_center_redirect
+        from_url:
+          type: string
+          description: The source URL that is redirected. An absolute URL within the
+            help center's URL space.
+          example: http://help-center.test/lovelyhelpcenter/old-page
+        locale:
+          type: string
+          description: The locale of the redirect's target. For article targets this
+            is the bound translation's locale, which may differ from the requested
+            locale if no translation exists in that locale.
+          example: en
+        help_center_id:
+          type: string
+          description: The unique identifier for the help center the redirect belongs
+            to.
+          example: '7'
+        target_type:
+          type: string
+          description: The type of the redirect target.
+          enum:
+          - article
+          - collection
+          example: article
+        target_id:
+          type: string
+          description: The unique identifier of the target article or collection. For
+            article targets this is the Article ID.
+          example: '11'
+        created_at:
+          type: integer
+          description: The time the redirect was created as a UTC Unix timestamp.
+          example: 1781619405
+        updated_at:
+          type: integer
+          description: The time the redirect was last updated as a UTC Unix timestamp.
+          example: 1781619405
+    help_center_redirect_list:
+      title: Help Center Redirects
+      type: object
+      description: This will return a list of redirects for the help center.
+      properties:
+        type:
+          type: string
+          description: The type of the object - `list`.
+          enum:
+          - list
+          example: list
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
+        total_count:
+          type: integer
+          description: A count of the total number of redirects.
+          example: 1
+        data:
+          type: array
+          description: An array of help center redirect objects.
+          items:
+            "$ref": "#/components/schemas/help_center_redirect"
+    create_help_center_redirect_request:
+      description: You can create a help center redirect.
+      type: object
+      title: Create Help Center Redirect Request Payload
+      properties:
+        from_url:
+          type: string
+          description: The source URL to redirect. Must be an absolute URL within the
+            help center's URL space.
+          example: http://help-center.test/lovelyhelpcenter/old-page
+        locale:
+          type: string
+          description: The locale of the target translation (e.g. `en`, `fr`). For
+            article targets this selects the ArticleContent variant.
+          example: en
+        target_type:
+          type: string
+          description: The type of the redirect target.
+          enum:
+          - article
+          - collection
+          example: article
+        target_id:
+          type: string
+          description: The unique identifier of the target article or collection. The
+            target must be a member of the help center.
+          example: '11'
+      required:
+      - from_url
+      - locale
+      - target_type
+      - target_id
+    deleted_help_center_redirect_object:
+      title: Deleted Help Center Redirect Object
+      type: object
+      description: Response returned when a redirect is deleted.
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the redirect which you provided in
+            the URL.
+          example: '26'
+        object:
+          type: string
+          description: The type of object which was deleted. - `help_center_redirect`
+          enum:
+          - help_center_redirect
+          example: help_center_redirect
+        deleted:
+          type: boolean
+          description: Whether the redirect was deleted successfully or not.
+          example: true
     collection_list:
       title: Collections
       type: object
