@@ -7474,8 +7474,17 @@ paths:
       tags:
       - Conversations
       operationId: replyConversation
-      description: You can reply to a conversation with a message from an admin or
-        on behalf of a contact, or with a note for admins.
+      description: |-
+        You can reply to a conversation with a message from an admin or on behalf of a contact, or with a note for admins.
+
+        {% admonition type="warning" name="Bot or Operator replies to inbound email conversations" %}
+        When a bot or Operator reply is posted via this endpoint to a conversation that originated from an inbound customer email, the reply is recorded as an internal, unnotifiable bot comment by default. As a result:
+
+        - No outbound email is sent to the customer.
+        - No `seen` receipt is generated, because no email is delivered.
+
+        Outbound email replies from bots or Operator via the API are gated by a workspace setting. To enable them, contact your Intercom representative.
+        {% /admonition %}
       responses:
         '200':
           description: User last conversation reply
