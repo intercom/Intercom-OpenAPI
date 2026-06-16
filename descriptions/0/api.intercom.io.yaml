@@ -3619,6 +3619,20 @@ paths:
         example: '123'
         schema:
           type: string
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to the first page.
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Defaults to 50, maximum 250.
+        example: 50
+        schema:
+          type: integer
       - name: Intercom-Version
         in: header
         schema:
@@ -3630,6 +3644,8 @@ paths:
         You can fetch a list of all URL redirects for a help center by making a GET request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects`.
 
         Redirects are returned in descending order on the `updated_at` attribute.
+
+        Requires the `read_help_center_redirects_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Successful
@@ -3702,7 +3718,10 @@ paths:
       tags:
       - Help Center
       operationId: createHelpCenterRedirect
-      description: You can create a new URL redirect by making a POST request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects`.
+      description: |
+        You can create a new URL redirect by making a POST request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects`.
+
+        Requires the `read_write_help_center_redirects_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: redirect created
@@ -3785,6 +3804,20 @@ paths:
                       message: from_url must be an absolute URL within this help center's URL space
               schema:
                 "$ref": "#/components/schemas/error"
+        '404':
+          description: Help center not found
+          content:
+            application/json:
+              examples:
+                Not Found:
+                  value:
+                    type: error.list
+                    request_id: 55d96ec2-641f-4354-b24e-83a85d33bd33
+                    errors:
+                    - code: not_found
+                      message: Resource not found
+              schema:
+                "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
@@ -3823,7 +3856,10 @@ paths:
       tags:
       - Help Center
       operationId: retrieveHelpCenterRedirect
-      description: You can fetch the details of a single redirect by making a GET request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects/{id}`.
+      description: |
+        You can fetch the details of a single redirect by making a GET request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects/{id}`.
+
+        Requires the `read_help_center_redirects_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Successful
@@ -3895,7 +3931,10 @@ paths:
       tags:
       - Help Center
       operationId: deleteHelpCenterRedirect
-      description: You can delete a single redirect by making a DELETE request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects/{id}`.
+      description: |
+        You can delete a single redirect by making a DELETE request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects/{id}`.
+
+        Requires the `read_write_help_center_redirects_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: redirect deleted
