@@ -2128,6 +2128,197 @@ paths:
           "$ref": "#/components/responses/ObjectNotFound"
         '401':
           "$ref": "#/components/responses/Unauthorized"
+  "/articles/{article_id}/tags":
+    post:
+      summary: Add a tag to an article
+      tags:
+      - Articles
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: article_id
+        in: path
+        required: true
+        description: The unique identifier for the article which is given by Intercom.
+        example: 123
+        schema:
+          type: integer
+      operationId: attachTagToArticle
+      description: |
+        Apply an existing tag to an article. Returns the tag that was applied.
+
+        The tag must already exist in the workspace (create tags with the Tags API),
+        and the authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - id
+              properties:
+                id:
+                  type: string
+                  description: The unique identifier of the tag to apply, as given by
+                    Intercom.
+                  example: '7522907'
+                admin_id:
+                  type: string
+                  nullable: true
+                  description: Optional id of the teammate to attribute the tagging to.
+                    Defaults to the authenticating teammate. Does not affect authorization.
+                  example: '1234'
+            examples:
+              successful:
+                summary: Apply a tag
+                value:
+                  id: '7522907'
+      responses:
+        '200':
+          description: Tag applied
+          content:
+            application/json:
+              examples:
+                Tag applied:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '1234'
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Article or tag not found
+          content:
+            application/json:
+              examples:
+                Article not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: article_not_found
+                      message: Article not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+  "/articles/{article_id}/tags/{id}":
+    delete:
+      summary: Remove a tag from an article
+      tags:
+      - Articles
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: article_id
+        in: path
+        required: true
+        description: The unique identifier for the article which is given by Intercom.
+        example: 123
+        schema:
+          type: integer
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the tag to remove, as given by Intercom.
+        example: '7522907'
+        schema:
+          type: string
+      operationId: detachTagFromArticle
+      description: |
+        Remove a tag from an article. Returns the tag that was removed, with null
+        `applied_at` and `applied_by`.
+
+        The authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+      responses:
+        '200':
+          description: Tag removed
+          content:
+            application/json:
+              examples:
+                Tag removed:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: null
+                    applied_by: null
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Article or tag not found
+          content:
+            application/json:
+              examples:
+                Article not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: article_not_found
+                      message: Article not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/articles/search":
     get:
       summary: Search for articles
@@ -9757,6 +9948,197 @@ paths:
                         be deleted
               schema:
                 "$ref": "#/components/schemas/error"
+  "/content_snippets/{content_snippet_id}/tags":
+    post:
+      summary: Add a tag to a content snippet
+      tags:
+      - Content Snippets
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: content_snippet_id
+        in: path
+        required: true
+        description: The unique identifier for the content snippet.
+        example: '123'
+        schema:
+          type: string
+      operationId: attachTagToContentSnippet
+      description: |
+        Apply an existing tag to a content snippet. Returns the tag that was applied.
+
+        The tag must already exist in the workspace (create tags with the Tags API),
+        and the authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_content_snippets` OAuth scope. Set `Intercom-Version: Preview`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - id
+              properties:
+                id:
+                  type: string
+                  description: The unique identifier of the tag to apply, as given by
+                    Intercom.
+                  example: '7522907'
+                admin_id:
+                  type: string
+                  nullable: true
+                  description: Optional id of the teammate to attribute the tagging to.
+                    Defaults to the authenticating teammate. Does not affect authorization.
+                  example: '1234'
+            examples:
+              successful:
+                summary: Apply a tag
+                value:
+                  id: '7522907'
+      responses:
+        '200':
+          description: Tag applied
+          content:
+            application/json:
+              examples:
+                Tag applied:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '1234'
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Content snippet or tag not found
+          content:
+            application/json:
+              examples:
+                Content snippet not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: content_snippet_not_found
+                      message: Content snippet not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+  "/content_snippets/{content_snippet_id}/tags/{id}":
+    delete:
+      summary: Remove a tag from a content snippet
+      tags:
+      - Content Snippets
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: content_snippet_id
+        in: path
+        required: true
+        description: The unique identifier for the content snippet.
+        example: '123'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the tag to remove, as given by Intercom.
+        example: '7522907'
+        schema:
+          type: string
+      operationId: detachTagFromContentSnippet
+      description: |
+        Remove a tag from a content snippet. Returns the tag that was removed, with
+        null `applied_at` and `applied_by`.
+
+        The authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_content_snippets` OAuth scope. Set `Intercom-Version: Preview`.
+      responses:
+        '200':
+          description: Tag removed
+          content:
+            application/json:
+              examples:
+                Tag removed:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: null
+                    applied_by: null
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Content snippet or tag not found
+          content:
+            application/json:
+              examples:
+                Content snippet not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: content_snippet_not_found
+                      message: Content snippet not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/conversations/{conversation_id}/tags":
     post:
       summary: Add tag to a conversation
