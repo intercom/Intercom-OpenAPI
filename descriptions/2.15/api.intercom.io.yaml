@@ -7477,13 +7477,10 @@ paths:
       description: |-
         You can reply to a conversation with a message from an admin or on behalf of a contact, or with a note for admins.
 
-        {% admonition type="warning" name="Bot or Operator replies to inbound email conversations" %}
-        When a bot or Operator reply is posted via this endpoint to a conversation that originated from an inbound customer email, the reply is recorded as an internal, unnotifiable bot comment by default. As a result:
+        {% admonition type="warning" name="Bot replies to inbound email" %}
+        By default, bot or Operator replies to a conversation that started as an inbound customer email aren't sent to the customer as email. The reply is stored as an unnotifiable bot comment, and no `seen` receipt is generated until an email is actually delivered.
 
-        - No outbound email is sent to the customer.
-        - No `seen` receipt is generated. Receipts are only produced once an outbound email has actually been delivered.
-
-        Outbound email replies from bots or Operator via the API are gated by a workspace feature flag — until it is enabled, replies stay as internal comments and no `seen` receipt is produced. Contact your Intercom representative to enable it.
+        To send these replies as outbound emails, contact your accounts team to enable the email-reply feature flag for your workspace.
         {% /admonition %}
       responses:
         '200':
