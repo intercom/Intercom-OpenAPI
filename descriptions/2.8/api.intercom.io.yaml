@@ -5204,8 +5204,14 @@ paths:
       tags:
       - Conversations
       operationId: replyConversation
-      description: You can reply to a conversation with a message from an admin or
-        on behalf of a contact, or with a note for admins.
+      description: |-
+        You can reply to a conversation with a message from an admin or on behalf of a contact, or with a note for admins.
+
+        {% admonition type="warning" name="Bot replies to inbound email" %}
+        By default, bot or Operator replies to an inbound email conversation aren't sent to your customer. The reply is stored as an unnotifiable bot comment, and no `seen` receipt is generated until an email is actually delivered.
+
+        To send these replies as outbound emails, reach out to your accounts team to enable the email-reply feature flag for your workspace.
+        {% /admonition %}
       responses:
         '200':
           description: User last conversation reply
