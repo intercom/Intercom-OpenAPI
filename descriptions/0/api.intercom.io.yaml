@@ -9003,11 +9003,15 @@ paths:
       description: |
         Asynchronously run a bulk action over up to 1,000 Knowledge Hub content items.
 
-        Five actions are supported:
+        Six actions are supported:
           * `publish` and `unpublish` — apply to `article_content` only.
           * `delete` — permanently delete content (excludes synced sources and `external_content`).
           * `set_availability` — toggle Fin AI Agent, Copilot, and Sales Agent availability flags.
           * `set_audience` — manage segment membership on content.
+          * `update_tags` — apply and/or remove existing tags on content. Unlike the other
+            actions, `update_tags` addresses articles by the parent `article` id, not
+            `article_content`. Tags must already exist and not be archived; supply at least one of
+            `add_tag_ids` / `remove_tag_ids`.
 
         The endpoint validates the request, enqueues background work, and returns 202 with a
         placeholder envelope. Items whose `type` is not in the action's allowlist are silently
@@ -9110,6 +9114,18 @@ paths:
                     add_segment_ids:
                     - 100
                     remove_segment_ids:
+                    - 200
+              update_tags:
+                summary: Apply and remove tags on an article
+                value:
+                  action: update_tags
+                  content_ids:
+                  - type: article
+                    id: '12345678'
+                  tags:
+                    add_tag_ids:
+                    - 100
+                    remove_tag_ids:
                     - 200
   "/content/search":
     get:
@@ -27148,12 +27164,14 @@ components:
               * `publish`, `unpublish`: `article_content`
               * `delete`: `article_content`, `content_snippet`, `file_source_content`, `internal_article`
               * `set_availability`, `set_audience`: `article_content`, `content_snippet`, `external_content`, `file_source_content`, `internal_article`
+              * `update_tags`: `article` (the parent Article id, not `article_content`), `content_snippet`, `external_content`, `file_source_content`, `internal_article`
           enum:
           - publish
           - unpublish
           - delete
           - set_availability
           - set_audience
+          - update_tags
           example: publish
         content_ids:
           type: array
@@ -27168,6 +27186,7 @@ components:
               type:
                 type: string
                 enum:
+                - article
                 - article_content
                 - content_snippet
                 - external_content
@@ -27214,6 +27233,29 @@ components:
               type: boolean
               description: When `true`, removes all segments from the selected content.
               example: false
+        tags:
+          type: object
+          description: |
+            Required when `action` is `update_tags`. Applies and/or removes existing tags.
+            Supply at least one of `add_tag_ids` / `remove_tag_ids`. At most 100 distinct tag IDs
+            may be supplied across `add_tag_ids` and `remove_tag_ids` combined. Tag IDs must
+            reference existing, non-archived tags; exceeding the limit or referencing unknown or
+            archived IDs is rejected with `parameter_invalid` (HTTP 422).
+          properties:
+            add_tag_ids:
+              type: array
+              description: Tag IDs to apply to the selected content.
+              items:
+                type: integer
+              example:
+              - 100
+            remove_tag_ids:
+              type: array
+              description: Tag IDs to remove from the selected content.
+              items:
+                type: integer
+              example:
+              - 200
     content_bulk_action_response:
       title: Content Bulk Action Response Envelope
       type: object
