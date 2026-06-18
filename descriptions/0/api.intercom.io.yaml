@@ -27231,9 +27231,10 @@ components:
           type: object
           description: |
             Required when `action` is `update_tags`. Applies and/or removes existing tags.
-            Supply at least one of `add_tag_ids` / `remove_tag_ids`. Tag IDs must reference
-            existing, non-archived tags; unknown or archived IDs are rejected with
-            `parameter_invalid` (HTTP 422).
+            Supply at least one of `add_tag_ids` / `remove_tag_ids`. At most 100 distinct tag IDs
+            may be supplied across `add_tag_ids` and `remove_tag_ids` combined. Tag IDs must
+            reference existing, non-archived tags; exceeding the limit or referencing unknown or
+            archived IDs is rejected with `parameter_invalid` (HTTP 422).
           properties:
             add_tag_ids:
               type: array
