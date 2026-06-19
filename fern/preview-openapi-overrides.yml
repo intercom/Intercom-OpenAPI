@@ -22,6 +22,33 @@ paths:
               $ref: '#/components/schemas/CreateArticleRequestBody'
   '/articles/{id}':
     put: null
+  # The spec types the 200 response as a bare `AwayStatusReason[]`, but the API
+  # actually returns the standard list wrapper `{ type: "list", data: [...] }`.
+  '/away_status_reasons':
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                "$ref": null
+                type: object
+                title: AwayStatusReasonList
+                description: A list of away status reasons.
+                items: null
+                properties:
+                  type:
+                    type: string
+                    description: String representing the object's type. Always has the value `list`.
+                    example: list
+                  data:
+                    type: array
+                    description: An array of away status reason objects.
+                    items:
+                      "$ref": "#/components/schemas/away_status_reason"
+                required:
+                  - type
+                  - data
   '/articles/{article_id}/versions':
     get:
       x-fern-pagination:
