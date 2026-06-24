@@ -8189,6 +8189,21 @@ paths:
                     nullable: true
                     description: If the user has enabled push messaging.
                     example: true
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Not a duplicate:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: invalid_merge
+                      message: Contacts can only be merged when they are duplicates
+                        (matching email or phone). Pass skip_duplicate_validation=true
+                        to override this check.
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -8214,6 +8229,12 @@ paths:
                 value:
                   from: 6762f0d51bb69f9f2193bb7f
                   into: 6762f0d51bb69f9f2193bb80
+              skip duplicate validation:
+                summary: skip duplicate validation
+                value:
+                  from: 6762f0d51bb69f9f2193bb7f
+                  into: 6762f0d51bb69f9f2193bb80
+                  skip_duplicate_validation: true
   "/contacts/search":
     post:
       summary: Search contacts
@@ -34253,6 +34274,12 @@ components:
           description: The unique identifier for the contact to merge into. Must be
             a user.
           example: 5ba682d23d7cf92bef87bfd4
+        skip_duplicate_validation:
+          type: boolean
+          description: Set to `true` to merge two contacts that are not duplicates
+            (they share no matching email or phone). Has no effect on API versions
+            that do not enforce duplicate validation on merge.
+          example: true
     merge_conversations_request:
       title: Merge Conversations Request
       type: object
