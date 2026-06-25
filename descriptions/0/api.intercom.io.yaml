@@ -8378,6 +8378,7 @@ paths:
                 Invalid sort order:
                   value:
                     type: error.list
+                    request_id: 8d6c1f0a-3b2e-4a17-9c5d-1f0e2a3b4c5d
                     errors:
                     - code: invalid_sort_order
                       message: "Invalid sort order 'desc'. Must be one of: ascending, descending"
@@ -8387,7 +8388,7 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/search_request"
+              "$ref": "#/components/schemas/contact_search_request"
             examples:
               successful:
                 summary: successful
@@ -8398,6 +8399,9 @@ paths:
                     - field: created_at
                       operator: ">"
                       value: '1306054154'
+                  sort:
+                    field: created_at
+                    order: ascending
                   pagination:
                     per_page: 5
   "/contacts":
@@ -27489,6 +27493,38 @@ components:
           maxItems: 10
       required:
       - user_id
+    contact_search_request:
+      description: Search for contacts using Intercom's Search API.
+      type: object
+      title: Contact search request
+      properties:
+        query:
+          oneOf:
+          - "$ref": "#/components/schemas/single_filter_search_request"
+            title: Single filter search request
+          - "$ref": "#/components/schemas/multiple_filter_search_request"
+            title: multiple filter search request
+        pagination:
+          "$ref": "#/components/schemas/starting_after_paging"
+        sort:
+          type: object
+          description: An optional object to sort the results by.
+          properties:
+            field:
+              type: string
+              description: The field to sort the results on.
+              example: created_at
+            order:
+              type: string
+              description: The order to sort the results in. Defaults to `descending`
+                when omitted. Any other value returns a `400` error with code `invalid_sort_order`.
+              enum:
+              - ascending
+              - descending
+              default: descending
+              example: descending
+      required:
+      - query
     contact_segments:
       title: Segments
       type: object
