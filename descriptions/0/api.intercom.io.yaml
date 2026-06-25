@@ -20868,6 +20868,11 @@ paths:
         already been created. The ticket in the path must be a tracker ticket, and
         `conversation_id` in the body is the conversation (or customer ticket) to
         link to it. This returns the linked conversation.
+
+        A tracker ticket can have up to 2,500 linked conversations; once that
+        limit is reached, further requests return `linked_conversation_limit_exceeded`.
+
+        Requires the `write_tickets` OAuth scope.
       responses:
         '200':
           description: successful
@@ -21031,6 +21036,8 @@ paths:
         Unlink a conversation (or converted customer ticket) from a tracker ticket
         it is currently linked to. The ticket in the path must be a tracker ticket.
         This returns the conversation that was unlinked.
+
+        Requires the `write_tickets` OAuth scope.
       responses:
         '200':
           description: successful
