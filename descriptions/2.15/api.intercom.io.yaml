@@ -1514,9 +1514,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/away_status_reason"
+                "$ref": "#/components/schemas/away_status_reason_list"
         '401':
           "$ref": "#/components/responses/Unauthorized"
   "/export/reporting_data/enqueue":
@@ -16511,6 +16509,22 @@ components:
           type: integer
           description: "The Unix timestamp when the status reason was last updated"
           example: 1734537243
+    away_status_reason_list:
+      title: Away Status Reasons
+      type: object
+      description: A list of away status reasons.
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: A list of away status reason objects.
+          items:
+            "$ref": "#/components/schemas/away_status_reason"
     close_conversation_request:
       title: Close Conversation Request
       type: object
