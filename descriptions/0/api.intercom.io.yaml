@@ -8282,10 +8282,10 @@ paths:
 
         ### Searching for Timestamp Fields
 
-        All timestamp fields (created_at, updated_at etc.) are indexed as Dates for Contact Search queries; Datetime queries are not currently supported. This means you can only query for timestamp fields by day - not hour, minute or second.
-        For example, if you search for all Contacts with a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM), that will be interpreted as 1577836800 (January 1st, 2020 12:00 AM). The search results will then include Contacts created from January 2nd, 2020 12:00 AM onwards.
-        If you'd like to get contacts created on January 1st, 2020 you should search with a created_at value equal (=) to 1577836800 (January 1st, 2020 12:00 AM).
-        This behaviour applies only to timestamps used in search queries. The search results will still contain the full UNIX timestamp and be sorted accordingly.
+        Standard timestamp fields (created_at, updated_at, last_seen_at, signed_up_at, last_contacted_at, last_replied_at, last_email_opened_at, last_email_clicked_at, ios_last_seen_at, android_last_seen_at) are queried at exact second precision.
+        For example, if you search for all Contacts with a created_at value greater (>) than 1577869200 (the Unix timestamp for January 1st, 2020 9:00 AM), the search returns Contacts created from that exact second onwards.
+        To match a specific moment, use the equal (=) operator with the exact Unix timestamp. Custom attributes of type `date` are still queried by day.
+        The search results contain the full Unix timestamp and are sorted accordingly.
 
         ### Accepted Fields
 
@@ -31226,6 +31226,7 @@ components:
           - float
           - boolean
           - date
+          - datetime
           example: boolean
         options:
           type: array
