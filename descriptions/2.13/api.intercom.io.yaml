@@ -4810,9 +4810,9 @@ paths:
 
         ### Searching for Timestamp Fields
 
-        All timestamp fields (created_at, updated_at etc.) are indexed as Dates for Contact Search queries; Datetime queries are not currently supported. This means you can only query for timestamp fields by day - not hour, minute or second.
-        For example, if you search for all Contacts with a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM), that will be interpreted as 1577836800 (January 1st, 2020 12:00 AM). The search results will then include Contacts created from January 2nd, 2020 12:00 AM onwards.
-        If you'd like to get contacts created on January 1st, 2020 you should search with a created_at value equal (=) to 1577836800 (January 1st, 2020 12:00 AM).
+        All timestamp fields (created_at, updated_at etc.) are indexed as Dates for Contact Search queries; Datetime queries are not currently supported. This means you can only query for timestamp fields by day - not hour, minute or second. The day a timestamp falls on is determined using your workspace's timezone, so the same query can return different results across workspaces in different timezones. Because timestamps are stored in UTC, filtering by a value the API returned may not match the originating contact when your workspace is not set to UTC.
+        For example, on a workspace set to UTC, if you search for all Contacts with a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM UTC), that will be interpreted as 1577836800 (January 1st, 2020 12:00 AM UTC). The search results will then include Contacts created from January 2nd, 2020 12:00 AM UTC onwards. On a workspace in another timezone, the day boundaries fall on that timezone's midnight instead.
+        If you'd like to get contacts created on January 1st, 2020 you should search with a created_at value equal (=) to 1577836800 (January 1st, 2020 12:00 AM UTC).
         This behaviour applies only to timestamps used in search queries. The search results will still contain the full UNIX timestamp and be sorted accordingly.
 
         ### Accepted Fields
