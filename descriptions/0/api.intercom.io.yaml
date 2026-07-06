@@ -9088,6 +9088,107 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
   "/contacts/bulk":
+    post:
+      summary: Bulk create contacts
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contacts
+      operationId: BulkCreateContacts
+      description: |
+        You can bulk create contacts by submitting an array of contact objects. This is a **strict create** and never updates an existing contact.
+
+        The endpoint creates an async job that processes the items in the background. Use the returned job ID with `GET /contacts/bulk/{id}` to check the job status.
+
+        {% admonition type="info" name="Handling existing contacts" %}
+          If a contact already exists with the given `external_id` or `email` (including an archived contact), that item is rejected and the job's `state` ends as `completed_with_errors`. New contacts in the same request are still created. The job `state` from `GET /contacts/bulk/{id}` is the signal that one or more items were rejected.
+
+          Created contacts aren't returned with IDs in the response. Look them up afterwards with [Get a contact by External ID](/docs/references/preview/rest-api/api.intercom.io/contacts/getcontactbyexternalid) or [Search contacts](/docs/references/preview/rest-api/api.intercom.io/contacts/searchcontacts).
+        {% /admonition %}
+
+        {% admonition type="info" name="Limits" %}
+          - Maximum of 100 contacts per request.
+          - You can append tasks to an existing job by including `job.id` in the request body.
+        {% /admonition %}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/bulk_create_contacts_request"
+            examples:
+              successful:
+                summary: Successful
+                value:
+                  contacts:
+                  - external_id: abc123
+                    email: joe@bloggs.com
+                    name: Joe Bloggs
+                  - external_id: def456
+                    email: maria@example.com
+                    name: "María García"
+                    role: lead
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    id: job_v2_2
+                    type: contacts.bulk.job
+                    state: running
+                    created_at: 1713360000
+                    updated_at: 1713360060
+                    completed_at:
+                    tasks:
+                    - id: task_v2_2
+                      item_count: 2
+                      state: pending
+                      created_at: 1713360000
+                      started_at:
+                      completed_at:
+                    url: https://api.intercom.io/contacts/bulk/job_v2_2
+              schema:
+                "$ref": "#/components/schemas/contacts_bulk_job"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                missing_contacts:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: missing_field
+                      message: contacts field must be supplied
+                too_many_contacts:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: invalid_parameter
+                      message: maximum number of contacts per request is 100
+              schema:
+                "$ref": "#/components/schemas/error"
     put:
       summary: Bulk update contacts
       parameters:
@@ -9168,6 +9269,108 @@ paths:
                       started_at:
                       completed_at:
                     url: https://api.intercom.io/contacts/bulk/job_v2_1
+              schema:
+                "$ref": "#/components/schemas/contacts_bulk_job"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                missing_contacts:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: missing_field
+                      message: contacts field must be supplied
+                missing_id:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: missing_field
+                      message: contacts must be identified by id
+                too_many_contacts:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: invalid_parameter
+                      message: maximum number of contacts per request is 100
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/contacts/bulk/delete":
+    post:
+      summary: Bulk delete contacts
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contacts
+      operationId: BulkDeleteContacts
+      description: |
+        You can permanently delete contacts in bulk by submitting an array of contact `id`s.
+
+        The endpoint creates an async job that processes the deletes in the background. Use the returned job ID with `GET /contacts/bulk/{id}` to check the job status.
+
+        {% admonition type="warning" name="Permanent deletion" %}
+          A contact that doesn't exist, or can't be deleted, fails that item and the job's `state` ends as `completed_with_errors` (visible via `GET /contacts/bulk/{id}`) without failing the rest of the batch.
+        {% /admonition %}
+
+        {% admonition type="info" name="Limits" %}
+          - Maximum of 100 contacts per request.
+          - You can append tasks to an existing job by including `job.id` in the request body.
+        {% /admonition %}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/bulk_delete_contacts_request"
+            examples:
+              successful:
+                summary: Successful
+                value:
+                  contacts:
+                  - id: abc123
+                  - id: def456
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    id: job_v2_3
+                    type: contacts.bulk.job
+                    state: running
+                    created_at: 1713360000
+                    updated_at: 1713360060
+                    completed_at:
+                    tasks:
+                    - id: task_v2_3
+                      item_count: 2
+                      state: pending
+                      created_at: 1713360000
+                      started_at:
+                      completed_at:
+                    url: https://api.intercom.io/contacts/bulk/job_v2_3
               schema:
                 "$ref": "#/components/schemas/contacts_bulk_job"
         '401':
@@ -26719,6 +26922,124 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/brand"
+    bulk_create_contacts_request:
+      title: Bulk Create Contacts Request
+      type: object
+      description: Request body for bulk creating contacts.
+      required:
+      - contacts
+      properties:
+        contacts:
+          type: array
+          description: An array of contact objects to create. Maximum 100 contacts
+            per request.
+          maxItems: 100
+          items:
+            type: object
+            properties:
+              external_id:
+                type: string
+                description: A unique identifier for the contact which you have
+                  defined.
+                example: abc123
+              email:
+                type: string
+                description: The contact's email address.
+                example: joe@example.com
+              name:
+                type: string
+                description: The contact's name.
+                example: Joe Bloggs
+              role:
+                type: string
+                description: The contact's role. One of `user` or `lead`. Leads
+                  are exempt from the uniqueness check described above.
+                example: user
+              phone:
+                type: string
+                description: The contact's phone number.
+              avatar:
+                type: string
+                description: An image URL containing the avatar of the contact.
+                example: https://www.example.com/avatar_image.jpg
+              language_override:
+                type: string
+                description: A preferred language setting for the contact, used by
+                  the Intercom Messenger.
+                example: fr
+              custom_attributes:
+                type: object
+                description: Custom attributes to set on the contact.
+              signed_up_at:
+                type: integer
+                description: The time the contact signed up, in Unix timestamp format.
+              last_seen_at:
+                type: integer
+                description: The time the contact was last seen, in Unix timestamp
+                  format.
+              owner_id:
+                type: string
+                description: The ID of an admin that has been assigned account ownership
+                  of the contact.
+                example: "321"
+              unsubscribed_from_emails:
+                type: boolean
+                description: Whether the contact is unsubscribed from emails.
+                example: true
+              tags:
+                type: object
+                description: |
+                  Tags to add to the contact. Each tag is identified by its `id`, which must be a positive integer for a tag that already exists in your workspace. Tag application is best-effort: unknown tag IDs are skipped while the rest of the contact create still applies. Per-tag results are not yet returned in the job status.
+                properties:
+                  add:
+                    type: array
+                    description: Tags to add to the contact.
+                    items:
+                      type: object
+                      required:
+                      - id
+                      properties:
+                        id:
+                          type: string
+                          description: The ID of an existing tag to add to the contact.
+                          example: '123'
+        job:
+          type: object
+          description: Optional. Include to append tasks to an existing job.
+          properties:
+            id:
+              type: string
+              description: The ID of an existing bulk job to append to.
+              example: job_v2_1
+    bulk_delete_contacts_request:
+      title: Bulk Delete Contacts Request
+      type: object
+      description: Request body for permanently bulk deleting contacts.
+      required:
+      - contacts
+      properties:
+        contacts:
+          type: array
+          description: An array of contacts to delete, each identified by `id`.
+            Maximum 100 contacts per request.
+          maxItems: 100
+          items:
+            type: object
+            required:
+            - id
+            properties:
+              id:
+                type: string
+                description: The unique identifier for the contact.
+                example: abc123
+        job:
+          type: object
+          description: Optional. Include to append tasks to an existing job.
+          properties:
+            id:
+              type: string
+              description: The ID of an existing bulk job to append to.
+              example: job_v2_1
     bulk_update_contacts_request:
       title: Bulk Update Contacts Request
       type: object
@@ -26740,6 +27061,11 @@ components:
                 type: string
                 description: The unique identifier for the contact.
                 example: abc123
+              external_id:
+                type: string
+                description: A unique identifier for the contact which you have
+                  defined.
+                example: abc123
               email:
                 type: string
                 description: The contact's email address.
@@ -26748,60 +27074,30 @@ components:
                 type: string
                 description: The contact's name.
                 example: Joe Bloggs
+              phone:
+                type: string
+                description: The contact's phone number.
+              avatar:
+                type: string
+                description: An image URL containing the avatar of the contact.
+                example: https://www.example.com/avatar_image.jpg
+              owner_id:
+                type: string
+                description: The ID of an admin that has been assigned account ownership
+                  of the contact.
+                example: "321"
+              unsubscribed_from_emails:
+                type: boolean
+                description: Whether the contact is unsubscribed from emails.
+                example: true
               language_override:
                 type: string
                 description: A preferred language setting for the contact, used by
                   the Intercom Messenger.
                 example: fr
-              user_id:
-                type: string
-                description: A unique identifier for the contact that you provide. Maps to the contact's external user ID.
-                example: '25'
-              phone:
-                type: string
-                description: The contact's phone number.
-                example: "+353871234567"
-              owner_id:
-                type: integer
-                description: The ID of the teammate who owns the contact.
-                example: 123
-              unsubscribed_from_emails:
-                type: boolean
-                description: Whether the contact is unsubscribed from emails.
-                example: true
-              avatar:
-                type: string
-                description: An image URL for the contact's avatar. You can also pass an object with an `image_url` field.
-                example: https://www.example.com/avatar.png
               custom_attributes:
                 type: object
                 description: Custom attributes to update on the contact.
-              companies:
-                type: array
-                description: A list of companies to associate with the contact. Each company is identified by the `company_id` you have defined. Companies that do not exist are created.
-                items:
-                  type: object
-                  properties:
-                    company_id:
-                      type: string
-                      description: The company ID you have defined for the company.
-                      example: '6'
-                    name:
-                      type: string
-                      description: The name of the company.
-                      example: Blue Sun
-              company:
-                type: object
-                description: A single company to associate with the contact, identified by the `company_id` you have defined. Created if it does not exist.
-                properties:
-                  company_id:
-                    type: string
-                    description: The company ID you have defined for the company.
-                    example: '6'
-                  name:
-                    type: string
-                    description: The name of the company.
-                    example: Blue Sun
               tags:
                 type: object
                 description: |
@@ -26830,7 +27126,7 @@ components:
                         id:
                           type: string
                           description: The ID of an existing tag to remove from the contact.
-                          example: '456'
+                          example: '789'
         job:
           type: object
           description: Optional. Include to append tasks to an existing job.
