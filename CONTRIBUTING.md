@@ -23,7 +23,7 @@ If you're making changes to the OpenAPI spec, you can use the Fern CLI to valida
 #### Installation
 
 ```bash
-pnpm add -g fern-api
+pnpm add -g fern-api@5.65.3
 ```
 
 #### Common Commands

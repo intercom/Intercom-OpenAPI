@@ -37,10 +37,12 @@ pnpm install
 No dev server, no test suite, no linting commands. Validation is done via Fern:
 
 ```bash
-pnpm add -g fern-api
+pnpm add -g fern-api@5.65.3
 fern check                              # Validate spec
 fern generate --preview --group ts-sdk  # Preview SDK generation
 ```
+
+> The `fern-api` version is pinned because Intercom's Socket Firewall registry serves the `fern-api` manifest without a `dist-tags` block, and pnpm has no fallback resolver for a missing `latest` tag ([pnpm/pnpm#5564](https://github.com/pnpm/pnpm/issues/5564), [pnpm/pnpm#9944](https://github.com/pnpm/pnpm/issues/9944)). Bump the version here when a new Fern release is needed.
 
 ## CI/CD (GitHub Actions)
 
