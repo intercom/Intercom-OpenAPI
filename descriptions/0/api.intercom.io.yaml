@@ -16321,6 +16321,253 @@ paths:
                       message: Execution result not found
               schema:
                 "$ref": "#/components/schemas/error"
+  "/ecommerce/connectors/{id}/catalog":
+    post:
+      summary: Upload a product catalog
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the ecommerce connector.
+        schema:
+          type: string
+          example: '42939'
+      - name: import_job_id
+        in: query
+        required: false
+        description: |
+          The import job ID returned from the first multipart upload request. Required
+          when uploading subsequent parts (`part_number` ≥ 2) and when finalizing
+          a multipart session (`finalize=true`).
+        schema:
+          type: string
+          example: 'job_01abc123'
+      - name: part_number
+        in: query
+        required: false
+        description: |
+          The sequential part number for a multipart upload. Must be a positive integer.
+          The server returns `next_part_number` in each response to guide the next request.
+          Retrying the same `part_number` is safe and idempotent.
+        schema:
+          type: integer
+          example: 2
+      - name: finalize
+        in: query
+        required: false
+        description: |
+          Set to `true` to finalize a multipart upload session and start the catalog sync.
+          No catalog file is required when finalizing. Set to `false` to upload a part in
+          a multipart session. Omit entirely for a single-file upload.
+        schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          example: 'false'
+      tags:
+      - Ecommerce Connectors
+      operationId: uploadEcommerceCatalog
+      description: |
+        Upload a product catalog to an ecommerce connector. The catalog must be a JSON
+        array of product objects. There are two upload modes:
+
+        **Single-file upload** — POST a single catalog file (up to 99 MB per request).
+        Omit `finalize` and `import_job_id`. Returns `202 Accepted` when sync has started.
+
+        **Multipart upload** — For catalogs that must be split across multiple requests:
+
+        1. POST the first part with `finalize=false` (no `import_job_id`). The response
+           returns an `import_job_id` and `next_part_number`.
+        2. POST each subsequent part with `finalize=false`, the `import_job_id` from step 1,
+           and the `part_number` from the previous response. Each part must be ≤ 99 MB.
+        3. POST with `finalize=true` and the `import_job_id` to complete the upload and
+           start the sync. No catalog file is required in the finalization request.
+
+        Part uploads are idempotent — retrying the same `part_number` does not create
+        a duplicate. If a response is lost, retry with the same `part_number`.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                catalog:
+                  type: string
+                  format: binary
+                  description: |
+                    The catalog JSON file. Required for all requests except finalization
+                    (`finalize=true`). Must be a valid JSON array of objects. Max 99 MB.
+      responses:
+        '200':
+          description: Multipart catalog part uploaded successfully.
+          content:
+            application/json:
+              examples:
+                Part uploaded:
+                  value:
+                    import_job_id: 'job_01abc123'
+                    next_part_number: 2
+              schema:
+                "$ref": "#/components/schemas/ecommerce_catalog_upload_part_response"
+        '202':
+          description: Catalog accepted and sync has started.
+          content:
+            application/json:
+              examples:
+                Sync started:
+                  value:
+                    import_job_id: 'job_01abc123'
+                    status: processing
+                    message: Catalog received. Sync has started.
+              schema:
+                "$ref": "#/components/schemas/ecommerce_catalog_upload_response"
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              examples:
+                Missing catalog file:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_not_found
+                      message: catalog file is required
+                Catalog is not a file:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_not_found
+                      message: catalog must be an uploaded file
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              examples:
+                Connector not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: import_source_not_found
+                      message: No connector found with the provided id.
+                Feature not available:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: not_found
+                      message: The catalog API is not available for this workspace.
+                Upload session not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: upload_session_not_found
+                      message: No active upload session found for the provided import_job_id.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Conflict.
+          content:
+            application/json:
+              examples:
+                Sync already in progress:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: sync_in_progress
+                      message: A catalog upload is already in progress. Please wait for it to complete.
+                Multipart session already exists:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: sync_in_progress
+                      message: A multipart upload is already in progress. Use import_job_id to continue.
+                Session cannot be finalized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: upload_session_not_finalizable
+                      message: Upload session cannot be finalized in its current state.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable content.
+          content:
+            application/json:
+              examples:
+                Catalog is not a JSON array:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_catalog_format
+                      message: catalog must be a JSON array
+                Catalog items are not objects:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_catalog_format
+                      message: each item in the catalog array must be a JSON object
+                Part number is not a positive integer:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_part_number
+                      message: part_number must be a positive integer
+                Out-of-sequence part number:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_part_number
+                      message: Expected part 2, got 3
+                File exceeds size limit:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: payload_too_large
+                      message: catalog file exceeds 99MB limit
+                import_job_id required for multipart:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: import_job_id_required
+                      message: Include import_job_id to continue an existing upload session.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              examples:
+                Storage error:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: internal_error
+                      message: Failed to store catalog
+              schema:
+                "$ref": "#/components/schemas/error"
   "/events":
     post:
       summary: Submit a data event
@@ -32894,6 +33141,40 @@ components:
           example: '5017690'
       required:
       - admin_id
+    ecommerce_catalog_upload_part_response:
+      title: Ecommerce Catalog Upload Part Response
+      type: object
+      description: Returned after a multipart catalog part is successfully uploaded.
+      properties:
+        import_job_id:
+          type: string
+          description: |
+            The unique identifier for the active upload session. Pass this as `import_job_id`
+            in subsequent part uploads and in the finalization request.
+          example: 'job_01abc123'
+        next_part_number:
+          type: integer
+          description: The part number to use in the next upload request.
+          example: 2
+    ecommerce_catalog_upload_response:
+      title: Ecommerce Catalog Upload Response
+      type: object
+      description: Returned when a catalog upload is accepted and sync has started.
+      properties:
+        import_job_id:
+          type: string
+          description: The unique identifier for the import job.
+          example: 'job_01abc123'
+        status:
+          type: string
+          description: The current status of the catalog sync.
+          enum:
+          - processing
+          example: processing
+        message:
+          type: string
+          description: A human-readable description of the sync status.
+          example: Catalog received. Sync has started.
     email_address_header:
       title: Email Address Header
       type: object
@@ -38118,6 +38399,10 @@ tags:
   description: Everything about your Data Events
 - name: Data Export
   description: Export message delivery and engagement statistics (opens, clicks, replies, completions, dismissals, unsubscribes, bounces) for outbound content such as Emails, Posts, Custom Bots, Surveys, Tours, and Series.
+- name: Ecommerce Connectors
+  description: |
+    Upload and manage product catalogs via ecommerce connectors. Supports single-file
+    uploads (up to 99 MB) and multipart uploads for larger catalogs.
 - name: Emails
   description: Everything about your Emails
 - name: Fin Agent
