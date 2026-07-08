@@ -31,13 +31,13 @@ postman/                     # Postman collection outputs
 ## Development
 
 ```bash
-npm install
+pnpm install
 ```
 
 No dev server, no test suite, no linting commands. Validation is done via Fern:
 
 ```bash
-npm install -g fern-api
+pnpm add -g fern-api
 fern check                              # Validate spec
 fern generate --preview --group ts-sdk  # Preview SDK generation
 ```
