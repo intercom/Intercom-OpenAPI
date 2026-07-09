@@ -16390,6 +16390,53 @@ paths:
 
         Part uploads are idempotent — retrying the same `part_number` does not create
         a duplicate. If a response is lost, retry with the same `part_number`.
+      x-code-samples:
+        - lang: 'cURL'
+          label: 'Single-file upload'
+          source: |
+            curl -X POST "https://api.intercom.io/ecommerce/connectors/44734/catalog" \
+              -H "Authorization: Bearer {access_token}" \
+              -H "Accept: application/json" \
+              -H "Intercom-Version: Preview" \
+              -F "catalog=@products.json;type=application/json"
+        - lang: 'cURL'
+          label: 'Multipart — Step 1: First part'
+          source: |
+            curl -X POST "https://api.intercom.io/ecommerce/connectors/44734/catalog" \
+              -H "Authorization: Bearer {access_token}" \
+              -H "Accept: application/json" \
+              -H "Intercom-Version: Preview" \
+              -F "catalog=@products_part1.json;type=application/json" \
+              -F "finalize=false"
+
+            # Response: {"import_job_id": "job_01abc123", "next_part_number": 2}
+        - lang: 'cURL'
+          label: 'Multipart — Step 2: Append part'
+          source: |
+            # Use the import_job_id from Step 1 and the next_part_number from the previous response
+            curl -X POST "https://api.intercom.io/ecommerce/connectors/44734/catalog" \
+              -H "Authorization: Bearer {access_token}" \
+              -H "Accept: application/json" \
+              -H "Intercom-Version: Preview" \
+              -F "catalog=@products_part2.json;type=application/json" \
+              -F "finalize=false" \
+              -F "import_job_id=job_01abc123" \
+              -F "part_number=2"
+
+            # Response: {"import_job_id": "job_01abc123", "next_part_number": 3}
+            # Repeat this step for each subsequent part, incrementing part_number accordingly
+        - lang: 'cURL'
+          label: 'Multipart — Step 3: Finalize'
+          source: |
+            # No catalog file required — this triggers the sync
+            curl -X POST "https://api.intercom.io/ecommerce/connectors/44734/catalog" \
+              -H "Authorization: Bearer {access_token}" \
+              -H "Accept: application/json" \
+              -H "Intercom-Version: Preview" \
+              -F "finalize=true" \
+              -F "import_job_id=job_01abc123"
+
+            # Response: {"import_job_id": "job_01abc123", "status": "processing", "message": "Catalog received. Sync has started."}
       requestBody:
         content:
           multipart/form-data:
