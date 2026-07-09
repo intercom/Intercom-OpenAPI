@@ -8249,7 +8249,7 @@ paths:
 
         Send the same `from` (a `lead`) and `into` (a `user`) contact IDs you would pass to [Merge a lead and a user](/docs/references/preview/rest-api/api.intercom.io/contacts/mergecontact).
 
-        - When `allowed` is `true`, the response contains a `summary`: every attribute change (with the resulting value on the surviving contact) and the number of owned conversations, participated conversations, notes, and tags that would be reassigned.
+        - When `allowed` is `true`, the response contains a `summary`: every attribute change (with the resulting value on the surviving contact) and the number of conversations, notes, and tags that would be reassigned.
         - When `allowed` is `false`, the response contains `reasons`. Each reason has a stable `code` you can branch on and a human-readable `message` you can display.
 
         {% admonition type="warning" name="Previewing non-duplicate contacts" %}
@@ -8298,8 +8298,7 @@ paths:
                           new_into_value: "+1999"
                         total_count: 3
                       reassignments:
-                        owned_conversations: 14
-                        participated_conversations: 5
+                        conversations: 14
                         tags: 3
                         notes: 2
                 blocked:
@@ -34861,14 +34860,10 @@ components:
       type: object
       description: The number of records that would be reassigned to the surviving contact, by type. Only types with reassignments are included.
       properties:
-        owned_conversations:
+        conversations:
           type: integer
-          description: The number of conversations the contact owns as the primary user, whose ownership would transfer to the surviving contact.
+          description: The number of distinct conversations that would be reassigned to the surviving contact, counting both conversations the contact owns and conversations it participates in.
           example: 14
-        participated_conversations:
-          type: integer
-          description: The number of conversations the contact participates in (without owning), whose participation would move to the surviving contact.
-          example: 5
         tags:
           type: integer
           description: The number of tags that would be reassigned.
