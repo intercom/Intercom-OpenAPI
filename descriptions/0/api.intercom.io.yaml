@@ -16336,39 +16336,6 @@ paths:
         schema:
           type: string
           example: '42939'
-      - name: import_job_id
-        in: query
-        required: false
-        description: |
-          The import job ID returned from the first multipart upload request. Required
-          when uploading subsequent parts (`part_number` ≥ 2) and when finalizing
-          a multipart session (`finalize=true`).
-        schema:
-          type: string
-          example: 'job_01abc123'
-      - name: part_number
-        in: query
-        required: false
-        description: |
-          The sequential part number for a multipart upload. Must be a positive integer.
-          The server returns `next_part_number` in each response to guide the next request.
-          Retrying the same `part_number` is safe and idempotent.
-        schema:
-          type: integer
-          example: 2
-      - name: finalize
-        in: query
-        required: false
-        description: |
-          Set to `true` to finalize a multipart upload session and start the catalog sync.
-          No catalog file is required when finalizing. Set to `false` to upload a part in
-          a multipart session. Omit entirely for a single-file upload.
-        schema:
-          type: string
-          enum:
-          - 'true'
-          - 'false'
-          example: 'false'
       tags:
       - Ecommerce Connectors
       operationId: uploadEcommerceCatalog
@@ -16402,6 +16369,52 @@ paths:
                   description: |
                     The catalog JSON file. Required for all requests except finalization
                     (`finalize=true`). Must be a valid JSON array of objects. Max 99 MB.
+                finalize:
+                  type: string
+                  enum:
+                  - 'true'
+                  - 'false'
+                  description: |
+                    Set to `true` to finalize a multipart upload session and start the catalog sync.
+                    No catalog file is required when finalizing. Set to `false` to upload a part in
+                    a multipart session. Omit entirely for a single-file upload.
+                  example: 'false'
+                import_job_id:
+                  type: string
+                  description: |
+                    The import job ID returned from the first multipart upload request. Required
+                    when uploading subsequent parts (`part_number` ≥ 2) and when finalizing
+                    a multipart session (`finalize=true`).
+                  example: 'job_01abc123'
+                part_number:
+                  type: integer
+                  description: |
+                    The sequential part number for a multipart upload. Must be a positive integer.
+                    The server returns `next_part_number` in each response to guide the next request.
+                    Retrying the same `part_number` is safe and idempotent.
+                  example: 2
+            examples:
+              single_file_upload:
+                summary: Single-file upload
+                value:
+                  catalog: "@products.json"
+              multipart_first_part:
+                summary: "Multipart — Step 1: First part"
+                value:
+                  catalog: "@products_part1.json"
+                  finalize: "false"
+              multipart_append_part:
+                summary: "Multipart — Step 2: Append part"
+                value:
+                  catalog: "@products_part2.json"
+                  finalize: "false"
+                  import_job_id: "job_01abc123"
+                  part_number: 2
+              multipart_finalize:
+                summary: "Multipart — Step 3: Finalize"
+                value:
+                  finalize: "true"
+                  import_job_id: "job_01abc123"
       responses:
         '200':
           description: Multipart catalog part uploaded successfully.
