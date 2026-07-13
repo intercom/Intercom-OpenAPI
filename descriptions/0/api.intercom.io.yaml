@@ -8235,6 +8235,108 @@ paths:
                   from: 6762f0d51bb69f9f2193bb7f
                   into: 6762f0d51bb69f9f2193bb80
                   skip_duplicate_validation: true
+  "/contacts/merge/preview":
+    post:
+      summary: Preview a contact merge
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contacts
+      operationId: PreviewMergeContact
+      description: |
+        Preview the result of merging one contact into another without applying the merge. This is a read-only dry run: it reports whether the merge is allowed and, if so, exactly what would change, **without modifying any data**.
+
+        Send the same `from` (a `lead`) and `into` (a `user`) contact IDs you would pass to [Merge a lead and a user](/docs/references/preview/rest-api/api.intercom.io/contacts/mergecontact).
+
+        - When `allowed` is `true`, the response contains a `summary`: every attribute change (with the resulting value on the surviving contact) and the number of conversations, notes, and tags that would be reassigned.
+        - When `allowed` is `false`, the response contains `reasons`. Each reason has a stable `code` you can branch on and a human-readable `message` you can display.
+
+        {% admonition type="warning" name="Previewing non-duplicate contacts" %}
+        By default a merge requires the two contacts to share an identifier (email, phone, or external ID). Set `skip_duplicate_validation` to `true` to preview a merge of contacts that don't — the same rule the merge endpoint enforces.
+        {% /admonition %}
+
+        When `allowed` is `false`, `reasons[].code` is one of:
+
+        | code | meaning |
+        | --- | --- |
+        | `invalid_merge_role_pair` | The `from`/`into` roles aren't mergeable. `from` must be a lead and `into` a user. |
+        | `no_shared_identifier` | The contacts share no email, phone, or external ID. Set `skip_duplicate_validation` to preview anyway. |
+        | `facebook_user` | Facebook contacts can't be merged. |
+        | `external_lead_channel_not_allowed` | The source is an external-channel lead that isn't eligible for merging. |
+        | `mailing_list` | Contacts created from a mailing list can't be merged. |
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                allowed:
+                  summary: Merge allowed
+                  value:
+                    allowed: true
+                    summary:
+                      attribute_changes:
+                        attributes:
+                        - field: name
+                          outcome: adopted
+                          from_value: Jo
+                          new_into_value: Jo
+                        - field: companies
+                          outcome: merged
+                          from_value:
+                          - Beta
+                          into_value:
+                          - Acme
+                          new_into_value:
+                          - Acme
+                          - Beta
+                        - field: phone
+                          outcome: discarded
+                          from_value: "+1555"
+                          into_value: "+1999"
+                          new_into_value: "+1999"
+                        total_count: 3
+                      reassignments:
+                        conversations: 14
+                        tags: 3
+                        notes: 2
+                blocked:
+                  summary: Merge not allowed
+                  value:
+                    allowed: false
+                    reasons:
+                    - code: no_shared_identifier
+                      message: These contacts don't share a common identifier (email, phone, or external ID), so they aren't recognised as duplicates. Set skip_duplicate_validation to true to preview the merge anyway.
+              schema:
+                "$ref": "#/components/schemas/merge_preview_response"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: ff328c7c-6140-48eb-84dd-bb8960b66cd0
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/merge_preview_request"
+            examples:
+              allowed:
+                summary: successful
+                value:
+                  from: 6762f0d51bb69f9f2193bb7f
+                  into: 6762f0d51bb69f9f2193bb80
   "/contacts/search":
     post:
       summary: Search contacts
@@ -34936,6 +35038,141 @@ components:
           description: Set to `true` to merge two contacts that are not duplicates
             (they share no matching email or phone).
           example: true
+    merge_preview_request:
+      description: Preview a contact merge.
+      type: object
+      title: Merge preview request
+      required:
+      - from
+      - into
+      properties:
+        from:
+          type: string
+          description: The unique identifier for the contact to merge away from. Must be a lead.
+          example: 6762f0d51bb69f9f2193bb7f
+        into:
+          type: string
+          description: The unique identifier for the contact to merge into. Must be a user.
+          example: 6762f0d51bb69f9f2193bb80
+        skip_duplicate_validation:
+          type: boolean
+          default: false
+          description: When true, previews the merge even if the contacts don't share a common identifier. Defaults to false.
+    merge_preview_response:
+      title: Merge preview response
+      description: The result of a merge preview. Either the merge is allowed (with a summary of the changes) or it is not (with reasons).
+      oneOf:
+      - "$ref": "#/components/schemas/merge_preview_allowed"
+      - "$ref": "#/components/schemas/merge_preview_blocked"
+    merge_preview_allowed:
+      title: Merge preview allowed
+      type: object
+      description: Returned when the merge is allowed.
+      properties:
+        allowed:
+          type: boolean
+          enum:
+          - true
+          description: Always true. The merge is allowed.
+        summary:
+          "$ref": "#/components/schemas/merge_preview_summary"
+    merge_preview_blocked:
+      title: Merge preview not allowed
+      type: object
+      description: Returned when the merge is not allowed.
+      properties:
+        allowed:
+          type: boolean
+          enum:
+          - false
+          description: Always false. The merge is not allowed.
+        reasons:
+          type: array
+          description: One or more reasons the merge is not allowed.
+          items:
+            "$ref": "#/components/schemas/merge_preview_reason"
+    merge_preview_reason:
+      title: Merge preview reason
+      type: object
+      description: A reason a merge is not allowed.
+      properties:
+        code:
+          type: string
+          description: A stable code identifying the reason. Branch on this value.
+          enum:
+          - invalid_merge_role_pair
+          - no_shared_identifier
+          - facebook_user
+          - external_lead_channel_not_allowed
+          - mailing_list
+        message:
+          type: string
+          description: A human-readable explanation. Display this to people; do not match on it, as the wording may change.
+    merge_preview_summary:
+      title: Merge preview summary
+      type: object
+      description: A summary of the changes the merge would make to the surviving contact.
+      properties:
+        attribute_changes:
+          "$ref": "#/components/schemas/merge_preview_attribute_changes"
+        reassignments:
+          "$ref": "#/components/schemas/merge_preview_reassignments"
+    merge_preview_attribute_changes:
+      title: Merge preview attribute changes
+      type: object
+      description: The attribute changes the merge would make to the surviving contact.
+      properties:
+        attributes:
+          type: array
+          description: The individual attribute changes. Capped at 50 items; total_count reflects the full number of changes.
+          items:
+            "$ref": "#/components/schemas/merge_preview_attribute_change"
+        total_count:
+          type: integer
+          description: The total number of attribute changes detected, which may exceed the number of items in attributes.
+          example: 3
+    merge_preview_attribute_change:
+      title: Merge preview attribute change
+      type: object
+      description: A single attribute change on the surviving contact.
+      properties:
+        field:
+          type: string
+          description: The contact field that would change.
+          example: name
+        outcome:
+          type: string
+          description: How the value is resolved. adopted = the source's value is taken; discarded = the source's value is dropped and the target's kept; merged = the two values are combined.
+          enum:
+          - adopted
+          - discarded
+          - merged
+        from_value:
+          nullable: true
+          description: The source contact's value. Omitted when null. May be a string, array, or object depending on the field.
+        into_value:
+          nullable: true
+          description: The target contact's value. Omitted when null. May be a string, array, or object depending on the field.
+        new_into_value:
+          nullable: true
+          description: The resulting value on the surviving contact. Always present; may be null. May be a string, array, or object depending on the field.
+    merge_preview_reassignments:
+      title: Merge preview reassignments
+      type: object
+      description: The number of records that would be reassigned to the surviving contact, by type. Only types with reassignments are included.
+      properties:
+        conversations:
+          type: integer
+          description: The number of distinct conversations that would be reassigned to the surviving contact, counting both conversations the contact owns and conversations it participates in.
+          example: 14
+        tags:
+          type: integer
+          description: The number of tags that would be reassigned.
+          example: 3
+        notes:
+          type: integer
+          description: The number of notes that would be reassigned.
+          example: 2
     merge_conversations_request:
       title: Merge Conversations Request
       type: object
