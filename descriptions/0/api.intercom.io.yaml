@@ -16336,39 +16336,6 @@ paths:
         schema:
           type: string
           example: '42939'
-      - name: import_job_id
-        in: query
-        required: false
-        description: |
-          The import job ID returned from the first multipart upload request. Required
-          when uploading subsequent parts (`part_number` ≥ 2) and when finalizing
-          a multipart session (`finalize=true`).
-        schema:
-          type: string
-          example: 'job_01abc123'
-      - name: part_number
-        in: query
-        required: false
-        description: |
-          The sequential part number for a multipart upload. Must be a positive integer.
-          The server returns `next_part_number` in each response to guide the next request.
-          Retrying the same `part_number` is safe and idempotent.
-        schema:
-          type: integer
-          example: 2
-      - name: finalize
-        in: query
-        required: false
-        description: |
-          Set to `true` to finalize a multipart upload session and start the catalog sync.
-          No catalog file is required when finalizing. Set to `false` to upload a part in
-          a multipart session. Omit entirely for a single-file upload.
-        schema:
-          type: string
-          enum:
-          - 'true'
-          - 'false'
-          example: 'false'
       tags:
       - Ecommerce Connectors
       operationId: uploadEcommerceCatalog
@@ -16390,6 +16357,96 @@ paths:
 
         Part uploads are idempotent — retrying the same `part_number` does not create
         a duplicate. If a response is lost, retry with the same `part_number`.
+
+        ## Product object structure
+
+        The catalog file must be a JSON array where each element is a product object.
+        Only `id`, `title`, and `url` are required — all other fields are optional.
+
+        | Field | Type | Required | Description |
+        |---|---|---|---|
+        | `id` | string | ✓ | Your unique product identifier. Used to match products on re-upload so only changed products are re-indexed. Also the delete key — any product ID absent from a new upload is removed from Fin's knowledge. Must be stable across uploads. |
+        | `title` | string | ✓ | Product name. Used by Fin when searching for and recommending products. |
+        | `url` | string | ✓ | Canonical product page URL shown in Fin's product recommendations. Must be a valid `https://` URL. |
+        | `description` | string | | Product description that Fin reads to understand what the product is. HTML formatting is supported and safely sanitized (`description_html` takes precedence if both are provided). This is the primary field Fin uses to match products to shopper questions — a richer description leads to better recommendations. |
+        | `featured_image_url` | string | | Primary product image shown in Fin's recommendation cards. Falls back to the first entry of `image_urls` if not provided. If no valid image can be resolved for a variant, that variant's card is not shown to the shopper. |
+        | `image_urls` | string[] | | Additional product images. Used as a fallback when `featured_image_url` is absent or when a variant has no specific image. |
+        | `price_min` | number | | Lowest price across all variants. If omitted, derived automatically from variant prices. Fin uses this to filter products when a shopper mentions a budget (e.g. "under $100"). Displayed as a range alongside `price_max`, or as a single value if both are equal. |
+        | `price_max` | number | | Highest price across all variants. If omitted, derived from variant prices. Used alongside `price_min` for budget filtering and price display. |
+        | `currency` | string | | ISO 4217 currency code (e.g. `"USD"`, `"EUR"`, `"GBP"`). Defaults to USD if omitted. Used to format prices with the correct symbol in Fin's responses and product cards. |
+        | `in_stock` | boolean | | Whether the product is available to purchase. If omitted, derived from variant stock — the product is in stock if at least one variant has `in_stock: true`. Products with no in-stock variants are hidden from Fin entirely. |
+        | `category_path` | string or string[] | Strongly recommended | Hierarchical category breadcrumb (e.g. `["Clothing", "Outerwear", "Jackets"]`). Fin understands the hierarchy — a shopper asking about "Clothing" sees products from all subcategories underneath it. The most specific category is shown in search results. |
+        | `collections` | string[] | Strongly recommended | Collections or groupings this product belongs to in your store. Fin uses collections to understand your catalog's structure and answer questions like "what's in the sale collection?". |
+        | `tags` | string[] | | Free-form keywords matching how shoppers phrase needs in chat (e.g. `["waterproof", "gift", "plus-size"]`). Complements `category_path` and `collections`. |
+        | `available_options` | object[] | | Option types and their possible values (e.g. `{"name": "Size", "values": ["S", "M", "L"]}`). Fin uses these to understand what choices a shopper can make and to correctly filter variants when asked for a specific size, colour, or other attribute. |
+        | `additional_data` | object | | Custom attributes for your business. Fin uses these to show each customer only relevant products. All keys must be consistent across all products in your catalog — the attribute schema is read from the first product in the file. |
+        | `variants` | object[] | | Individual purchasable variants. Fin recommends specific variants (not just products), so populating variants with accurate stock, price, and option data leads to more precise recommendations. See the variant table below. |
+
+        ### Variant object structure
+
+        Each object in the `variants` array may contain:
+
+        | Field | Type | Required | Description |
+        |---|---|---|---|
+        | `id` | string | ✓ | Unique identifier for this variant within the product. |
+        | `title` | string | | Variant display name shown to shoppers (e.g. `"Small / Blue"`). |
+        | `price` | number | | Price of this specific variant. Fin uses variant prices for precise budget filtering and displays the variant price in recommendation cards. |
+        | `compare_at_price` | number | | Original price before a discount. When provided, Fin will naturally mention the saving (e.g. "down from $129 to $99"). |
+        | `in_stock` | boolean | | Whether this variant is currently available. Out-of-stock variants are not shown in Fin's recommendation cards and Fin will not suggest them to shoppers. |
+        | `image_url` | string | | Image specific to this variant. Takes precedence over the product's `featured_image_url`. Falls back to `featured_image_url`, then `image_urls`. If no valid image can be resolved, this variant's recommendation card will not be shown. |
+        | `selected_options` | object[] | | The specific option values that define this variant (e.g. `[{"name": "Size", "value": "Small"}, {"name": "Color", "value": "Blue"}]`). Fin uses these to match shopper requests like "do you have this in medium?" to the correct variant. |
+        | `url` | string | | Direct link to this variant's page. Takes precedence over the product URL in recommendation cards. If omitted, constructed automatically as `{product_url}?variant={id}`. |
+
+        ### Example catalog file
+
+        ```json
+        [
+          {
+            "id": "prod-12345",
+            "title": "Classic Cotton T-Shirt",
+            "url": "https://example.com/products/classic-cotton-t-shirt",
+            "description": "A comfortable everyday t-shirt.",
+            "featured_image_url": "https://cdn.example.com/images/t-shirt.jpg",
+            "price_min": 19.99,
+            "price_max": 29.99,
+            "currency": "USD",
+            "in_stock": true,
+            "tags": ["organic", "bestseller"],
+            "collections": ["Summer Collection"],
+            "category_path": "Clothing > T-Shirts",
+            "available_options": [
+              {"name": "Size", "values": ["S", "M", "L"]},
+              {"name": "Color", "values": ["White", "Blue"]}
+            ],
+            "variants": [
+              {
+                "id": "var-001",
+                "title": "S / White",
+                "price": 19.99,
+                "in_stock": true,
+                "selected_options": [
+                  {"name": "Size", "value": "S"},
+                  {"name": "Color", "value": "White"}
+                ]
+              },
+              {
+                "id": "var-002",
+                "title": "M / Blue",
+                "price": 29.99,
+                "in_stock": true,
+                "selected_options": [
+                  {"name": "Size", "value": "M"},
+                  {"name": "Color", "value": "Blue"}
+                ]
+              }
+            ],
+            "additional_data": {
+              "sku": "TSHIRT-WHT-S",
+              "vendor": "Acme Apparel"
+            }
+          }
+        ]
+        ```
       requestBody:
         content:
           multipart/form-data:
@@ -16401,7 +16458,59 @@ paths:
                   format: binary
                   description: |
                     The catalog JSON file. Required for all requests except finalization
-                    (`finalize=true`). Must be a valid JSON array of objects. Max 99 MB.
+                    (`finalize=true`). Must be a valid JSON array of product objects. Max 99 MB.
+
+                    Each element in the array must conform to the
+                    [`ecommerce_catalog_product`](/docs/references/preview/rest-api/api.intercom.io/models/ecommerce_catalog_product) schema.
+                    The `id`, `title`, and `url` fields are required on every product;
+                    all other fields are optional. Variants, if provided, must conform to the
+                    [`ecommerce_catalog_variant`](/docs/references/preview/rest-api/api.intercom.io/models/ecommerce_catalog_variant) schema.
+                finalize:
+                  type: string
+                  enum:
+                  - 'true'
+                  - 'false'
+                  description: |
+                    Set to `true` to finalize a multipart upload session and start the catalog sync.
+                    No catalog file is required when finalizing. Set to `false` to upload a part in
+                    a multipart session. Omit entirely for a single-file upload.
+                  example: 'false'
+                import_job_id:
+                  type: string
+                  description: |
+                    The import job ID returned from the first multipart upload request. Required
+                    when uploading subsequent parts (`part_number` ≥ 2) and when finalizing
+                    a multipart session (`finalize=true`).
+                  example: 'job_01abc123'
+                part_number:
+                  type: integer
+                  description: |
+                    The sequential part number for a multipart upload. Must be a positive integer.
+                    The server returns `next_part_number` in each response to guide the next request.
+                    Retrying the same `part_number` is safe and idempotent.
+                  example: 2
+            examples:
+              single_file_upload:
+                summary: Single-file upload
+                value:
+                  catalog: "@products.json"
+              multipart_first_part:
+                summary: "Multipart — Step 1: First part"
+                value:
+                  catalog: "@products_part1.json"
+                  finalize: "false"
+              multipart_append_part:
+                summary: "Multipart — Step 2: Append part"
+                value:
+                  catalog: "@products_part2.json"
+                  finalize: "false"
+                  import_job_id: "job_01abc123"
+                  part_number: 2
+              multipart_finalize:
+                summary: "Multipart — Step 3: Finalize"
+                value:
+                  finalize: "true"
+                  import_job_id: "job_01abc123"
       responses:
         '200':
           description: Multipart catalog part uploaded successfully.
@@ -33175,6 +33284,192 @@ components:
           type: string
           description: A human-readable description of the sync status.
           example: Catalog received. Sync has started.
+    ecommerce_catalog_variant:
+      title: Ecommerce Catalog Variant
+      type: object
+      description: A product variant in an ecommerce catalog upload.
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this variant within the product.
+          example: 'var-001'
+        title:
+          type: string
+          description: Variant display name shown to shoppers (e.g. "Small / Blue").
+          example: 'Blue / Large'
+        price:
+          type: number
+          description: Price of this specific variant. Fin uses variant prices for precise budget filtering and displays the variant price in recommendation cards.
+          example: 29.99
+          nullable: true
+        compare_at_price:
+          type: number
+          description: Original price before a discount. When provided, Fin will naturally mention the saving to the shopper (e.g. "down from $129 to $99").
+          example: 39.99
+          nullable: true
+        in_stock:
+          type: boolean
+          description: Whether this variant is currently available. Out-of-stock variants are not shown in Fin's recommendation cards and Fin will not suggest them to shoppers.
+          example: true
+        url:
+          type: string
+          description: Direct link to this variant's page. Takes precedence over the product URL in recommendation cards. If omitted, constructed automatically as `{product_url}?variant={id}`.
+          example: 'https://example.com/products/t-shirt?variant=var-001'
+          nullable: true
+        image_url:
+          type: string
+          description: Image specific to this variant. Takes precedence over the product's `featured_image_url`. Falls back to `featured_image_url`, then `image_urls`. If no valid image can be resolved, this variant's recommendation card will not be shown.
+          example: 'https://cdn.example.com/images/t-shirt-blue.jpg'
+          nullable: true
+        selected_options:
+          type: array
+          description: The specific option values that define this variant (e.g. Size=Small, Color=Blue). Fin uses these to match shopper requests like "do you have this in medium?" to the correct variant.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Option name.
+                example: 'Size'
+              value:
+                type: string
+                description: Selected option value.
+                example: 'Large'
+    ecommerce_catalog_product:
+      title: Ecommerce Catalog Product
+      type: object
+      description: |
+        A product object in an ecommerce catalog upload. The catalog file must be a JSON
+        array of these objects. The `id`, `title`, and `url` fields are required; all
+        others are optional.
+      required:
+      - id
+      - title
+      - url
+      properties:
+        id:
+          type: string
+          description: Your unique product identifier. Used to match products on re-upload so only changed products are re-indexed. Also the delete key — any product ID absent from a new upload is removed from Fin's knowledge. Must be stable across uploads.
+          example: 'prod-12345'
+        title:
+          type: string
+          description: Product name. Used by Fin when searching for and recommending products.
+          example: 'Classic Cotton T-Shirt'
+        url:
+          type: string
+          description: Canonical product page URL shown in Fin's product recommendations. Must be a valid https:// URL.
+          example: 'https://example.com/products/classic-cotton-t-shirt'
+        description:
+          type: string
+          description: Product description that Fin reads to understand what the product is. HTML formatting is supported and safely sanitized (`description_html` takes precedence if both are provided). This is the primary field Fin uses to match products to shopper questions — a richer description leads to better recommendations.
+          example: 'A comfortable everyday t-shirt made from 100% organic cotton.'
+          nullable: true
+        description_html:
+          type: string
+          description: HTML product description. Takes precedence over `description` when both are provided. HTML is safely sanitized before indexing.
+          example: '<p>A comfortable everyday t-shirt made from <strong>100% organic cotton</strong>.</p>'
+          nullable: true
+        featured_image_url:
+          type: string
+          description: Primary product image shown in Fin's recommendation cards. Falls back to the first entry of `image_urls` if not provided. If no valid image can be resolved for a variant, that variant's recommendation card is not shown to the shopper.
+          example: 'https://cdn.example.com/images/t-shirt-main.jpg'
+          nullable: true
+        image_urls:
+          type: array
+          description: Additional product images. Used as a fallback image source when `featured_image_url` is absent or when a variant has no specific image.
+          items:
+            type: string
+          example:
+          - 'https://cdn.example.com/images/t-shirt-back.jpg'
+          - 'https://cdn.example.com/images/t-shirt-detail.jpg'
+        price_min:
+          type: number
+          description: Lowest price across all variants. If omitted, derived automatically from variant prices. Fin uses this to filter products when a shopper mentions a budget (e.g. "under $100"). Displayed as a range alongside `price_max`, or as a single value if both are equal.
+          example: 19.99
+          nullable: true
+        price_max:
+          type: number
+          description: Highest price across all variants. If omitted, derived from variant prices. Used alongside `price_min` for budget filtering and price display.
+          example: 39.99
+          nullable: true
+        currency:
+          type: string
+          description: ISO 4217 currency code for all prices on this product (e.g. "USD", "EUR", "GBP"). Defaults to USD if omitted. Used to format prices with the correct symbol in Fin's responses and product cards.
+          example: 'USD'
+          nullable: true
+        in_stock:
+          type: boolean
+          description: Whether the product is available to purchase. If omitted, derived from variant stock — the product is in stock if at least one variant has `in_stock: true`. Products with no in-stock variants are hidden from Fin entirely and will not be recommended to shoppers.
+          example: true
+          nullable: true
+        tags:
+          type: array
+          description: Free-form keywords matching how shoppers phrase needs in chat (e.g. "waterproof", "gift", "plus-size"). Used by Fin to match fuzzy queries; complements `category_path` and `collections`.
+          items:
+            type: string
+          example:
+          - 'organic'
+          - 'bestseller'
+        collections:
+          type: array
+          description: Collections or groupings this product belongs to in your store. Fin uses collections to understand your catalog's structure and answer questions like "what's in the sale collection?". Each element may be a plain string or an object with a `title` field.
+          items:
+            oneOf:
+            - type: string
+              example: 'Summer Collection'
+            - type: object
+              properties:
+                title:
+                  type: string
+                  example: 'Summer Collection'
+        category_path:
+          description: |
+            Hierarchical category breadcrumb for the product. Fin understands the hierarchy — a
+            shopper asking about "Clothing" will see products from all subcategories underneath it.
+            The most specific category is shown in search results. Strongly recommended. Provide as
+            a pre-formatted string (e.g. `"Clothing > T-Shirts"`) or as an array of path segments
+            (e.g. `["Clothing", "T-Shirts"]`). Array segments are joined with ` > `.
+          oneOf:
+          - type: string
+            example: 'Clothing > T-Shirts'
+          - type: array
+            items:
+              type: string
+            example:
+            - 'Clothing'
+            - 'T-Shirts'
+          nullable: true
+        available_options:
+          type: array
+          description: Option types available for this product and their possible values (e.g. {"name": "Size", "values": ["S", "M", "L"]}). Fin uses these to understand what choices a shopper can make and to correctly filter variants when a shopper asks for a specific size, colour, or other attribute.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Option name (e.g. "Size").
+                example: 'Size'
+              values:
+                type: array
+                description: All available values for this option.
+                items:
+                  type: string
+                example:
+                - 'Small'
+                - 'Medium'
+                - 'Large'
+        variants:
+          type: array
+          description: Individual purchasable variants of the product. Fin recommends specific variants (not just products), so populating variants with accurate stock, price, and option data leads to more precise recommendations. See `ecommerce_catalog_variant` for the variant object schema.
+          items:
+            "$ref": "#/components/schemas/ecommerce_catalog_variant"
+        additional_data:
+          type: object
+          description: Custom attributes for your business. Fin uses these to show each customer only the products relevant to them (e.g. regional availability or warehouse codes). All keys must be consistent across all products in your catalog — the attribute schema is read from the first product in the file.
+          example:
+            sku: 'TSHIRT-BLU-L'
+            vendor: 'Acme Apparel'
+          nullable: true
     email_address_header:
       title: Email Address Header
       type: object
