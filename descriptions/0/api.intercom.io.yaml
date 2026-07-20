@@ -34045,6 +34045,25 @@ components:
           type: string
           description: Name of the SLA that was removed
           example: "Standard SLA"
+    standalone_platform_handoff:
+      title: Part type - standalone_platform_handoff
+      type: object
+      description: Contains details about the target a Fin handoff was routed to for conversation part type <code>standalone_platform_handoff</code>. Returned for Zendesk handoffs only.
+      properties:
+        handoff:
+          type: object
+          properties:
+            type:
+              type: string
+              description: The Zendesk target the conversation was handed off to. <code>zendesk_ticket</code> means a Zendesk ticket was created; <code>zendesk_agent</code> means the customer was handed over to a Zendesk agent for live chat.
+              enum:
+                - zendesk_ticket
+                - zendesk_agent
+              example: zendesk_ticket
+            success:
+              type: boolean
+              description: Whether the handoff completed successfully. A failed attempt falls back to a live agent, which emits a separate successful part.
+              example: true
     event_details:
       title: Event details of Workflow & actions
       type: object
@@ -34064,6 +34083,7 @@ components:
         - "$ref": "#/components/schemas/conversation_sla_paused"
         - "$ref": "#/components/schemas/conversation_sla_unpaused"
         - "$ref": "#/components/schemas/conversation_sla_removed"
+        - "$ref": "#/components/schemas/standalone_platform_handoff"
     email_setting:
       type: object
       title: Email Setting
