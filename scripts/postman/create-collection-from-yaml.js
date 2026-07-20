@@ -7,8 +7,8 @@ module.exports = async function createCollectionFromYaml(filePath) {
   const pathParts = filePath.split('/');
   const versionNumber = pathParts[pathParts.length - 2];
 
-  // version 0 means the Unstable version
-  const folderName = versionNumber === '0' ? 'Unstable' : versionNumber;
+  // version 0 means the Preview version
+  const folderName = versionNumber === '0' ? 'Preview' : versionNumber;
   const versionFolder = `postman/${folderName}`;
 
   if (!fs.existsSync('postman')) {

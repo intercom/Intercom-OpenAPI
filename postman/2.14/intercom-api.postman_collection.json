@@ -8,7 +8,7 @@
       "url": "https://developers.intercom.com"
     },
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "updatedAt": "2025-08-27T09:13:42.535Z"
+    "updatedAt": "2026-04-16T09:25:37.594Z"
   },
   "item": [
     {
@@ -76,7 +76,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/ai/content_import_sources/{id}",
+              "raw": "https://api.intercom.io/ai/content_import_sources/{source_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -84,7 +84,7 @@
               "path": [
                 "ai",
                 "content_import_sources",
-                "{id}"
+                "{source_id}"
               ],
               "query": [],
               "variable": []
@@ -186,7 +186,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/ai/external_pages/{id}",
+              "raw": "https://api.intercom.io/ai/external_pages/{page_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -194,7 +194,7 @@
               "path": [
                 "ai",
                 "external_pages",
-                "{id}"
+                "{page_id}"
               ],
               "query": [],
               "variable": []
@@ -370,7 +370,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/ai/content_import_sources/{id}",
+              "raw": "https://api.intercom.io/ai/content_import_sources/{source_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -378,7 +378,7 @@
               "path": [
                 "ai",
                 "content_import_sources",
-                "{id}"
+                "{source_id}"
               ],
               "query": [],
               "variable": []
@@ -435,7 +435,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/ai/external_pages/{id}",
+              "raw": "https://api.intercom.io/ai/external_pages/{page_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -443,7 +443,7 @@
               "path": [
                 "ai",
                 "external_pages",
-                "{id}"
+                "{page_id}"
               ],
               "query": [],
               "variable": []
@@ -500,7 +500,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/ai/content_import_sources/{id}",
+              "raw": "https://api.intercom.io/ai/content_import_sources/{source_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -508,7 +508,7 @@
               "path": [
                 "ai",
                 "content_import_sources",
-                "{id}"
+                "{source_id}"
               ],
               "query": [],
               "variable": []
@@ -556,7 +556,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/ai/external_pages/{id}",
+              "raw": "https://api.intercom.io/ai/external_pages/{page_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -564,7 +564,7 @@
               "path": [
                 "ai",
                 "external_pages",
-                "{id}"
+                "{page_id}"
               ],
               "query": [],
               "variable": []
@@ -745,7 +745,13 @@
               "path": [
                 "admins"
               ],
-              "query": [],
+              "query": [
+                {
+                  "key": "display_avatar",
+                  "value": "true",
+                  "description": "If set to true, the response will include the admin's avatar object containing the image URL. Defaults to false."
+                }
+              ],
               "variable": []
             },
             "auth": {
@@ -791,19 +797,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/admins/{id}",
+              "raw": "https://api.intercom.io/admins/{admin_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "admins",
-                "{id}"
+                "{admin_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "admin_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier of a given admin"
@@ -853,21 +859,21 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/admins/{id}/away",
+              "raw": "https://api.intercom.io/admins/{admin_id}/away",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "admins",
-                "{id}",
+                "{admin_id}",
                 "away"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "admin_id",
+                  "value": "admin_id",
                   "disabled": false,
                   "description": "The unique identifier of a given admin"
                 }
@@ -984,19 +990,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/articles/{id}",
+              "raw": "https://api.intercom.io/articles/{article_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "articles",
-                "{id}"
+                "{article_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "article_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the article which is given by Intercom."
@@ -1154,7 +1160,7 @@
               ]
             },
             "method": "POST",
-            "description": "You can create a new article by making a POST request to `https://api.intercom.io/articles`.",
+            "description": "You can create a new article by making a POST request to `https://api.intercom.io/articles`.\n\n> 📘 Tags cannot be managed via the Articles API\n>\n> Article tags are read-only in responses. To create, update, or delete tags, use the Intercom UI or the Tags API endpoints.\n",
             "header": [
               {
                 "key": "Intercom-Version",
@@ -1185,19 +1191,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/articles/{id}",
+              "raw": "https://api.intercom.io/articles/{article_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "articles",
-                "{id}"
+                "{article_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "article_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the article which is given by Intercom."
@@ -1225,7 +1231,7 @@
               ]
             },
             "method": "PUT",
-            "description": "You can update the details of a single article by making a PUT request to `https://api.intercom.io/articles/<id>`.",
+            "description": "You can update the details of a single article by making a PUT request to `https://api.intercom.io/articles/<id>`.\n\n> 📘 Tags cannot be managed via the Articles API\n>\n> Article tags are read-only in responses. To create, update, or delete tags, use the Intercom UI or the Tags API endpoints.\n",
             "header": [
               {
                 "key": "Intercom-Version",
@@ -1256,19 +1262,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/articles/{id}",
+              "raw": "https://api.intercom.io/articles/{article_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "articles",
-                "{id}"
+                "{article_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "article_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the article which is given by Intercom."
@@ -1467,19 +1473,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/companies/{id}",
+              "raw": "https://api.intercom.io/companies/{company_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "companies",
-                "{id}"
+                "{company_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "company_id",
                   "value": "5f4d3c1c-7b1b-4d7d-a97e-6095715c6632",
                   "disabled": false,
                   "description": "The unique identifier for the company which is given by Intercom"
@@ -1530,20 +1536,20 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/companies/{id}/contacts",
+              "raw": "https://api.intercom.io/companies/{company_id}/contacts",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "companies",
-                "{id}",
+                "{company_id}",
                 "contacts"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "company_id",
                   "value": "5f4d3c1c-7b1b-4d7d-a97e-6095715c6632",
                   "disabled": false,
                   "description": "The unique identifier for the company which is given by Intercom"
@@ -1593,20 +1599,20 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/companies/{id}/segments",
+              "raw": "https://api.intercom.io/companies/{company_id}/segments",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "companies",
-                "{id}",
+                "{company_id}",
                 "segments"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "company_id",
                   "value": "5f4d3c1c-7b1b-4d7d-a97e-6095715c6632",
                   "disabled": false,
                   "description": "The unique identifier for the company which is given by Intercom"
@@ -1852,21 +1858,21 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/contacts/{id}/companies",
+              "raw": "https://api.intercom.io/contacts/{contact_id}/companies",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "contacts",
-                "{id}",
+                "{contact_id}",
                 "companies"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "contact_id",
+                  "value": "contact_id",
                   "disabled": false,
                   "description": "The unique identifier for the contact which is given by Intercom"
                 }
@@ -1924,19 +1930,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/companies/{id}",
+              "raw": "https://api.intercom.io/companies/{company_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "companies",
-                "{id}"
+                "{company_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "company_id",
                   "value": "5f4d3c1c-7b1b-4d7d-a97e-6095715c6632",
                   "disabled": false,
                   "description": "The unique identifier for the company which is given by Intercom"
@@ -1971,11 +1977,20 @@
                 "value": "2.14"
               },
               {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
                 "key": "Accept",
                 "value": "application/json"
               }
             ],
-            "body": null
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Intercom\",\n  \"plan\": \"Enterprise\",\n  \"size\": \"100\",\n  \"website\": \"https://www.example.com\",\n  \"industry\": \"Manufacturing\",\n  \"custom_attributes\": {\n    \"paid_subscriber\": true,\n    \"monthly_spend\": 155.5,\n    \"team_mates\": 9\n  },\n  \"monthly_spend\": 1000\n}",
+              "urlencoded": [],
+              "formdata": []
+            }
           },
           "response": []
         },
@@ -1986,19 +2001,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/companies/{id}",
+              "raw": "https://api.intercom.io/companies/{company_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "companies",
-                "{id}"
+                "{company_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "company_id",
                   "value": "5f4d3c1c-7b1b-4d7d-a97e-6095715c6632",
                   "disabled": false,
                   "description": "The unique identifier for the company which is given by Intercom"
@@ -2049,7 +2064,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/contacts/{contact_id}/companies/{id}",
+              "raw": "https://api.intercom.io/contacts/{contact_id}/companies/{company_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -2058,7 +2073,7 @@
                 "contacts",
                 "{contact_id}",
                 "companies",
-                "{id}"
+                "{company_id}"
               ],
               "query": [],
               "variable": [
@@ -2069,7 +2084,7 @@
                   "description": "The unique identifier for the contact which is given by Intercom"
                 },
                 {
-                  "key": "id",
+                  "key": "company_id",
                   "value": "58a430d35458202d41b1e65b",
                   "disabled": false,
                   "description": "The unique identifier for the company which is given by Intercom"
@@ -2125,20 +2140,20 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/contacts/{id}/companies",
+              "raw": "https://api.intercom.io/contacts/{contact_id}/companies",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "contacts",
-                "{id}",
+                "{contact_id}",
                 "companies"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "contact_id",
                   "value": "63a07ddf05a32042dffac965",
                   "disabled": false,
                   "description": "The unique identifier for the contact which is given by Intercom"
@@ -2380,22 +2395,22 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/contacts/{id}",
+              "raw": "https://api.intercom.io/contacts/{contact_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "contacts",
-                "{id}"
+                "{contact_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "contact_id",
                   "value": "63a07ddf05a32042dffac965",
                   "disabled": false,
-                  "description": "id"
+                  "description": "contact_id"
                 }
               ]
             },
@@ -2736,7 +2751,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"role\": \"\",\n  \"external_id\": \"\",\n  \"email\": \"jdoe@example.com\",\n  \"phone\": \"+353871234567\",\n  \"name\": \"John Doe\",\n  \"avatar\": \"https://www.example.com/avatar_image.jpg\",\n  \"signed_up_at\": 1571672154,\n  \"last_seen_at\": 1571672154,\n  \"owner_id\": 123,\n  \"unsubscribed_from_emails\": true,\n  \"custom_attributes\": \"\"\n}",
+              "raw": "{\n  \"role\": \"user\",\n  \"external_id\": \"625e90fc55ab113b6d92175f\",\n  \"email\": \"jdoe@example.com\",\n  \"phone\": \"+353871234567\",\n  \"name\": \"John Doe\",\n  \"avatar\": \"https://www.example.com/avatar_image.jpg\",\n  \"signed_up_at\": 1571672154,\n  \"last_seen_at\": 1571672154,\n  \"owner_id\": 123,\n  \"unsubscribed_from_emails\": true,\n  \"custom_attributes\": {\n    \"paid_subscriber\": true,\n    \"monthly_spend\": 155.5,\n    \"team_mates\": 1\n  }\n}",
               "urlencoded": [],
               "formdata": []
             }
@@ -2750,23 +2765,23 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/contacts/{id}/archive",
+              "raw": "https://api.intercom.io/contacts/{contact_id}/archive",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "contacts",
-                "{id}",
+                "{contact_id}",
                 "archive"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "contact_id",
                   "value": "63a07ddf05a32042dffac965",
                   "disabled": false,
-                  "description": "id"
+                  "description": "contact_id"
                 }
               ]
             },
@@ -2813,23 +2828,23 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/contacts/{id}/unarchive",
+              "raw": "https://api.intercom.io/contacts/{contact_id}/unarchive",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "contacts",
-                "{id}",
+                "{contact_id}",
                 "unarchive"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "contact_id",
                   "value": "63a07ddf05a32042dffac965",
                   "disabled": false,
-                  "description": "id"
+                  "description": "contact_id"
                 }
               ]
             },
@@ -2876,23 +2891,23 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/contacts/{id}/block",
+              "raw": "https://api.intercom.io/contacts/{contact_id}/block",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "contacts",
-                "{id}",
+                "{contact_id}",
                 "block"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "contact_id",
                   "value": "63a07ddf05a32042dffac965",
                   "disabled": false,
-                  "description": "id"
+                  "description": "contact_id"
                 }
               ]
             },
@@ -2940,19 +2955,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/contacts/{id}",
+              "raw": "https://api.intercom.io/contacts/{contact_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "contacts",
-                "{id}"
+                "{contact_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "contact_id",
                   "value": "63a07ddf05a32042dffac965",
                   "disabled": false,
                   "description": "id"
@@ -3011,22 +3026,22 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/contacts/{id}",
+              "raw": "https://api.intercom.io/contacts/{contact_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "contacts",
-                "{id}"
+                "{contact_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "contact_id",
+                  "value": "contact_id",
                   "disabled": false,
-                  "description": "id"
+                  "description": "contact_id"
                 }
               ]
             },
@@ -3143,14 +3158,14 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/conversations/{id}",
+              "raw": "https://api.intercom.io/conversations/{conversation_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "conversations",
-                "{id}"
+                "{conversation_id}"
               ],
               "query": [
                 {
@@ -3166,7 +3181,7 @@
               ],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "conversation_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The id of the conversation to target"
@@ -3265,7 +3280,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"from\": {\n    \"type\": \"user\",\n    \"id\": \"536e564f316c83104c000020\"\n  },\n  \"body\": \"Hello\",\n  \"created_at\": 1671028894\n}",
+              "raw": "{\n  \"from\": {\n    \"type\": \"user\",\n    \"id\": \"536e564f316c83104c000020\"\n  },\n  \"body\": \"Hello\",\n  \"subject\": \"Thanks for everything\",\n  \"attachment_urls\": \"\",\n  \"created_at\": 1671028894\n}",
               "urlencoded": [],
               "formdata": []
             }
@@ -3343,20 +3358,20 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/conversations/{id}/reply",
+              "raw": "https://api.intercom.io/conversations/{conversation_id}/reply",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "conversations",
-                "{id}",
+                "{conversation_id}",
                 "reply"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "conversation_id",
                   "value": "123 or \"last\"",
                   "disabled": false,
                   "description": "The Intercom provisioned identifier for the conversation or the string \"last\" to reply to the last part of the conversation"
@@ -3415,20 +3430,20 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/conversations/{id}/parts",
+              "raw": "https://api.intercom.io/conversations/{conversation_id}/parts",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "conversations",
-                "{id}",
+                "{conversation_id}",
                 "parts"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "conversation_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The identifier for the conversation as given by Intercom."
@@ -3487,20 +3502,20 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/conversations/{id}/customers",
+              "raw": "https://api.intercom.io/conversations/{conversation_id}/customers",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "conversations",
-                "{id}",
+                "{conversation_id}",
                 "customers"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "conversation_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The identifier for the conversation as given by Intercom."
@@ -3623,20 +3638,20 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/conversations/{id}/convert",
+              "raw": "https://api.intercom.io/conversations/{conversation_id}/convert",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "conversations",
-                "{id}",
+                "{conversation_id}",
                 "convert"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "conversation_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The id of the conversation to target"
@@ -3696,14 +3711,14 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/conversations/{id}",
+              "raw": "https://api.intercom.io/conversations/{conversation_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "conversations",
-                "{id}"
+                "{conversation_id}"
               ],
               "query": [
                 {
@@ -3714,7 +3729,7 @@
               ],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "conversation_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The id of the conversation to target"
@@ -3759,7 +3774,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"read\": true,\n  \"title\": \"Conversation Title\",\n  \"custom_attributes\": {\n    \"paid_subscriber\": true,\n    \"monthly_spend\": 155.5,\n    \"team_mates\": 9,\n    \"start_date_iso8601\": \"2023-03-04T09:46:14Z\",\n    \"end_date_timestamp\": 1677923174\n  },\n  \"company_id\": \"5f4d3c1c-7b1b-4d7d-a97e-6095715c6632\"\n}",
+              "raw": "{\n  \"read\": true,\n  \"title\": \"Conversation Title\",\n  \"custom_attributes\": {\n    \"paid_subscriber\": true,\n    \"monthly_spend\": 155.5,\n    \"team_mates\": 9,\n    \"start_date_iso8601\": \"2023-03-04T09:46:14Z\",\n    \"end_date_timestamp\": 1677923174,\n    \"CX Score rating\": 4,\n    \"CX Score explanation\": \"The conversation was resolved quickly and the customer expressed satisfaction with the outcome.\"\n  },\n  \"company_id\": \"5f4d3c1c-7b1b-4d7d-a97e-6095715c6632\"\n}",
               "urlencoded": [],
               "formdata": []
             }
@@ -3773,20 +3788,20 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/conversations/{id}",
+              "raw": "https://api.intercom.io/conversations/{conversation_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "conversations",
-                "{id}"
+                "{conversation_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "conversation_id",
+                  "value": "conversation_id",
                   "disabled": false,
                   "description": "id"
                 }
@@ -3813,7 +3828,7 @@
               ]
             },
             "method": "DELETE",
-            "description": "You can delete a single conversation.",
+            "description": "{% admonition type=\"warning\" name=\"Irreversible operation\" %}\nDeleting a conversation is permanent and cannot be reversed.\n{% /admonition %}\n\nDeleting a conversation permanently removes it from the inbox. All sensitive data is deleted, including admin and user replies, conversation attributes, uploads, and related content. The conversation will still appear in reporting, though some data may be incomplete due to the deletion.\n",
             "header": [
               {
                 "key": "Intercom-Version",
@@ -4224,7 +4239,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/custom_object_instances/{custom_object_type_identifier}/{id}",
+              "raw": "https://api.intercom.io/custom_object_instances/{custom_object_type_identifier}/{custom_object_instance_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -4232,13 +4247,13 @@
               "path": [
                 "custom_object_instances",
                 "{custom_object_type_identifier}",
-                "{id}"
+                "{custom_object_instance_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "custom_object_instance_id",
+                  "value": "custom_object_instance_id",
                   "disabled": false,
                   "description": "The id or external_id of the custom object instance"
                 }
@@ -4411,7 +4426,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/custom_object_instances/{custom_object_type_identifier}/{id}",
+              "raw": "https://api.intercom.io/custom_object_instances/{custom_object_type_identifier}/{custom_object_instance_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -4419,13 +4434,13 @@
               "path": [
                 "custom_object_instances",
                 "{custom_object_type_identifier}",
-                "{id}"
+                "{custom_object_instance_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "custom_object_instance_id",
+                  "value": "custom_object_instance_id",
                   "disabled": false,
                   "description": "The Intercom defined id of the custom object instance"
                 }
@@ -4607,19 +4622,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/data_attributes/{id}",
+              "raw": "https://api.intercom.io/data_attributes/{data_attribute_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "data_attributes",
-                "{id}"
+                "{data_attribute_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "data_attribute_id",
                   "value": "1",
                   "disabled": false,
                   "description": "The data attribute id"
@@ -5136,6 +5151,139 @@
       ]
     },
     {
+      "name": "Fin Agent",
+      "item": [
+        {
+          "name": "Start a conversation with Fin",
+          "tags": [
+            "Fin Agent"
+          ],
+          "request": {
+            "url": {
+              "raw": "https://api.intercom.io/fin/start",
+              "protocol": "https",
+              "host": [
+                "api.intercom.io"
+              ],
+              "path": [
+                "fin",
+                "start"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "bearerToken",
+                  "value": "{{bearerToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "tokenType",
+                  "value": "bearer",
+                  "type": "string"
+                },
+                {
+                  "key": "addTokenTo",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "description": "Initialize Fin by passing it the user's message along with conversation history and user details.\n\nThese additional pieces of context will be used by Fin to provide a better and more contextual answer to the user.\n\n{% admonition type=\"warning\" %}\nPlease reach out to your accounts team to discuss access.\n{% /admonition %}\n\nOnce Fin is initialized, it progresses through a series of statuses such as *thinking*, *awaiting_user_reply*, or *resolved* before ending with a status of *complete*.\n\nDuring this workflow, the client should allow Fin to continue uninterrupted until a final *complete* status is returned via webhook, at which point control of the conversation passes back to the client.\n",
+            "header": [
+              {
+                "key": "Intercom-Version",
+                "value": "2.14"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"ext-123\",\n  \"message\": {\n    \"author\": \"user\",\n    \"body\": \"How can I see my account details?\",\n    \"timestamp\": \"2025-01-24T10:01:20.000Z\",\n    \"timestamp_ms\": \"2025-01-24T10:01:20.456Z\"\n  },\n  \"user\": {\n    \"id\": \"123456\",\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"attributes\": {\n      \"plan_type\": \"Pro\",\n      \"subscription_status\": \"active\"\n    }\n  },\n  \"attachments\": [\n    {\n      \"type\": \"url\",\n      \"url\": \"https://example.com/document.pdf\",\n      \"name\": \"screenshot.png\",\n      \"content_type\": \"image/png\",\n      \"data\": \"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk...\"\n    }\n  ],\n  \"conversation_metadata\": {\n    \"history\": [\n      {\n        \"author\": \"user\",\n        \"body\": \"How can I see my account details?\",\n        \"timestamp\": \"2025-01-24T10:01:20.000Z\",\n        \"timestamp_ms\": \"2025-01-24T10:01:20.456Z\"\n      }\n    ],\n    \"attributes\": {\n      \"priority_level\": \"high\",\n      \"department\": \"sales\"\n    }\n  }\n}",
+              "urlencoded": [],
+              "formdata": []
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reply to Fin",
+          "tags": [
+            "Fin Agent"
+          ],
+          "request": {
+            "url": {
+              "raw": "https://api.intercom.io/fin/reply",
+              "protocol": "https",
+              "host": [
+                "api.intercom.io"
+              ],
+              "path": [
+                "fin",
+                "reply"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "bearerToken",
+                  "value": "{{bearerToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "tokenType",
+                  "value": "bearer",
+                  "type": "string"
+                },
+                {
+                  "key": "addTokenTo",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "description": "Once Fin has returned a response to a user's message, its status will be `awaiting_user_reply`.\n\nIf a user replies, use this endpoint to send this response to Fin.\n\n{% admonition type=\"warning\" %}\nPlease reach out to your accounts team to discuss access.\n{% /admonition %}\n",
+            "header": [
+              {
+                "key": "Intercom-Version",
+                "value": "2.14"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversation_id\": \"123456\",\n  \"message\": {\n    \"author\": \"user\",\n    \"body\": \"How can I see my account details?\",\n    \"timestamp\": \"2025-01-24T10:01:20.000Z\",\n    \"timestamp_ms\": \"2025-01-24T10:01:20.456Z\"\n  },\n  \"user\": {\n    \"id\": \"123456\",\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"attributes\": {\n      \"plan_type\": \"Pro\",\n      \"subscription_status\": \"active\"\n    }\n  },\n  \"attachments\": [\n    {\n      \"type\": \"url\",\n      \"url\": \"https://example.com/document.pdf\",\n      \"name\": \"screenshot.png\",\n      \"content_type\": \"image/png\",\n      \"data\": \"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk...\"\n    }\n  ]\n}",
+              "urlencoded": [],
+              "formdata": []
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Help Center",
       "item": [
         {
@@ -5200,7 +5348,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/help_center/collections/{id}",
+              "raw": "https://api.intercom.io/help_center/collections/{collection_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -5208,12 +5356,12 @@
               "path": [
                 "help_center",
                 "collections",
-                "{id}"
+                "{collection_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "collection_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the collection which is given by Intercom."
@@ -5263,7 +5411,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/help_center/help_centers/{id}",
+              "raw": "https://api.intercom.io/help_center/help_centers/{help_center_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -5271,12 +5419,12 @@
               "path": [
                 "help_center",
                 "help_centers",
-                "{id}"
+                "{help_center_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "help_center_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the collection which is given by Intercom."
@@ -5445,7 +5593,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/help_center/collections/{id}",
+              "raw": "https://api.intercom.io/help_center/collections/{collection_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -5453,12 +5601,12 @@
               "path": [
                 "help_center",
                 "collections",
-                "{id}"
+                "{collection_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "collection_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the collection which is given by Intercom."
@@ -5517,7 +5665,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/help_center/collections/{id}",
+              "raw": "https://api.intercom.io/help_center/collections/{collection_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -5525,12 +5673,12 @@
               "path": [
                 "help_center",
                 "collections",
-                "{id}"
+                "{collection_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "collection_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the collection which is given by Intercom."
@@ -5570,6 +5718,128 @@
               }
             ],
             "body": null
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "IP Allowlist",
+      "item": [
+        {
+          "name": "Get IP allowlist settings",
+          "tags": [
+            "IP Allowlist"
+          ],
+          "request": {
+            "url": {
+              "raw": "https://api.intercom.io/ip_allowlist",
+              "protocol": "https",
+              "host": [
+                "api.intercom.io"
+              ],
+              "path": [
+                "ip_allowlist"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "bearerToken",
+                  "value": "{{bearerToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "tokenType",
+                  "value": "bearer",
+                  "type": "string"
+                },
+                {
+                  "key": "addTokenTo",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "description": "Retrieve the current IP allowlist configuration for the workspace.",
+            "header": [
+              {
+                "key": "Intercom-Version",
+                "value": "2.14"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": null
+          },
+          "response": []
+        },
+        {
+          "name": "Update IP allowlist settings",
+          "tags": [
+            "IP Allowlist"
+          ],
+          "request": {
+            "url": {
+              "raw": "https://api.intercom.io/ip_allowlist",
+              "protocol": "https",
+              "host": [
+                "api.intercom.io"
+              ],
+              "path": [
+                "ip_allowlist"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "bearerToken",
+                  "value": "{{bearerToken}}",
+                  "type": "string"
+                },
+                {
+                  "key": "tokenType",
+                  "value": "bearer",
+                  "type": "string"
+                },
+                {
+                  "key": "addTokenTo",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "description": "Update the IP allowlist configuration for the workspace.\n\n{% admonition type=\"warning\" name=\"Lockout Protection\" %}\n  The API will reject updates that would lock out the caller's IP address. Ensure your current IP is included in the allowlist when enabling the feature.\n{% /admonition %}\n",
+            "header": [
+              {
+                "key": "Intercom-Version",
+                "value": "2.14"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"ip_allowlist\",\n  \"enabled\": true,\n  \"ip_allowlist\": [\n    \"192.168.1.0/24\",\n    \"10.0.0.1\"\n  ]\n}",
+              "urlencoded": [],
+              "formdata": []
+            }
           },
           "response": []
         }
@@ -5639,19 +5909,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/internal_articles/{id}",
+              "raw": "https://api.intercom.io/internal_articles/{internal_article_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "internal_articles",
-                "{id}"
+                "{internal_article_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "internal_article_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the article which is given by Intercom."
@@ -5825,19 +6095,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/internal_articles/{id}",
+              "raw": "https://api.intercom.io/internal_articles/{internal_article_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "internal_articles",
-                "{id}"
+                "{internal_article_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "internal_article_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the internal article which is given by Intercom."
@@ -5896,19 +6166,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/internal_articles/{id}",
+              "raw": "https://api.intercom.io/internal_articles/{internal_article_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "internal_articles",
-                "{id}"
+                "{internal_article_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "internal_article_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the internal article which is given by Intercom."
@@ -5963,7 +6233,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/jobs/status/{id}",
+              "raw": "https://api.intercom.io/jobs/status/{job_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -5971,13 +6241,13 @@
               "path": [
                 "jobs",
                 "status",
-                "{id}"
+                "{job_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "job_id",
+                  "value": "job_id",
                   "disabled": false,
                   "description": "The unique identifier for the job which is given by Intercom"
                 }
@@ -6154,7 +6424,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/news/news_items/{id}",
+              "raw": "https://api.intercom.io/news/news_items/{news_item_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -6162,12 +6432,12 @@
               "path": [
                 "news",
                 "news_items",
-                "{id}"
+                "{news_item_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "news_item_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the news item which is given by Intercom."
@@ -6217,7 +6487,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/news/newsfeeds/{id}/items",
+              "raw": "https://api.intercom.io/news/newsfeeds/{newsfeed_id}/items",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -6225,13 +6495,13 @@
               "path": [
                 "news",
                 "newsfeeds",
-                "{id}",
+                "{newsfeed_id}",
                 "items"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "newsfeed_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the news feed item which is given by Intercom."
@@ -6336,7 +6606,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/news/newsfeeds/{id}",
+              "raw": "https://api.intercom.io/news/newsfeeds/{newsfeed_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -6344,12 +6614,12 @@
               "path": [
                 "news",
                 "newsfeeds",
-                "{id}"
+                "{newsfeed_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "newsfeed_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the news feed item which is given by Intercom."
@@ -6463,7 +6733,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/news/news_items/{id}",
+              "raw": "https://api.intercom.io/news/news_items/{news_item_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -6471,12 +6741,12 @@
               "path": [
                 "news",
                 "news_items",
-                "{id}"
+                "{news_item_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "news_item_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the news item which is given by Intercom."
@@ -6534,7 +6804,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/news/news_items/{id}",
+              "raw": "https://api.intercom.io/news/news_items/{news_item_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -6542,12 +6812,12 @@
               "path": [
                 "news",
                 "news_items",
-                "{id}"
+                "{news_item_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "news_item_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier for the news item which is given by Intercom."
@@ -6603,21 +6873,21 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/contacts/{id}/notes",
+              "raw": "https://api.intercom.io/contacts/{contact_id}/notes",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "contacts",
-                "{id}",
+                "{contact_id}",
                 "notes"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "contact_id",
+                  "value": "contact_id",
                   "disabled": false,
                   "description": "The unique identifier of a contact."
                 }
@@ -6666,19 +6936,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/notes/{id}",
+              "raw": "https://api.intercom.io/notes/{note_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "notes",
-                "{id}"
+                "{note_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "note_id",
                   "value": "1",
                   "disabled": false,
                   "description": "The unique identifier of a given note"
@@ -6729,20 +6999,20 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/contacts/{id}/notes",
+              "raw": "https://api.intercom.io/contacts/{contact_id}/notes",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "contacts",
-                "{id}",
+                "{contact_id}",
                 "notes"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "contact_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier of a given contact."
@@ -6787,7 +7057,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"body\": \"New note\",\n  \"contact_id\": \"123\",\n  \"admin_id\": \"123\"\n}",
+              "raw": "{\n  \"body\": \"New note\",\n  \"admin_id\": \"123\"\n}",
               "urlencoded": [],
               "formdata": []
             }
@@ -6866,19 +7136,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/segments/{id}",
+              "raw": "https://api.intercom.io/segments/{segment_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "segments",
-                "{id}"
+                "{segment_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "segment_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identified of a given segment."
@@ -7061,7 +7331,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/contacts/{contact_id}/subscriptions/{id}",
+              "raw": "https://api.intercom.io/contacts/{contact_id}/subscriptions/{subscription_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -7070,7 +7340,7 @@
                 "contacts",
                 "{contact_id}",
                 "subscriptions",
-                "{id}"
+                "{subscription_id}"
               ],
               "query": [],
               "variable": [
@@ -7081,7 +7351,7 @@
                   "description": "The unique identifier for the contact which is given by Intercom"
                 },
                 {
-                  "key": "id",
+                  "key": "subscription_id",
                   "value": "37846",
                   "disabled": false,
                   "description": "The unique identifier for the subscription type which is given by Intercom"
@@ -7185,7 +7455,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phone\": \"+1 1234567890\",\n  \"custom_attributes\": {\n    \"paid_subscriber\": true,\n    \"monthly_spend\": 155.5,\n    \"team_mates\": 9,\n    \"start_date_iso8601\": \"2023-03-04T09:46:14Z\",\n    \"end_date_timestamp\": 1677923174\n  }\n}",
+              "raw": "{\n  \"phone\": \"+1 1234567890\",\n  \"custom_attributes\": {\n    \"paid_subscriber\": true,\n    \"monthly_spend\": 155.5,\n    \"team_mates\": 9,\n    \"start_date_iso8601\": \"2023-03-04T09:46:14Z\",\n    \"end_date_timestamp\": 1677923174,\n    \"CX Score rating\": 4,\n    \"CX Score explanation\": \"The conversation was resolved quickly and the customer expressed satisfaction with the outcome.\"\n  }\n}",
               "urlencoded": [],
               "formdata": []
             }
@@ -7258,19 +7528,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/tags/{id}",
+              "raw": "https://api.intercom.io/tags/{tag_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "tags",
-                "{id}"
+                "{tag_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "tag_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier of a given tag"
@@ -7603,7 +7873,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/contacts/{contact_id}/tags/{id}",
+              "raw": "https://api.intercom.io/contacts/{contact_id}/tags/{tag_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -7612,7 +7882,7 @@
                 "contacts",
                 "{contact_id}",
                 "tags",
-                "{id}"
+                "{tag_id}"
               ],
               "query": [],
               "variable": [
@@ -7623,7 +7893,7 @@
                   "description": "The unique identifier for the contact which is given by Intercom"
                 },
                 {
-                  "key": "id",
+                  "key": "tag_id",
                   "value": "7522907",
                   "disabled": false,
                   "description": "The unique identifier for the tag which is given by Intercom"
@@ -7674,7 +7944,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/conversations/{conversation_id}/tags/{id}",
+              "raw": "https://api.intercom.io/conversations/{conversation_id}/tags/{tag_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -7683,7 +7953,7 @@
                 "conversations",
                 "{conversation_id}",
                 "tags",
-                "{id}"
+                "{tag_id}"
               ],
               "query": [],
               "variable": [
@@ -7694,10 +7964,10 @@
                   "description": "conversation_id"
                 },
                 {
-                  "key": "id",
+                  "key": "tag_id",
                   "value": "7522907",
                   "disabled": false,
-                  "description": "id"
+                  "description": "tag_id"
                 }
               ]
             },
@@ -7753,19 +8023,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/tags/{id}",
+              "raw": "https://api.intercom.io/tags/{tag_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "tags",
-                "{id}"
+                "{tag_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "tag_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier of a given tag"
@@ -7816,7 +8086,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/tickets/{ticket_id}/tags/{id}",
+              "raw": "https://api.intercom.io/tickets/{ticket_id}/tags/{tag_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -7825,7 +8095,7 @@
                 "tickets",
                 "{ticket_id}",
                 "tags",
-                "{id}"
+                "{tag_id}"
               ],
               "query": [],
               "variable": [
@@ -7836,7 +8106,7 @@
                   "description": "ticket_id"
                 },
                 {
-                  "key": "id",
+                  "key": "tag_id",
                   "value": "7522907",
                   "disabled": false,
                   "description": "The unique identifier for the tag which is given by Intercom"
@@ -7954,19 +8224,19 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/teams/{id}",
+              "raw": "https://api.intercom.io/teams/{team_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "teams",
-                "{id}"
+                "{team_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
+                  "key": "team_id",
                   "value": "123",
                   "disabled": false,
                   "description": "The unique identifier of a given team."
@@ -8152,7 +8422,7 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/ticket_types/{ticket_type_id}/attributes/{id}",
+              "raw": "https://api.intercom.io/ticket_types/{ticket_type_id}/attributes/{attribute_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
@@ -8161,7 +8431,7 @@
                 "ticket_types",
                 "{ticket_type_id}",
                 "attributes",
-                "{id}"
+                "{attribute_id}"
               ],
               "query": [],
               "variable": [
@@ -8172,8 +8442,8 @@
                   "description": "The unique identifier for the ticket type which is given by Intercom."
                 },
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "attribute_id",
+                  "value": "attribute_id",
                   "disabled": false,
                   "description": "The unique identifier for the ticket type attribute which is given by Intercom."
                 }
@@ -8290,20 +8560,20 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/ticket_types/{id}",
+              "raw": "https://api.intercom.io/ticket_types/{ticket_type_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "ticket_types",
-                "{id}"
+                "{ticket_type_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "ticket_type_id",
+                  "value": "ticket_type_id",
                   "disabled": false,
                   "description": "The unique identifier for the ticket type which is given by Intercom."
                 }
@@ -8415,20 +8685,20 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/ticket_types/{id}",
+              "raw": "https://api.intercom.io/ticket_types/{ticket_type_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "ticket_types",
-                "{id}"
+                "{ticket_type_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "ticket_type_id",
+                  "value": "ticket_type_id",
                   "disabled": false,
                   "description": "The unique identifier for the ticket type which is given by Intercom."
                 }
@@ -8491,22 +8761,22 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/tickets/{id}",
+              "raw": "https://api.intercom.io/tickets/{ticket_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "tickets",
-                "{id}"
+                "{ticket_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "ticket_id",
+                  "value": "ticket_id",
                   "disabled": false,
-                  "description": "The unique identifier for the ticket which is given by Intercom."
+                  "description": "The unique identifier for the ticket which is given by Intercom.\n{% admonition type=\"info\" name=\"Not the Inbox ticket ID\" %}\nThis is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.\n{% /admonition %}\n"
                 }
               ]
             },
@@ -8553,21 +8823,21 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/tickets/{id}/reply",
+              "raw": "https://api.intercom.io/tickets/{ticket_id}/reply",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "tickets",
-                "{id}",
+                "{ticket_id}",
                 "reply"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "ticket_id",
+                  "value": "ticket_id",
                   "disabled": false
                 }
               ]
@@ -8610,7 +8880,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"message_type\": \"comment\",\n  \"type\": \"admin\",\n  \"body\": \"Hello there!\",\n  \"created_at\": 1590000000,\n  \"attachment_urls\": \"\",\n  \"reply_options\": [\n    {\n      \"text\": \"\",\n      \"uuid\": \"\"\n    }\n  ],\n  \"admin_id\": \"3156780\"\n}",
+              "raw": "{\n  \"message_type\": \"comment\",\n  \"type\": \"admin\",\n  \"body\": \"Hello there!\",\n  \"created_at\": 1590000000,\n  \"attachment_urls\": \"\",\n  \"reply_options\": [\n    {\n      \"text\": \"\",\n      \"uuid\": \"\"\n    }\n  ],\n  \"admin_id\": \"3156780\",\n  \"cross_post\": true\n}",
               "urlencoded": [],
               "formdata": []
             }
@@ -8784,7 +9054,7 @@
               ]
             },
             "method": "POST",
-            "description": "You can search for multiple tickets by the value of their attributes in order to fetch exactly which ones you want.\n\nTo search for tickets, you send a `POST` request to `https://api.intercom.io/tickets/search`.\n\nThis will accept a query object in the body which will define your filters.\n{% admonition type=\"warning\" name=\"Optimizing search queries\" %}\n  Search queries can be complex, so optimizing them can help the performance of your search.\n  Use the `AND` and `OR` operators to combine multiple filters to get the exact results you need and utilize\n  pagination to limit the number of results returned. The default is `20` results per page.\n  See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#example-search-conversations-request) for more details on how to use the `starting_after` param.\n{% /admonition %}\n\n### Nesting & Limitations\n\nYou can nest these filters in order to get even more granular insights that pinpoint exactly what you need. Example: (1 OR 2) AND (3 OR 4).\nThere are some limitations to the amount of multiples there can be:\n- There's a limit of max 2 nested filters\n- There's a limit of max 15 filters for each AND or OR group\n\n### Accepted Fields\n\nMost keys listed as part of the Ticket model are searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `\"foobar\"`).\nThe `source.body` field is unique as the search will not be performed against the entire value, but instead against every element of the value separately. For example, when searching for a conversation with a `\"I need support\"` body - the query should contain a `=` operator with the value `\"support\"` for such conversation to be returned. A query with a `=` operator and a `\"need support\"` value will not yield a result.\n\n| Field                                     | Type                                                                                     |\n| :---------------------------------------- | :--------------------------------------------------------------------------------------- |\n| id                                        | String                                                                                   |\n| created_at                                | Date (UNIX timestamp)                                                                    |\n| updated_at                                | Date (UNIX timestamp)                                                                    |\n| _default_title_                           | String                                                                                   |\n| _default_description_                     | String                                                                                   |\n| category                                  | String                                                                                   |\n| ticket_type_id                            | String                                                                                   |\n| contact_ids                               | String                                                                                   |\n| teammate_ids                              | String                                                                                   |\n| admin_assignee_id                         | String                                                                                   |\n| team_assignee_id                          | String                                                                                   |\n| open                                      | Boolean                                                                                  |\n| state                                     | String                                                                                   |\n| snoozed_until                             | Date (UNIX timestamp)                                                                    |\n| ticket_attribute.{id}                     | String or Boolean or Date (UNIX timestamp) or Float or Integer                           |\n\n{% admonition type=\"info\" name=\"Searching by Category\" %}\nWhen searching for tickets by the **`category`** field, specific terms must be used instead of the category names:\n* For **Customer** category tickets, use the term `request`.\n* For **Back-office** category tickets, use the term `task`.\n* For **Tracker** category tickets, use the term `tracker`.\n{% /admonition %}\n\n### Accepted Operators\n\n{% admonition type=\"info\" name=\"Searching based on `created_at`\" %}\n  You may use the `<=` or `>=` operators to search by `created_at`.\n{% /admonition %}\n\nThe table below shows the operators you can use to define how you want to search for the value.  The operator should be put in as a string (`\"=\"`). The operator has to be compatible with the field's type  (eg. you cannot search with `>` for a given string value as it's only compatible for integer's and dates).\n\n| Operator | Valid Types                    | Description                                                  |\n| :------- | :----------------------------- | :----------------------------------------------------------- |\n| =        | All                            | Equals                                                       |\n| !=       | All                            | Doesn't Equal                                                |\n| IN       | All                            | In  Shortcut for `OR` queries  Values most be in Array       |\n| NIN      | All                            | Not In  Shortcut for `OR !` queries  Values must be in Array |\n| >        | Integer  Date (UNIX Timestamp) | Greater (or equal) than                                      |\n| <       | Integer  Date (UNIX Timestamp) | Lower (or equal) than                                        |\n| ~        | String                         | Contains                                                     |\n| !~       | String                         | Doesn't Contain                                              |\n| ^        | String                         | Starts With                                                  |\n| $        | String                         | Ends With                                                    |\n",
+            "description": "You can search for multiple tickets by the value of their attributes in order to fetch exactly which ones you want.\n\nTo search for tickets, you send a `POST` request to `https://api.intercom.io/tickets/search`.\n\nThis will accept a query object in the body which will define your filters.\n{% admonition type=\"warning\" name=\"Optimizing search queries\" %}\n  Search queries can be complex, so optimizing them can help the performance of your search.\n  Use the `AND` and `OR` operators to combine multiple filters to get the exact results you need and utilize\n  pagination to limit the number of results returned. The default is `20` results per page.\n  See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#example-search-conversations-request) for more details on how to use the `starting_after` param.\n{% /admonition %}\n\n### Nesting & Limitations\n\nYou can nest these filters in order to get even more granular insights that pinpoint exactly what you need. Example: (1 OR 2) AND (3 OR 4).\nThere are some limitations to the amount of multiples there can be:\n- There's a limit of max 2 nested filters\n- There's a limit of max 15 filters for each AND or OR group\n\n### Accepted Fields\n\nMost keys listed as part of the Ticket model are searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `\"foobar\"`).\nThe `source.body` field is unique as the search will not be performed against the entire value, but instead against every element of the value separately. For example, when searching for a conversation with a `\"I need support\"` body - the query should contain a `=` operator with the value `\"support\"` for such conversation to be returned. A query with a `=` operator and a `\"need support\"` value will not yield a result.\n\n| Field                                     | Type                                                                                     |\n| :---------------------------------------- | :--------------------------------------------------------------------------------------- |\n| id                                        | String                                                                                   |\n| created_at                                | Date (UNIX timestamp)                                                                    |\n| updated_at                                | Date (UNIX timestamp)                                                                    |\n| title                           | String                                                                                   |\n| description                     | String                                                                                   |\n| category                                  | String                                                                                   |\n| ticket_type_id                            | String                                                                                   |\n| contact_ids                               | String                                                                                   |\n| teammate_ids                              | String                                                                                   |\n| admin_assignee_id                         | String                                                                                   |\n| team_assignee_id                          | String                                                                                   |\n| open                                      | Boolean                                                                                  |\n| state                                     | String                                                                                   |\n| snoozed_until                             | Date (UNIX timestamp)                                                                    |\n| ticket_attribute.{id}                     | String or Boolean or Date (UNIX timestamp) or Float or Integer                           |\n\n{% admonition type=\"info\" name=\"Searching by Category\" %}\nWhen searching for tickets by the **`category`** field, specific terms must be used instead of the category names:\n* For **Customer** category tickets, use the term `request`.\n* For **Back-office** category tickets, use the term `task`.\n* For **Tracker** category tickets, use the term `tracker`.\n{% /admonition %}\n\n### Accepted Operators\n\n{% admonition type=\"info\" name=\"Searching based on `created_at`\" %}\n  You may use the `<=` or `>=` operators to search by `created_at`.\n{% /admonition %}\n\nThe table below shows the operators you can use to define how you want to search for the value.  The operator should be put in as a string (`\"=\"`). The operator has to be compatible with the field's type  (eg. you cannot search with `>` for a given string value as it's only compatible for integer's and dates).\n\n| Operator | Valid Types                    | Description                                                  |\n| :------- | :----------------------------- | :----------------------------------------------------------- |\n| =        | All                            | Equals                                                       |\n| !=       | All                            | Doesn't Equal                                                |\n| IN       | All                            | In  Shortcut for `OR` queries  Values most be in Array       |\n| NIN      | All                            | Not In  Shortcut for `OR !` queries  Values must be in Array |\n| >        | Integer  Date (UNIX Timestamp) | Greater (or equal) than                                      |\n| <       | Integer  Date (UNIX Timestamp) | Lower (or equal) than                                        |\n| ~        | String                         | Contains                                                     |\n| !~       | String                         | Doesn't Contain                                              |\n| ^        | String                         | Starts With                                                  |\n| $        | String                         | Ends With                                                    |\n",
             "header": [
               {
                 "key": "Intercom-Version",
@@ -8815,22 +9085,22 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/tickets/{id}",
+              "raw": "https://api.intercom.io/tickets/{ticket_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "tickets",
-                "{id}"
+                "{ticket_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "ticket_id",
+                  "value": "ticket_id",
                   "disabled": false,
-                  "description": "The unique identifier for the ticket which is given by Intercom"
+                  "description": "The unique identifier for the ticket which is given by Intercom.\n{% admonition type=\"info\" name=\"Not the Inbox ticket ID\" %}\nThis is the internal `id` field from the API response, not the `ticket_id` displayed in the Intercom Inbox (e.g., #12345). Use the `id` value from the ticket object returned by the API.\n{% /admonition %}\n"
                 }
               ]
             },
@@ -8886,20 +9156,20 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/tickets/{id}",
+              "raw": "https://api.intercom.io/tickets/{ticket_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "tickets",
-                "{id}"
+                "{ticket_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "ticket_id",
+                  "value": "ticket_id",
                   "disabled": false,
                   "description": "The unique identifier for the ticket which is given by Intercom."
                 }
@@ -8926,7 +9196,7 @@
               ]
             },
             "method": "DELETE",
-            "description": "You can delete a ticket using the Intercom provided ID.",
+            "description": "{% admonition type=\"warning\" name=\"Irreversible operation\" %}\nDeleting a ticket is permanent and cannot be reversed.\n{% /admonition %}\n\nDeleting a ticket permanently removes it from the inbox. All sensitive data is deleted, including admin and user replies, ticket attributes, uploads, and related content. The ticket will still appear in reporting, though some data may be incomplete due to the deletion.\n",
             "header": [
               {
                 "key": "Intercom-Version",
@@ -9313,6 +9583,7 @@
               ]
             },
             "method": "GET",
+            "description": "Download the data from a completed reporting data export job.\n\n> Octet header required\n>\n> You will have to specify the header Accept: `application/octet-stream` when hitting this endpoint.\n",
             "header": [
               {
                 "key": "Intercom-Version",
@@ -9320,7 +9591,12 @@
               },
               {
                 "key": "Accept",
-                "value": "application/octet-stream"
+                "value": "Accept",
+                "description": "Required header for downloading the export file"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
               }
             ],
             "body": null
@@ -9468,20 +9744,20 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/calls/{id}",
+              "raw": "https://api.intercom.io/calls/{call_id}",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "calls",
-                "{id}"
+                "{call_id}"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "call_id",
+                  "value": "call_id",
                   "disabled": false,
                   "description": "The id of the call to retrieve"
                 }
@@ -9530,21 +9806,21 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/calls/{id}/recording",
+              "raw": "https://api.intercom.io/calls/{call_id}/recording",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "calls",
-                "{id}",
+                "{call_id}",
                 "recording"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "call_id",
+                  "value": "call_id",
                   "disabled": false,
                   "description": "The id of the call"
                 }
@@ -9593,21 +9869,21 @@
           ],
           "request": {
             "url": {
-              "raw": "https://api.intercom.io/calls/{id}/transcript",
+              "raw": "https://api.intercom.io/calls/{call_id}/transcript",
               "protocol": "https",
               "host": [
                 "api.intercom.io"
               ],
               "path": [
                 "calls",
-                "{id}",
+                "{call_id}",
                 "transcript"
               ],
               "query": [],
               "variable": [
                 {
-                  "key": "id",
-                  "value": "id",
+                  "key": "call_id",
+                  "value": "call_id",
                   "disabled": false,
                   "description": "The id of the call"
                 }
@@ -9719,7 +9995,7 @@
   "event": [],
   "variable": [
     {
-      "id": "8993cc23-9e5e-434f-b0e5-f274e5cef4d4",
+      "id": "38080ce0-0706-4920-b580-206339f59b50",
       "key": "bearerToken",
       "value": "{{bearerToken}}",
       "type": "string",

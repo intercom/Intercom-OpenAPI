@@ -789,42 +789,6 @@ paths:
         - conversations
       x-fern-sdk-method-name: redactConversationPart
       x-fern-request-name: RedactConversationPartRequest
-  /custom_channel_events/notify_attribute_collected:
-    post:
-      x-fern-sdk-group-name:
-        - customChannelEvents
-      x-fern-sdk-method-name: notifyAttributeCollected
-      x-fern-request-name: NotifyAttributeCollectedRequest
-      parameters:
-      - name: Intercom-Version
-        in: header
-        required: true
-        schema:
-          $ref: '#/components/schemas/intercom_version'
-  /custom_channel_events/notify_new_conversation:
-    post:
-      x-fern-sdk-group-name:
-        - customChannelEvents
-      x-fern-sdk-method-name: notifyNewConversation
-      x-fern-request-name: NotifyNewConversationRequest
-      parameters:
-      - name: Intercom-Version
-        in: header
-        required: true
-        schema:
-          $ref: '#/components/schemas/intercom_version'
-  /custom_channel_events/notify_new_message:
-    post:
-      x-fern-sdk-group-name:
-        - customChannelEvents
-      x-fern-sdk-method-name: notifyNewMessage
-      x-fern-request-name: NotifyNewMessageRequest
-      parameters:
-      - name: Intercom-Version
-        in: header
-        required: true
-        schema:
-          $ref: '#/components/schemas/intercom_version'
   /data_attributes:
     get:
       x-fern-sdk-group-name:
@@ -1290,15 +1254,15 @@ components:
               type: integer
               format: date-time
               nullable: true
-              description: The time specified for when a contact signed up
+              description: (Unix timestamp in seconds) The time specified for when a contact signed up.
               example: 1571672154
             last_seen_at:
               type: integer
               format: date-time
               nullable: true
               description:
-                The time when the contact was last seen (either where the Intercom
-                Messenger was installed or when specified manually)
+                (Unix timestamp in seconds) The time when the contact was last seen,
+                either where the Intercom Messenger was installed or when specified manually.
               example: 1571672154
             owner_id:
               type: integer
@@ -1343,15 +1307,15 @@ components:
               type: integer
               format: date-time
               nullable: true
-              description: The time specified for when a contact signed up
+              description: (Unix timestamp in seconds) The time specified for when a contact signed up.
               example: 1571672154
             last_seen_at:
               type: integer
               format: date-time
               nullable: true
               description:
-                The time when the contact was last seen (either where the Intercom
-                Messenger was installed or when specified manually)
+                (Unix timestamp in seconds) The time when the contact was last seen,
+                either where the Intercom Messenger was installed or when specified manually.
               example: 1571672154
             owner_id:
               type: integer
@@ -1396,15 +1360,15 @@ components:
               type: integer
               format: date-time
               nullable: true
-              description: The time specified for when a contact signed up
+              description: (Unix timestamp in seconds) The time specified for when a contact signed up.
               example: 1571672154
             last_seen_at:
               type: integer
               format: date-time
               nullable: true
               description:
-                The time when the contact was last seen (either where the Intercom
-                Messenger was installed or when specified manually)
+                (Unix timestamp in seconds) The time when the contact was last seen,
+                either where the Intercom Messenger was installed or when specified manually.
               example: 1571672154
             owner_id:
               type: integer
@@ -1454,8 +1418,7 @@ components:
             metadata:
               type: object
               description: Optional metadata about the event.
-              additionalProperties:
-                type: string
+              additionalProperties: true
               example:
                 invite_code: ADDAFRIEND
           required:
@@ -1487,8 +1450,7 @@ components:
             metadata:
               type: object
               description: Optional metadata about the event.
-              additionalProperties:
-                type: string
+              additionalProperties: true
               example:
                 invite_code: ADDAFRIEND
           required:
@@ -1522,8 +1484,7 @@ components:
             metadata:
               type: object
               description: Optional metadata about the event.
-              additionalProperties:
-                type: string
+              additionalProperties: true
               example:
                 invite_code: ADDAFRIEND
           required:
@@ -1922,6 +1883,9 @@ components:
             - collection
             - section
     data_event:
+      properties:
+        metadata:
+          additionalProperties: true
       required:
         - type
         - event_name
@@ -2369,7 +2333,7 @@ x-fern-version:
     - "2.12"
     - "2.13"
     - "2.14"
-    - "Unstable"
+    - "Preview"
 
 servers:
   - url: https://api.intercom.io/

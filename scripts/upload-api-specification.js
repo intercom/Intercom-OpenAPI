@@ -22,8 +22,8 @@ module.exports = async function uploadAPISpecification(filePath) {
       deleteFile = true;
     }
     [versionNumber] = filePath.split('descriptions/')[1].split('/');
-    if (versionNumber == 'Unstable') {
-      // If the version is unstable, set it to 0
+    if (versionNumber == 'Preview') {
+      // If the version is preview, set it to 0
       versionNumber = '0';
     }
   } catch (err) {

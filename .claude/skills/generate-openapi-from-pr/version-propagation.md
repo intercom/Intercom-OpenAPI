@@ -6,7 +6,7 @@ How to decide which API version spec files to update and how to propagate change
 
 | Version | Directory | Notes |
 |---|---|---|
-| Unstable | `descriptions/0/` | All new features land here first |
+| Preview | `descriptions/0/` | All new features land here first |
 | 2.15 | `descriptions/2.15/` | Current latest stable |
 | 2.14 | `descriptions/2.14/` | Stable SDK source (used by Fern) |
 | 2.13 | `descriptions/2.13/` | |
@@ -23,9 +23,9 @@ Each version file is independent — always check the actual `intercom_version` 
 
 ### 1. New Feature (most common)
 
-**Update: Unstable only** (`descriptions/0/api.intercom.io.yaml`)
+**Update: Preview only** (`descriptions/0/api.intercom.io.yaml`)
 
-If the PR adds the version change to `UnstableVersion` in the versioning service, only update the Unstable spec. This is the case for ~95% of API changes.
+If the PR adds the version change to `PreviewVersion` in the versioning service, only update the Preview spec. This is the case for ~95% of API changes.
 
 ### 2. Bug Fix to Existing Documentation
 
@@ -35,11 +35,11 @@ If the PR fixes a bug in how an existing field/endpoint is documented (wrong typ
 
 ### 3. Feature Promoted to Stable Version
 
-**Update: Target version + all later versions + Unstable**
+**Update: Target version + all later versions + Preview**
 
 If the PR adds a version change to a specific numbered version (e.g., `Version.new(id: "2.15")`), update that version and all later versions. Features in a numbered version are also in all subsequent versions.
 
-Example: Change added to 2.14 → update 2.14, 2.15, and Unstable.
+Example: Change added to 2.14 → update 2.14, 2.15, and Preview.
 
 ### 4. Backport to Older Versions
 
@@ -53,17 +53,17 @@ Rare. If the PR explicitly mentions backporting, update all specified versions. 
 
 Each version's spec has a different enum for `intercom_version`:
 
-**Unstable** includes all versions plus `Unstable`:
+**Preview** includes all versions plus `Preview`:
 ```yaml
 intercom_version:
-  example: Unstable
-  default: Unstable
+  example: Preview
+  default: Preview
   enum:
   - '1.0'
   - '1.1'
   # ... all versions ...
   - '2.14'
-  - Unstable
+  - Preview
 ```
 
 **Stable versions** include all versions up to and including themselves:
@@ -85,9 +85,9 @@ Note: Stable specs set `default` to the previous stable version and do NOT inclu
 
 Each spec has a different `info.version`:
 ```yaml
-# Unstable
+# Preview
 info:
-  version: Unstable
+  version: Preview
 
 # v2.15
 info:
@@ -96,33 +96,33 @@ info:
 
 ### Available Endpoints
 
-Unstable has endpoints that don't exist in stable versions. When adding an endpoint to Unstable, do NOT add it to stable versions unless the corresponding version change is registered in that version's change list.
+Preview has endpoints that don't exist in stable versions. When adding an endpoint to Preview, do NOT add it to stable versions unless the corresponding version change is registered in that version's change list.
 
 ### Schema Differences
 
-Some schemas have additional fields in Unstable that don't exist in stable versions. When propagating a fix, be careful not to add Unstable-only fields to stable versions.
+Some schemas have additional fields in Preview that don't exist in stable versions. When propagating a fix, be careful not to add Preview-only fields to stable versions.
 
 ## Propagation Checklist
 
 When updating multiple versions:
 
-1. **Start with Unstable** — make the change in `descriptions/0/api.intercom.io.yaml`
+1. **Start with Preview** — make the change in `descriptions/0/api.intercom.io.yaml`
 2. **Copy to each target version** — replicate the same change in each version file
 3. **Verify consistency** — ensure the change makes sense in context of each version (don't add references to schemas that don't exist in older versions)
 4. **Check intercom_version** — do NOT modify the `intercom_version` enum unless explicitly adding a new API version
-5. **Run validation** — `fern check` validates the spec used by Fern (currently v2.14 + Unstable), but manually review other versions
+5. **Run validation** — `fern check` validates the spec used by Fern (currently v2.14 + Preview), but manually review other versions
 
 ## Fern Validation Scope
 
 `fern check` only validates:
 - `descriptions/2.14/api.intercom.io.yaml` (stable SDK source)
-- `descriptions/0/api.intercom.io.yaml` (unstable SDK source)
+- `descriptions/0/api.intercom.io.yaml` (preview SDK source)
 
 Changes to other version files (2.7-2.13, 2.15) are NOT validated by Fern. Be extra careful with YAML syntax in those files.
 
 ## Fern Overrides
 
-When adding new endpoints to Unstable, you may need to add entries to `fern/unstable-openapi-overrides.yml` for SDK method naming:
+When adding new endpoints to Preview, you may need to add entries to `fern/preview-openapi-overrides.yml` for SDK method naming:
 
 ```yaml
 paths:

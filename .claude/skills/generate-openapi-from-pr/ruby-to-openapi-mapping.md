@@ -350,13 +350,13 @@ class TicketsController < OauthAuthenticatedController
 end
 ```
 
-This means: the entire endpoint only exists in versions that include `AddTicketsApi`. Add the endpoint to the Unstable spec (or whichever version includes the change).
+This means: the entire endpoint only exists in versions that include `AddTicketsApi`. Add the endpoint to the Preview spec (or whichever version includes the change).
 
 ### Version Registration Location
 
 ```ruby
 # In app/lib/api/versioning/service.rb
-UnstableVersion.new(changes: [
+PreviewVersion.new(changes: [
   Changes::AddNewFeature,    # → add to descriptions/0/
 ])
 

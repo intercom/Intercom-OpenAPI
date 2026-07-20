@@ -280,6 +280,14 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: display_avatar
+        in: query
+        required: false
+        description: If set to true, the response will include the admin's avatar
+          object containing the image URL. Defaults to false.
+        example: true
+        schema:
+          type: boolean
       tags:
       - Admins
       operationId: listAdmins
@@ -670,6 +678,7 @@ paths:
                       url: https://support.example.com/us/3
                       ai_agent_availability: true
                       ai_copilot_availability: true
+                      ai_sales_agent_availability: true
                       fin_availability: true
                       locale: en
                       source_id: 42
@@ -684,6 +693,7 @@ paths:
                       url: https://support.example.com/us/2
                       ai_agent_availability: true
                       ai_copilot_availability: true
+                      ai_sales_agent_availability: true
                       fin_availability: true
                       locale: en
                       source_id: 41
@@ -698,6 +708,7 @@ paths:
                       url: https://support.example.com/us/1
                       ai_agent_availability: true
                       ai_copilot_availability: true
+                      ai_sales_agent_availability: true
                       fin_availability: true
                       locale: en
                       source_id: 40
@@ -756,6 +767,7 @@ paths:
                     url: https://www.example.com
                     ai_agent_availability: true
                     ai_copilot_availability: true
+                    ai_sales_agent_availability: true
                     fin_availability: true
                     locale: en
                     source_id: 44
@@ -829,6 +841,7 @@ paths:
                     url: https://support.example.com/us/5
                     ai_agent_availability: true
                     ai_copilot_availability: true
+                    ai_sales_agent_availability: true
                     fin_availability: true
                     locale: en
                     source_id: 45
@@ -878,6 +891,7 @@ paths:
                     url: https://support.example.com/us/6
                     ai_agent_availability: true
                     ai_copilot_availability: true
+                    ai_sales_agent_availability: true
                     fin_availability: true
                     locale: en
                     source_id: 46
@@ -928,6 +942,7 @@ paths:
                     url: https://www.example.com
                     ai_agent_availability: true
                     ai_copilot_availability: true
+                    ai_sales_agent_availability: true
                     fin_availability: true
                     locale: en
                     source_id: 47
@@ -1493,15 +1508,13 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/away_status_reason"
+                "$ref": "#/components/schemas/away_status_reason_list"
         '401':
           "$ref": "#/components/responses/Unauthorized"
   "/export/reporting_data/enqueue":
     post:
       summary: Enqueue a new reporting data export job
-      tags: [Export]
+      tags: [Reporting Data Export]
       parameters:
       - name: Intercom-Version
         in: header
@@ -1629,7 +1642,7 @@ paths:
   "/export/reporting_data/{job_identifier}":
     get:
       summary: Get export job status
-      tags: [Export]
+      tags: [Reporting Data Export]
       parameters:
         - name: Intercom-Version
           in: header
@@ -1704,7 +1717,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      tags: [Export]
+      tags: [Reporting Data Export]
       responses:
         '200':
           description: List of datasets
@@ -1753,7 +1766,7 @@ paths:
         > Octet header required
         >
         > You will have to specify the header Accept: `application/octet-stream` when hitting this endpoint.
-      tags: [Export]
+      tags: [Reporting Data Export]
       parameters:
         - name: Intercom-Version
           in: header
@@ -1795,6 +1808,356 @@ paths:
                       message: "Export job not found for identifier: job1"
               schema:
                 "$ref": "#/components/schemas/error"
+  "/fin/start":
+    post:
+      summary: Start a conversation with Fin
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Fin Agent
+      operationId: startFinConversation
+      description: |
+        Initialize Fin by passing it the user's message along with conversation history and user details.
+
+        These additional pieces of context will be used by Fin to provide a better and more contextual answer to the user.
+
+        {% admonition type="warning" %}
+        Please reach out to your accounts team to discuss access.
+        {% /admonition %}
+
+        Once Fin is initialized, it progresses through a series of statuses such as *thinking*, *awaiting_user_reply*, or *resolved* before ending with a status of *complete*.
+
+        During this workflow, the client should allow Fin to continue uninterrupted until a final *complete* status is returned via webhook, at which point control of the conversation passes back to the client.
+      responses:
+        '200':
+          description: Fin conversation started successfully
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    conversation_id: ext-123
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+                Response with attribute errors:
+                  value:
+                    conversation_id: ext-123
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+                    errors:
+                      user:
+                        attributes:
+                          invalid_attr: User attribute 'invalid_attr' does not exist
+                      conversation:
+                        attributes:
+                          bad_attr: Conversation attribute 'bad_attr' does not exist
+              schema:
+                type: object
+                properties:
+                  conversation_id:
+                    type: string
+                    description: The ID of the conversation.
+                    example: ext-123
+                  user_id:
+                    type: string
+                    description: The ID of the user.
+                    example: user-456
+                  status:
+                    type: string
+                    enum:
+                    - thinking
+                    - awaiting_user_reply
+                    - escalated
+                    - resolved
+                    - complete
+                    description: |
+                      Fin's current status in the conversation workflow.
+                    example: thinking
+                  created_at_ms:
+                    type: string
+                    format: date-time
+                    description: The timestamp the response was created at, with millisecond precision.
+                    example: '2025-01-24T10:00:00.123Z'
+                  errors:
+                    "$ref": "#/components/schemas/fin_agent_attribute_errors"
+                  sse_subscription_url:
+                    type: string
+                    description: |
+                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status.
+                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid request:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: conversation_id is required
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conversation_id:
+                  type: string
+                  description: The ID of the conversation that is calling Fin via this API.
+                  example: ext-123
+                message:
+                  "$ref": "#/components/schemas/fin_agent_message"
+                user:
+                  "$ref": "#/components/schemas/fin_agent_user"
+                attachments:
+                  type: array
+                  description: An array of attachments to include with the message. Maximum of 10 attachments.
+                  maxItems: 10
+                  items:
+                    "$ref": "#/components/schemas/fin_agent_attachment"
+                conversation_metadata:
+                  "$ref": "#/components/schemas/fin_agent_conversation_metadata"
+              required:
+              - conversation_id
+              - message
+              - user
+            examples:
+              Basic request:
+                value:
+                  conversation_id: ext-123
+                  message:
+                    author: user
+                    body: How can I see my account details?
+                    timestamp: '2025-01-24T10:01:20.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+              Request with conversation history:
+                value:
+                  conversation_id: ext-123
+                  message:
+                    author: user
+                    body: How can I see my account details?
+                    timestamp: '2025-01-24T10:01:20.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+                    attributes:
+                      plan_type: Pro
+                      subscription_status: active
+                  conversation_metadata:
+                    history:
+                    - author: user
+                      body: I need help
+                      timestamp: '2025-01-24T10:00:01Z'
+                    - author: agent
+                      body: What do you need help with?
+                      timestamp: '2025-01-24T10:01:00Z'
+                    attributes:
+                      priority_level: high
+                      department: sales
+              Request with attachments:
+                value:
+                  conversation_id: ext-123
+                  message:
+                    author: user
+                    body: Here is a screenshot of the issue
+                    timestamp: '2025-01-24T10:01:20.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+                  attachments:
+                  - type: url
+                    url: https://example.com/document.pdf
+                  - type: file
+                    name: screenshot.png
+                    content_type: image/png
+                    data: iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk...
+  "/fin/reply":
+    post:
+      summary: Reply to Fin
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Fin Agent
+      operationId: replyToFin
+      description: |
+        Once Fin has returned a response to a user's message, its status will be `awaiting_user_reply`.
+
+        If a user replies, use this endpoint to send this response to Fin.
+
+        {% admonition type="warning" %}
+        Please reach out to your accounts team to discuss access.
+        {% /admonition %}
+      responses:
+        '200':
+          description: Reply sent successfully
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    conversation_id: ext-123
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
+                Response with attribute errors:
+                  value:
+                    conversation_id: ext-123
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
+                    errors:
+                      user:
+                        attributes:
+                          invalid_attr: User attribute 'invalid_attr' does not exist
+              schema:
+                type: object
+                properties:
+                  conversation_id:
+                    type: string
+                    description: The ID of the conversation.
+                    example: ext-123
+                  user_id:
+                    type: string
+                    description: The ID of the user.
+                    example: user-456
+                  status:
+                    type: string
+                    enum:
+                    - thinking
+                    - awaiting_user_reply
+                    - escalated
+                    - resolved
+                    - complete
+                    description: |
+                      Fin's current status in the conversation workflow.
+                    example: thinking
+                  created_at_ms:
+                    type: string
+                    format: date-time
+                    description: The timestamp the response was created at, with millisecond precision.
+                    example: '2025-01-24T10:00:00.123Z'
+                  errors:
+                    "$ref": "#/components/schemas/fin_agent_attribute_errors"
+                  sse_subscription_url:
+                    type: string
+                    description: |
+                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status.
+                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid request:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: conversation_id is required
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conversation_id:
+                  type: string
+                  description: The ID of the conversation.
+                  example: '123456'
+                message:
+                  "$ref": "#/components/schemas/fin_agent_message"
+                user:
+                  "$ref": "#/components/schemas/fin_agent_user"
+                attachments:
+                  type: array
+                  description: An array of attachments to include with the message. Maximum of 10 attachments.
+                  maxItems: 10
+                  items:
+                    "$ref": "#/components/schemas/fin_agent_attachment"
+              required:
+              - conversation_id
+              - message
+              - user
+            examples:
+              Basic reply:
+                value:
+                  conversation_id: '123456'
+                  message:
+                    author: user
+                    body: Here's the information you requested.
+                    timestamp: '2025-01-24T09:01:00.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+              Reply with attachments:
+                value:
+                  conversation_id: '123456'
+                  message:
+                    author: user
+                    body: Here's the invoice you asked for.
+                    timestamp: '2025-01-24T09:01:00.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+                  attachments:
+                  - type: url
+                    url: https://example.com/invoice.pdf
   "/help_center/collections":
     get:
       summary: List all collections
@@ -2798,7 +3161,7 @@ paths:
                       segments: []
                     plan: {}
                     custom_attributes:
-                      creation_source: api
+                      industry: manufacturing
               schema:
                 "$ref": "#/components/schemas/company"
         '400':
@@ -3163,7 +3526,16 @@ paths:
       tags:
       - Companies
       operationId: deleteCompany
-      description: You can delete a single company.
+      description: |
+        Delete a single company.
+
+        This endpoint does not permanently remove the company. It archives the company record and detaches any contacts attached to it; the contacts themselves are not deleted. A `company.deleted` webhook is sent once archival completes.
+
+        The endpoint returns `200` with `"deleted": true` as soon as the request is accepted — archival is processed asynchronously.
+
+        {% admonition type="warning" %}
+        Third-party integrations that sync companies into Intercom (for example, Salesforce or Chargebee) will recreate any company deleted through this endpoint on their next sync. To prevent recreation, remove or filter the company at the source integration before deleting it via the API.
+        {% /admonition %}
       responses:
         '200':
           description: Successful
@@ -4091,6 +4463,8 @@ paths:
 
           1.Opt-out subscription types that the user has opted-out from.
           2.Opt-in subscription types that the user has opted-in to receiving.
+
+        **Note:** This endpoint only returns subscriptions where the contact has explicitly configured their preference. Subscriptions that are in the default state — where the contact has not made an explicit opt-in or opt-out choice — are not included in the response.
       responses:
         '200':
           description: Successful
@@ -4892,7 +5266,12 @@ paths:
       tags:
       - Contacts
       operationId: ShowContact
-      description: You can fetch the details of a single contact.
+      description: |
+        You can fetch the details of a single contact.
+
+        {% admonition type="warning" name="Merged contacts" %}
+          If a contact has been merged into another contact via the Merge endpoint (POST /contacts/merge), requesting it by its original ID will return a `404 Not Found` error. Use the merged-into contact's ID instead.
+        {% /admonition %}
       responses:
         '200':
           description: successful
@@ -5059,8 +5438,17 @@ paths:
       tags:
       - Contacts
       operationId: MergeContact
-      description: You can merge a contact with a `role` of `lead` into a contact
-        with a `role` of `user`.
+      description: |
+        You can merge a contact with a `role` of `lead` into a contact with a `role` of `user`.
+
+        {% admonition type="warning" name="Merged contacts are not retrievable via the API" %}
+          Once a merge is completed, the source contact (`from`) is permanently removed from the active contact list. This means:
+          - **GET /contacts/{id}** — Requesting the source contact by its original ID will return a `404 Not Found` error.
+          - **POST /contacts/search** — The source contact will not appear in search results, including queries filtered by `updated_at`.
+          - **GET /contacts** — The source contact will not appear in list results.
+
+          Only the target contact (`into`) remains accessible. If your application stores contact IDs, update them to use the target contact's ID after a merge.
+        {% /admonition %}
       responses:
         '200':
           description: successful
@@ -5213,6 +5601,10 @@ paths:
           pagination to limit the number of results returned. The default is `50` results per page.
           See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#example-search-conversations-request) for more details on how to use the `starting_after` param.
         {% /admonition %}
+        ### Merged Contacts
+
+        Contacts that have been merged (via POST /contacts/merge) are excluded from search results. If a contact was recently merged into another, it will no longer appear in queries filtered by `updated_at` or any other field. Only the target contact from the merge remains searchable.
+
         ### Contact Creation Delay
 
         If a contact has recently been created, there is a possibility that it will not yet be available when searching. This means that it may not appear in the response. This delay can take a few minutes. If you need to be instantly notified it is recommended to use webhooks and iterate to see if they match your search filters.
@@ -5226,9 +5618,9 @@ paths:
 
         ### Searching for Timestamp Fields
 
-        All timestamp fields (created_at, updated_at etc.) are indexed as Dates for Contact Search queries; Datetime queries are not currently supported. This means you can only query for timestamp fields by day - not hour, minute or second.
-        For example, if you search for all Contacts with a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM), that will be interpreted as 1577836800 (January 1st, 2020 12:00 AM). The search results will then include Contacts created from January 2nd, 2020 12:00 AM onwards.
-        If you'd like to get contacts created on January 1st, 2020 you should search with a created_at value equal (=) to 1577836800 (January 1st, 2020 12:00 AM).
+        All timestamp fields (created_at, updated_at etc.) are indexed as Dates for Contact Search queries; Datetime queries are not currently supported. This means you can only query for timestamp fields by day - not hour, minute or second. The day a timestamp falls on is determined using your workspace's timezone, so the same query can return different results across workspaces in different timezones. Because timestamps are stored in UTC, filtering by a value the API returned may not match the originating contact when your workspace is not set to UTC.
+        For example, on a workspace set to UTC, if you search for all Contacts with a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM UTC), that will be interpreted as 1577836800 (January 1st, 2020 12:00 AM UTC). The search results will then include Contacts created from January 2nd, 2020 12:00 AM UTC onwards. On a workspace in another timezone, the day boundaries fall on that timezone's midnight instead.
+        If you'd like to get contacts created on January 1st, 2020 you should search with a created_at value equal (=) to 1577836800 (January 1st, 2020 12:00 AM UTC).
         This behaviour applies only to timestamps used in search queries. The search results will still contain the full UNIX timestamp and be sorted accordingly.
 
         ### Accepted Fields
@@ -5362,6 +5754,9 @@ paths:
       operationId: ListContacts
       description: |
         You can fetch a list of all contacts (ie. users or leads) in your workspace.
+        {% admonition type="info" name="Merged contacts" %}
+          Contacts that have been merged (via POST /contacts/merge) will not appear in list results. Only the target contact from the merge remains accessible.
+        {% /admonition %}
         {% admonition type="warning" name="Pagination" %}
           You can use pagination to limit the number of results returned. The default is `50` results per page.
           See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.
@@ -6030,8 +6425,8 @@ paths:
                           id: 6762f0f31bb69f9f2193bb8b
                           external_id: '70'
                       first_contact_reply:
-                      admin_assignee_id:
-                      team_assignee_id:
+                      admin_assignee_id: 991267715
+                      team_assignee_id: 5017691
                       open: false
                       state: closed
                       read: false
@@ -6120,7 +6515,10 @@ paths:
                     message_type: inapp
                     conversation_id: '499'
               schema:
-                "$ref": "#/components/schemas/message"
+                allOf:
+                - "$ref": "#/components/schemas/message"
+                required:
+                - conversation_id
         '404':
           description: Contact Not Found
           content:
@@ -6261,8 +6659,8 @@ paths:
                         id: 6762f1261bb69f9f2193bba7
                         external_id: '70'
                     first_contact_reply:
-                    admin_assignee_id:
-                    team_assignee_id:
+                    admin_assignee_id: 991267715
+                    team_assignee_id: 5017691
                     open: false
                     state: closed
                     read: false
@@ -6477,6 +6875,10 @@ paths:
           See _`update a conversation with an association to a custom object instance`_ in the request/response examples to see the custom object association format.
         {% /admonition %}
 
+        {% admonition type="danger" name="Breaking change: duplicate custom attribute names" %}
+        The `PUT /conversations/{id}` endpoint now returns a `400 INVALID_PARAMETER` error when the request includes `custom_attributes` and your workspace contains multiple non-archived conversation custom attributes with the same name. Previously, the update would silently apply to a non-deterministic attribute. To resolve, rename or archive the duplicate attribute in your workspace settings, then retry the request.
+        {% /admonition %}
+
       responses:
         '200':
           description: update a conversation with an association to a custom object
@@ -6513,8 +6915,8 @@ paths:
                         id: 6762f1301bb69f9f2193bbab
                         external_id: '70'
                     first_contact_reply:
-                    admin_assignee_id:
-                    team_assignee_id:
+                    admin_assignee_id: 991267715
+                    team_assignee_id: 5017691
                     open: false
                     state: closed
                     read: true
@@ -6610,8 +7012,8 @@ paths:
                         id: 6762f1341bb69f9f2193bbac
                         external_id: '70'
                     first_contact_reply:
-                    admin_assignee_id:
-                    team_assignee_id:
+                    admin_assignee_id: 991267715
+                    team_assignee_id: 5017691
                     open: false
                     state: closed
                     read: false
@@ -6838,8 +7240,8 @@ paths:
         | source.url                                | String                                                                                                                                                 |
         | contact_ids                               | String                                                                                                                                                 |
         | teammate_ids                              | String                                                                                                                                                 |
-        | admin_assignee_id                         | String                                                                                                                                                 |
-        | team_assignee_id                          | String                                                                                                                                                 |
+        | admin_assignee_id                         | Integer                                                                                                                                                |
+        | team_assignee_id                          | Integer                                                                                                                                                |
         | channel_initiated                         | String                                                                                                                                                 |
         | open                                      | Boolean                                                                                                                                                |
         | read                                      | Boolean                                                                                                                                                |
@@ -6939,8 +7341,8 @@ paths:
                           id: 6762f14a1bb69f9f2193bbb3
                           external_id: '70'
                       first_contact_reply:
-                      admin_assignee_id:
-                      team_assignee_id:
+                      admin_assignee_id: 991267715
+                      team_assignee_id: 5017691
                       open: false
                       state: closed
                       read: false
@@ -7001,8 +7403,14 @@ paths:
       tags:
       - Conversations
       operationId: replyConversation
-      description: You can reply to a conversation with a message from an admin or
-        on behalf of a contact, or with a note for admins.
+      description: |-
+        You can reply to a conversation with a message from an admin or on behalf of a contact, or with a note for admins.
+
+        {% admonition type="warning" name="Bot replies to inbound email" %}
+        By default, bot or Operator replies to an inbound email conversation aren't sent to your customer. The reply is stored as an unnotifiable bot comment, and no `seen` receipt is generated until an email is actually delivered.
+
+        To send these replies as outbound emails, reach out to your accounts team to enable the email-reply feature flag for your workspace.
+        {% /admonition %}
       responses:
         '200':
           description: User last conversation reply
@@ -7041,8 +7449,8 @@ paths:
                       created_at: 1734537561
                       type: conversation
                       url:
-                    admin_assignee_id:
-                    team_assignee_id:
+                    admin_assignee_id: 991267715
+                    team_assignee_id: 5017691
                     open: true
                     state: open
                     read: false
@@ -7117,8 +7525,8 @@ paths:
                         id: 6762f15b1bb69f9f2193bbbc
                         external_id: '70'
                     first_contact_reply:
-                    admin_assignee_id:
-                    team_assignee_id:
+                    admin_assignee_id: 991267715
+                    team_assignee_id: 5017691
                     open: false
                     state: closed
                     read: false
@@ -7205,8 +7613,8 @@ paths:
                         id: 6762f15e1bb69f9f2193bbbd
                         external_id: '70'
                     first_contact_reply:
-                    admin_assignee_id:
-                    team_assignee_id:
+                    admin_assignee_id: 991267715
+                    team_assignee_id: 5017691
                     open: false
                     state: closed
                     read: false
@@ -7284,8 +7692,8 @@ paths:
                       created_at: 1734537572
                       type: conversation
                       url:
-                    admin_assignee_id:
-                    team_assignee_id:
+                    admin_assignee_id: 991267715
+                    team_assignee_id: 5017691
                     open: true
                     state: open
                     read: false
@@ -7484,8 +7892,8 @@ paths:
                         id: 6762f16e1bb69f9f2193bbc2
                         external_id: '70'
                     first_contact_reply:
-                    admin_assignee_id:
-                    team_assignee_id:
+                    admin_assignee_id: 991267715
+                    team_assignee_id: 5017691
                     open: false
                     state: closed
                     read: false
@@ -7560,8 +7968,8 @@ paths:
                         id: 6762f1711bb69f9f2193bbc3
                         external_id: '70'
                     first_contact_reply:
-                    admin_assignee_id:
-                    team_assignee_id:
+                    admin_assignee_id: 991267715
+                    team_assignee_id: 5017691
                     open: true
                     state: snoozed
                     read: false
@@ -7636,8 +8044,8 @@ paths:
                         id: 6762f1781bb69f9f2193bbc8
                         external_id: '74'
                     first_contact_reply:
-                    admin_assignee_id:
-                    team_assignee_id:
+                    admin_assignee_id: 991267715
+                    team_assignee_id: 5017691
                     open: true
                     state: open
                     read: true
@@ -7713,7 +8121,7 @@ paths:
                         external_id: '70'
                     first_contact_reply:
                     admin_assignee_id: 991267715
-                    team_assignee_id:
+                    team_assignee_id: 5017691
                     open: true
                     state: open
                     read: false
@@ -7971,10 +8379,10 @@ paths:
       - Conversations
       operationId: detachContactFromConversation
       description: |+
-        You can add participants who are contacts to a conversation, on behalf of either another contact or an admin.
+        You can remove participants who are contacts from a group conversation, on behalf of an admin.
 
-        {% admonition type="warning" name="Contacts without an email" %}
-        If you add a contact via the email parameter and there is no user/lead found on that workspace with he given email, then we will create a new contact with `role` set to `lead`.
+        {% admonition type="warning" name="Removing the last participant" %}
+        You cannot remove the last remaining contact from a conversation.
         {% /admonition %}
 
       responses:
@@ -8139,8 +8547,8 @@ paths:
                       created_at: 1734537722
                       type: conversation
                       url:
-                    admin_assignee_id:
-                    team_assignee_id:
+                    admin_assignee_id: 991267715
+                    team_assignee_id: 5017691
                     open: true
                     state: open
                     read: true
@@ -8367,182 +8775,6 @@ paths:
                 summary: Bad request
                 value:
                   ticket_type_id: '54'
-  "/custom_channel_events/notify_new_conversation":
-    post:
-      summary: Notify Intercom of a new conversation created in a custom channel
-      tags:
-        - Custom Channel Events
-      operationId: notifyNewConversation
-      description: |
-        Notifies Intercom that a new conversation was created in your custom channel/platform. This triggers conversation creation and workflow automations within Intercom for your custom channel integration.
-        > **Note:** This endpoint is currently under managed availability. Please reach out to your accounts team to discuss access and tailored, hands-on support.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/custom_channel_base_event'
-            examples:
-              example-1:
-                summary: Example request
-                value:
-                  event_id: "evt_12345"
-                  external_conversation_id: "conv_67890"
-                  contact:
-                    type: "user"
-                    external_id: "user_001"
-                    name: "Jane Doe"
-                    email: "jane.doe@example.com"
-      responses:
-        '200':
-          $ref: '#/components/responses/CustomChannelNotificationSuccess'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: "#/components/responses/Unauthorized"
-        '404':
-          $ref: '#/components/responses/ObjectNotFound'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-  "/custom_channel_events/notify_new_message":
-    post:
-      summary: Notify Intercom of a new message in a custom channel conversation
-      tags:
-        - Custom Channel Events
-      operationId: notifyNewMessage
-      description: |
-        Notifies Intercom that a new message was sent in a conversation on your custom channel/platform. This allows Intercom to process the message and trigger any relevant workflow automations.
-        > **Note:** This endpoint is currently under managed availability. Please reach out to your accounts team to discuss access and tailored, hands-on support.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '#/components/schemas/custom_channel_base_event'
-                - type: object
-                  properties:
-                    body:
-                      type: string
-                      description: The message content sent by the user.
-                  required:
-                    - body
-            examples:
-              example-1:
-                summary: Example request
-                value:
-                  event_id: "evt_54321"
-                  external_conversation_id: "conv_98765"
-                  contact:
-                    type: "user"
-                    external_id: "user_002"
-                    name: "John Smith"
-                    email: "john.smith@example.com"
-                  body: "Hello, I need help with my order."
-      responses:
-        '200':
-          $ref: '#/components/responses/CustomChannelNotificationSuccess'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: "#/components/responses/Unauthorized"
-        '404':
-          $ref: '#/components/responses/ObjectNotFound'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-  "/custom_channel_events/notify_quick_reply_selected":
-    post:
-      summary: Notify Intercom of a quick reply response in a custom channel conversation
-      tags:
-        - Custom Channel Events
-      operationId: notifyQuickReplySelected
-      description: |
-        Notifies Intercom that a user selected a quick reply option in your custom channel/platform. This allows Intercom to process the response and trigger any relevant workflow automations.
-        > **Note:** This endpoint is currently under managed availability. Please reach out to your accounts team to discuss access and tailored, hands-on support.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '#/components/schemas/custom_channel_base_event'
-                - type: object
-                  properties:
-                    quick_reply_option_id:
-                      type: string
-                      description: Id of the selected quick reply option.
-                  required:
-                    - quick_reply_option_id
-            examples:
-              example-1:
-                summary: Example request
-                value:
-                  event_id: "evt_67890"
-                  external_conversation_id: "conv_13579"
-                  contact:
-                    type: "user"
-                    external_id: "user_003"
-                    name: "Alice Example"
-                    email: "alice@example.com"
-                  quick_reply_option_id: "1234"
-      responses:
-        '200':
-          $ref: '#/components/responses/CustomChannelNotificationSuccess'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: "#/components/responses/Unauthorized"
-        '404':
-          $ref: '#/components/responses/ObjectNotFound'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-  "/custom_channel_events/notify_attribute_collected":
-    post:
-      summary: Notify Intercom of an attribute collector response in a custom channel conversation
-      tags:
-        - Custom Channel Events
-      operationId: notifyAttributeCollected
-      description: |
-        Notifies Intercom that a user provided a response to an attribute collector in your custom channel/platform. This allows Intercom to process the attribute and trigger any relevant workflow automations.
-        > **Note:** This endpoint is currently under managed availability. Please reach out to your accounts team to discuss access and tailored, hands-on support.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: '#/components/schemas/custom_channel_base_event'
-                - type: object
-                  properties:
-                    attribute:
-                      $ref: '#/components/schemas/custom_channel_attribute'
-                  required:
-                    - attribute
-            examples:
-              example-1:
-                summary: Example request
-                value:
-                  event_id: "evt_24680"
-                  external_conversation_id: "conv_11223"
-                  contact:
-                    type: "user"
-                    external_id: "user_004"
-                    name: "Bob Example"
-                    email: "bob@example.com"
-                  attribute:
-                    id: "shipping_address"
-                    value: "123 Main St, Springfield"
-      responses:
-        '200':
-          $ref: '#/components/responses/CustomChannelNotificationSuccess'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: "#/components/responses/Unauthorized"
-        '404':
-          $ref: '#/components/responses/ObjectNotFound'
-        '422':
-          $ref: '#/components/responses/ValidationError'
   "/custom_object_instances/{custom_object_type_identifier}":
     parameters:
     - name: custom_object_type_identifier
@@ -9552,7 +9784,12 @@ paths:
       - Data Export
       operationId: createDataExport
       description: "To create your export job, you need to send a `POST` request to
-        the export endpoint `https://api.intercom.io/export/content/data`.\n\nThe
+        the export endpoint `https://api.intercom.io/export/content/data`.\n\nThis
+        endpoint exports **message delivery and engagement data** for outbound content
+        (Emails, Posts, Custom Bots, Surveys, Tours, Series, and more). The exported
+        data includes who received each message, when they received it, and how they
+        engaged with it (opens, clicks, replies, completions, dismissals, unsubscribes,
+        and bounces). It does not export raw message or conversation content.\n\nThe
         only parameters you need to provide are the range of dates that you want exported.\n\n>\U0001F6A7
         Limit of one active job\n>\n> You can only have one active job per workspace.
         You will receive a HTTP status code of 429 with the message Exceeded rate
@@ -12608,6 +12845,14 @@ paths:
                     \  <li>Tea</li>   <li>Milk</li> </ul>    <h2>An Ordered HTML List</h2>
                     \ <ol>   <li>Coffee</li>   <li>Tea</li>   <li>Milk</li> </ol>
                     \  </body> </html>"
+              admin_note_cross_post_reply:
+                summary: Admin note reply with cross-post to linked conversations
+                value:
+                  message_type: note
+                  type: admin
+                  admin_id: 991267943
+                  body: This note will be cross-posted to all linked conversations.
+                  cross_post: true
               admin_quick_reply_reply:
                 summary: Admin quick_reply reply
                 value:
@@ -14206,6 +14451,7 @@ components:
           enum:
           - admin_conversation_assignment_limit_change
           - admin_ticket_assignment_limit_change
+          - admin_avatar_change
           - admin_away_mode_change
           - admin_deletion
           - admin_deprovisioned
@@ -14249,16 +14495,19 @@ components:
           - campaign_deletion
           - campaign_state_change
           - conversation_part_deletion
+          - conversation_pdf_export
           - conversation_topic_change
           - conversation_topic_creation
           - conversation_topic_deletion
           - custom_authentication_token_creation
+          - customer_facing_name_change
           - help_center_settings_change
           - inbound_conversations_change
           - inbox_access_change
           - macro_creation
           - macro_deletion
           - macro_update
+          - macro_usage_export
           - malicious_domains_setting_change
           - message_deletion
           - message_state_change
@@ -14290,6 +14539,7 @@ components:
           - team_assignment_limit_change
           - trusted_domains_setting_change
           - unassign_unsnoozed_at_capacity_setting_change
+          - unassign_unsnoozed_when_away_setting_change
           - upfront_email_collection_change
           - allowed_attachment_filetypes_setting_change
           - attach_uploads_inline_setting_change
@@ -14667,6 +14917,11 @@ components:
             type: string
             format: uri
           maxItems: 10
+        cross_post:
+          type: boolean
+          description: If set to true, the note will be cross-posted to all linked
+            conversations. Only applicable to note message types on back-office tickets.
+          example: true
       required:
       - message_type
       - type
@@ -15517,6 +15772,22 @@ components:
           type: integer
           description: "The Unix timestamp when the status reason was last updated"
           example: 1734537243
+    away_status_reason_list:
+      title: Away Status Reasons
+      type: object
+      description: A list of away status reasons.
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: A list of away status reason objects.
+          items:
+            "$ref": "#/components/schemas/away_status_reason"
     close_conversation_request:
       title: Close Conversation Request
       type: object
@@ -15926,51 +16197,51 @@ components:
         created_at:
           type: integer
           format: date-time
-          description: "(UNIX timestamp) The time when the contact was created."
+          description: "(Unix timestamp in seconds) The time when the contact was created."
           example: 1571672154
         updated_at:
           type: integer
           format: date-time
-          description: "(UNIX timestamp) The time when the contact was last updated."
+          description: "(Unix timestamp in seconds) The time when the contact was last updated."
           example: 1571672154
         signed_up_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time specified for when a contact signed
+          description: "(Unix timestamp in seconds) The time specified for when a contact signed
             up."
           example: 1571672154
         last_seen_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact was last seen (either
+          description: "(Unix timestamp in seconds) The time when the contact was last seen (either
             where the Intercom Messenger was installed or when specified manually)."
           example: 1571672154
         last_replied_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact last messaged in."
+          description: "(Unix timestamp in seconds) The time when the contact last messaged in."
           example: 1571672154
         last_contacted_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact was last messaged."
+          description: "(Unix timestamp in seconds) The time when the contact was last messaged."
           example: 1571672154
         last_email_opened_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact last opened an
+          description: "(Unix timestamp in seconds) The time when the contact last opened an
             email."
           example: 1571672154
         last_email_clicked_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact last clicked a
+          description: "(Unix timestamp in seconds) The time when the contact last clicked a
             link in an email."
           example: 1571672154
         language_override:
@@ -16028,7 +16299,7 @@ components:
           type: integer
           nullable: true
           format: date-time
-          description: "(UNIX timestamp) The time when the contact was last seen on
+          description: "(Unix timestamp in seconds) The time when the contact was last seen on
             an Android device."
           example: 1571672154
         ios_app_name:
@@ -16060,7 +16331,7 @@ components:
           type: integer
           nullable: true
           format: date-time
-          description: "(UNIX timestamp) The last time the contact used the iOS app."
+          description: "(Unix timestamp in seconds) The last time the contact used the iOS app."
           example: 1571672154
         custom_attributes:
           type: object
@@ -16750,11 +17021,11 @@ components:
             assigned to an admin it will return null.
           example: 0
         team_assignee_id:
-          type: string
+          type: integer
           nullable: true
           description: The id of the team assigned to the conversation. If it's not
             assigned to a team it will return null.
-          example: '5017691'
+          example: 5017691
         tags:
           "$ref": "#/components/schemas/tags"
         conversation_rating:
@@ -16860,11 +17131,11 @@ components:
             assigned to an admin it will return null.
           example: 0
         team_assignee_id:
-          type: string
+          type: integer
           nullable: true
           description: The id of the team assigned to the conversation. If it's not
             assigned to a team it will return null.
-          example: '5017691'
+          example: 5017691
         tags:
           "$ref": "#/components/schemas/tags"
         conversation_rating:
@@ -17371,7 +17642,7 @@ components:
           type: integer
           description: Total number of conversation parts.
           example: 1
-        assigned_team_first_response_time_by_team:
+        assigned_team_first_response_time:
           type: array
           description: An array of conversation response time objects
           items:
@@ -17600,9 +17871,11 @@ components:
         role:
           type: string
           description: The role of the contact.
+          example: user
         external_id:
           type: string
           description: A unique identifier for the contact which is given to Intercom
+          example: "625e90fc55ab113b6d92175f"
         email:
           type: string
           description: The contacts email
@@ -17626,14 +17899,14 @@ components:
           type: integer
           format: date-time
           nullable: true
-          description: The time specified for when a contact signed up
+          description: (Unix timestamp in seconds) The time specified for when a contact signed up.
           example: 1571672154
         last_seen_at:
           type: integer
           format: date-time
           nullable: true
-          description: The time when the contact was last seen (either where the Intercom
-            Messenger was installed or when specified manually)
+          description: (Unix timestamp in seconds) The time when the contact was last seen
+            (either where the Intercom Messenger was installed or when specified manually).
           example: 1571672154
         owner_id:
           type: integer
@@ -17650,6 +17923,10 @@ components:
           type: object
           nullable: true
           description: The custom attributes which are set for the contact
+          example:
+            paid_subscriber: true
+            monthly_spend: 155.5
+            team_mates: 1
       anyOf:
       - required:
         - email
@@ -17720,6 +17997,10 @@ components:
           type: string
           description: The content of the message. HTML is not supported.
           example: Hello
+        subject:
+          type: string
+          description: The title of the email. Only applicable if the message type is email.
+          example: Thanks for everything
         attachment_urls:
           type: array
           description: A list of image URLs that will be added as attachments. You
@@ -18570,7 +18851,8 @@ components:
       type: object
       description: An object containing the different custom attributes associated
         to the conversation as key-value pairs. For relationship attributes the value
-        will be a list of custom object instance models.
+        will be a list of custom object instance models. System-defined attributes
+        such as "CX Score rating" and "CX Score explanation" may also be included.
       additionalProperties:
         anyOf:
         - type: string
@@ -18583,6 +18865,9 @@ components:
         team_mates: 9
         start_date_iso8601: "2023-03-04T09:46:14Z"
         end_date_timestamp: 1677923174
+        CX Score rating: 4
+        CX Score explanation: The conversation was resolved quickly and the customer
+          expressed satisfaction with the outcome.
     custom_object_instance:
       title: Custom Object Instance
       type: object
@@ -18952,8 +19237,11 @@ components:
       type: object
       x-tags:
       - Data Export
-      description: The data export api is used to view all message sent & viewed in
-        a given timeframe.
+      description: The data export API is used to export message delivery and engagement
+        statistics for outbound content (Emails, Posts, Custom Bots, Surveys, Tours,
+        Series, and more) sent in a given timeframe. The exported data includes who
+        received each message, when they received it, and how they engaged with it
+        (opens, clicks, replies, completions, dismissals, unsubscribes, and bounces).
       properties:
         job_identifier:
           type: string
@@ -19037,43 +19325,44 @@ components:
         first_reply:
           type: integer
           description: The first time a user replied to this message if the content
-            was able to receive replies.
+            was able to receive replies. Only events within the export job's requested date range are counted.
         first_completion:
           type: integer
           description: The first time a user completed this message if the content
-            was able to be completed e.g. Tours, Surveys.
+            was able to be completed e.g. Tours, Surveys. Only events within the export job's requested date range are counted.
         first_series_completion:
           type: integer
           description: The first time the series this message was a part of was completed
-            by the user.
+            by the user. Only events within the export job's requested date range are counted.
         first_series_disengagement:
           type: integer
           description: The first time the series this message was a part of was disengaged
-            by the user.
+            by the user. Only events within the export job's requested date range are counted.
         first_series_exit:
           type: integer
           description: The first time the series this message was a part of was exited
-            by the user.
+            by the user. Only events within the export job's requested date range are counted.
         first_goal_success:
           type: integer
           description: The first time the user met this messages associated goal if
-            one exists.
+            one exists. Only events within the export job's requested date range are counted.
         first_open:
           type: integer
-          description: The first time the user opened this message.
+          description: The first time the user opened this message. Only events within
+            the export job's requested date range are counted.
         first_click:
           type: integer
           description: The first time the series the user clicked on a link within
-            this message.
+            this message. Only events within the export job's requested date range are counted.
         first_dismisall:
           type: integer
-          description: The first time the series the user dismissed this message.
+          description: The first time the series the user dismissed this message. Only events within the export job's requested date range are counted.
         first_unsubscribe:
           type: integer
-          description: The first time the user unsubscribed from this message.
+          description: The first time the user unsubscribed from this message. Only events within the export job's requested date range are counted.
         first_hard_bounce:
           type: integer
-          description: The first time this message hard bounced for this user
+          description: The first time this message hard bounced for this user. Only events within the export job's requested date range are counted.
     deleted_article_object:
       title: Deleted Article Object
       type: object
@@ -19274,76 +19563,6 @@ components:
               type: string
               description: Name of the action
               example: Jira Create Issue
-    custom_channel_attribute:
-      title: Custom Channel - Attribute
-      type: object
-      required:
-        - id
-        - value
-      properties:
-        id:
-          type: string
-          description: Identifier for the attribute being collected.
-        value:
-          type: string
-          description: Value provided by the user for the attribute.
-    custom_channel_base_event:
-      title: Custom Channel - Base Event
-      type: object
-      properties:
-        event_id:
-          type: string
-          description: Unique identifier for the event.
-        external_conversation_id:
-          type: string
-          description: Identifier for the conversation in your application.
-        contact:
-          $ref: '#/components/schemas/custom_channel_contact'
-      required:
-        - event_id
-        - external_conversation_id
-        - contact
-    custom_channel_contact:
-      title: Custom Channel - Simplified Contact
-      type: object
-      required:
-        - type
-        - external_id
-      properties:
-        type:
-          type: string
-          enum: [user, lead]
-          description: Type of contact, must be "user" or "lead".
-        external_id:
-          type: string
-          description: External identifier for the contact. Intercom will take care of the mapping of your external_id with our internal ones so you don't have to worry about it.
-        name:
-          type: string
-          description: Name of the contact. Required for user type.
-        email:
-          type: string
-          format: email
-          description: Email address of the contact. Required for user type.
-    custom_channel_notification_response:
-      type: object
-      required:
-        - external_conversation_id
-        - conversation_id
-        - external_contact_id
-        - contact_id
-      properties:
-        external_conversation_id:
-          type: string
-          description: The external conversation ID provided in the notification request
-        conversation_id:
-          type: string
-          description: The Intercom conversation ID mapped to the external conversation ID
-        external_contact_id:
-          type: string
-          description: The external contact ID provided in the notification request
-        contact_id:
-          type: string
-          description: The Intercom contact ID mapped to the external contact ID
     custom_action_finished:
       title: Part type - custom_action_finished
       type: object
@@ -19480,6 +19699,11 @@ components:
           description: Whether the external page should be used to answer questions
             by AI Copilot.
           example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the external page should be used to answer questions
+            by AI Sales Agent.
+          example: true
         fin_availability:
           type: boolean
           description: Deprecated. Use ai_agent_availability and ai_copilot_availability
@@ -19559,6 +19783,363 @@ components:
           description: An array of External Page objects
           items:
             "$ref": "#/components/schemas/external_page"
+    fin_agent_message:
+      title: Fin Agent Message
+      type: object
+      description: A message exchanged within a Fin Agent conversation.
+      x-tags:
+      - Fin Agent
+      properties:
+        author:
+          type: string
+          enum:
+          - user
+          - agent
+          - fin
+          description: The author that created the message.
+          example: user
+        body:
+          type: string
+          description: |
+            The body of the message. Accepts both plain text and HTML format.
+            When sending a message to Fin, this should contain the user's message.
+            Fin's response will be returned as HTML.
+          example: How can I see my account details?
+        timestamp:
+          type: string
+          format: date-time
+          description: |
+            The timestamp when the message was created.
+            Used to deduplicate messages sent within a 5 minute window.
+            Ideally should include milliseconds for higher precision.
+          example: '2025-01-24T10:01:20.000Z'
+        timestamp_ms:
+          type: string
+          format: date-time
+          description: |
+            The timestamp when the message was created, with millisecond precision.
+            Only present in webhook event responses (fin_replied).
+          example: '2025-01-24T10:01:20.456Z'
+      required:
+      - author
+      - body
+      - timestamp
+    fin_agent_user:
+      title: Fin Agent User
+      type: object
+      description: A user object representing the user in a Fin Agent conversation.
+      x-tags:
+      - Fin Agent
+      properties:
+        id:
+          type: string
+          description: |
+            The ID of the user. This value will be used to uniquely identify the user
+            during a conversation with Fin. Maps to the user_id field on the Intercom User object.
+          example: '123456'
+        name:
+          type: string
+          description: The name of the user.
+          example: John Doe
+        email:
+          type: string
+          format: email
+          description: The email of the user.
+          example: john.doe@example.com
+        attributes:
+          type: object
+          description: |
+            A hash of attributes associated with the user.
+            Attributes can be used by Fin to target content and responses.
+            Limit to 10 attributes.
+          additionalProperties: true
+          example:
+            plan_type: Pro
+            subscription_status: active
+      required:
+      - id
+    fin_agent_attachment:
+      title: Fin Agent Attachment
+      type: object
+      description: |
+        An attachment object representing a file or URL attachment included with a message.
+        Attachments can be used to provide additional context to Fin.
+        Maximum of 10 attachments per request.
+      x-tags:
+      - Fin Agent
+      properties:
+        type:
+          type: string
+          enum:
+          - url
+          - file
+          description: The type of attachment.
+          example: url
+        url:
+          type: string
+          format: uri
+          description: The URL of the attachment. Required when type is 'url'. Must be publicly accessible.
+          example: https://example.com/document.pdf
+        name:
+          type: string
+          description: The name of the file. Required when type is 'file'.
+          example: screenshot.png
+        content_type:
+          type: string
+          description: The MIME type of the file. Required when type is 'file'.
+          example: image/png
+        data:
+          type: string
+          format: byte
+          description: Base64-encoded file data. Required when type is 'file'.
+          example: iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk...
+      required:
+      - type
+    fin_agent_conversation_metadata:
+      title: Fin Agent Conversation Metadata
+      type: object
+      description: Metadata about the conversation, including history and attributes.
+      x-tags:
+      - Fin Agent
+      properties:
+        history:
+          type: array
+          description: |
+            An array of previous messages in the conversation before Fin is initialized.
+            This data provides context to Fin and helps generate a better answer.
+            Limit to the last 10 messages.
+          maxItems: 10
+          items:
+            "$ref": "#/components/schemas/fin_agent_message"
+        attributes:
+          type: object
+          description: |
+            A hash of attributes associated with the conversation.
+            These attributes can be used by Fin to provide more contextual responses.
+            Limit to 10 attributes.
+          additionalProperties: true
+          example:
+            priority_level: high
+            department: sales
+    fin_agent_attribute_errors:
+      title: Fin Agent Attribute Errors
+      type: object
+      description: Contains error details if any user or conversation attribute updates failed.
+      x-tags:
+      - Fin Agent
+      properties:
+        user:
+          type: object
+          description: User-related attribute errors.
+          properties:
+            attributes:
+              type: object
+              description: Map of user attribute names to error messages.
+              additionalProperties:
+                type: string
+              example:
+                invalid_attr: User attribute 'invalid_attr' does not exist
+        conversation:
+          type: object
+          description: Conversation-related attribute errors.
+          properties:
+            attributes:
+              type: object
+              description: Map of conversation attribute names to error messages.
+              additionalProperties:
+                type: string
+              example:
+                bad_attr: Conversation attribute 'bad_attr' does not exist
+    fin_agent_status_updated_event:
+      title: Fin Agent Status Updated Event
+      type: object
+      description: |
+        Event fired when Fin's status changes during a conversation.
+        Delivered via webhooks or SSE. Fin will report its status to the client via this event.
+      x-tags:
+      - Fin Agent
+      properties:
+        event_name:
+          type: string
+          enum:
+          - fin_status_updated
+          description: The name of the event.
+          example: fin_status_updated
+        conversation_id:
+          type: string
+          description: The ID of the conversation.
+          example: '123456'
+        user_id:
+          type: string
+          description: The ID of the user.
+          example: '7891'
+        status:
+          type: string
+          enum:
+          - escalated
+          - resolved
+          - complete
+          description: |
+            Fin's current status.
+            - escalated: The conversation has been escalated to a human
+            - resolved: The user's query has been resolved
+            - complete: Fin has completed its workflow
+          example: escalated
+        reason:
+          type: string
+          description: |
+            Optional. A human-readable explanation of why the conversation was escalated.
+            Only present when status is 'escalated'.
+            Possible values include:
+            - "Escalation requested by user"
+            - "Escalation rule: {rule_name}"
+            - "Escalation rule matched"
+            - "Routed to team"
+            - "Conversation finished without resolution"
+          example: Escalation requested by user
+        created_at_ms:
+          type: string
+          format: date-time
+          description: The timestamp the event was created at, with millisecond precision.
+          example: '2025-01-24T10:00:00.123Z'
+      required:
+      - event_name
+      - conversation_id
+      - user_id
+      - status
+      - created_at_ms
+    fin_agent_replied_event:
+      title: Fin Agent Replied Event
+      type: object
+      description: |
+        Event fired when Fin replies to a user.
+        Delivered via webhooks or SSE. The content of the response will be contained in the message object.
+        Fin's status will update to 'awaiting_user_reply'.
+      x-tags:
+      - Fin Agent
+      properties:
+        event_name:
+          type: string
+          enum:
+          - fin_replied
+          description: The name of the event.
+          example: fin_replied
+        conversation_id:
+          type: string
+          description: The ID of the conversation.
+          example: '123456'
+        user_id:
+          type: string
+          description: The ID of the user.
+          example: '7891'
+        message:
+          type: object
+          description: Fin's answer to the user's query.
+          properties:
+            id:
+              type: string
+              description: A unique identifier for this message.
+              example: '98765'
+            author:
+              type: string
+              enum:
+              - fin
+              description: The author of the message (always 'fin' for this event).
+              example: fin
+            body:
+              type: string
+              description: The HTML body of Fin's response.
+              example: <p>You can see your account details by clicking on the <em>Account</em> tab in the top right corner of the screen.</p>
+            timestamp_ms:
+              type: string
+              format: date-time
+              description: The timestamp the message was created at, with millisecond precision.
+              example: '2025-01-24T09:01:00.456Z'
+          required:
+          - author
+          - body
+          - timestamp_ms
+        status:
+          type: string
+          enum:
+          - awaiting_user_reply
+          description: Fin's current status (always 'awaiting_user_reply' for this event).
+          example: awaiting_user_reply
+        stream_id:
+          type: string
+          description: |
+            Optional. Present when the reply was generated via streaming.
+            Correlates this event with the fin_reply_chunk events that preceded it.
+            Use this to know when to replace streamed chunk_text with the final message body.
+          example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+        created_at_ms:
+          type: string
+          format: date-time
+          description: The timestamp the event was created at, with millisecond precision.
+          example: '2025-01-24T10:00:00.123Z'
+      required:
+      - event_name
+      - conversation_id
+      - user_id
+      - message
+      - status
+      - created_at_ms
+    fin_agent_reply_chunk_event:
+      title: Fin Agent Reply Chunk Event
+      type: object
+      description: |
+        SSE-only event fired during streaming reply generation.
+        Each chunk contains the full accumulated plain text of Fin's answer so far (cumulative, not a delta).
+        Only delivered over SSE when streaming is enabled. Not available via webhooks.
+        When the fin_replied event arrives with the same stream_id, replace streamed text with the final HTML body.
+      x-tags:
+      - Fin Agent
+      properties:
+        event_name:
+          type: string
+          enum:
+          - fin_reply_chunk
+          description: The name of the event.
+          example: fin_reply_chunk
+        conversation_id:
+          type: string
+          description: The ID of the conversation.
+          example: '123456'
+        stream_id:
+          type: string
+          description: |
+            A unique identifier for this streaming response.
+            Correlates chunks with each other and with the eventual fin_replied event.
+          example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+        chunk_index:
+          type: integer
+          description: |
+            0-based counter for this chunk within the stream. Contiguous.
+          example: 3
+        chunk_text:
+          type: string
+          description: |
+            The full accumulated plain text of Fin's answer so far.
+            Each chunk supersedes the previous — replace rather than append.
+          example: You can see your account details by clicking
+        status:
+          type: string
+          enum:
+          - replying
+          description: Fin's current status (always 'replying' for this event).
+          example: replying
+        created_at_ms:
+          type: string
+          format: date-time
+          description: The timestamp the event was created at, with millisecond precision.
+          example: '2025-01-24T10:00:00.123Z'
+      required:
+      - event_name
+      - conversation_id
+      - stream_id
+      - chunk_index
+      - chunk_text
+      - created_at_ms
     file_attribute:
       title: File
       type: object
@@ -19957,6 +20538,9 @@ components:
       description: Merge contact data.
       type: object
       title: Merge contact data
+      required:
+      - from
+      - into
       properties:
         from:
           type: string
@@ -20697,6 +21281,7 @@ components:
           oneOf:
           - type: string
           - type: integer
+          - type: boolean
           - type: array
             items:
               oneOf:
@@ -20882,12 +21467,12 @@ components:
           type: integer
           format: date-time
           nullable: true
-          description: The time when the tag was applied to the object
+          description: The time when the tag was applied to the object. Only present when the tag is returned as part of a tagging operation on a contact, conversation, or ticket.
           example: 1663597223
         applied_by:
           type: object
           nullable: true
-          description: The admin who applied the tag
+          description: The admin who applied the tag. Only present when the tag is returned as part of a tagging operation on a contact, conversation, or ticket.
           allOf:
             - "$ref": "#/components/schemas/reference"
     tag_basic:
@@ -21951,14 +22536,14 @@ components:
           type: integer
           format: date-time
           nullable: true
-          description: The time specified for when a contact signed up
+          description: (Unix timestamp in seconds) The time specified for when a contact signed up.
           example: 1571672154
         last_seen_at:
           type: integer
           format: date-time
           nullable: true
-          description: The time when the contact was last seen (either where the Intercom
-            Messenger was installed or when specified manually)
+          description: (Unix timestamp in seconds) The time when the contact was last seen
+            (either where the Intercom Messenger was installed or when specified manually).
           example: 1571672154
         owner_id:
           type: integer
@@ -22642,19 +23227,6 @@ components:
                     message: Contact not found or could not be created
           schema:
             "$ref": "#/components/schemas/error"
-    CustomChannelNotificationSuccess:
-      description: Successfully notified Intercom
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/custom_channel_notification_response'
-          examples:
-            NotificationSuccess:
-              value:
-                external_conversation_id: "customer_conversation_id_12"
-                conversation_id: "intercom_conversation_id_34"
-                external_contact_id: "customer_contact_id_56"
-                contact_id: "intercom_contact_id_79"
 servers:
 - url: https://api.intercom.io
   description: The production API server
@@ -22695,13 +23267,6 @@ tags:
   externalDocs:
     description: What is a conversation?
     url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
-- name: Custom Channel Events
-  description: |
-    With the "Custom Channel" integration, you can bring Fin and Intercom capabilities to your own platform via API, enabling powerful custom integrations.
-
-    Intercom treats your integration like any other Intercom channel, allowing your application and Intercom to exchange events seamlessly. This makes it possible, for example, for your users to interact with Fin directly within your own application’s UI.
-
-    > **Note:** "Fin over API" is currently under managed availability. Please reach out to your accounts team to discuss access and tailored, hands-on support.
 - name: Custom Object Instances
   description: |
     Everything about your Custom Object instances.
@@ -22713,7 +23278,32 @@ tags:
 - name: Data Events
   description: Everything about your Data Events
 - name: Data Export
-  description: Everything about your Data Exports
+  description: Export message delivery and engagement statistics (opens, clicks, replies, completions, dismissals, unsubscribes, bounces) for outbound content such as Emails, Posts, Custom Bots, Surveys, Tours, and Series.
+- name: Fin Agent
+  description: |
+    Access Fin programmatically via the Fin Agent API endpoints.
+
+    &nbsp;
+
+    {% admonition type="warning" %}
+    Please reach out to your accounts team to discuss access and tailored, hands-on support.
+    {% /admonition %}
+
+    &nbsp;
+
+    Integration is centered around two endpoints (`/fin/start` and `/fin/reply`) and a set of events that notify your application of Fin's status and responses. Events can be delivered via webhooks or Server-Sent Events (SSE).
+
+    &nbsp;
+
+    **Events**
+
+    Configure a webhook endpoint in the Fin Agent API settings to receive events, or use the `sse_subscription_url` from the API response to subscribe via SSE. See the [setup guide](/docs/guides/fin-agent-api/setup) for configuration details.
+
+    - `fin_status_updated` - Fired when Fin's status changes (escalated, resolved, complete)
+    - `fin_replied` - Fired when Fin sends a reply to the user
+    - `fin_reply_chunk` - SSE-only streaming event fired during reply generation (requires streaming enabled)
+
+    All webhook requests include an `X-Fin-Agent-API-Webhook-Signature` header for request validation.
 - name: Help Center
   description: Everything about your Help Center
 - name: Internal Articles
@@ -22738,6 +23328,8 @@ tags:
     url: https://www.intercom.com/help/en/articles/6362251-news-explained
 - name: Notes
   description: Everything about your Notes
+- name: Reporting Data Export
+  description: Everything about Reporting Data Export. See this [article](https://www.intercom.com/help/en/articles/12089688-api-metrics-documentation) for details on using the data to generate various metrics.
 - name: Segments
   description: Everything about your Segments
 - name: Subscription Types

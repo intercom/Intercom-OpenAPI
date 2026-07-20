@@ -12,4 +12,4 @@ This directory contains the Postman collection for Intercom API version 2.7.
 3. Set your access token in the environment variables
 4. Start making API calls!
 
-Last updated: 2025-08-27T09:13:42.648Z
+Last updated: 2026-04-16T10:19:18.925Z

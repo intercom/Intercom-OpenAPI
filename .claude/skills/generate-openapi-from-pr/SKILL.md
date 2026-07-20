@@ -88,7 +88,7 @@ Look for:
 #### 3d. Version Registration (`app/lib/api/versioning/service.rb`)
 
 Look for which version block the new change is added to:
-- `UnstableVersion.new(changes: [...])` → goes in Unstable (version `0/`)
+- `PreviewVersion.new(changes: [...])` → goes in Preview (version `0/`)
 - `Version.new(id: "2.15", changes: [...])` → goes in that specific version
 
 #### 3e. Routes (`config/routes/api_v3.rb`)
@@ -113,11 +113,11 @@ I found the following API changes in PR #XXXXX:
 - [list of changes found]
 
 Which API versions should I update?
-- Unstable only (default for new features)
+- Preview only (default for new features)
 - Specific versions (for bug fixes/backports)
 ```
 
-Default to Unstable (`descriptions/0/api.intercom.io.yaml`) unless the PR clearly targets specific versions.
+Default to Preview (`descriptions/0/api.intercom.io.yaml`) unless the PR clearly targets specific versions.
 
 ### Step 5: Read Target Spec File(s)
 
@@ -194,9 +194,9 @@ Report to the user:
 Always remind the user of remaining manual steps:
 
 1. **Review generated changes** for accuracy against the actual API behavior
-2. **Fern overrides** — if new endpoints were added to Unstable, check if `fern/unstable-openapi-overrides.yml` needs SDK method name entries
+2. **Fern overrides** — if new endpoints were added to Preview, check if `fern/preview-openapi-overrides.yml` needs SDK method name entries
 3. **Developer-docs PR** — copy the updated spec to the `developer-docs` repo:
-   - Copy `descriptions/0/api.intercom.io.yaml` → `docs/references/@Unstable/rest-api/api.intercom.io.yaml`
+   - Copy `descriptions/0/api.intercom.io.yaml` → `docs/references/@Preview/rest-api/api.intercom.io.yaml`
    - For stable versions: `descriptions/2.15/api.intercom.io.yaml` → `docs/references/@2.15/rest-api/api.intercom.io.yaml`
 4. **Changelog** — if the change should appear in the public changelog, update `docs/references/@<version>/changelog.md` in the developer-docs repo (newest entries at top)
 5. **Cross-version changes** — if this is an unversioned change (affects all versions), also update `docs/build-an-integration/learn-more/rest-apis/unversioned-changes.md` in developer-docs
