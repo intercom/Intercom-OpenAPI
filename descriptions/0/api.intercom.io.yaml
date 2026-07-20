@@ -11090,6 +11090,9 @@ paths:
                       recipients:
                       - type: to
                         email: testing-workspace@email.com
+                      reply_to:
+                      - email: replies@example.com
+                        name: Support Team
                       author:
                         type: lead
                         id: '991267645'
@@ -29939,6 +29942,25 @@ components:
                 nullable: true
                 description: The reason this recipient was dropped, if applicable.
                 example:
+        reply_to:
+          type: array
+          nullable: true
+          description: The Reply-To header addresses of the source message, where
+            a reply will be routed. Can differ from the sender's From address. Only
+            present for email conversations.
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+                description: The Reply-To email address.
+                example: replies@example.com
+              name:
+                type: string
+                nullable: true
+                description: The display name associated with the Reply-To address.
+                example: Support Team
         subject:
           type: string
           nullable: true
