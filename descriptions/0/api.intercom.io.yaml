@@ -29215,6 +29215,16 @@ components:
           type: object
           nullable: true
           description: The channel through which the conversation was initiated and its current channel.
+        external_references:
+          type: array
+          description: References linking this conversation to records in an external helpdesk or CRM system. Populated for Fin Standalone workspaces synced from an external platform; an empty array otherwise. Sorted alphabetically by `type` and capped at 20 entries.
+          items:
+            "$ref": "#/components/schemas/conversation_external_reference"
+          example:
+            - type: zendesk_ticket
+              id: '3633338'
+            - type: zendesk_sunshine_conversation
+              id: abc-def-uuid
         monitor_evaluations:
           type: array
           description: QA monitor evaluations that flagged this conversation. Only included when `include_monitors=true` is passed as a query parameter.
@@ -29358,6 +29368,16 @@ components:
           type: object
           nullable: true
           description: The channel through which the conversation was initiated and its current channel.
+        external_references:
+          type: array
+          description: References linking this conversation to records in an external helpdesk or CRM system. Populated for Fin Standalone workspaces synced from an external platform; an empty array otherwise. Sorted alphabetically by `type` and capped at 20 entries.
+          items:
+            "$ref": "#/components/schemas/conversation_external_reference"
+          example:
+            - type: zendesk_ticket
+              id: '3633338'
+            - type: zendesk_sunshine_conversation
+              id: abc-def-uuid
         monitor_evaluations:
           type: array
           description: QA monitor evaluations that flagged this conversation. Only included when `include_monitors=true` is passed as a query parameter.
@@ -29541,6 +29561,19 @@ components:
           nullable: true
           description: The current channel of the conversation. May differ from `initial` if the conversation was migrated between channels. Returns `null` if channel data is unavailable.
           example: messenger
+    conversation_external_reference:
+      title: Conversation External Reference
+      type: object
+      description: A reference linking a conversation to a record in an external helpdesk or CRM system, surfaced for Fin Standalone workspaces.
+      properties:
+        type:
+          type: string
+          description: The type of external system the reference points to. Possible values include `zendesk_ticket`, `zendesk_sunshine_conversation`, `salesforce_case`, `salesforce_in_app_message_conversation`, `freshdesk_ticket`, `freshchat_conversation`, `hubspot_conversation`, `custom_helpdesk_conversation`, `api_conversation`.
+          example: zendesk_ticket
+        id:
+          type: string
+          description: The identifier of the record in the external system. Always serialized as a string, since some external IDs exceed 32-bit integer range.
+          example: '3633338'
     conversation_attachment_files:
       title: Conversation attachment files
       type: object
