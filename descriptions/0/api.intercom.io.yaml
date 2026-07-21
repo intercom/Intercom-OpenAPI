@@ -6252,6 +6252,370 @@ paths:
                 summary: Company not found
                 value:
                   body: Hello
+  "/companies/bulk":
+    post:
+      summary: Bulk create or update companies
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Companies
+      operationId: BulkCreateCompanies
+      description: |
+        You can bulk create or update companies by submitting an array of company objects. Each company is matched on the `company_id` you have defined for it: a new company is created if none exists with that `company_id`, otherwise the matching company is updated. This mirrors the single [Create or update a company](/docs/references/preview/rest-api/api.intercom.io/companies/createorupdatecompany) endpoint.
+
+        The endpoint creates an async job that processes the items in the background. Use the returned job ID with `GET /companies/bulk/{id}` to check the job status.
+
+        {% admonition type="info" name="Handling failures" %}
+          If an item fails validation, that item is rejected and the job's `state` ends as `completed_with_errors`. The other companies in the same request are still processed. The job `state` from `GET /companies/bulk/{id}` is the signal that one or more items were rejected.
+        {% /admonition %}
+
+        {% admonition type="info" name="Limits" %}
+          - Maximum of 100 companies per request.
+          - You can append tasks to an existing job by including `job.id` in the request body.
+        {% /admonition %}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/bulk_create_companies_request"
+            examples:
+              successful:
+                summary: Successful
+                value:
+                  companies:
+                  - company_id: abc123
+                    name: Acme Corp
+                    plan: Enterprise
+                  - company_id: def456
+                    name: Example Inc
+                    industry: Manufacturing
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    id: job_v2_1
+                    type: companies.bulk.job
+                    state: running
+                    created_at: 1713360000
+                    updated_at: 1713360060
+                    completed_at:
+                    tasks:
+                    - id: task_v2_1
+                      item_count: 2
+                      state: pending
+                      created_at: 1713360000
+                      started_at:
+                      completed_at:
+                    url: https://api.intercom.io/companies/bulk/job_v2_1
+              schema:
+                "$ref": "#/components/schemas/companies_bulk_job"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                missing_companies:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: missing_field
+                      message: companies field must be supplied
+                too_many_companies:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: invalid_parameter
+                      message: maximum number of companies per request is 100
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Bulk update companies
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Companies
+      operationId: BulkUpdateCompanies
+      description: |
+        You can bulk update companies by submitting an array of company objects with the fields to update. Each company must include an `id` field identifying the company to update by its Intercom company `id`. An unknown `id` fails that item and never creates a company.
+
+        Only the fields listed in the request schema below can be set. Any other fields in a company object are ignored.
+
+        The endpoint creates an async job that processes the updates in the background. Use the returned job ID with `GET /companies/bulk/{id}` to check the job status.
+
+        {% admonition type="info" name="Limits" %}
+          - Maximum of 100 companies per request.
+          - You can append tasks to an existing job by including `job.id` in the request body.
+        {% /admonition %}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/bulk_update_companies_request"
+            examples:
+              successful:
+                summary: Successful
+                value:
+                  companies:
+                  - id: 531ee472cce572a6ec000006
+                    plan: Enterprise
+                  - id: 531ee472cce572a6ec000007
+                    name: Example Inc
+              append_to_existing_job:
+                summary: Append to existing job
+                value:
+                  companies:
+                  - id: 531ee472cce572a6ec000006
+                    monthly_spend: 1000
+                  job:
+                    id: job_v2_1
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    id: job_v2_1
+                    type: companies.bulk.job
+                    state: running
+                    created_at: 1713360000
+                    updated_at: 1713360060
+                    completed_at:
+                    tasks:
+                    - id: task_v2_1
+                      item_count: 2
+                      state: pending
+                      created_at: 1713360000
+                      started_at:
+                      completed_at:
+                    url: https://api.intercom.io/companies/bulk/job_v2_1
+              schema:
+                "$ref": "#/components/schemas/companies_bulk_job"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                missing_companies:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: missing_field
+                      message: companies field must be supplied
+                missing_id:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: missing_field
+                      message: companies must be identified by id
+                too_many_companies:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: invalid_parameter
+                      message: maximum number of companies per request is 100
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/companies/bulk/delete":
+    post:
+      summary: Bulk delete companies
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Companies
+      operationId: BulkDeleteCompanies
+      description: |
+        You can bulk delete companies by submitting an array of companies, each identified by its Intercom company `id`. Deleting a company detaches all of its associated contacts but keeps the company record itself — the same archival behaviour as the single [Delete a company](/docs/references/preview/rest-api/api.intercom.io/companies/deletecompany) endpoint.
+
+        The endpoint creates an async job that processes the deletes in the background. Use the returned job ID with `GET /companies/bulk/{id}` to check the job status.
+
+        {% admonition type="info" name="Limits" %}
+          - Maximum of 100 companies per request.
+          - You can append tasks to an existing job by including `job.id` in the request body.
+        {% /admonition %}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/bulk_delete_companies_request"
+            examples:
+              successful:
+                summary: Successful
+                value:
+                  companies:
+                  - id: 531ee472cce572a6ec000006
+                  - id: 531ee472cce572a6ec000007
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    id: job_v2_1
+                    type: companies.bulk.job
+                    state: running
+                    created_at: 1713360000
+                    updated_at: 1713360060
+                    completed_at:
+                    tasks:
+                    - id: task_v2_1
+                      item_count: 2
+                      state: pending
+                      created_at: 1713360000
+                      started_at:
+                      completed_at:
+                    url: https://api.intercom.io/companies/bulk/job_v2_1
+              schema:
+                "$ref": "#/components/schemas/companies_bulk_job"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                missing_companies:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: missing_field
+                      message: companies field must be supplied
+                missing_id:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: missing_field
+                      message: companies must be identified by id
+                too_many_companies:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: invalid_parameter
+                      message: maximum number of companies per request is 100
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/companies/bulk/{id}":
+    get:
+      summary: Get a bulk companies job
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        description: The unique identifier for the bulk job.
+        example: job_v2_1
+        required: true
+        schema:
+          type: string
+      tags:
+      - Companies
+      operationId: ShowBulkCompaniesJob
+      description: |
+        You can check the status of a bulk companies job. The `state` field indicates the overall job progress: `pending`, `running`, `completed`, or `completed_with_errors`.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    id: job_v2_1
+                    type: companies.bulk.job
+                    state: completed
+                    created_at: 1713360000
+                    updated_at: 1713360120
+                    completed_at: 1713360120
+                    tasks:
+                    - id: task_v2_1
+                      item_count: 2
+                      state: completed
+                      created_at: 1713360000
+                      started_at: 1713360060
+                      completed_at: 1713360120
+                    url: https://api.intercom.io/companies/bulk/job_v2_1
+              schema:
+                "$ref": "#/components/schemas/companies_bulk_job"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/companies/list":
     post:
       summary: List all companies
@@ -27191,6 +27555,172 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/brand"
+    bulk_create_companies_request:
+      title: Bulk Create Companies Request
+      type: object
+      description: Request body for bulk creating or updating companies.
+      required:
+      - companies
+      properties:
+        companies:
+          type: array
+          description: An array of company objects to create or update. Maximum 100
+            companies per request.
+          maxItems: 100
+          items:
+            type: object
+            properties:
+              company_id:
+                type: string
+                description: The company id you have defined for the company. Used
+                  to match an existing company; a new one is created if none matches.
+                example: 625e90fc55ab113b6d92175f
+              name:
+                type: string
+                description: The name of the company.
+                example: Acme Corp
+              plan:
+                type: string
+                description: The name of the plan you have associated with the company.
+                example: Enterprise
+              size:
+                type: integer
+                description: The number of employees in this company.
+                example: 100
+              website:
+                type: string
+                description: The URL for this company's website. Please note that the
+                  value specified here is not validated. Accepts any string.
+                example: https://www.example.com
+              industry:
+                type: string
+                description: The industry that this company operates in.
+                example: Manufacturing
+              custom_attributes:
+                type: object
+                description: A hash of key/value pairs containing any other data about
+                  the company you want Intercom to store.
+              remote_created_at:
+                type: integer
+                description: The time the company was created by you, in Unix timestamp
+                  format.
+                example: 1394531169
+              monthly_spend:
+                type: integer
+                description: How much revenue the company generates for your business.
+                  Note that this will truncate floats — only whole integers are stored,
+                  so 155.98 is truncated to 155, with an upper limit of 2147483647.
+                example: 1000
+              update_last_request_at:
+                type: boolean
+                description: Set to true to update the company's last seen time to now.
+                example: true
+        job:
+          type: object
+          description: Optional. Include to append tasks to an existing job.
+          properties:
+            id:
+              type: string
+              description: The ID of an existing bulk job to append to.
+              example: job_v2_1
+    bulk_delete_companies_request:
+      title: Bulk Delete Companies Request
+      type: object
+      description: Request body for bulk deleting companies.
+      required:
+      - companies
+      properties:
+        companies:
+          type: array
+          description: An array of companies to delete, each identified by its Intercom
+            company `id`. Maximum 100 companies per request.
+          maxItems: 100
+          items:
+            type: object
+            required:
+            - id
+            properties:
+              id:
+                type: string
+                description: The Intercom defined id representing the company.
+                example: 531ee472cce572a6ec000006
+        job:
+          type: object
+          description: Optional. Include to append tasks to an existing job.
+          properties:
+            id:
+              type: string
+              description: The ID of an existing bulk job to append to.
+              example: job_v2_1
+    bulk_update_companies_request:
+      title: Bulk Update Companies Request
+      type: object
+      description: Request body for bulk updating companies.
+      required:
+      - companies
+      properties:
+        companies:
+          type: array
+          description: An array of company objects to update. Each must include an
+            `id` and the fields to update. Maximum 100 companies per request.
+          maxItems: 100
+          items:
+            type: object
+            required:
+            - id
+            properties:
+              id:
+                type: string
+                description: The Intercom defined id representing the company to update.
+                example: 531ee472cce572a6ec000006
+              name:
+                type: string
+                description: The name of the company.
+                example: Acme Corp
+              plan:
+                type: string
+                description: The name of the plan you have associated with the company.
+                example: Enterprise
+              size:
+                type: integer
+                description: The number of employees in this company.
+                example: 100
+              website:
+                type: string
+                description: The URL for this company's website. Please note that the
+                  value specified here is not validated. Accepts any string.
+                example: https://www.example.com
+              industry:
+                type: string
+                description: The industry that this company operates in.
+                example: Manufacturing
+              custom_attributes:
+                type: object
+                description: A hash of key/value pairs containing any other data about
+                  the company you want Intercom to store.
+              remote_created_at:
+                type: integer
+                description: The time the company was created by you, in Unix timestamp
+                  format.
+                example: 1394531169
+              monthly_spend:
+                type: integer
+                description: How much revenue the company generates for your business.
+                  Note that this will truncate floats — only whole integers are stored,
+                  so 155.98 is truncated to 155, with an upper limit of 2147483647.
+                example: 1000
+              update_last_request_at:
+                type: boolean
+                description: Set to true to update the company's last seen time to now.
+                example: true
+        job:
+          type: object
+          description: Optional. Include to append tasks to an existing job.
+          properties:
+            id:
+              type: string
+              description: The ID of an existing bulk job to append to.
+              example: job_v2_1
     bulk_update_contacts_request:
       title: Bulk Update Contacts Request
       type: object
@@ -27971,6 +28501,96 @@ components:
           example: 100
         pages:
           "$ref": "#/components/schemas/cursor_pages"
+    companies_bulk_job:
+      title: Companies Bulk Job
+      type: object
+      x-tags:
+      - Companies
+      description: A bulk job for creating, updating, or deleting companies asynchronously.
+        Track the job status using the `state` field.
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the bulk job.
+          example: job_v2_1
+        type:
+          type: string
+          description: The type of the object.
+          enum:
+          - companies.bulk.job
+          example: companies.bulk.job
+        state:
+          type: string
+          description: The current state of the job.
+          enum:
+          - pending
+          - running
+          - completed
+          - completed_with_errors
+          example: running
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the job was created as a UNIX timestamp.
+          example: 1713360000
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time the job was last updated as a UNIX timestamp.
+          example: 1713360060
+        completed_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The time the job completed as a UNIX timestamp. Null if not
+            yet completed.
+          example: 1713360120
+        tasks:
+          type: array
+          description: The tasks that make up this bulk job.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: The unique identifier for the task.
+                example: task_v2_1
+              item_count:
+                type: integer
+                description: The number of items in this task.
+                example: 2
+              state:
+                type: string
+                description: The current state of the task.
+                enum:
+                - pending
+                - running
+                - completed
+                - completed_with_errors
+                example: pending
+              created_at:
+                type: integer
+                format: date-time
+                description: The time the task was created as a UNIX timestamp.
+                example: 1713360000
+              started_at:
+                type: integer
+                format: date-time
+                nullable: true
+                description: The time the task started as a UNIX timestamp. Null if
+                  not yet started.
+                example: 1713360060
+              completed_at:
+                type: integer
+                format: date-time
+                nullable: true
+                description: The time the task completed as a UNIX timestamp. Null
+                  if not yet completed.
+                example: 1713360120
+        url:
+          type: string
+          description: The URL to check the job status.
+          example: https://api.intercom.io/companies/bulk/job_v2_1
     contacts_bulk_job:
       title: Contacts Bulk Job
       type: object
