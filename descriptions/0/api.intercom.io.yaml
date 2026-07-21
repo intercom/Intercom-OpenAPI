@@ -7592,7 +7592,7 @@ paths:
         {% admonition type="info" %}
           This endpoint handles both **contact updates** and **custom object associations**.
 
-          See _`update a contact with an association to a custom object instance`_ in the request/response examples to see the custom object association format.
+          To associate custom object instances, set the relationship custom attribute under `custom_attributes` to the instance id (to-one) or an array of instance ids (to-many). See the _`attach a single custom object instance`_ and _`attach multiple custom object instances`_ request examples, and the _`update a contact with an association to a custom object instance`_ response example, for the custom object association format.
         {% /admonition %}
       responses:
         '200':
@@ -7824,13 +7824,18 @@ paths:
                 value:
                   email: joebloggs@intercom.io
                   name: joe bloggs
-              update_a_contact_with_an_association_to_a_custom_object_instance:
-                summary: update a contact with an association to a custom object
-                  instance
+              attach a single custom object instance:
+                summary: attach a single custom object instance
+                value:
+                  custom_attributes:
+                    order: '21'
+              attach multiple custom object instances:
+                summary: attach multiple custom object instances
                 value:
                   custom_attributes:
                     order:
                     - '21'
+                    - '22'
     get:
       summary: Get a contact
       parameters:
@@ -38075,7 +38080,10 @@ components:
         custom_attributes:
           type: object
           nullable: true
-          description: The custom attributes which are set for the contact
+          description: |
+            The custom attributes which are set for the contact.
+
+            When a custom attribute is a relationship to a custom object type, its value is the id (or ids) of the custom object instance(s) to associate. Use a single id string for a to-one (has-one) relationship, or an array of id strings for a to-many (has-many) relationship. For a to-many relationship the array replaces the entire set, so omitted ids are detached. The response surfaces the association under `custom_attributes.<attribute>` as `{ "type": "<Type>.list", "instances": [...] }`.
     update_content_import_source_request:
       title: Create Content Import Source Payload
       type: object
