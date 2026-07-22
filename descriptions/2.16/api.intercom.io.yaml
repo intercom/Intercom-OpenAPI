@@ -1022,8 +1022,6 @@ paths:
                     - id: '39'
                       type: article
                       workspace_id: this_is_an_id64_that_should_be_at_least_4
-                      parent_id: 143
-                      parent_type: collection
                       parent_ids: []
                       tags:
                         type: tag.list
@@ -1077,8 +1075,6 @@ paths:
                     id: '42'
                     type: article
                     workspace_id: this_is_an_id68_that_should_be_at_least_4
-                    parent_id: 145
-                    parent_type: collection
                     parent_ids: []
                     statistics:
                       type: article_statistics
@@ -1191,8 +1187,6 @@ paths:
                     id: '45'
                     type: article
                     workspace_id: this_is_an_id74_that_should_be_at_least_4
-                    parent_id: 148
-                    parent_type: collection
                     parent_ids: []
                     statistics:
                       type: article_statistics
@@ -1276,8 +1270,6 @@ paths:
                     id: '48'
                     type: article
                     workspace_id: this_is_an_id80_that_should_be_at_least_4
-                    parent_id: 151
-                    parent_type: collection
                     parent_ids: []
                     statistics:
                       type: article_statistics
@@ -1460,8 +1452,6 @@ paths:
                       - id: '55'
                         type: article
                         workspace_id: this_is_an_id92_that_should_be_at_least_4
-                        parent_id:
-                        parent_type:
                         parent_ids: []
                         tags:
                           type: tag.list
@@ -1520,6 +1510,7 @@ paths:
   "/export/reporting_data/enqueue":
     post:
       summary: Enqueue a new reporting data export job
+      description: For the conversation dataset, from this version onward this export returns all conversations, including those that never received a user reply. Earlier versions return only conversations that received at least one user reply. Other datasets are unaffected.
       tags: [Reporting Data Export]
       parameters:
       - name: Intercom-Version
@@ -5629,6 +5620,21 @@ paths:
                     nullable: true
                     description: If the user has enabled push messaging.
                     example: true
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Not a duplicate:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: invalid_merge
+                      message: Contacts can only be merged when they are duplicates
+                        (matching email or phone). Pass skip_duplicate_validation=true
+                        to override this check.
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -5654,6 +5660,12 @@ paths:
                 value:
                   from: 6762f0d51bb69f9f2193bb7f
                   into: 6762f0d51bb69f9f2193bb80
+              skip duplicate validation:
+                summary: skip duplicate validation
+                value:
+                  from: 6762f0d51bb69f9f2193bb7f
+                  into: 6762f0d51bb69f9f2193bb80
+                  skip_duplicate_validation: true
   "/contacts/search":
     post:
       summary: Search contacts
@@ -6510,7 +6522,7 @@ paths:
                       tags:
                         type: tag.list
                         tags: []
-                      priority: not_priority
+                      priority: none
                       sla_applied:
                       statistics:
                       conversation_rating:
@@ -6751,7 +6763,7 @@ paths:
                         applied_by:
                           type: contact
                           id: '1a2b3c'
-                    priority: not_priority
+                    priority: none
                     sla_applied:
                     statistics:
                     conversation_rating:
@@ -7000,7 +7012,7 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
-                    priority: not_priority
+                    priority: none
                     sla_applied:
                     statistics:
                     conversation_rating:
@@ -7097,7 +7109,7 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
-                    priority: not_priority
+                    priority: none
                     sla_applied:
                     statistics:
                     conversation_rating:
@@ -7426,7 +7438,7 @@ paths:
                       tags:
                         type: tag.list
                         tags: []
-                      priority: not_priority
+                      priority: none
                       sla_applied:
                       statistics:
                       conversation_rating:
@@ -7534,7 +7546,7 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
-                    priority: not_priority
+                    priority: none
                     sla_applied:
                     statistics:
                     conversation_rating:
@@ -7610,7 +7622,7 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
-                    priority: not_priority
+                    priority: none
                     sla_applied:
                     statistics:
                     conversation_rating:
@@ -7698,7 +7710,7 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
-                    priority: not_priority
+                    priority: none
                     sla_applied:
                     statistics:
                     conversation_rating:
@@ -7777,7 +7789,7 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
-                    priority: not_priority
+                    priority: none
                     sla_applied:
                     statistics:
                     conversation_rating:
@@ -7977,7 +7989,7 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
-                    priority: not_priority
+                    priority: none
                     sla_applied:
                     statistics:
                     conversation_rating:
@@ -8053,7 +8065,7 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
-                    priority: not_priority
+                    priority: none
                     sla_applied:
                     statistics:
                     conversation_rating:
@@ -8129,7 +8141,7 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
-                    priority: not_priority
+                    priority: none
                     sla_applied:
                     statistics:
                     conversation_rating:
@@ -8205,7 +8217,7 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
-                    priority: not_priority
+                    priority: none
                     sla_applied:
                     statistics:
                     conversation_rating:
@@ -8692,7 +8704,7 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
-                    priority: not_priority
+                    priority: none
                     sla_applied:
                     statistics:
                     conversation_rating:
@@ -8837,8 +8849,8 @@ paths:
                       - type: contact
                         id: 6762f2041bb69f9f2193bc0c
                         external_id: '70'
-                    admin_assignee_id: '0'
-                    team_assignee_id: '0'
+                    admin_assignee_id: 0
+                    team_assignee_id: 0
                     created_at: 1734537732
                     updated_at: 1734537737
                     ticket_parts:
@@ -8912,6 +8924,766 @@ paths:
                 summary: Bad request
                 value:
                   ticket_type_id: '54'
+  "/conversations/attributes":
+    get:
+      summary: List all conversation attributes
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: include_archived
+        in: query
+        required: false
+        description: Include archived attributes in the list. Default `false`.
+        schema:
+          type: boolean
+        example: false
+      tags:
+      - Conversations Attributes
+      operationId: listConversationAttributes
+      description: You can fetch a list of all conversation attributes for your workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - type: conversation_attribute
+                      id: 3
+                      name: test 2
+                      description: ''
+                      data_type: string
+                      required: false
+                      visible_to_team_ids: []
+                      archived: false
+                      created_at: 1777473061
+                      updated_at: 1777473061
+                      admin_id: '16'
+                      multiline: false
+                    - type: conversation_attribute
+                      id: 2
+                      name: test list
+                      description: ''
+                      data_type: list
+                      required: false
+                      visible_to_team_ids: []
+                      archived: false
+                      created_at: 1777472538
+                      updated_at: 1777537799
+                      admin_id: '16'
+                      options:
+                      - id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                        label: '1'
+                        archived: false
+                      - id: b2c3d4e5-f6a7-8901-bcde-f01234567891
+                        label: '2'
+                        archived: false
+                      - id: c3d4e5f6-a7b8-9012-cdef-012345678912
+                        label: '3'
+                        archived: false
+                    - type: conversation_attribute
+                      id: 6
+                      name: Ref to Test
+                      description: ''
+                      data_type: relationship
+                      required: false
+                      visible_to_team_ids: []
+                      archived: false
+                      created_at: 1777547482
+                      updated_at: 1777547482
+                      admin_id: '16'
+                      reference:
+                        type: many
+                        object_type_id: Test_Object
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 310f55b0-2660-43e8-bed4-7e82b2f40920
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create a conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Conversations Attributes
+      operationId: createConversationAttribute
+      description: Create a new conversation attribute.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 8
+                    name: api_test_attr
+                    description: Created via API test
+                    data_type: string
+                    required: false
+                    visible_to_team_ids: []
+                    archived: false
+                    created_at: 1778239701
+                    updated_at: 1778239701
+                    admin_id: '16'
+                    multiline: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '422':
+          description: Invalid data_type
+          content:
+            application/json:
+              examples:
+                Invalid data_type:
+                  value:
+                    type: error.list
+                    request_id: 4be81317-ba5a-455a-a80d-862fe4ad888b
+                    errors:
+                    - code: parameter_invalid
+                      message: "data_type 'invalid_type' is not valid. Allowed types: string, integer, list, decimal, boolean, datetime, relationship, files"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 310f55b0-2660-43e8-bed4-7e82b2f40920
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_conversation_attribute_request"
+            examples:
+              Create string attribute:
+                summary: Create a string attribute
+                value:
+                  name: api_test_attr
+                  data_type: string
+                  description: Created via API test
+  "/conversations/attributes/{id}":
+    get:
+      summary: Get a conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The conversation attribute id
+        example: 3
+        schema:
+          type: integer
+      tags:
+      - Conversations Attributes
+      operationId: getConversationAttribute
+      description: Retrieve a single conversation attribute by ID.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 3
+                    name: test 2
+                    description: ''
+                    data_type: string
+                    required: false
+                    visible_to_team_ids: []
+                    archived: false
+                    created_at: 1777473061
+                    updated_at: 1777473061
+                    admin_id: '16'
+                    multiline: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '404':
+          description: Conversation attribute not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: Conversation attribute not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 310f55b0-2660-43e8-bed4-7e82b2f40920
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update a conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The conversation attribute id
+        example: 8
+        schema:
+          type: integer
+      tags:
+      - Conversations Attributes
+      operationId: updateConversationAttribute
+      description: Update an existing conversation attribute.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 8
+                    name: api_test_renamed
+                    description: Updated via API
+                    data_type: string
+                    required: false
+                    visible_to_team_ids: []
+                    archived: false
+                    created_at: 1778239701
+                    updated_at: 1778239718
+                    admin_id: '16'
+                    multiline: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '404':
+          description: Conversation attribute not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: Conversation attribute not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 310f55b0-2660-43e8-bed4-7e82b2f40920
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_conversation_attribute_request"
+            examples:
+              Update name:
+                summary: Update name and description
+                value:
+                  name: api_test_renamed
+                  description: Updated via API
+    delete:
+      summary: Delete (archive) a conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The conversation attribute id
+        example: 8
+        schema:
+          type: integer
+      tags:
+      - Conversations Attributes
+      operationId: deleteConversationAttribute
+      description: "Archive a conversation attribute (soft delete). The attribute is marked as archived but not permanently deleted."
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 8
+                    name: api_test_renamed
+                    description: Updated via API
+                    data_type: string
+                    required: false
+                    visible_to_team_ids: []
+                    archived: true
+                    created_at: 1778239701
+                    updated_at: 1778239721
+                    admin_id: '16'
+                    multiline: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '404':
+          description: Conversation attribute not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: Conversation attribute not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 310f55b0-2660-43e8-bed4-7e82b2f40920
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/conversations/attributes/{id}/options":
+    post:
+      summary: Add an option to a list conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The conversation attribute id
+        example: 2
+        schema:
+          type: integer
+      tags:
+      - Conversations Attributes
+      operationId: createConversationAttributeOption
+      description: Add a new option to a list-type conversation attribute. Returns the full attribute with the updated options array.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 2
+                    name: test list
+                    description: ''
+                    data_type: list
+                    required: false
+                    visible_to_team_ids: []
+                    archived: false
+                    created_at: 1777472538
+                    updated_at: 1778240000
+                    admin_id: '16'
+                    options:
+                    - id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      label: '1'
+                      archived: false
+                    - id: b2c3d4e5-f6a7-8901-bcde-f01234567891
+                      label: '2'
+                      archived: false
+                    - id: c3d4e5f6-a7b8-9012-cdef-012345678912
+                      label: '3'
+                      archived: false
+                    - id: d4e5f6a7-b8c9-0123-defa-123456789023
+                      label: High
+                      archived: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '404':
+          description: Conversation attribute not found
+          content:
+            application/json:
+              examples:
+                Not found:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: Conversation attribute not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              examples:
+                Not a list type:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: Options can only be managed on list attributes
+                Label required:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: label is required
+                Label not a string:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: label must be a string
+                Unexpected key in body:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: only 'label' is accepted
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 310f55b0-2660-43e8-bed4-7e82b2f40920
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_conversation_attribute_option_request"
+            examples:
+              Add option:
+                summary: Add a new list option
+                value:
+                  label: High
+  "/conversations/attributes/{id}/options/{option_id}":
+    put:
+      summary: Update an option on a list conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The conversation attribute id
+        example: 2
+        schema:
+          type: integer
+      - name: option_id
+        in: path
+        required: true
+        description: The UUID of the list option to update (from the `id` field in the options array)
+        example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        schema:
+          type: string
+      tags:
+      - Conversations Attributes
+      operationId: updateConversationAttributeOption
+      description: Update the label of a single option on a list-type conversation attribute. Returns the full attribute with the updated options array.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 2
+                    name: test list
+                    description: ''
+                    data_type: list
+                    required: false
+                    visible_to_team_ids: []
+                    archived: false
+                    created_at: 1777472538
+                    updated_at: 1778240001
+                    admin_id: '16'
+                    options:
+                    - id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      label: Renamed
+                      archived: false
+                    - id: b2c3d4e5-f6a7-8901-bcde-f01234567891
+                      label: '2'
+                      archived: false
+                    - id: c3d4e5f6-a7b8-9012-cdef-012345678912
+                      label: '3'
+                      archived: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '404':
+          description: Conversation attribute or option not found
+          content:
+            application/json:
+              examples:
+                Attribute not found:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: Conversation attribute not found
+                Option not found:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: List option not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              examples:
+                Not a list type:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: Options can only be managed on list attributes
+                Label required:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: label is required
+                Label not a string:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: label must be a string
+                Unexpected key in body:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: only 'label' is accepted
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 310f55b0-2660-43e8-bed4-7e82b2f40920
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_conversation_attribute_option_request"
+            examples:
+              Rename option:
+                summary: Rename an existing option
+                value:
+                  label: Renamed
+    delete:
+      summary: Archive an option on a list conversation attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The conversation attribute id
+        example: 2
+        schema:
+          type: integer
+      - name: option_id
+        in: path
+        required: true
+        description: The UUID of the list option to archive (from the `id` field in the options array)
+        example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        schema:
+          type: string
+      tags:
+      - Conversations Attributes
+      operationId: deleteConversationAttributeOption
+      description: "Archive a single option on a list-type conversation attribute (soft delete). The option remains in the response with `archived: true`. Returns the full attribute with the updated options array."
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: conversation_attribute
+                    id: 2
+                    name: test list
+                    description: ''
+                    data_type: list
+                    required: false
+                    visible_to_team_ids: []
+                    archived: false
+                    created_at: 1777472538
+                    updated_at: 1778240002
+                    admin_id: '16'
+                    options:
+                    - id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      label: '1'
+                      archived: true
+                    - id: b2c3d4e5-f6a7-8901-bcde-f01234567891
+                      label: '2'
+                      archived: false
+                    - id: c3d4e5f6-a7b8-9012-cdef-012345678912
+                      label: '3'
+                      archived: false
+              schema:
+                "$ref": "#/components/schemas/conversation_attribute"
+        '404':
+          description: Conversation attribute or option not found
+          content:
+            application/json:
+              examples:
+                Attribute not found:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: Conversation attribute not found
+                Option not found:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: conversation_attribute_not_found
+                      message: List option not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              examples:
+                Not a list type:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: Options can only be managed on list attributes
+                Minimum options:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: A list attribute must have at least 2 active options
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 310f55b0-2660-43e8-bed4-7e82b2f40920
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/custom_object_instances/{custom_object_type_identifier}":
     parameters:
     - name: custom_object_type_identifier
@@ -9160,13 +9932,12 @@ paths:
       - name: model
         in: query
         required: false
-        description: Specify the data attribute model to return.
+        description: "Specify the data attribute model to return. For conversation attributes, use GET /conversations/attributes instead."
         schema:
           type: string
           enum:
           - contact
           - company
-          - conversation
         example: company
       - name: include_archived
         in: query
@@ -9179,8 +9950,12 @@ paths:
       tags:
       - Data Attributes
       operationId: lisDataAttributes
-      description: You can fetch a list of all data attributes belonging to a workspace
-        for contacts, companies or conversations.
+      description: |
+        You can fetch a list of all data attributes belonging to a workspace for contacts or companies.
+
+        {% admonition type="warning" %}
+        Conversation attributes are no longer returned by this endpoint. Calling without a `model` parameter no longer includes them, and `model=conversation` returns a `422` error. Use `GET /conversations/attributes` instead.
+        {% /admonition %}
       responses:
         '200':
           description: Successful response
@@ -9420,6 +10195,20 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity - model=conversation is no longer supported
+          content:
+            application/json:
+              examples:
+                Deprecated conversation model:
+                  value:
+                    type: error.list
+                    request_id: b7912266-b12e-4d12-b2ce-9cd44d33f0c0
+                    errors:
+                    - code: parameter_invalid
+                      message: model=conversation is no longer supported. Use GET /conversations/attributes instead
               schema:
                 "$ref": "#/components/schemas/error"
     post:
@@ -11638,8 +12427,12 @@ paths:
                     type: tag
                     id: '105'
                     name: test
+                    users: []
+                    companies:
+                    - id: valid-123
+                      tagged: true
               schema:
-                "$ref": "#/components/schemas/tag_basic"
+                "$ref": "#/components/schemas/tag_create_response"
         '400':
           description: Invalid parameters
           content:
@@ -11652,27 +12445,6 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: invalid tag parameters
-              schema:
-                "$ref": "#/components/schemas/error"
-        '404':
-          description: User  not found
-          content:
-            application/json:
-              examples:
-                Company not found:
-                  value:
-                    type: error.list
-                    request_id: 23c998cc-32b8-435d-9653-932c15809460
-                    errors:
-                    - code: company_not_found
-                      message: Company Not Found
-                User  not found:
-                  value:
-                    type: error.list
-                    request_id: 7358f78d-f122-45dd-a2e1-c2261300c38a
-                    errors:
-                    - code: not_found
-                      message: User Not Found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -13297,8 +14069,8 @@ paths:
                       - type: contact
                         id: 6762f2d81bb69f9f2193bc54
                         external_id: '70'
-                    admin_assignee_id: '0'
-                    team_assignee_id: '0'
+                    admin_assignee_id: 0
+                    team_assignee_id: 0
                     created_at: 1734537944
                     updated_at: 1734537946
                     ticket_parts:
@@ -13539,8 +14311,8 @@ paths:
                       - type: contact
                         id: 6762f2dd1bb69f9f2193bc55
                         external_id: 8df1fa21-b41d-4621-9229-d6f7a3a590ce
-                    admin_assignee_id: '991268013'
-                    team_assignee_id: '0'
+                    admin_assignee_id: 991268013
+                    team_assignee_id: 0
                     created_at: 1734537950
                     updated_at: 1734537955
                     ticket_parts:
@@ -13845,8 +14617,8 @@ paths:
                       - type: contact
                         id: 6762f2f61bb69f9f2193bc59
                         external_id: b16afa36-2637-4880-adee-a46d145bc27f
-                    admin_assignee_id: '0'
-                    team_assignee_id: '0'
+                    admin_assignee_id: 0
+                    team_assignee_id: 0
                     created_at: 1734537974
                     updated_at: 1734537976
                     ticket_parts:
@@ -14137,8 +14909,8 @@ paths:
                         - type: contact
                           id: 6762f3061bb69f9f2193bc5b
                           external_id: 9b913927-c084-4391-b1db-098341b5ffe3
-                      admin_assignee_id: '0'
-                      team_assignee_id: '0'
+                      admin_assignee_id: 0
+                      team_assignee_id: 0
                       created_at: 1734537990
                       updated_at: 1734537992
                       ticket_parts:
@@ -15983,12 +16755,6 @@ components:
           description: The URL of the article. For multilingual articles, this will
             be the URL of the default language's content.
           example: http://intercom.test/help/en/articles/3-default-language
-        parent_id:
-          type: integer
-          nullable: true
-          description: The id of the article's parent collection or section. An article
-            without this field stands alone.
-          example: '125685'
         parent_ids:
           type: array
           description: The ids of the article's parent collections or sections. An
@@ -15998,11 +16764,6 @@ components:
           example:
           - 18
           - 19
-        parent_type:
-          type: string
-          nullable: true
-          description: The type of parent, which can either be a `collection` or `section`.
-          example: collection
         default_locale:
           type: string
           description: The default locale of the help center. This field is only returned
@@ -16959,11 +17720,11 @@ components:
           description: The contacts name.
           example: John Doe
         owner_id:
-          type: integer
+          type: string
           nullable: true
           description: The id of an admin that has been assigned account ownership
             of the contact.
-          example: 123
+          example: "321"
         has_hard_bounced:
           type: boolean
           description: Whether the contact has had an email sent to them hard bounce.
@@ -17800,21 +18561,23 @@ components:
         priority:
           type: string
           enum:
-          - priority
-          - not_priority
-          description: If marked as priority, it will return priority or else not_priority.
-          example: priority
+          - none
+          - low
+          - medium
+          - high
+          - urgent
+          description: The priority level of the conversation. Returns one of none,
+            low, medium, high, or urgent.
+          example: high
         admin_assignee_id:
           type: integer
-          nullable: true
           description: The id of the admin assigned to the conversation. If it's not
-            assigned to an admin it will return null.
+            assigned to an admin it will return 0.
           example: 0
         team_assignee_id:
           type: integer
-          nullable: true
           description: The id of the team assigned to the conversation. If it's not
-            assigned to a team it will return null.
+            assigned to a team it will return 0.
           example: 5017691
         company:
           "$ref": "#/components/schemas/company"
@@ -17914,21 +18677,23 @@ components:
         priority:
           type: string
           enum:
-          - priority
-          - not_priority
-          description: If marked as priority, it will return priority or else not_priority.
-          example: priority
+          - none
+          - low
+          - medium
+          - high
+          - urgent
+          description: The priority level of the conversation. Returns one of none,
+            low, medium, high, or urgent.
+          example: high
         admin_assignee_id:
           type: integer
-          nullable: true
           description: The id of the admin assigned to the conversation. If it's not
-            assigned to an admin it will return null.
+            assigned to an admin it will return 0.
           example: 0
         team_assignee_id:
           type: integer
-          nullable: true
           description: The id of the team assigned to the conversation. If it's not
-            assigned to a team it will return null.
+            assigned to a team it will return 0.
           example: 5017691
         company:
           "$ref": "#/components/schemas/company"
@@ -18710,11 +19475,11 @@ components:
             (either where the Intercom Messenger was installed or when specified manually).
           example: 1571672154
         owner_id:
-          type: integer
+          type: string
           nullable: true
           description: The id of an admin that has been assigned account ownership
             of the contact
-          example: 123
+          example: "321"
         unsubscribed_from_emails:
           type: boolean
           nullable: true
@@ -19800,10 +20565,10 @@ components:
       type: object
       x-tags:
       - Data Attributes
-      description: Data Attributes are metadata used to describe your contact, company
-        and conversation models. These include standard and custom attributes. By
-        using the data attributes endpoint, you can get the global list of attributes
-        for your workspace, as well as create and archive custom attributes.
+      description: Data Attributes are metadata used to describe your contact and
+        company models. These include standard and custom attributes. By using the
+        data attributes endpoint, you can get the global list of attributes for your
+        workspace, as well as create and archive custom attributes.
       properties:
         type:
           type: string
@@ -19897,8 +20662,8 @@ components:
     data_attribute_list:
       title: Data Attribute List
       type: object
-      description: A list of all data attributes belonging to a workspace for contacts,
-        companies or conversations.
+      description: A list of all data attributes belonging to a workspace for contacts
+        or companies.
       properties:
         type:
           type: string
@@ -19911,6 +20676,460 @@ components:
           description: A list of data attributes
           items:
             "$ref": "#/components/schemas/data_attribute"
+    conversation_attribute_base:
+      title: Conversation Attribute Base
+      type: object
+      properties:
+        type:
+          type: string
+          description: "Value is `conversation_attribute`."
+          enum:
+          - conversation_attribute
+          example: conversation_attribute
+        id:
+          type: integer
+          description: The unique identifier for the conversation attribute.
+          example: 8
+        name:
+          type: string
+          description: Name of the attribute.
+          example: api_test_attr
+        description:
+          type: string
+          description: Readable description of the attribute.
+          example: Created via API test
+        data_type:
+          type: string
+          description: "The data type of the attribute. Allowed types: string, integer, list, decimal, boolean, datetime, relationship, files."
+          enum:
+          - string
+          - integer
+          - list
+          - decimal
+          - boolean
+          - datetime
+          - relationship
+          - files
+          example: string
+        required:
+          type: boolean
+          description: Whether this attribute is required.
+          example: false
+        visible_to_team_ids:
+          type: array
+          description: Team IDs that can see this attribute. Empty array means all teams.
+          items:
+            type: string
+          example: []
+        archived:
+          type: boolean
+          description: Whether this attribute is archived.
+          example: false
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the attribute was created as a UTC Unix timestamp.
+          example: 1778239701
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time the attribute was last updated as a UTC Unix timestamp.
+          example: 1778239701
+        admin_id:
+          type: string
+          description: ID of the admin who created the attribute.
+          example: '16'
+    conversation_attribute_string_type:
+      title: Conversation Attribute (String)
+      allOf:
+      - "$ref": "#/components/schemas/conversation_attribute_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - string
+          multiline:
+            type: boolean
+            description: Whether this string attribute is multiline.
+            example: false
+    conversation_attribute_integer_type:
+      title: Conversation Attribute (Integer)
+      allOf:
+      - "$ref": "#/components/schemas/conversation_attribute_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - integer
+    conversation_attribute_list_type:
+      title: Conversation Attribute (List)
+      allOf:
+      - "$ref": "#/components/schemas/conversation_attribute_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - list
+          options:
+            type: array
+            description: Predefined options for this attribute. Each option has a unique UUID used to identify it in the options management endpoints.
+            items:
+              "$ref": "#/components/schemas/conversation_attribute_option"
+    conversation_attribute_decimal_type:
+      title: Conversation Attribute (Decimal)
+      allOf:
+      - "$ref": "#/components/schemas/conversation_attribute_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - decimal
+    conversation_attribute_boolean_type:
+      title: Conversation Attribute (Boolean)
+      allOf:
+      - "$ref": "#/components/schemas/conversation_attribute_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - boolean
+    conversation_attribute_datetime_type:
+      title: Conversation Attribute (Datetime)
+      allOf:
+      - "$ref": "#/components/schemas/conversation_attribute_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - datetime
+    conversation_attribute_relationship_type:
+      title: Conversation Attribute (Relationship)
+      allOf:
+      - "$ref": "#/components/schemas/conversation_attribute_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - relationship
+          reference:
+            type: object
+            description: Reference configuration for related objects.
+            properties:
+              type:
+                type: string
+                description: "The cardinality of the relationship: `one` or `many`."
+                enum:
+                - one
+                - many
+                example: many
+              object_type_id:
+                type: string
+                description: The ID of the related custom object type.
+                example: Test_Object
+    conversation_attribute_files_type:
+      title: Conversation Attribute (Files)
+      allOf:
+      - "$ref": "#/components/schemas/conversation_attribute_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - files
+    conversation_attribute:
+      title: Conversation Attribute
+      x-tags:
+      - Conversations Attributes
+      description: "Conversation Attributes represent custom metadata fields for conversations. They support type-specific properties: strings (multiline), lists (options), and relationships (reference)."
+      discriminator:
+        propertyName: data_type
+        mapping:
+          string: "#/components/schemas/conversation_attribute_string_type"
+          integer: "#/components/schemas/conversation_attribute_integer_type"
+          list: "#/components/schemas/conversation_attribute_list_type"
+          decimal: "#/components/schemas/conversation_attribute_decimal_type"
+          boolean: "#/components/schemas/conversation_attribute_boolean_type"
+          datetime: "#/components/schemas/conversation_attribute_datetime_type"
+          relationship: "#/components/schemas/conversation_attribute_relationship_type"
+          files: "#/components/schemas/conversation_attribute_files_type"
+      oneOf:
+      - "$ref": "#/components/schemas/conversation_attribute_string_type"
+      - "$ref": "#/components/schemas/conversation_attribute_integer_type"
+      - "$ref": "#/components/schemas/conversation_attribute_list_type"
+      - "$ref": "#/components/schemas/conversation_attribute_decimal_type"
+      - "$ref": "#/components/schemas/conversation_attribute_boolean_type"
+      - "$ref": "#/components/schemas/conversation_attribute_datetime_type"
+      - "$ref": "#/components/schemas/conversation_attribute_relationship_type"
+      - "$ref": "#/components/schemas/conversation_attribute_files_type"
+    conversation_attribute_list:
+      title: Conversation Attribute List
+      type: object
+      description: A list of all conversation attributes belonging to a workspace.
+      properties:
+        type:
+          type: string
+          description: The type of the object.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: A list of conversation attributes.
+          items:
+            "$ref": "#/components/schemas/conversation_attribute"
+    conversation_attribute_option:
+      title: Conversation Attribute Option
+      type: object
+      description: A single option on a list-type conversation attribute.
+      properties:
+        id:
+          type: string
+          description: The unique UUID identifier for this option. Use this value as `option_id` in the options management endpoints.
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        label:
+          type: string
+          description: The display label for the option.
+          example: High
+        archived:
+          type: boolean
+          description: Whether this option is archived (soft-deleted).
+          example: false
+    create_conversation_attribute_option_request:
+      title: Create Conversation Attribute Option Request
+      type: object
+      description: Payload for adding a new option to a list-type conversation attribute.
+      required:
+      - label
+      properties:
+        label:
+          type: string
+          description: The label for the new option.
+          example: High
+    update_conversation_attribute_option_request:
+      title: Update Conversation Attribute Option Request
+      type: object
+      description: Payload for renaming a list option on a conversation attribute.
+      required:
+      - label
+      properties:
+        label:
+          type: string
+          description: The updated label for the option.
+          example: Renamed
+    create_conversation_attribute_request_base:
+      title: Create Conversation Attribute Request Base
+      type: object
+      required:
+      - name
+      - data_type
+      properties:
+        name:
+          type: string
+          description: Name of the attribute.
+          example: api_test_attr
+        description:
+          type: string
+          description: Readable description of the attribute.
+          example: Created via API test
+        data_type:
+          type: string
+          description: "The data type of the attribute. Allowed types: string, integer, list, decimal, boolean, datetime, relationship, files."
+          enum:
+          - string
+          - integer
+          - list
+          - decimal
+          - boolean
+          - datetime
+          - relationship
+          - files
+          example: string
+        required:
+          type: boolean
+          description: Whether this attribute is required.
+          example: false
+        visible_to_team_ids:
+          type: array
+          description: Team IDs that can see this attribute. Empty array means all teams.
+          items:
+            type: string
+          example: []
+    create_conversation_attribute_string_request:
+      title: Create Conversation Attribute Request (String)
+      allOf:
+      - "$ref": "#/components/schemas/create_conversation_attribute_request_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - string
+          multiline:
+            type: boolean
+            description: Whether this string attribute is multiline.
+            example: false
+    create_conversation_attribute_integer_request:
+      title: Create Conversation Attribute Request (Integer)
+      allOf:
+      - "$ref": "#/components/schemas/create_conversation_attribute_request_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - integer
+    create_conversation_attribute_list_request:
+      title: Create Conversation Attribute Request (List)
+      allOf:
+      - "$ref": "#/components/schemas/create_conversation_attribute_request_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - list
+          options:
+            type: array
+            description: Initial options for this list attribute. Each option must have a `label`.
+            items:
+              "$ref": "#/components/schemas/create_conversation_attribute_option_request"
+    create_conversation_attribute_decimal_request:
+      title: Create Conversation Attribute Request (Decimal)
+      allOf:
+      - "$ref": "#/components/schemas/create_conversation_attribute_request_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - decimal
+    create_conversation_attribute_boolean_request:
+      title: Create Conversation Attribute Request (Boolean)
+      allOf:
+      - "$ref": "#/components/schemas/create_conversation_attribute_request_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - boolean
+    create_conversation_attribute_datetime_request:
+      title: Create Conversation Attribute Request (Datetime)
+      allOf:
+      - "$ref": "#/components/schemas/create_conversation_attribute_request_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - datetime
+    create_conversation_attribute_relationship_request:
+      title: Create Conversation Attribute Request (Relationship)
+      allOf:
+      - "$ref": "#/components/schemas/create_conversation_attribute_request_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - relationship
+          reference:
+            type: object
+            description: Reference configuration for related objects.
+            required:
+            - type
+            properties:
+              type:
+                type: string
+                description: "The cardinality of the relationship: `one` or `many`."
+                enum:
+                - one
+                - many
+              object_type_id:
+                type: string
+                description: The ID of the related custom object type.
+    create_conversation_attribute_files_request:
+      title: Create Conversation Attribute Request (Files)
+      allOf:
+      - "$ref": "#/components/schemas/create_conversation_attribute_request_base"
+      - type: object
+        properties:
+          data_type:
+            type: string
+            enum:
+            - files
+    create_conversation_attribute_request:
+      title: Create Conversation Attribute Request
+      description: Payload for creating a new conversation attribute.
+      discriminator:
+        propertyName: data_type
+        mapping:
+          string: "#/components/schemas/create_conversation_attribute_string_request"
+          integer: "#/components/schemas/create_conversation_attribute_integer_request"
+          list: "#/components/schemas/create_conversation_attribute_list_request"
+          decimal: "#/components/schemas/create_conversation_attribute_decimal_request"
+          boolean: "#/components/schemas/create_conversation_attribute_boolean_request"
+          datetime: "#/components/schemas/create_conversation_attribute_datetime_request"
+          relationship: "#/components/schemas/create_conversation_attribute_relationship_request"
+          files: "#/components/schemas/create_conversation_attribute_files_request"
+      oneOf:
+      - "$ref": "#/components/schemas/create_conversation_attribute_string_request"
+      - "$ref": "#/components/schemas/create_conversation_attribute_integer_request"
+      - "$ref": "#/components/schemas/create_conversation_attribute_list_request"
+      - "$ref": "#/components/schemas/create_conversation_attribute_decimal_request"
+      - "$ref": "#/components/schemas/create_conversation_attribute_boolean_request"
+      - "$ref": "#/components/schemas/create_conversation_attribute_datetime_request"
+      - "$ref": "#/components/schemas/create_conversation_attribute_relationship_request"
+      - "$ref": "#/components/schemas/create_conversation_attribute_files_request"
+    update_conversation_attribute_request:
+      title: Update Conversation Attribute Request
+      type: object
+      description: Payload for updating a conversation attribute.
+      properties:
+        name:
+          type: string
+          description: Name of the attribute.
+          example: api_test_renamed
+        description:
+          type: string
+          description: Readable description of the attribute.
+          example: Updated via API
+        multiline:
+          type: boolean
+          description: "(String data type only) Whether this string attribute is multiline."
+          example: false
+        required:
+          type: boolean
+          description: Whether this attribute is required.
+          example: false
+        visible_to_team_ids:
+          type: array
+          description: Team IDs that can see this attribute. Empty array means all teams.
+          items:
+            type: string
+          example: []
+        reference:
+          type: object
+          description: "(Relationship data type only) Reference configuration for related objects."
+          required:
+          - type
+          properties:
+            type:
+              type: string
+              description: "The cardinality of the relationship: `one` or `many`."
+              enum:
+              - one
+              - many
+            object_type_id:
+              type: string
+              description: The ID of the related custom object type.
     data_event:
       title: Data Event
       type: object
@@ -21501,6 +22720,11 @@ components:
           description: The unique identifier for the contact to merge into. Must be
             a user.
           example: 5ba682d23d7cf92bef87bfd4
+        skip_duplicate_validation:
+          type: boolean
+          description: Set to `true` to merge two contacts that are not duplicates
+            (they share no matching email or phone).
+          example: true
     message:
       type: object
       title: Message
@@ -22475,6 +23699,46 @@ components:
           type: string
           description: The name of the tag
           example: Test tag
+    tag_create_response:
+      title: Create or Update Tag Response
+      description: The response for creating or updating a tag, including the entities
+        that were tagged or untagged.
+      allOf:
+      - "$ref": "#/components/schemas/tag_basic"
+      - type: object
+        properties:
+          users:
+            type: array
+            nullable: true
+            description: The users that were tagged or untagged.
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: The Intercom ID of the user.
+                  example: '6329e838deab40166d1a53f7'
+                tagged:
+                  type: boolean
+                  description: Whether the user was tagged (true) or untagged (false).
+                  example: true
+            example: []
+          companies:
+            type: array
+            nullable: true
+            description: The companies that were tagged or untagged.
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: The Intercom ID of the company.
+                  example: '6329e838deab40166d1a5400'
+                tagged:
+                  type: boolean
+                  description: Whether the company was tagged (true) or untagged (false).
+                  example: true
+            example: []
     tag_company_request:
       description: You can tag a single company or a list of companies.
       type: object
@@ -22698,13 +23962,13 @@ components:
         contacts:
           "$ref": "#/components/schemas/ticket_contacts"
         admin_assignee_id:
-          type: string
-          description: The id representing the admin assigned to the ticket.
-          example: '1295'
+          type: integer
+          description: The id representing the admin assigned to the ticket. If it's not assigned to an admin it will return 0.
+          example: 1295
         team_assignee_id:
-          type: string
-          description: The id representing the team assigned to the ticket.
-          example: '1295'
+          type: integer
+          description: The id representing the team assigned to the ticket. If it's not assigned to a team it will return 0.
+          example: 1295
         created_at:
           type: integer
           format: date-time
@@ -23554,11 +24818,11 @@ components:
             (either where the Intercom Messenger was installed or when specified manually).
           example: 1571672154
         owner_id:
-          type: integer
+          type: string
           nullable: true
           description: The id of an admin that has been assigned account ownership
             of the contact
-          example: 123
+          example: "321"
         unsubscribed_from_emails:
           type: boolean
           nullable: true
