@@ -415,6 +415,7 @@ paths:
                     event_types:
                     - admin_conversation_assignment_limit_change
                     - admin_ticket_assignment_limit_change
+                    - admin_avatar_change
                     - admin_away_mode_change
                     - admin_deletion
                     - admin_deprovisioned
@@ -455,6 +456,7 @@ paths:
                     - campaign_deletion
                     - campaign_state_change
                     - conversation_part_deletion
+                    - conversation_pdf_export
                     - conversation_topic_change
                     - conversation_topic_creation
                     - conversation_topic_deletion
@@ -8233,6 +8235,108 @@ paths:
                   from: 6762f0d51bb69f9f2193bb7f
                   into: 6762f0d51bb69f9f2193bb80
                   skip_duplicate_validation: true
+  "/contacts/merge/preview":
+    post:
+      summary: Preview a contact merge
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Contacts
+      operationId: PreviewMergeContact
+      description: |
+        Preview the result of merging one contact into another without applying the merge. This is a read-only dry run: it reports whether the merge is allowed and, if so, exactly what would change, **without modifying any data**.
+
+        Send the same `from` (a `lead`) and `into` (a `user`) contact IDs you would pass to [Merge a lead and a user](/docs/references/preview/rest-api/api.intercom.io/contacts/mergecontact).
+
+        - When `allowed` is `true`, the response contains a `summary`: every attribute change (with the resulting value on the surviving contact) and the number of conversations, notes, and tags that would be reassigned.
+        - When `allowed` is `false`, the response contains `reasons`. Each reason has a stable `code` you can branch on and a human-readable `message` you can display.
+
+        {% admonition type="warning" name="Previewing non-duplicate contacts" %}
+        By default a merge requires the two contacts to share an identifier (email, phone, or external ID). Set `skip_duplicate_validation` to `true` to preview a merge of contacts that don't — the same rule the merge endpoint enforces.
+        {% /admonition %}
+
+        When `allowed` is `false`, `reasons[].code` is one of:
+
+        | code | meaning |
+        | --- | --- |
+        | `invalid_merge_role_pair` | The `from`/`into` roles aren't mergeable. `from` must be a lead and `into` a user. |
+        | `no_shared_identifier` | The contacts share no email, phone, or external ID. Set `skip_duplicate_validation` to preview anyway. |
+        | `facebook_user` | Facebook contacts can't be merged. |
+        | `external_lead_channel_not_allowed` | The source is an external-channel lead that isn't eligible for merging. |
+        | `mailing_list` | Contacts created from a mailing list can't be merged. |
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                allowed:
+                  summary: Merge allowed
+                  value:
+                    allowed: true
+                    summary:
+                      attribute_changes:
+                        attributes:
+                        - field: name
+                          outcome: adopted
+                          from_value: Jo
+                          new_into_value: Jo
+                        - field: companies
+                          outcome: merged
+                          from_value:
+                          - Beta
+                          into_value:
+                          - Acme
+                          new_into_value:
+                          - Acme
+                          - Beta
+                        - field: phone
+                          outcome: discarded
+                          from_value: "+1555"
+                          into_value: "+1999"
+                          new_into_value: "+1999"
+                        total_count: 3
+                      reassignments:
+                        conversations: 14
+                        tags: 3
+                        notes: 2
+                blocked:
+                  summary: Merge not allowed
+                  value:
+                    allowed: false
+                    reasons:
+                    - code: no_shared_identifier
+                      message: These contacts don't share a common identifier (email, phone, or external ID), so they aren't recognised as duplicates. Set skip_duplicate_validation to true to preview the merge anyway.
+              schema:
+                "$ref": "#/components/schemas/merge_preview_response"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: ff328c7c-6140-48eb-84dd-bb8960b66cd0
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/merge_preview_request"
+            examples:
+              allowed:
+                summary: successful
+                value:
+                  from: 6762f0d51bb69f9f2193bb7f
+                  into: 6762f0d51bb69f9f2193bb80
   "/contacts/search":
     post:
       summary: Search contacts
@@ -10724,6 +10828,7 @@ paths:
                     type: user
                     id: 6762f11b1bb69f9f2193bba3
                   body: Hello there
+                  brand_id: "123"
               contact_not_found:
                 summary: Contact Not Found
                 value:
@@ -10986,6 +11091,9 @@ paths:
                       recipients:
                       - type: to
                         email: testing-workspace@email.com
+                      reply_to:
+                      - email: replies@example.com
+                        name: Support Team
                       author:
                         type: lead
                         id: '991267645'
@@ -16319,6 +16427,362 @@ paths:
                     errors:
                     - code: execution_result_not_found
                       message: Execution result not found
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/ecommerce/connectors/{id}/catalog":
+    post:
+      summary: Upload a product catalog
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the ecommerce connector.
+        schema:
+          type: string
+          example: '42939'
+      tags:
+      - Ecommerce Connectors
+      operationId: uploadEcommerceCatalog
+      description: |
+        Upload a product catalog to an ecommerce connector. The catalog must be a JSON
+        array of product objects. There are two upload modes:
+
+        **Single-file upload** — POST a single catalog file (up to 99 MB per request).
+        Omit `finalize` and `import_job_id`. Returns `202 Accepted` when sync has started.
+
+        **Multipart upload** — For catalogs that must be split across multiple requests:
+
+        1. POST the first part with `finalize=false` (no `import_job_id`). The response
+           returns an `import_job_id` and `next_part_number`.
+        2. POST each subsequent part with `finalize=false`, the `import_job_id` from step 1,
+           and the `part_number` from the previous response. Each part must be ≤ 99 MB.
+        3. POST with `finalize=true` and the `import_job_id` to complete the upload and
+           start the sync. No catalog file is required in the finalization request.
+
+        Part uploads are idempotent — retrying the same `part_number` does not create
+        a duplicate. If a response is lost, retry with the same `part_number`.
+
+        ## Product object structure
+
+        The catalog file must be a JSON array where each element is a product object.
+        Only `id`, `title`, and `url` are required — all other fields are optional.
+
+        | Field | Type | Required | Description |
+        |---|---|---|---|
+        | `id` | string | ✓ | Your unique product identifier. Used to match products on re-upload so only changed products are re-indexed. Also the delete key — any product ID absent from a new upload is removed from Fin's knowledge. Must be stable across uploads. |
+        | `title` | string | ✓ | Product name. Used by Fin when searching for and recommending products. |
+        | `url` | string | ✓ | Canonical product page URL shown in Fin's product recommendations. Must be a valid `https://` URL. |
+        | `description` | string | | Product description that Fin reads to understand what the product is. HTML formatting is supported and safely sanitized (`description_html` takes precedence if both are provided). This is the primary field Fin uses to match products to shopper questions — a richer description leads to better recommendations. |
+        | `featured_image_url` | string | | Primary product image shown in Fin's recommendation cards. Falls back to the first entry of `image_urls` if not provided. If no valid image can be resolved for a variant, that variant's card is not shown to the shopper. |
+        | `image_urls` | string[] | | Additional product images. Used as a fallback when `featured_image_url` is absent or when a variant has no specific image. |
+        | `price_min` | number | | Lowest price across all variants. If omitted, derived automatically from variant prices. Fin uses this to filter products when a shopper mentions a budget (e.g. "under $100"). Displayed as a range alongside `price_max`, or as a single value if both are equal. |
+        | `price_max` | number | | Highest price across all variants. If omitted, derived from variant prices. Used alongside `price_min` for budget filtering and price display. |
+        | `currency` | string | | ISO 4217 currency code (e.g. `"USD"`, `"EUR"`, `"GBP"`). Defaults to USD if omitted. Used to format prices with the correct symbol in Fin's responses and product cards. |
+        | `in_stock` | boolean | | Whether the product is available to purchase. If omitted, derived from variant stock — the product is in stock if at least one variant has `in_stock: true`. Products with no in-stock variants are hidden from Fin entirely. |
+        | `category_path` | string or string[] | Strongly recommended | Hierarchical category breadcrumb (e.g. `["Clothing", "Outerwear", "Jackets"]`). Fin understands the hierarchy — a shopper asking about "Clothing" sees products from all subcategories underneath it. The most specific category is shown in search results. |
+        | `collections` | string[] | Strongly recommended | Collections or groupings this product belongs to in your store. Fin uses collections to understand your catalog's structure and answer questions like "what's in the sale collection?". |
+        | `tags` | string[] | | Free-form keywords matching how shoppers phrase needs in chat (e.g. `["waterproof", "gift", "plus-size"]`). Complements `category_path` and `collections`. |
+        | `available_options` | object[] | | Option types and their possible values (e.g. `{"name": "Size", "values": ["S", "M", "L"]}`). Fin uses these to understand what choices a shopper can make and to correctly filter variants when asked for a specific size, colour, or other attribute. |
+        | `additional_data` | object | | Custom attributes for your business. Fin uses these to show each customer only relevant products. All keys must be consistent across all products in your catalog — the attribute schema is read from the first product in the file. |
+        | `variants` | object[] | | Individual purchasable variants. Fin recommends specific variants (not just products), so populating variants with accurate stock, price, and option data leads to more precise recommendations. See the variant table below. |
+
+        ### Variant object structure
+
+        Each object in the `variants` array may contain:
+
+        | Field | Type | Required | Description |
+        |---|---|---|---|
+        | `id` | string | ✓ | Unique identifier for this variant within the product. |
+        | `title` | string | | Variant display name shown to shoppers (e.g. `"Small / Blue"`). |
+        | `price` | number | | Price of this specific variant. Fin uses variant prices for precise budget filtering and displays the variant price in recommendation cards. |
+        | `compare_at_price` | number | | Original price before a discount. When provided, Fin will naturally mention the saving (e.g. "down from $129 to $99"). |
+        | `in_stock` | boolean | | Whether this variant is currently available. Out-of-stock variants are not shown in Fin's recommendation cards and Fin will not suggest them to shoppers. |
+        | `image_url` | string | | Image specific to this variant. Takes precedence over the product's `featured_image_url`. Falls back to `featured_image_url`, then `image_urls`. If no valid image can be resolved, this variant's recommendation card will not be shown. |
+        | `selected_options` | object[] | | The specific option values that define this variant (e.g. `[{"name": "Size", "value": "Small"}, {"name": "Color", "value": "Blue"}]`). Fin uses these to match shopper requests like "do you have this in medium?" to the correct variant. |
+        | `url` | string | | Direct link to this variant's page. Takes precedence over the product URL in recommendation cards. If omitted, constructed automatically as `{product_url}?variant={id}`. |
+
+        ### Example catalog file
+
+        ```json
+        [
+          {
+            "id": "prod-12345",
+            "title": "Classic Cotton T-Shirt",
+            "url": "https://example.com/products/classic-cotton-t-shirt",
+            "description": "A comfortable everyday t-shirt.",
+            "featured_image_url": "https://cdn.example.com/images/t-shirt.jpg",
+            "price_min": 19.99,
+            "price_max": 29.99,
+            "currency": "USD",
+            "in_stock": true,
+            "tags": ["organic", "bestseller"],
+            "collections": ["Summer Collection"],
+            "category_path": "Clothing > T-Shirts",
+            "available_options": [
+              {"name": "Size", "values": ["S", "M", "L"]},
+              {"name": "Color", "values": ["White", "Blue"]}
+            ],
+            "variants": [
+              {
+                "id": "var-001",
+                "title": "S / White",
+                "price": 19.99,
+                "in_stock": true,
+                "selected_options": [
+                  {"name": "Size", "value": "S"},
+                  {"name": "Color", "value": "White"}
+                ]
+              },
+              {
+                "id": "var-002",
+                "title": "M / Blue",
+                "price": 29.99,
+                "in_stock": true,
+                "selected_options": [
+                  {"name": "Size", "value": "M"},
+                  {"name": "Color", "value": "Blue"}
+                ]
+              }
+            ],
+            "additional_data": {
+              "sku": "TSHIRT-WHT-S",
+              "vendor": "Acme Apparel"
+            }
+          }
+        ]
+        ```
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                catalog:
+                  type: string
+                  format: binary
+                  description: |
+                    The catalog JSON file. Required for all requests except finalization
+                    (`finalize=true`). Must be a valid JSON array of product objects. Max 99 MB.
+
+                    Each element in the array must conform to the
+                    [`ecommerce_catalog_product`](/docs/references/preview/rest-api/api.intercom.io/models/ecommerce_catalog_product) schema.
+                    The `id`, `title`, and `url` fields are required on every product;
+                    all other fields are optional. Variants, if provided, must conform to the
+                    [`ecommerce_catalog_variant`](/docs/references/preview/rest-api/api.intercom.io/models/ecommerce_catalog_variant) schema.
+                finalize:
+                  type: string
+                  enum:
+                  - 'true'
+                  - 'false'
+                  description: |
+                    Set to `true` to finalize a multipart upload session and start the catalog sync.
+                    No catalog file is required when finalizing. Set to `false` to upload a part in
+                    a multipart session. Omit entirely for a single-file upload.
+                  example: 'false'
+                import_job_id:
+                  type: string
+                  description: |
+                    The import job ID returned from the first multipart upload request. Required
+                    when uploading subsequent parts (`part_number` ≥ 2) and when finalizing
+                    a multipart session (`finalize=true`).
+                  example: 'job_01abc123'
+                part_number:
+                  type: integer
+                  description: |
+                    The sequential part number for a multipart upload. Must be a positive integer.
+                    The server returns `next_part_number` in each response to guide the next request.
+                    Retrying the same `part_number` is safe and idempotent.
+                  example: 2
+            examples:
+              single_file_upload:
+                summary: Single-file upload
+                value:
+                  catalog: "@products.json"
+              multipart_first_part:
+                summary: "Multipart — Step 1: First part"
+                value:
+                  catalog: "@products_part1.json"
+                  finalize: "false"
+              multipart_append_part:
+                summary: "Multipart — Step 2: Append part"
+                value:
+                  catalog: "@products_part2.json"
+                  finalize: "false"
+                  import_job_id: "job_01abc123"
+                  part_number: 2
+              multipart_finalize:
+                summary: "Multipart — Step 3: Finalize"
+                value:
+                  finalize: "true"
+                  import_job_id: "job_01abc123"
+      responses:
+        '200':
+          description: Multipart catalog part uploaded successfully.
+          content:
+            application/json:
+              examples:
+                Part uploaded:
+                  value:
+                    import_job_id: 'job_01abc123'
+                    next_part_number: 2
+              schema:
+                "$ref": "#/components/schemas/ecommerce_catalog_upload_part_response"
+        '202':
+          description: Catalog accepted and sync has started.
+          content:
+            application/json:
+              examples:
+                Sync started:
+                  value:
+                    import_job_id: 'job_01abc123'
+                    status: processing
+                    message: Catalog received. Sync has started.
+              schema:
+                "$ref": "#/components/schemas/ecommerce_catalog_upload_response"
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              examples:
+                Missing catalog file:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_not_found
+                      message: catalog file is required
+                Catalog is not a file:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_not_found
+                      message: catalog must be an uploaded file
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              examples:
+                Connector not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: import_source_not_found
+                      message: No connector found with the provided id.
+                Feature not available:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: not_found
+                      message: The catalog API is not available for this workspace.
+                Upload session not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: upload_session_not_found
+                      message: No active upload session found for the provided import_job_id.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Conflict.
+          content:
+            application/json:
+              examples:
+                Sync already in progress:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: sync_in_progress
+                      message: A catalog upload is already in progress. Please wait for it to complete.
+                Multipart session already exists:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: sync_in_progress
+                      message: A multipart upload is already in progress. Use import_job_id to continue.
+                Session cannot be finalized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: upload_session_not_finalizable
+                      message: Upload session cannot be finalized in its current state.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable content.
+          content:
+            application/json:
+              examples:
+                Catalog is not a JSON array:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_catalog_format
+                      message: catalog must be a JSON array
+                Catalog items are not objects:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_catalog_format
+                      message: each item in the catalog array must be a JSON object
+                Part number is not a positive integer:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_part_number
+                      message: part_number must be a positive integer
+                Out-of-sequence part number:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_part_number
+                      message: Expected part 2, got 3
+                File exceeds size limit:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: payload_too_large
+                      message: catalog file exceeds 99MB limit
+                import_job_id required for multipart:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: import_job_id_required
+                      message: Include import_job_id to continue an existing upload session.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              examples:
+                Storage error:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: internal_error
+                      message: Failed to store catalog
               schema:
                 "$ref": "#/components/schemas/error"
   "/events":
@@ -24398,6 +24862,7 @@ components:
           enum:
           - admin_conversation_assignment_limit_change
           - admin_ticket_assignment_limit_change
+          - admin_avatar_change
           - admin_away_mode_change
           - admin_deletion
           - admin_deprovisioned
@@ -24438,6 +24903,7 @@ components:
           - campaign_deletion
           - campaign_state_change
           - conversation_part_deletion
+          - conversation_pdf_export
           - conversation_topic_change
           - conversation_topic_creation
           - conversation_topic_deletion
@@ -24765,6 +25231,12 @@ components:
           items:
             "$ref": "#/components/schemas/conversation_attachment_files"
           maxItems: 10
+        skip_unsnooze:
+          type: boolean
+          description: When true, prevents the reply from waking a snoozed conversation.
+            Applies to 'comment' and 'note' message types. The part is still created
+            and visible in the conversation thread.
+          example: true
       required:
       - message_type
       - type
@@ -28749,6 +29221,16 @@ components:
           type: object
           nullable: true
           description: The channel through which the conversation was initiated and its current channel.
+        external_references:
+          type: array
+          description: References linking this conversation to records in an external helpdesk or CRM system. Populated for Fin Standalone workspaces synced from an external platform; an empty array otherwise. Sorted alphabetically by `type` and capped at 20 entries.
+          items:
+            "$ref": "#/components/schemas/conversation_external_reference"
+          example:
+            - type: zendesk_ticket
+              id: '3633338'
+            - type: zendesk_sunshine_conversation
+              id: abc-def-uuid
         monitor_evaluations:
           type: array
           description: QA monitor evaluations that flagged this conversation. Only included when `include_monitors=true` is passed as a query parameter.
@@ -28892,6 +29374,16 @@ components:
           type: object
           nullable: true
           description: The channel through which the conversation was initiated and its current channel.
+        external_references:
+          type: array
+          description: References linking this conversation to records in an external helpdesk or CRM system. Populated for Fin Standalone workspaces synced from an external platform; an empty array otherwise. Sorted alphabetically by `type` and capped at 20 entries.
+          items:
+            "$ref": "#/components/schemas/conversation_external_reference"
+          example:
+            - type: zendesk_ticket
+              id: '3633338'
+            - type: zendesk_sunshine_conversation
+              id: abc-def-uuid
         monitor_evaluations:
           type: array
           description: QA monitor evaluations that flagged this conversation. Only included when `include_monitors=true` is passed as a query parameter.
@@ -29075,6 +29567,19 @@ components:
           nullable: true
           description: The current channel of the conversation. May differ from `initial` if the conversation was migrated between channels. Returns `null` if channel data is unavailable.
           example: messenger
+    conversation_external_reference:
+      title: Conversation External Reference
+      type: object
+      description: A reference linking a conversation to a record in an external helpdesk or CRM system, surfaced for Fin Standalone workspaces.
+      properties:
+        type:
+          type: string
+          description: The type of external system the reference points to. Possible values include `zendesk_ticket`, `zendesk_sunshine_conversation`, `salesforce_case`, `salesforce_in_app_message_conversation`, `freshdesk_ticket`, `freshchat_conversation`, `hubspot_conversation`, `custom_helpdesk_conversation`, `api_conversation`.
+          example: zendesk_ticket
+        id:
+          type: string
+          description: The identifier of the record in the external system. Always serialized as a string, since some external IDs exceed 32-bit integer range.
+          example: '3633338'
     conversation_attachment_files:
       title: Conversation attachment files
       type: object
@@ -29477,6 +29982,25 @@ components:
                 nullable: true
                 description: The reason this recipient was dropped, if applicable.
                 example:
+        reply_to:
+          type: array
+          nullable: true
+          description: The Reply-To header addresses of the source message, where
+            a reply will be routed. Can differ from the sender's From address. Only
+            present for email conversations.
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+                description: The Reply-To email address.
+                example: replies@example.com
+              name:
+                type: string
+                nullable: true
+                description: The display name associated with the Reply-To address.
+                example: Support Team
         subject:
           type: string
           nullable: true
@@ -30022,6 +30546,11 @@ components:
           type: string
           description: The contacts email
           example: jdoe@example.com
+        email_verified:
+          type: boolean
+          nullable: true
+          description: Whether the contact's email address has been verified. Set to true to indicate you have verified the contact owns this email address, or false to mark it as unverified. Must be supplied together with an email in the same request; sending it without an email returns a 400.
+          example: true
         phone:
           type: string
           nullable: true
@@ -30174,6 +30703,10 @@ components:
           format: date-time
           description: The time the conversation was created as a UTC Unix timestamp. If not provided, the current time will be used. This field is only recommneded for migrating past conversations from another source into Intercom.
           example: 1671028894
+        brand_id:
+          type: string
+          description: The unique identifier of the brand to associate with this conversation.
+          example: "123"
       required:
       - from
       - body
@@ -30269,8 +30802,7 @@ components:
         metadata:
           type: object
           description: Optional metadata about the event.
-          additionalProperties:
-            type: string
+          additionalProperties: true
           example:
             invite_code: ADDAFRIEND
       anyOf:
@@ -32569,8 +33101,7 @@ components:
         metadata:
           type: object
           description: Optional metadata about the event.
-          additionalProperties:
-            type: string
+          additionalProperties: true
           example:
             invite_code: ADDAFRIEND
       required:
@@ -32894,6 +33425,233 @@ components:
           example: '5017690'
       required:
       - admin_id
+    ecommerce_catalog_upload_part_response:
+      title: Ecommerce Catalog Upload Part Response
+      type: object
+      description: Returned after a multipart catalog part is successfully uploaded.
+      properties:
+        import_job_id:
+          type: string
+          description: |
+            The unique identifier for the active upload session. Pass this as `import_job_id`
+            in subsequent part uploads and in the finalization request.
+          example: 'job_01abc123'
+        next_part_number:
+          type: integer
+          description: The part number to use in the next upload request.
+          example: 2
+    ecommerce_catalog_upload_response:
+      title: Ecommerce Catalog Upload Response
+      type: object
+      description: Returned when a catalog upload is accepted and sync has started.
+      properties:
+        import_job_id:
+          type: string
+          description: The unique identifier for the import job.
+          example: 'job_01abc123'
+        status:
+          type: string
+          description: The current status of the catalog sync.
+          enum:
+          - processing
+          example: processing
+        message:
+          type: string
+          description: A human-readable description of the sync status.
+          example: Catalog received. Sync has started.
+    ecommerce_catalog_variant:
+      title: Ecommerce Catalog Variant
+      type: object
+      description: A product variant in an ecommerce catalog upload.
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this variant within the product.
+          example: 'var-001'
+        title:
+          type: string
+          description: Variant display name shown to shoppers (e.g. "Small / Blue").
+          example: 'Blue / Large'
+        price:
+          type: number
+          description: Price of this specific variant. Fin uses variant prices for precise budget filtering and displays the variant price in recommendation cards.
+          example: 29.99
+          nullable: true
+        compare_at_price:
+          type: number
+          description: Original price before a discount. When provided, Fin will naturally mention the saving to the shopper (e.g. "down from $129 to $99").
+          example: 39.99
+          nullable: true
+        in_stock:
+          type: boolean
+          description: Whether this variant is currently available. Out-of-stock variants are not shown in Fin's recommendation cards and Fin will not suggest them to shoppers.
+          example: true
+        url:
+          type: string
+          description: Direct link to this variant's page. Takes precedence over the product URL in recommendation cards. If omitted, constructed automatically as `{product_url}?variant={id}`.
+          example: 'https://example.com/products/t-shirt?variant=var-001'
+          nullable: true
+        image_url:
+          type: string
+          description: Image specific to this variant. Takes precedence over the product's `featured_image_url`. Falls back to `featured_image_url`, then `image_urls`. If no valid image can be resolved, this variant's recommendation card will not be shown.
+          example: 'https://cdn.example.com/images/t-shirt-blue.jpg'
+          nullable: true
+        selected_options:
+          type: array
+          description: The specific option values that define this variant (e.g. Size=Small, Color=Blue). Fin uses these to match shopper requests like "do you have this in medium?" to the correct variant.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Option name.
+                example: 'Size'
+              value:
+                type: string
+                description: Selected option value.
+                example: 'Large'
+    ecommerce_catalog_product:
+      title: Ecommerce Catalog Product
+      type: object
+      description: |
+        A product object in an ecommerce catalog upload. The catalog file must be a JSON
+        array of these objects. The `id`, `title`, and `url` fields are required; all
+        others are optional.
+      required:
+      - id
+      - title
+      - url
+      properties:
+        id:
+          type: string
+          description: Your unique product identifier. Used to match products on re-upload so only changed products are re-indexed. Also the delete key — any product ID absent from a new upload is removed from Fin's knowledge. Must be stable across uploads.
+          example: 'prod-12345'
+        title:
+          type: string
+          description: Product name. Used by Fin when searching for and recommending products.
+          example: 'Classic Cotton T-Shirt'
+        url:
+          type: string
+          description: Canonical product page URL shown in Fin's product recommendations. Must be a valid https:// URL.
+          example: 'https://example.com/products/classic-cotton-t-shirt'
+        description:
+          type: string
+          description: Product description that Fin reads to understand what the product is. HTML formatting is supported and safely sanitized (`description_html` takes precedence if both are provided). This is the primary field Fin uses to match products to shopper questions — a richer description leads to better recommendations.
+          example: 'A comfortable everyday t-shirt made from 100% organic cotton.'
+          nullable: true
+        description_html:
+          type: string
+          description: HTML product description. Takes precedence over `description` when both are provided. HTML is safely sanitized before indexing.
+          example: '<p>A comfortable everyday t-shirt made from <strong>100% organic cotton</strong>.</p>'
+          nullable: true
+        featured_image_url:
+          type: string
+          description: Primary product image shown in Fin's recommendation cards. Falls back to the first entry of `image_urls` if not provided. If no valid image can be resolved for a variant, that variant's recommendation card is not shown to the shopper.
+          example: 'https://cdn.example.com/images/t-shirt-main.jpg'
+          nullable: true
+        image_urls:
+          type: array
+          description: Additional product images. Used as a fallback image source when `featured_image_url` is absent or when a variant has no specific image.
+          items:
+            type: string
+          example:
+          - 'https://cdn.example.com/images/t-shirt-back.jpg'
+          - 'https://cdn.example.com/images/t-shirt-detail.jpg'
+        price_min:
+          type: number
+          description: Lowest price across all variants. If omitted, derived automatically from variant prices. Fin uses this to filter products when a shopper mentions a budget (e.g. "under $100"). Displayed as a range alongside `price_max`, or as a single value if both are equal.
+          example: 19.99
+          nullable: true
+        price_max:
+          type: number
+          description: Highest price across all variants. If omitted, derived from variant prices. Used alongside `price_min` for budget filtering and price display.
+          example: 39.99
+          nullable: true
+        currency:
+          type: string
+          description: ISO 4217 currency code for all prices on this product (e.g. "USD", "EUR", "GBP"). Defaults to USD if omitted. Used to format prices with the correct symbol in Fin's responses and product cards.
+          example: 'USD'
+          nullable: true
+        in_stock:
+          type: boolean
+          description: |
+            Whether the product is available to purchase. If omitted, derived from variant stock — the
+            product is in stock if at least one variant has `in_stock: true`. Products with no in-stock
+            variants are hidden from Fin entirely and will not be recommended to shoppers.
+          example: true
+          nullable: true
+        tags:
+          type: array
+          description: Free-form keywords matching how shoppers phrase needs in chat (e.g. "waterproof", "gift", "plus-size"). Used by Fin to match fuzzy queries; complements `category_path` and `collections`.
+          items:
+            type: string
+          example:
+          - 'organic'
+          - 'bestseller'
+        collections:
+          type: array
+          description: Collections or groupings this product belongs to in your store. Fin uses collections to understand your catalog's structure and answer questions like "what's in the sale collection?". Each element may be a plain string or an object with a `title` field.
+          items:
+            oneOf:
+            - type: string
+              example: 'Summer Collection'
+            - type: object
+              properties:
+                title:
+                  type: string
+                  example: 'Summer Collection'
+        category_path:
+          description: |
+            Hierarchical category breadcrumb for the product. Fin understands the hierarchy — a
+            shopper asking about "Clothing" will see products from all subcategories underneath it.
+            The most specific category is shown in search results. Strongly recommended. Provide as
+            a pre-formatted string (e.g. `"Clothing > T-Shirts"`) or as an array of path segments
+            (e.g. `["Clothing", "T-Shirts"]`). Array segments are joined with ` > `.
+          oneOf:
+          - type: string
+            example: 'Clothing > T-Shirts'
+          - type: array
+            items:
+              type: string
+            example:
+            - 'Clothing'
+            - 'T-Shirts'
+          nullable: true
+        available_options:
+          type: array
+          description: |
+            Option types available for this product and their possible values
+            (e.g. `{"name": "Size", "values": ["S", "M", "L"]}`). Fin uses these to understand what
+            choices a shopper can make and to correctly filter variants when a shopper asks for a
+            specific size, colour, or other attribute.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Option name (e.g. "Size").
+                example: 'Size'
+              values:
+                type: array
+                description: All available values for this option.
+                items:
+                  type: string
+                example:
+                - 'Small'
+                - 'Medium'
+                - 'Large'
+        variants:
+          type: array
+          description: Individual purchasable variants of the product. Fin recommends specific variants (not just products), so populating variants with accurate stock, price, and option data leads to more precise recommendations. See `ecommerce_catalog_variant` for the variant object schema.
+          items:
+            "$ref": "#/components/schemas/ecommerce_catalog_variant"
+        additional_data:
+          type: object
+          description: Custom attributes for your business. Fin uses these to show each customer only the products relevant to them (e.g. regional availability or warehouse codes). All keys must be consistent across all products in your catalog — the attribute schema is read from the first product in the file.
+          example:
+            sku: 'TSHIRT-BLU-L'
+            vendor: 'Acme Apparel'
+          nullable: true
     email_address_header:
       title: Email Address Header
       type: object
@@ -34619,6 +35377,9 @@ components:
       description: Merge contact data.
       type: object
       title: Merge contact data
+      required:
+      - from
+      - into
       properties:
         from:
           type: string
@@ -34635,6 +35396,141 @@ components:
           description: Set to `true` to merge two contacts that are not duplicates
             (they share no matching email or phone).
           example: true
+    merge_preview_request:
+      description: Preview a contact merge.
+      type: object
+      title: Merge preview request
+      required:
+      - from
+      - into
+      properties:
+        from:
+          type: string
+          description: The unique identifier for the contact to merge away from. Must be a lead.
+          example: 6762f0d51bb69f9f2193bb7f
+        into:
+          type: string
+          description: The unique identifier for the contact to merge into. Must be a user.
+          example: 6762f0d51bb69f9f2193bb80
+        skip_duplicate_validation:
+          type: boolean
+          default: false
+          description: When true, previews the merge even if the contacts don't share a common identifier. Defaults to false.
+    merge_preview_response:
+      title: Merge preview response
+      description: The result of a merge preview. Either the merge is allowed (with a summary of the changes) or it is not (with reasons).
+      oneOf:
+      - "$ref": "#/components/schemas/merge_preview_allowed"
+      - "$ref": "#/components/schemas/merge_preview_blocked"
+    merge_preview_allowed:
+      title: Merge preview allowed
+      type: object
+      description: Returned when the merge is allowed.
+      properties:
+        allowed:
+          type: boolean
+          enum:
+          - true
+          description: Always true. The merge is allowed.
+        summary:
+          "$ref": "#/components/schemas/merge_preview_summary"
+    merge_preview_blocked:
+      title: Merge preview not allowed
+      type: object
+      description: Returned when the merge is not allowed.
+      properties:
+        allowed:
+          type: boolean
+          enum:
+          - false
+          description: Always false. The merge is not allowed.
+        reasons:
+          type: array
+          description: One or more reasons the merge is not allowed.
+          items:
+            "$ref": "#/components/schemas/merge_preview_reason"
+    merge_preview_reason:
+      title: Merge preview reason
+      type: object
+      description: A reason a merge is not allowed.
+      properties:
+        code:
+          type: string
+          description: A stable code identifying the reason. Branch on this value.
+          enum:
+          - invalid_merge_role_pair
+          - no_shared_identifier
+          - facebook_user
+          - external_lead_channel_not_allowed
+          - mailing_list
+        message:
+          type: string
+          description: A human-readable explanation. Display this to people; do not match on it, as the wording may change.
+    merge_preview_summary:
+      title: Merge preview summary
+      type: object
+      description: A summary of the changes the merge would make to the surviving contact.
+      properties:
+        attribute_changes:
+          "$ref": "#/components/schemas/merge_preview_attribute_changes"
+        reassignments:
+          "$ref": "#/components/schemas/merge_preview_reassignments"
+    merge_preview_attribute_changes:
+      title: Merge preview attribute changes
+      type: object
+      description: The attribute changes the merge would make to the surviving contact.
+      properties:
+        attributes:
+          type: array
+          description: The individual attribute changes. Capped at 50 items; total_count reflects the full number of changes.
+          items:
+            "$ref": "#/components/schemas/merge_preview_attribute_change"
+        total_count:
+          type: integer
+          description: The total number of attribute changes detected, which may exceed the number of items in attributes.
+          example: 3
+    merge_preview_attribute_change:
+      title: Merge preview attribute change
+      type: object
+      description: A single attribute change on the surviving contact.
+      properties:
+        field:
+          type: string
+          description: The contact field that would change.
+          example: name
+        outcome:
+          type: string
+          description: How the value is resolved. adopted = the source's value is taken; discarded = the source's value is dropped and the target's kept; merged = the two values are combined.
+          enum:
+          - adopted
+          - discarded
+          - merged
+        from_value:
+          nullable: true
+          description: The source contact's value. Omitted when null. May be a string, array, or object depending on the field.
+        into_value:
+          nullable: true
+          description: The target contact's value. Omitted when null. May be a string, array, or object depending on the field.
+        new_into_value:
+          nullable: true
+          description: The resulting value on the surviving contact. Always present; may be null. May be a string, array, or object depending on the field.
+    merge_preview_reassignments:
+      title: Merge preview reassignments
+      type: object
+      description: The number of records that would be reassigned to the surviving contact, by type. Only types with reassignments are included.
+      properties:
+        conversations:
+          type: integer
+          description: The number of distinct conversations that would be reassigned to the surviving contact, counting both conversations the contact owns and conversations it participates in.
+          example: 14
+        tags:
+          type: integer
+          description: The number of tags that would be reassigned.
+          example: 3
+        notes:
+          type: integer
+          description: The number of notes that would be reassigned.
+          example: 2
     merge_conversations_request:
       title: Merge Conversations Request
       type: object
@@ -37124,6 +38020,11 @@ components:
           type: string
           description: The contacts email
           example: jdoe@example.com
+        email_verified:
+          type: boolean
+          nullable: true
+          description: Whether the contact's email address has been verified. Set to true to indicate you have verified the contact owns this email address, or false to mark it as unverified. Must be supplied together with an email in the same request; sending it without an email returns a 400.
+          example: true
         phone:
           type: string
           nullable: true
@@ -38118,6 +39019,10 @@ tags:
   description: Everything about your Data Events
 - name: Data Export
   description: Export message delivery and engagement statistics (opens, clicks, replies, completions, dismissals, unsubscribes, bounces) for outbound content such as Emails, Posts, Custom Bots, Surveys, Tours, and Series.
+- name: Ecommerce Connectors
+  description: |
+    Upload and manage product catalogs via ecommerce connectors. Supports single-file
+    uploads (up to 99 MB) and multipart uploads for larger catalogs.
 - name: Emails
   description: Everything about your Emails
 - name: Fin Agent
