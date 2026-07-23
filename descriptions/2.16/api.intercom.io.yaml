@@ -12,6 +12,50 @@ info:
     url: https://spdx.org/licenses/MIT
 paths:
   "/me":
+    get:
+      summary: Identify an admin
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Admins
+      operationId: identifyAdmin
+      description: "\nYou can view the currently authorised admin along with the embedded
+        app object (a \"workspace\" in legacy terminology).\n\n> \U0001F6A7 Single
+        Sign On\n>\n> If you are building a custom \"Log in with Intercom\" flow for
+        your site, and you call the `/me` endpoint to identify the logged-in user,
+        you should not accept any sign-ins from users with unverified email addresses
+        as it poses a potential impersonation security risk.\n"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: admin
+                    id: '991267459'
+                    email: admin1@email.com
+                    name: Ciaran1 Lee
+                    email_verified: true
+                    app:
+                      type: app
+                      id_code: this_is_an_id1_that_should_be_at_least_40
+                      name: MyApp 1
+                      created_at: 1734537243
+                      secure: false
+                      identity_verification: false
+                      timezone: America/Los_Angeles
+                      region: US
+                    avatar:
+                      type: avatar
+                      image_url: https://static.intercomassets.com/assets/default-avatars/admins/128.png
+                    has_inbox_seat: true
+              schema:
+                "$ref": "#/components/schemas/admin_with_app"
   "/macros/{id}":
     get:
       summary: Retrieve a macro
@@ -377,50 +421,6 @@ paths:
                       message: You do not have the required scope (read_conversations) to access this resource
               schema:
                 "$ref": "#/components/schemas/error"
-    get:
-      summary: Identify an admin
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      tags:
-      - Admins
-      operationId: identifyAdmin
-      description: "\nYou can view the currently authorised admin along with the embedded
-        app object (a \"workspace\" in legacy terminology).\n\n> \U0001F6A7 Single
-        Sign On\n>\n> If you are building a custom \"Log in with Intercom\" flow for
-        your site, and you call the `/me` endpoint to identify the logged-in user,
-        you should not accept any sign-ins from users with unverified email addresses
-        as it poses a potential impersonation security risk.\n"
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              examples:
-                Successful response:
-                  value:
-                    type: admin
-                    id: '991267459'
-                    email: admin1@email.com
-                    name: Ciaran1 Lee
-                    email_verified: true
-                    app:
-                      type: app
-                      id_code: this_is_an_id1_that_should_be_at_least_40
-                      name: MyApp 1
-                      created_at: 1734537243
-                      secure: false
-                      identity_verification: false
-                      timezone: America/Los_Angeles
-                      region: US
-                    avatar:
-                      type: avatar
-                      image_url: https://static.intercomassets.com/assets/default-avatars/admins/128.png
-                    has_inbox_seat: true
-              schema:
-                "$ref": "#/components/schemas/admin_with_app"
   "/admins/{admin_id}/away":
     put:
       summary: Set an admin to away
@@ -548,6 +548,95 @@ paths:
                   away_mode_enabled: true
                   away_mode_reassign: true
   "/admins/activity_logs":
+    get:
+      summary: List all activity logs
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: created_at_after
+        in: query
+        required: true
+        description: The start date that you request data for. It must be formatted
+          as a UNIX timestamp.
+        example: '1677253093'
+        schema:
+          type: string
+      - name: created_at_before
+        in: query
+        required: false
+        description: The end date that you request data for. It must be formatted
+          as a UNIX timestamp.
+        example: '1677861493'
+        schema:
+          type: string
+      tags:
+      - Admins
+      operationId: listActivityLogs
+      description: You can get a log of activities by all admins in an app.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: activity_log.list
+                    pages:
+                      type: pages
+                      next:
+                      page: 1
+                      per_page: 20
+                      total_pages: 1
+                    activity_logs:
+                    - id: fca05814-4b72-4dce-ad4f-77a786a2c136
+                      performed_by:
+                        type: admin
+                        id: '991267464'
+                        email: admin5@email.com
+                        ip: 127.0.0.1
+                      metadata:
+                        before: before
+                        after: after
+                      created_at: 1734537253
+                      activity_type: app_name_change
+                      activity_description: Ciaran5 Lee changed your app name from
+                        before to after.
+                    - id: f48c653b-0185-48ac-a276-23d11006bafb
+                      performed_by:
+                        type: admin
+                        id: '991267464'
+                        email: admin5@email.com
+                        ip: 127.0.0.1
+                      metadata:
+                        message:
+                          id: 123
+                          title: Initial message title
+                        before: Initial message title
+                        after: Eventual message title
+                      created_at: 1734537253
+                      activity_type: message_state_change
+                      activity_description: Ciaran5 Lee changed your Initial message
+                        title message from Initial message title to Eventual message
+                        title.
+              schema:
+                "$ref": "#/components/schemas/activity_log_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 57cc6148-2c0a-471b-bd9e-859538110958
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/admins/activity_logs/search":
     post:
       summary: Search activity logs
@@ -776,33 +865,26 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/admins":
     get:
-      summary: List all activity logs
+      summary: List all admins
       parameters:
       - name: Intercom-Version
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: created_at_after
-        in: query
-        required: true
-        description: The start date that you request data for. It must be formatted
-          as a UNIX timestamp.
-        example: '1677253093'
-        schema:
-          type: string
-      - name: created_at_before
+      - name: display_avatar
         in: query
         required: false
-        description: The end date that you request data for. It must be formatted
-          as a UNIX timestamp.
-        example: '1677861493'
+        description: If set to true, the response will include the admin's avatar
+          object containing the image URL. Defaults to false.
+        example: true
         schema:
-          type: string
+          type: boolean
       tags:
       - Admins
-      operationId: listActivityLogs
-      description: You can get a log of activities by all admins in an app.
+      operationId: listAdmins
+      description: You can fetch a list of admins for a given workspace.
       responses:
         '200':
           description: Successful response
@@ -811,46 +893,18 @@ paths:
               examples:
                 Successful response:
                   value:
-                    type: activity_log.list
-                    pages:
-                      type: pages
-                      next:
-                      page: 1
-                      per_page: 20
-                      total_pages: 1
-                    activity_logs:
-                    - id: fca05814-4b72-4dce-ad4f-77a786a2c136
-                      performed_by:
-                        type: admin
-                        id: '991267464'
-                        email: admin5@email.com
-                        ip: 127.0.0.1
-                      metadata:
-                        before: before
-                        after: after
-                      created_at: 1734537253
-                      activity_type: app_name_change
-                      activity_description: Ciaran5 Lee changed your app name from
-                        before to after.
-                    - id: f48c653b-0185-48ac-a276-23d11006bafb
-                      performed_by:
-                        type: admin
-                        id: '991267464'
-                        email: admin5@email.com
-                        ip: 127.0.0.1
-                      metadata:
-                        message:
-                          id: 123
-                          title: Initial message title
-                        before: Initial message title
-                        after: Eventual message title
-                      created_at: 1734537253
-                      activity_type: message_state_change
-                      activity_description: Ciaran5 Lee changed your Initial message
-                        title message from Initial message title to Eventual message
-                        title.
+                    type: admin.list
+                    admins:
+                    - type: admin
+                      email: admin7@email.com
+                      id: '991267466'
+                      name: Ciaran7 Lee
+                      away_mode_enabled: false
+                      away_mode_reassign: false
+                      has_inbox_seat: true
+                      team_ids: []
               schema:
-                "$ref": "#/components/schemas/activity_log_list"
+                "$ref": "#/components/schemas/admin_list"
         '401':
           description: Unauthorized
           content:
@@ -859,13 +913,12 @@ paths:
                 Unauthorized:
                   value:
                     type: error.list
-                    request_id: 57cc6148-2c0a-471b-bd9e-859538110958
+                    request_id: 5ef5682e-f66e-40a4-b828-8592175f83b8
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/admins":
   "/office_hours_schedules/{office_hours_schedule_id}/office_hours_exceptions/{id}":
     get:
       summary: Retrieve an office hours exception
@@ -1389,59 +1442,6 @@ paths:
           "$ref": "#/components/responses/Unauthorized"
         '422':
           "$ref": "#/components/responses/ValidationError"
-    get:
-      summary: List all admins
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: display_avatar
-        in: query
-        required: false
-        description: If set to true, the response will include the admin's avatar
-          object containing the image URL. Defaults to false.
-        example: true
-        schema:
-          type: boolean
-      tags:
-      - Admins
-      operationId: listAdmins
-      description: You can fetch a list of admins for a given workspace.
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              examples:
-                Successful response:
-                  value:
-                    type: admin.list
-                    admins:
-                    - type: admin
-                      email: admin7@email.com
-                      id: '991267466'
-                      name: Ciaran7 Lee
-                      away_mode_enabled: false
-                      away_mode_reassign: false
-                      has_inbox_seat: true
-                      team_ids: []
-              schema:
-                "$ref": "#/components/schemas/admin_list"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 5ef5682e-f66e-40a4-b828-8592175f83b8
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
   "/admins/{admin_id}":
     get:
       summary: Retrieve an admin
@@ -2273,197 +2273,6 @@ paths:
                   body: Body of the Article
                   state: published
   "/articles/{article_id}":
-  "/articles/{article_id}/tags":
-    post:
-      summary: Add a tag to an article
-      tags:
-      - Articles
-      - Tags
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: article_id
-        in: path
-        required: true
-        description: The unique identifier for the article which is given by Intercom.
-        example: 123
-        schema:
-          type: integer
-      operationId: attachTagToArticle
-      description: |
-        Apply an existing tag to an article. Returns the tag that was applied.
-
-        The tag must already exist in the workspace (create tags with the Tags API),
-        and the authenticating teammate must have the `manage_knowledge_base_content`
-        permission.
-
-        Requires the `read_write_articles_scope` OAuth scope.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - id
-              properties:
-                id:
-                  type: string
-                  description: The unique identifier of the tag to apply, as given by
-                    Intercom.
-                  example: '7522907'
-                admin_id:
-                  type: string
-                  nullable: true
-                  description: Optional id of the teammate to attribute the tagging to.
-                    Defaults to the authenticating teammate. Does not affect authorization.
-                  example: '1234'
-            examples:
-              successful:
-                summary: Apply a tag
-                value:
-                  id: '7522907'
-      responses:
-        '200':
-          description: Tag applied
-          content:
-            application/json:
-              examples:
-                Tag applied:
-                  value:
-                    type: tag
-                    id: '7522907'
-                    name: Independent
-                    applied_at: 1663597223
-                    applied_by:
-                      type: admin
-                      id: '1234'
-              schema:
-                "$ref": "#/components/schemas/tag"
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              examples:
-                Forbidden:
-                  value:
-                    type: error.list
-                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
-                    errors:
-                    - code: forbidden
-                      message: Not authorized to manage knowledge base content
-              schema:
-                "$ref": "#/components/schemas/error"
-        '404':
-          description: Article or tag not found
-          content:
-            application/json:
-              examples:
-                Article not found:
-                  value:
-                    type: error.list
-                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
-                    errors:
-                    - code: article_not_found
-                      message: Article not found
-                Tag not found:
-                  value:
-                    type: error.list
-                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
-                    errors:
-                    - code: tag_not_found
-                      message: Tag not found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          "$ref": "#/components/responses/Unauthorized"
-  "/articles/{article_id}/tags/{id}":
-    delete:
-      summary: Remove a tag from an article
-      tags:
-      - Articles
-      - Tags
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: article_id
-        in: path
-        required: true
-        description: The unique identifier for the article which is given by Intercom.
-        example: 123
-        schema:
-          type: integer
-      - name: id
-        in: path
-        required: true
-        description: The unique identifier of the tag to remove, as given by Intercom.
-        example: '7522907'
-        schema:
-          type: string
-      operationId: detachTagFromArticle
-      description: |
-        Remove a tag from an article. Returns the tag that was removed, with null
-        `applied_at` and `applied_by`.
-
-        The authenticating teammate must have the `manage_knowledge_base_content`
-        permission.
-
-        Requires the `read_write_articles_scope` OAuth scope.
-      responses:
-        '200':
-          description: Tag removed
-          content:
-            application/json:
-              examples:
-                Tag removed:
-                  value:
-                    type: tag
-                    id: '7522907'
-                    name: Independent
-                    applied_at: null
-                    applied_by: null
-              schema:
-                "$ref": "#/components/schemas/tag"
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              examples:
-                Forbidden:
-                  value:
-                    type: error.list
-                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
-                    errors:
-                    - code: forbidden
-                      message: Not authorized to manage knowledge base content
-              schema:
-                "$ref": "#/components/schemas/error"
-        '404':
-          description: Article or tag not found
-          content:
-            application/json:
-              examples:
-                Article not found:
-                  value:
-                    type: error.list
-                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
-                    errors:
-                    - code: article_not_found
-                      message: Article not found
-                Tag not found:
-                  value:
-                    type: error.list
-                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
-                    errors:
-                    - code: tag_not_found
-                      message: Tag not found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          "$ref": "#/components/responses/Unauthorized"
     get:
       summary: Retrieve an article
       parameters:
@@ -2702,6 +2511,197 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/articles/{article_id}/tags":
+    post:
+      summary: Add a tag to an article
+      tags:
+      - Articles
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: article_id
+        in: path
+        required: true
+        description: The unique identifier for the article which is given by Intercom.
+        example: 123
+        schema:
+          type: integer
+      operationId: attachTagToArticle
+      description: |
+        Apply an existing tag to an article. Returns the tag that was applied.
+
+        The tag must already exist in the workspace (create tags with the Tags API),
+        and the authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_articles_scope` OAuth scope.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - id
+              properties:
+                id:
+                  type: string
+                  description: The unique identifier of the tag to apply, as given by
+                    Intercom.
+                  example: '7522907'
+                admin_id:
+                  type: string
+                  nullable: true
+                  description: Optional id of the teammate to attribute the tagging to.
+                    Defaults to the authenticating teammate. Does not affect authorization.
+                  example: '1234'
+            examples:
+              successful:
+                summary: Apply a tag
+                value:
+                  id: '7522907'
+      responses:
+        '200':
+          description: Tag applied
+          content:
+            application/json:
+              examples:
+                Tag applied:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '1234'
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Article or tag not found
+          content:
+            application/json:
+              examples:
+                Article not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: article_not_found
+                      message: Article not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+  "/articles/{article_id}/tags/{id}":
+    delete:
+      summary: Remove a tag from an article
+      tags:
+      - Articles
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: article_id
+        in: path
+        required: true
+        description: The unique identifier for the article which is given by Intercom.
+        example: 123
+        schema:
+          type: integer
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the tag to remove, as given by Intercom.
+        example: '7522907'
+        schema:
+          type: string
+      operationId: detachTagFromArticle
+      description: |
+        Remove a tag from an article. Returns the tag that was removed, with null
+        `applied_at` and `applied_by`.
+
+        The authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_articles_scope` OAuth scope.
+      responses:
+        '200':
+          description: Tag removed
+          content:
+            application/json:
+              examples:
+                Tag removed:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: null
+                    applied_by: null
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Article or tag not found
+          content:
+            application/json:
+              examples:
+                Article not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: article_not_found
+                      message: Article not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/articles/{article_id}/versions":
     get:
       summary: List article versions
@@ -2984,6 +2984,26 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
   "/away_status_reasons":
+    get:
+      summary: List all away status reasons
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Away Status Reasons
+      operationId: listAwayStatusReasons
+      description: "Returns a list of all away status reasons configured for the workspace, including deleted ones."
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/away_status_reason_list"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/audiences":
     get:
       summary: List all audiences
@@ -3380,26 +3400,6 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-    get:
-      summary: List all away status reasons
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      tags:
-      - Away Status Reasons
-      operationId: listAwayStatusReasons
-      description: "Returns a list of all away status reasons configured for the workspace, including deleted ones."
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/away_status_reason_list"
-        '401':
-          "$ref": "#/components/responses/Unauthorized"
   "/export/reporting_data/enqueue":
     post:
       summary: Enqueue a new reporting data export job
@@ -5007,199 +5007,6 @@ paths:
                   title: Thanks for everything
                   body: Body of the Internal Article
   "/internal_articles/{internal_article_id}":
-  "/internal_articles/{internal_article_id}/tags":
-    post:
-      summary: Add a tag to an internal article
-      tags:
-      - Internal Articles
-      - Tags
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: internal_article_id
-        in: path
-        required: true
-        description: The unique identifier for the internal article which is given by
-          Intercom.
-        example: 123
-        schema:
-          type: integer
-      operationId: attachTagToInternalArticle
-      description: |
-        Apply an existing tag to an internal article. Returns the tag that was applied.
-
-        The tag must already exist in the workspace (create tags with the Tags API),
-        and the authenticating teammate must have the `manage_knowledge_base_content`
-        permission.
-
-        Requires the `read_write_articles_scope` OAuth scope.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - id
-              properties:
-                id:
-                  type: string
-                  description: The unique identifier of the tag to apply, as given by
-                    Intercom.
-                  example: '7522907'
-                admin_id:
-                  type: string
-                  nullable: true
-                  description: Optional id of the teammate to attribute the tagging to.
-                    Defaults to the authenticating teammate. Does not affect authorization.
-                  example: '1234'
-            examples:
-              successful:
-                summary: Apply a tag
-                value:
-                  id: '7522907'
-      responses:
-        '200':
-          description: Tag applied
-          content:
-            application/json:
-              examples:
-                Tag applied:
-                  value:
-                    type: tag
-                    id: '7522907'
-                    name: Independent
-                    applied_at: 1663597223
-                    applied_by:
-                      type: admin
-                      id: '1234'
-              schema:
-                "$ref": "#/components/schemas/tag"
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              examples:
-                Forbidden:
-                  value:
-                    type: error.list
-                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
-                    errors:
-                    - code: forbidden
-                      message: Not authorized to manage knowledge base content
-              schema:
-                "$ref": "#/components/schemas/error"
-        '404':
-          description: Internal article or tag not found
-          content:
-            application/json:
-              examples:
-                Internal article not found:
-                  value:
-                    type: error.list
-                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
-                    errors:
-                    - code: internal_article_not_found
-                      message: Internal article not found
-                Tag not found:
-                  value:
-                    type: error.list
-                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
-                    errors:
-                    - code: tag_not_found
-                      message: Tag not found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          "$ref": "#/components/responses/Unauthorized"
-  "/internal_articles/{internal_article_id}/tags/{id}":
-    delete:
-      summary: Remove a tag from an internal article
-      tags:
-      - Internal Articles
-      - Tags
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: internal_article_id
-        in: path
-        required: true
-        description: The unique identifier for the internal article which is given by
-          Intercom.
-        example: 123
-        schema:
-          type: integer
-      - name: id
-        in: path
-        required: true
-        description: The unique identifier of the tag to remove, as given by Intercom.
-        example: '7522907'
-        schema:
-          type: string
-      operationId: detachTagFromInternalArticle
-      description: |
-        Remove a tag from an internal article. Returns the tag that was removed, with
-        null `applied_at` and `applied_by`.
-
-        The authenticating teammate must have the `manage_knowledge_base_content`
-        permission.
-
-        Requires the `read_write_articles_scope` OAuth scope.
-      responses:
-        '200':
-          description: Tag removed
-          content:
-            application/json:
-              examples:
-                Tag removed:
-                  value:
-                    type: tag
-                    id: '7522907'
-                    name: Independent
-                    applied_at: null
-                    applied_by: null
-              schema:
-                "$ref": "#/components/schemas/tag"
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              examples:
-                Forbidden:
-                  value:
-                    type: error.list
-                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
-                    errors:
-                    - code: forbidden
-                      message: Not authorized to manage knowledge base content
-              schema:
-                "$ref": "#/components/schemas/error"
-        '404':
-          description: Internal article or tag not found
-          content:
-            application/json:
-              examples:
-                Internal article not found:
-                  value:
-                    type: error.list
-                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
-                    errors:
-                    - code: internal_article_not_found
-                      message: Internal article not found
-                Tag not found:
-                  value:
-                    type: error.list
-                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
-                    errors:
-                    - code: tag_not_found
-                      message: Tag not found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          "$ref": "#/components/responses/Unauthorized"
     get:
       summary: Retrieve an internal article
       parameters:
@@ -5399,6 +5206,199 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/internal_articles/{internal_article_id}/tags":
+    post:
+      summary: Add a tag to an internal article
+      tags:
+      - Internal Articles
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: internal_article_id
+        in: path
+        required: true
+        description: The unique identifier for the internal article which is given by
+          Intercom.
+        example: 123
+        schema:
+          type: integer
+      operationId: attachTagToInternalArticle
+      description: |
+        Apply an existing tag to an internal article. Returns the tag that was applied.
+
+        The tag must already exist in the workspace (create tags with the Tags API),
+        and the authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_articles_scope` OAuth scope.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - id
+              properties:
+                id:
+                  type: string
+                  description: The unique identifier of the tag to apply, as given by
+                    Intercom.
+                  example: '7522907'
+                admin_id:
+                  type: string
+                  nullable: true
+                  description: Optional id of the teammate to attribute the tagging to.
+                    Defaults to the authenticating teammate. Does not affect authorization.
+                  example: '1234'
+            examples:
+              successful:
+                summary: Apply a tag
+                value:
+                  id: '7522907'
+      responses:
+        '200':
+          description: Tag applied
+          content:
+            application/json:
+              examples:
+                Tag applied:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '1234'
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Internal article or tag not found
+          content:
+            application/json:
+              examples:
+                Internal article not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: internal_article_not_found
+                      message: Internal article not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+  "/internal_articles/{internal_article_id}/tags/{id}":
+    delete:
+      summary: Remove a tag from an internal article
+      tags:
+      - Internal Articles
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: internal_article_id
+        in: path
+        required: true
+        description: The unique identifier for the internal article which is given by
+          Intercom.
+        example: 123
+        schema:
+          type: integer
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the tag to remove, as given by Intercom.
+        example: '7522907'
+        schema:
+          type: string
+      operationId: detachTagFromInternalArticle
+      description: |
+        Remove a tag from an internal article. Returns the tag that was removed, with
+        null `applied_at` and `applied_by`.
+
+        The authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_articles_scope` OAuth scope.
+      responses:
+        '200':
+          description: Tag removed
+          content:
+            application/json:
+              examples:
+                Tag removed:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: null
+                    applied_by: null
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Internal article or tag not found
+          content:
+            application/json:
+              examples:
+                Internal article not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: internal_article_not_found
+                      message: Internal article not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/internal_articles/search":
     get:
       summary: Search for internal articles
@@ -8874,6 +8874,31 @@ paths:
               schema:
                 "$ref": "#/components/schemas/contact_archived"
   "/contacts/{contact_id}/unarchive":
+    post:
+      summary: Unarchive contact
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: contact_id
+        in: path
+        description: contact_id
+        example: 63a07ddf05a32042dffac965
+        required: true
+        schema:
+          type: string
+      tags:
+      - Contacts
+      operationId: UnarchiveContact
+      description: You can unarchive a single contact.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/contact_unarchived"
   "/contacts/{id}/banners":
     get:
       summary: List banners for a contact
@@ -8995,8 +9020,9 @@ paths:
                       message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
+  "/contacts/{contact_id}/block":
     post:
-      summary: Unarchive contact
+      summary: Block contact
       parameters:
       - name: Intercom-Version
         in: header
@@ -9011,16 +9037,15 @@ paths:
           type: string
       tags:
       - Contacts
-      operationId: UnarchiveContact
-      description: You can unarchive a single contact.
+      operationId: BlockContact
+      description: Block a single contact.<br>**Note:** conversations of the contact will also be archived during the process.<br>More details in [FAQ How do I block Inbox spam?](https://www.intercom.com/help/en/articles/8838656-inbox-faqs)
       responses:
         '200':
           description: successful
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/contact_unarchived"
-  "/contacts/{contact_id}/block":
+                "$ref": "#/components/schemas/contact_blocked"
   "/contacts/{id}/merge_history":
     get:
       summary: Get contact merge history
@@ -9114,31 +9139,6 @@ paths:
                       message: Contact not found
               schema:
                 "$ref": "#/components/schemas/error"
-    post:
-      summary: Block contact
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: contact_id
-        in: path
-        description: contact_id
-        example: 63a07ddf05a32042dffac965
-        required: true
-        schema:
-          type: string
-      tags:
-      - Contacts
-      operationId: BlockContact
-      description: Block a single contact.<br>**Note:** conversations of the contact will also be archived during the process.<br>More details in [FAQ How do I block Inbox spam?](https://www.intercom.com/help/en/articles/8838656-inbox-faqs)
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/contact_blocked"
   "/content/bulk_actions":
     post:
       summary: Run a bulk action on Knowledge Hub content
@@ -14660,6 +14660,147 @@ paths:
                   - value: 1-10
                   archived: false
   "/data_attributes/{data_attribute_id}":
+    put:
+      summary: Update a data attribute
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: data_attribute_id
+        in: path
+        required: true
+        description: The data attribute id
+        example: 1
+        schema:
+          type: integer
+      tags:
+      - Data Attributes
+      operationId: updateDataAttribute
+      description: "\nYou can update a data attribute.\n\n> \U0001F6A7 Updating the
+        data type is not possible\n>\n> It is currently a dangerous action to execute
+        changing a data attribute's type via the API. You will need to update the
+        type via the UI instead.\n"
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              examples:
+                Successful:
+                  value:
+                    id: 44
+                    type: data_attribute
+                    name: The One Ring
+                    full_name: custom_attributes.The One Ring
+                    label: The One Ring
+                    description: Just a plain old ring
+                    data_type: string
+                    options:
+                    - 1-10
+                    - 11-20
+                    api_writable: true
+                    ui_writable: false
+                    messenger_writable: true
+                    custom: true
+                    archived: false
+                    admin_id: '991267793'
+                    created_at: 1734537762
+                    updated_at: 1734537763
+                    model: company
+              schema:
+                "$ref": "#/components/schemas/data_attribute"
+        '400':
+          description: Too few options in list
+          content:
+            application/json:
+              examples:
+                Too few options in list:
+                  value:
+                    type: error.list
+                    request_id: 37cff4c5-5e1a-4958-a2ba-149b09d1915c
+                    errors:
+                    - code: parameter_invalid
+                      message: Options isn't an array
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Attribute Not Found
+          content:
+            application/json:
+              examples:
+                Attribute Not Found:
+                  value:
+                    type: error.list
+                    request_id: eee16d31-0b0a-4b5f-b95a-25d37528c80f
+                    errors:
+                    - code: field_not_found
+                      message: We couldn't find that data attribute to update
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Has Dependant Object
+          content:
+            application/json:
+              examples:
+                Has Dependant Object:
+                  value:
+                    type: error.list
+                    request_id: f04b6b14-1c5b-46e1-9c95-4a914557062c
+                    errors:
+                    - code: data_invalid
+                      message: The Data Attribute you are trying to archive has a
+                        dependant object
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: c60ce63d-1c74-4fe2-8e21-31d1f817a0c2
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_data_attribute_request"
+            examples:
+              successful:
+                summary: Successful
+                value:
+                  description: Just a plain old ring
+                  options:
+                  - value: 1-10
+                  - value: 11-20
+                  archived: false
+              too_few_options_in_list:
+                summary: Too few options in list
+                value:
+                  description: Too few options
+                  options:
+                    value: 1-10
+                  archived: false
+              attribute_not_found:
+                summary: Attribute Not Found
+                value:
+                  description: Just a plain old ring
+                  options:
+                  - value: 1-10
+                  - value: 11-20
+                  archived: false
+              has_dependant_object:
+                summary: Has Dependant Object
+                value:
+                  description: Trying to archieve
+                  archived: true
   "/data_connectors":
     get:
       summary: List all data connectors
@@ -15494,147 +15635,6 @@ paths:
                       message: Execution result not found
               schema:
                 "$ref": "#/components/schemas/error"
-    put:
-      summary: Update a data attribute
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: data_attribute_id
-        in: path
-        required: true
-        description: The data attribute id
-        example: 1
-        schema:
-          type: integer
-      tags:
-      - Data Attributes
-      operationId: updateDataAttribute
-      description: "\nYou can update a data attribute.\n\n> \U0001F6A7 Updating the
-        data type is not possible\n>\n> It is currently a dangerous action to execute
-        changing a data attribute's type via the API. You will need to update the
-        type via the UI instead.\n"
-      responses:
-        '200':
-          description: Successful
-          content:
-            application/json:
-              examples:
-                Successful:
-                  value:
-                    id: 44
-                    type: data_attribute
-                    name: The One Ring
-                    full_name: custom_attributes.The One Ring
-                    label: The One Ring
-                    description: Just a plain old ring
-                    data_type: string
-                    options:
-                    - 1-10
-                    - 11-20
-                    api_writable: true
-                    ui_writable: false
-                    messenger_writable: true
-                    custom: true
-                    archived: false
-                    admin_id: '991267793'
-                    created_at: 1734537762
-                    updated_at: 1734537763
-                    model: company
-              schema:
-                "$ref": "#/components/schemas/data_attribute"
-        '400':
-          description: Too few options in list
-          content:
-            application/json:
-              examples:
-                Too few options in list:
-                  value:
-                    type: error.list
-                    request_id: 37cff4c5-5e1a-4958-a2ba-149b09d1915c
-                    errors:
-                    - code: parameter_invalid
-                      message: Options isn't an array
-              schema:
-                "$ref": "#/components/schemas/error"
-        '404':
-          description: Attribute Not Found
-          content:
-            application/json:
-              examples:
-                Attribute Not Found:
-                  value:
-                    type: error.list
-                    request_id: eee16d31-0b0a-4b5f-b95a-25d37528c80f
-                    errors:
-                    - code: field_not_found
-                      message: We couldn't find that data attribute to update
-              schema:
-                "$ref": "#/components/schemas/error"
-        '422':
-          description: Has Dependant Object
-          content:
-            application/json:
-              examples:
-                Has Dependant Object:
-                  value:
-                    type: error.list
-                    request_id: f04b6b14-1c5b-46e1-9c95-4a914557062c
-                    errors:
-                    - code: data_invalid
-                      message: The Data Attribute you are trying to archive has a
-                        dependant object
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: c60ce63d-1c74-4fe2-8e21-31d1f817a0c2
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              "$ref": "#/components/schemas/update_data_attribute_request"
-            examples:
-              successful:
-                summary: Successful
-                value:
-                  description: Just a plain old ring
-                  options:
-                  - value: 1-10
-                  - value: 11-20
-                  archived: false
-              too_few_options_in_list:
-                summary: Too few options in list
-                value:
-                  description: Too few options
-                  options:
-                    value: 1-10
-                  archived: false
-              attribute_not_found:
-                summary: Attribute Not Found
-                value:
-                  description: Just a plain old ring
-                  options:
-                  - value: 1-10
-                  - value: 11-20
-                  archived: false
-              has_dependant_object:
-                summary: Has Dependant Object
-                value:
-                  description: Trying to archieve
-                  archived: true
   "/events":
     post:
       summary: Submit a data event
@@ -18037,6 +18037,69 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
   "/teams/{team_id}":
+    get:
+      summary: Retrieve a team
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: team_id
+        in: path
+        required: true
+        description: The unique identifier of a given team.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Teams
+      operationId: retrieveTeam
+      description: You can fetch the details of a single team, containing an array
+        of admins that belong to this team.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: team
+                    id: '991267902'
+                    name: team 1
+                    admin_ids: []
+                    assignment_limit: 10
+                    distribution_method: round_robin
+              schema:
+                "$ref": "#/components/schemas/team"
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              examples:
+                Team not found:
+                  value:
+                    type: error.list
+                    request_id: 3ff156ba-a66e-40d4-93ff-cb6e6afc3c9d
+                    errors:
+                    - code: team_not_found
+                      message: Team not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: fc4b741b-b9f1-4ef9-92c7-eb71e9811df3
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/teams/{team_id}/metrics":
     get:
       summary: Retrieve team metrics
@@ -18117,69 +18180,6 @@ paths:
                     errors:
                     - code: team_not_found
                       message: "Team not found"
-              schema:
-                "$ref": "#/components/schemas/error"
-    get:
-      summary: Retrieve a team
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      - name: team_id
-        in: path
-        required: true
-        description: The unique identifier of a given team.
-        example: '123'
-        schema:
-          type: string
-      tags:
-      - Teams
-      operationId: retrieveTeam
-      description: You can fetch the details of a single team, containing an array
-        of admins that belong to this team.
-      responses:
-        '200':
-          description: successful
-          content:
-            application/json:
-              examples:
-                successful:
-                  value:
-                    type: team
-                    id: '991267902'
-                    name: team 1
-                    admin_ids: []
-                    assignment_limit: 10
-                    distribution_method: round_robin
-              schema:
-                "$ref": "#/components/schemas/team"
-        '404':
-          description: Team not found
-          content:
-            application/json:
-              examples:
-                Team not found:
-                  value:
-                    type: error.list
-                    request_id: 3ff156ba-a66e-40d4-93ff-cb6e6afc3c9d
-                    errors:
-                    - code: team_not_found
-                      message: Team not found
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: fc4b741b-b9f1-4ef9-92c7-eb71e9811df3
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
   "/ticket_states":
