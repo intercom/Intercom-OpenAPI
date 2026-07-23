@@ -49,8 +49,6 @@ fern generate --preview --group ts-sdk  # Preview SDK generation
 
 ## CI/CD (GitHub Actions)
 
-> **All workflows are currently disabled.** They live under `.github/workflows-disabled/` pending org-wide GitHub Actions re-enablement (see PR #536, merged 2026-06-03) and FERN_TOKEN / FERN_NPM_TOKEN re-provisioning (removed after the 2026-05-01 Fern token incident). The table below describes the intended behavior once workflows are restored via the `re-enable-workflow` process.
-
 | Workflow | Trigger | What it does |
 |---|---|---|
 | `fern_check.yml` | PR + push to main | Validates spec with `fern check` |
