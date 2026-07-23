@@ -4550,6 +4550,107 @@ paths:
                       message: Company Not Found
               schema:
                 "$ref": "#/components/schemas/error"
+    post:
+      summary: Create a company note
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: company_id
+        in: path
+        required: true
+        description: The unique identifier for the company which is given by Intercom
+        example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+        schema:
+          type: string
+      tags:
+      - Notes
+      - Companies
+      operationId: createCompanyNote
+      description: You can add a note to a single company.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: note
+                    id: '31'
+                    created_at: 1734537390
+                    company:
+                      type: company
+                      id: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
+                    author:
+                      type: admin
+                      id: '991267583'
+                      name: Ciaran124 Lee
+                      email: admin124@email.com
+                      away_mode_enabled: false
+                      away_mode_reassign: false
+                    body: "<p>Hello</p>"
+              schema:
+                "$ref": "#/components/schemas/note"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Company or admin not found
+          content:
+            application/json:
+              examples:
+                Admin not found:
+                  value:
+                    type: error.list
+                    request_id: 168f1bc3-d198-4797-8422-9f93fe8af5ad
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+                Company not found:
+                  value:
+                    type: error.list
+                    request_id: 6f372239-0259-428f-9943-91b8f7a92162
+                    errors:
+                    - code: company_not_found
+                      message: Company Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - body
+              properties:
+                body:
+                  type: string
+                  description: The text of the note.
+                  example: New note
+                admin_id:
+                  type: string
+                  description: The unique identifier of the admin creating the note. If not provided, defaults to the admin associated with the access token.
+                  example: '991267583'
+            examples:
+              successful_response:
+                summary: Successful response
+                value:
+                  body: Hello
+                  admin_id: '991267583'
+              admin_not_found:
+                summary: Admin not found
+                value:
+                  body: Hello
+                  admin_id: '123'
+              company_not_found:
+                summary: Company not found
+                value:
+                  body: Hello
   "/companies/list":
     post:
       summary: List all companies
@@ -5850,6 +5951,14 @@ paths:
         required: true
         schema:
           type: string
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include the contact's merge history in the response.
+          Only returned for contacts with a `user` role.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       - Custom Object Instances
@@ -6111,6 +6220,14 @@ paths:
         required: true
         schema:
           type: string
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include the contact's merge history in the response.
+          Only returned for contacts with a `user` role.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: ShowContact
@@ -6283,6 +6400,14 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include the merge history of the resulting contact
+          in the response. Only returned for contacts with a `user` role.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: MergeContact
@@ -6454,6 +6579,14 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include a `merge_history` array on each contact
+          in the response. Only returned for contacts with a `user` role.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: SearchContacts
@@ -6618,6 +6751,14 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include a `merge_history` array on each contact
+          in the response. Only returned for contacts with a `user` role.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: ListContacts
@@ -6816,6 +6957,14 @@ paths:
         description: The external ID of the user that you want to retrieve
         schema:
           type: string
+      - name: include_merge_history
+        in: query
+        description: Pass `true` to include the contact's merge history in the response.
+          Only returned for contacts with a `user` role.
+        required: false
+        schema:
+          type: boolean
+          default: false
       tags:
       - Contacts
       operationId: ShowContactByExternalId
@@ -6965,6 +7114,127 @@ paths:
               schema:
                 "$ref": "#/components/schemas/contact_archived"
   "/contacts/{contact_id}/unarchive":
+  "/contacts/{id}/banners":
+    get:
+      summary: List banners for a contact
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of a contact.
+        schema:
+          type: string
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Banners
+      - Contacts
+      operationId: listContactBanners
+      description: |
+        Returns the banners a contact currently matches, so you can display them on
+        surfaces outside the Messenger (native mobile apps, kiosks, embedded tools).
+
+        Each banner in the response includes a `view_id`. Use it to record a dismissal
+        with the dismiss endpoint. A returned banner is treated as shown: requesting
+        this endpoint records an impression for each banner returned, so call it at the
+        point you are about to display the banners, not speculatively.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - type: banner
+                      id: '486517'
+                      view_id: '645719311'
+                      title: Hi there
+                      body: "<p class=\"no-margin\">Hi there!</p>"
+                      style: inline
+                      position: top
+                      show_dismiss_button: true
+                      action:
+                      client_targeting:
+                      created_at: 1780580493
+              schema:
+                "$ref": "#/components/schemas/banner_list"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 57055cde-3d0d-4c67-b5c9-b20b80340bf0
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/contacts/{id}/banners/{view_id}/dismiss":
+    post:
+      summary: Dismiss a banner for a contact
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of a contact.
+        schema:
+          type: string
+      - name: view_id
+        in: path
+        required: true
+        description: The `view_id` of the banner to dismiss, as returned by the list banners endpoint.
+        schema:
+          type: string
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Banners
+      - Contacts
+      operationId: dismissContactBanner
+      description: |
+        Records that a contact has dismissed a banner. Dismissals are shared across
+        surfaces, so a banner dismissed through this endpoint will also stop appearing
+        in the web Messenger for that contact, and vice versa.
+
+        The request is idempotent: dismissing an already-dismissed banner succeeds and
+        returns the same response.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: banner_dismiss
+                    view_id: '645719311'
+                    dismissed: true
+              schema:
+                "$ref": "#/components/schemas/banner_dismiss"
+        '404':
+          description: Banner view not found
+          content:
+            application/json:
+              examples:
+                Banner view not found:
+                  value:
+                    type: error.list
+                    request_id: 57055cde-3d0d-4c67-b5c9-b20b80340bf0
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
     post:
       summary: Unarchive contact
       parameters:
@@ -6991,6 +7261,99 @@ paths:
               schema:
                 "$ref": "#/components/schemas/contact_unarchived"
   "/contacts/{contact_id}/block":
+  "/contacts/{id}/merge_history":
+    get:
+      summary: Get contact merge history
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        description: The id of the contact to fetch merge history for.
+        example: 63a07ddf05a32042dffac965
+        required: true
+        schema:
+          type: string
+      - name: cursor
+        in: query
+        description: A cursor for pagination. Pass the `next_cursor` value from a
+          previous response to fetch the next page.
+        required: false
+        schema:
+          type: string
+      - name: per_page
+        in: query
+        description: The number of results to return per page (default 50, max 150).
+        required: false
+        schema:
+          type: integer
+          default: 50
+          minimum: 1
+          maximum: 150
+      - name: order
+        in: query
+        description: The order to return results in. Defaults to descending.
+        required: false
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+      tags:
+      - Contacts
+      operationId: ListContactMergeHistory
+      description: |
+        Retrieve the paginated list of contacts that have been merged into a given contact.
+
+        Only available for contacts with a `user` role. Returns a `404` if the contact is not found or has a `lead` role.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: merge_history
+                      source_contact_id: 5ba682d23d7cf92bef87bfd3
+                      source_contact_role: lead
+                      merged_at: 1571672154
+                    next_cursor: eyJpZCI6IjYyMzQ1NiJ9
+                    has_more: true
+              schema:
+                "$ref": "#/components/schemas/merge_history_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 45b30bd1-75d2-40cc-bb39-74ac133a2836
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 45b30bd1-75d2-40cc-bb39-74ac133a2836
+                    errors:
+                    - code: not_found
+                      message: Contact not found
+              schema:
+                "$ref": "#/components/schemas/error"
     post:
       summary: Block contact
       parameters:
@@ -20858,6 +21221,147 @@ components:
           description: "The Unix timestamp when the status reason was last updated"
           example: 1734537243
     away_status_reason_list:
+    banner_list:
+      title: Banner List
+      type: object
+      description: A list of banners a contact currently matches.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `list`.
+          example: list
+        data:
+          type: array
+          description: An array of banners.
+          items:
+            "$ref": "#/components/schemas/banner"
+    banner:
+      title: Banner
+      type: object
+      x-tags:
+      - Banners
+      description: A banner the contact currently matches, with the content and view
+        identifier needed to display and dismiss it.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `banner`.
+          example: banner
+        id:
+          type: string
+          description: The id of the banner.
+          example: '486517'
+        view_id:
+          type: string
+          description: The id of the contact's view of this banner. Pass this to the
+            dismiss endpoint to record a dismissal.
+          example: '645719311'
+        title:
+          type: string
+          nullable: true
+          description: The banner's title. `null` when the banner has no title.
+          example: Hi there
+        body:
+          type: string
+          nullable: true
+          description: The banner's body content as HTML.
+          example: "<p class=\"no-margin\">Hi there!</p>"
+        style:
+          type: string
+          description: How the banner is displayed.
+          example: inline
+        position:
+          type: string
+          description: Where the banner is positioned.
+          example: top
+        show_dismiss_button:
+          type: boolean
+          description: Whether the banner should display a dismiss control.
+          example: true
+        action:
+          type: object
+          nullable: true
+          description: |
+            The action a contact can take on the banner, or `null` when the banner has
+            no action. The fields present depend on `type`:
+            `url` (`label`, `target`), `reaction` (`reaction_set`),
+            `email_collector`, or `product_tour` (`tour_id`, `tour_url`).
+          properties:
+            type:
+              type: string
+              description: The kind of action. One of `url`, `reaction`, `email_collector`,
+                or `product_tour`.
+              example: url
+            label:
+              type: string
+              nullable: true
+              description: For `url` actions, the label shown on the action link or button.
+              example: Learn more
+            target:
+              type: string
+              nullable: true
+              description: For `url` actions, the URL the contact is sent to.
+              example: https://www.intercom.com/pricing
+            reaction_set:
+              type: array
+              description: For `reaction` actions, the reactions a contact can choose from.
+              items:
+                type: object
+                properties:
+                  index:
+                    type: integer
+                    description: The reaction's position in the set.
+                    example: 0
+                  unicode_emoticon:
+                    type: string
+                    description: The reaction's unicode emoji.
+                    example: "\U0001F44D"
+            tour_id:
+              type: string
+              nullable: true
+              description: For `product_tour` actions, the id of the product tour to launch.
+              example: '12345'
+            tour_url:
+              type: string
+              nullable: true
+              description: For `product_tour` actions, the URL that launches the product tour.
+              example: https://app.intercom.com/tours/12345
+        client_targeting:
+          type: array
+          nullable: true
+          description: |
+            Reserved for future use. Always `null` in the current version — banners
+            that depend on client-side targeting rules (such as page URL or time on
+            page) are not returned by this endpoint.
+          items:
+            type: object
+        created_at:
+          type: integer
+          format: timestamp
+          description: The time the contact's view of this banner was created.
+          example: 1780580493
+    banner_dismiss:
+      title: Banner Dismiss
+      type: object
+      x-tags:
+      - Banners
+      description: The result of dismissing a banner for a contact.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `banner_dismiss`.
+          example: banner_dismiss
+        view_id:
+          type: string
+          description: The id of the dismissed banner view.
+          example: '645719311'
+        dismissed:
+          type: boolean
+          description: Whether the banner view is dismissed.
+          example: true
       title: Away Status Reasons
       type: object
       description: A list of away status reasons.
@@ -21148,6 +21652,19 @@ components:
               type: array
               items:
                 "$ref": "#/components/schemas/segment"
+        notes:
+          type: object
+          description: The list of notes associated with the company
+          properties:
+            type:
+              type: string
+              description: The type of the object
+              enum:
+              - note.list
+            notes:
+              type: array
+              items:
+                "$ref": "#/components/schemas/company_note"
     company_attached_contacts:
       title: Company Attached Contacts
       type: object
@@ -21512,6 +22029,14 @@ components:
           "$ref": "#/components/schemas/contact_location"
         social_profiles:
           "$ref": "#/components/schemas/contact_social_profiles"
+        merge_history:
+          type: array
+          nullable: true
+          description: A list of contacts that were merged into this contact. Only
+            included in the response when `include_merge_history=true` is passed as
+            a query parameter. Only available for contacts with a `user` role.
+          items:
+            "$ref": "#/components/schemas/merge_history_item"
     contact_attached_companies:
       title: Contact Attached Companies
       type: object
@@ -23920,6 +24445,11 @@ components:
           type: string
           description: A unique identifier for the contact which is given to Intercom
           example: "625e90fc55ab113b6d92175f"
+        email_verified:
+          type: boolean
+          nullable: true
+          description: Whether the contact's email address has been verified. Set to true to indicate you have verified the contact owns this email address, or false to mark it as unverified. Must be supplied together with an email in the same request; sending it without an email returns a 400.
+          example: true
         email:
           type: string
           description: The contacts email
@@ -24469,6 +24999,10 @@ components:
           type: integer
           description: The time the company was created by you.
           example: 1394531169
+        update_last_request_at:
+          type: boolean
+          description: Set to true to update the company's last seen time to now.
+          example: true
         monthly_spend:
           type: integer
           description: How much revenue the company generates for your business. Note
@@ -28028,6 +28562,58 @@ components:
           items:
             "$ref": "#/components/schemas/linked_object"
     merge_contacts_request:
+    merge_history_item:
+      title: Merge History Item
+      type: object
+      description: A record of a contact that was merged into another contact.
+      properties:
+        type:
+          type: string
+          description: The type of object.
+          example: merge_history
+        source_contact_id:
+          type: string
+          description: The Intercom ID of the contact that was merged into this contact.
+          example: 5ba682d23d7cf92bef87bfd3
+        source_contact_role:
+          type: string
+          description: The role of the contact that was merged in.
+          enum:
+          - lead
+          - user
+          example: lead
+        merged_at:
+          type: integer
+          nullable: true
+          format: date-time
+          description: "(Unix timestamp in seconds) The time when the merge occurred."
+          example: 1571672154
+    merge_history_list:
+      title: Merge History List
+      type: object
+      description: A paginated list of merge history entries for a contact.
+      properties:
+        type:
+          type: string
+          description: The type of object.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of merge history entries.
+          items:
+            "$ref": "#/components/schemas/merge_history_item"
+        next_cursor:
+          type: string
+          nullable: true
+          description: A cursor to pass as the `cursor` query parameter to fetch
+            the next page of results. Absent when there are no more pages.
+          example: WyIxNjM0NTY3ODkwIl0
+        has_more:
+          type: boolean
+          description: Whether there are more results to fetch.
+          example: false
       description: Merge contact data.
       type: object
       title: Merge contact data
@@ -28426,7 +29012,8 @@ components:
       type: object
       x-tags:
       - Notes
-      description: Notes allow you to annotate and comment on your contacts.
+      description: Notes allow you to annotate and comment on your contacts and companies.
+        A note is attached to either a contact or a company, never both.
       properties:
         type:
           type: string
@@ -28455,6 +29042,19 @@ components:
               type: string
               description: The id of the contact.
               example: 214656d0c743eafcfde7f248
+        company:
+          type: object
+          description: Represents the company that the note was created about.
+          nullable: true
+          properties:
+            type:
+              type: string
+              description: String representing the object's type. Always has the value
+                `company`.
+            id:
+              type: string
+              description: The id of the company.
+              example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
         author:
           "$ref": "#/components/schemas/admin"
           description: Optional. Represents the Admin that created the note.
@@ -28465,7 +29065,7 @@ components:
     note_list:
       title: Paginated Response
       type: object
-      description: A paginated list of notes associated with a contact.
+      description: A paginated list of notes associated with a contact or a company.
       properties:
         type:
           type: string
@@ -30165,6 +30765,11 @@ components:
           type: string
           description: The contacts email
           example: jdoe@example.com
+        email_verified:
+          type: boolean
+          nullable: true
+          description: Whether the contact's email address has been verified. Set to true to indicate you have verified the contact owns this email address, or false to mark it as unverified. Must be supplied together with an email in the same request; sending it without an email returns a 400.
+          example: true
         phone:
           type: string
           nullable: true
