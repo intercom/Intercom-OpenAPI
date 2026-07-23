@@ -2702,6 +2702,196 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/articles/{article_id}/versions":
+    get:
+      summary: List article versions
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: article_id
+        in: path
+        required: true
+        description: The unique identifier for the article whose versions you are
+          listing.
+        example: 123
+        schema:
+          type: integer
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to the first page.
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page.
+        example: 25
+        schema:
+          type: integer
+      - name: locale
+        in: query
+        required: false
+        description: Filter versions to a specific locale. Use the locale identifier
+          (for example `en`, `fr`). If the locale is not configured for the workspace,
+          a `400` is returned.
+        example: en
+        schema:
+          type: string
+      tags:
+      - Articles
+      operationId: listArticleVersions
+      description: |
+        Fetch the version history of an article by making a GET request to
+        `https://api.intercom.io/articles/<article_id>/versions`. Versions are
+        returned newest-first as a paginated list of metadata. Use
+        `GET /articles/{article_id}/versions/{id}` to retrieve a single version
+        with its full content.
+
+        Requires the `read_articles_scope` OAuth scope.
+      responses:
+        '200':
+          description: Versions found
+          content:
+            application/json:
+              examples:
+                Versions found:
+                  value:
+                    type: list
+                    pages:
+                      type: pages
+                      page: 1
+                      per_page: 25
+                      total_pages: 1
+                    total_count: 2
+                    data:
+                    - type: article_version
+                      id: '301'
+                      article_id: '123'
+                      title: This is the article title
+                      description: ''
+                      author_id: '991267502'
+                      created_by_id: '5017691'
+                      created_via: web
+                      from_version_id: '300'
+                      state: published
+                      created_at: 1734537292
+                    - type: article_version
+                      id: '300'
+                      article_id: '123'
+                      title: This was the earlier title
+                      description: ''
+                      author_id: '991267502'
+                      created_by_id: '5017691'
+                      created_via: api
+                      from_version_id: null
+                      state: draft
+                      created_at: 1734530000
+              schema:
+                "$ref": "#/components/schemas/article_version_list"
+        '400':
+          description: Unknown locale
+          content:
+            application/json:
+              examples:
+                Unknown locale:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: parameter_invalid
+                      message: Unknown locale
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+  "/articles/{article_id}/versions/{id}":
+    get:
+      summary: Retrieve an article version
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: article_id
+        in: path
+        required: true
+        description: The unique identifier for the article.
+        example: 123
+        schema:
+          type: integer
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the version.
+        example: '301'
+        schema:
+          type: string
+      - name: locale
+        in: query
+        required: false
+        description: Return the version's content for a specific locale. If the locale
+          is not configured for the workspace, a `400` is returned.
+        example: en
+        schema:
+          type: string
+      tags:
+      - Articles
+      operationId: retrieveArticleVersion
+      description: |
+        Fetch a single prior version of an article, including its body content,
+        by making a GET request to
+        `https://api.intercom.io/articles/<article_id>/versions/<id>`. Returns
+        the version's full content; the live article remains untouched.
+
+        Requires the `read_articles_scope` OAuth scope.
+      responses:
+        '200':
+          description: Version found
+          content:
+            application/json:
+              examples:
+                Version found:
+                  value:
+                    type: article_version
+                    id: '301'
+                    article_id: '123'
+                    title: This is the article title
+                    description: ''
+                    body: <p class="no-margin">Body of this version</p>
+                    body_markdown: "Body of this version\n"
+                    author_id: '991267502'
+                    created_by_id: '5017691'
+                    created_via: web
+                    from_version_id: '300'
+                    state: published
+                    created_at: 1734537292
+                    updated_at: 1734537292
+              schema:
+                "$ref": "#/components/schemas/article_version"
+        '400':
+          description: Unknown locale
+          content:
+            application/json:
+              examples:
+                Unknown locale:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: parameter_invalid
+                      message: Unknown locale
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/articles/search":
     get:
       summary: Search for articles
@@ -22312,6 +22502,43 @@ components:
         url:
           type: string
           description: The URL of the article.
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs this article content is targeted to for Fin AI Agent.
+            On multilingual help centers this field appears per-locale inside `translated_content`.
+            On single-language help centers it appears at the article root level.
+            Empty array means no audience targeting is set.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
+        ai_chatbot_availability:
+          type: boolean
+          description: Whether the article is available for AI Chatbot.
+          example: true
+        ai_copilot_availability:
+          type: boolean
+          description: Whether the article is available for AI Copilot.
+          example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the article is available for AI Sales Agent.
+          example: true
+        created_by_id:
+          type: integer
+          nullable: true
+          readOnly: true
+          description: The ID of the teammate who created this content version.
+          example: 5017691
+        updated_by_id:
+          type: integer
+          nullable: true
+          readOnly: true
+          description: The ID of the teammate who last updated this content version.
+          example: 5017691
           example: http://intercom.test/help/en/articles/3-default-language
     internal_article_list:
       title: Internal Articles
@@ -22440,6 +22667,75 @@ components:
           example:
           - 18
           - 19
+        ai_chatbot_availability:
+          type: boolean
+          description: Whether the article is available for AI Chatbot. For multilingual
+            articles, this will be the value of the default language's content.
+          example: true
+        ai_copilot_availability:
+          type: boolean
+          description: Whether the article is available for AI Copilot. For multilingual
+            articles, this will be the value of the default language's content.
+          example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the article is available for AI Sales Agent. For multilingual
+            articles, this will be the value of the default language's content.
+          example: true
+        created_by_id:
+          type: integer
+          nullable: true
+          readOnly: true
+          description: The ID of the teammate who created the article. For multilingual
+            articles, this will be the creator of the default language's content.
+          example: 5017691
+        updated_by_id:
+          type: integer
+          nullable: true
+          readOnly: true
+          description: The ID of the teammate who last updated the article. For multilingual
+            articles, this will be the last editor of the default language's content.
+          example: 5017691
+        exclude_from_article_suggestions:
+          type: boolean
+          readOnly: true
+          description: Whether the article is excluded from Fin AI Agent article suggestions.
+          example: false
+        help_center_audience:
+          type: string
+          nullable: true
+          readOnly: true
+          enum:
+          - everyone
+          - all_users
+          - all_visitors
+          - all_leads
+          - all_visitors_and_leads
+          - restricted
+          description: The audience that can view this article in the Help Center. `everyone`
+            means all users and visitors can view it; `restricted` indicates a custom audience
+            ruleset. For multilingual articles, this is the article-level audience.
+          example: everyone
+        scheduled_publish_at:
+          type: integer
+          format: date-time
+          nullable: true
+          readOnly: true
+          description: >-
+            The Unix timestamp (in seconds) at which the article is scheduled to be
+            published. `null` when no publish is scheduled. Mutually exclusive with
+            `scheduled_unpublish_at` — at most one pending schedule exists per article.
+          example: 1769443200
+        scheduled_unpublish_at:
+          type: integer
+          format: date-time
+          nullable: true
+          readOnly: true
+          description: >-
+            The Unix timestamp (in seconds) at which the article is scheduled to be
+            unpublished. `null` when no unpublish is scheduled. Mutually exclusive
+            with `scheduled_publish_at` — at most one pending schedule exists per article.
+          example: 1769443200
         default_locale:
           type: string
           description: The default locale of the help center. This field is only returned
@@ -22497,6 +22793,29 @@ components:
         locale:
           type: string
           description: The default locale of the article.
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs this internal article is targeted to for Fin AI Agent.
+            Empty array means no audience targeting is set.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
+        ai_chatbot_availability:
+          type: boolean
+          description: Whether the internal article is available for AI Chatbot (Fin).
+          example: true
+        ai_copilot_availability:
+          type: boolean
+          description: Whether the internal article is available for AI Copilot.
+          example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the internal article is available for AI Sales Agent.
+          example: true
           example: en
     article_search_highlights:
       title: Article Search Highlights
@@ -22652,6 +22971,25 @@ components:
           type: number
           format: float
           description: The percentage of sad reactions the article has received against
+        fin_involvements:
+          type: integer
+          readOnly: true
+          description: The number of conversations in which Fin AI Agent used this article,
+            summed across all of the article's locales.
+          example: 10
+        fin_resolutions:
+          type: integer
+          readOnly: true
+          description: The number of conversations Fin AI Agent resolved using this article,
+            summed across all of the article's locales.
+          example: 8
+        fin_resolution_rate:
+          type: number
+          format: float
+          readOnly: true
+          description: The percentage of Fin AI Agent involvements that resulted in a resolution
+            (fin_resolutions / fin_involvements * 100).
+          example: 80.0
             other types of reaction.
           example: 20.0
     article_translated_content:
@@ -22780,6 +23118,174 @@ components:
         zh-TW:
           description: The content of the article in Chinese (Taiwan)
           "$ref": "#/components/schemas/article_content"
+    article_version:
+      title: Article Version
+      type: object
+      x-tags:
+      - Articles
+      description: A historical version of an article, including its content.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `article_version`.
+          enum:
+          - article_version
+          example: article_version
+        id:
+          type: string
+          description: The unique identifier for the version.
+          example: '301'
+        article_id:
+          type: string
+          description: The unique identifier of the article this version belongs to.
+          example: '123'
+        title:
+          type: string
+          description: The title of the article at this version.
+          example: This is the article title
+        description:
+          type: string
+          nullable: true
+          description: The description of the article at this version.
+          example: ''
+        body:
+          type: string
+          nullable: true
+          description: The HTML body of the article at this version.
+          example: <p class="no-margin">Body of this version</p>
+        body_markdown:
+          type: string
+          nullable: true
+          description: The Markdown body of the article at this version.
+          example: |
+            Body of this version
+        author_id:
+          type: string
+          description: The id of the teammate listed as the article's author at this
+            version.
+          example: '991267502'
+        created_by_id:
+          type: string
+          nullable: true
+          description: The id of the teammate who created this version.
+          example: '5017691'
+        created_via:
+          type: string
+          description: How this version was created (for example `web`, `api`).
+          example: web
+        from_version_id:
+          type: string
+          nullable: true
+          description: The id of the version this version was created from, or `null`
+            if this is the first version.
+          example: '300'
+        state:
+          type: string
+          description: Whether this version is the currently published version of
+            the article (`published`) or an earlier non-live version (`draft`).
+          enum:
+          - published
+          - draft
+          example: published
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the version was created, as a UTC Unix timestamp.
+          example: 1734537292
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time the version was last updated, as a UTC Unix timestamp.
+          example: 1734537292
+    article_version_list:
+      title: Article Versions
+      type: object
+      description: A paginated list of versions of an article.
+      properties:
+        type:
+          type: string
+          description: The type of the object - `list`.
+          enum:
+          - list
+          example: list
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
+        total_count:
+          type: integer
+          description: A count of the total number of versions.
+          example: 2
+        data:
+          type: array
+          description: An array of Article version summary objects.
+          items:
+            "$ref": "#/components/schemas/article_version_summary"
+    article_version_summary:
+      title: Article Version Summary
+      type: object
+      x-tags:
+      - Articles
+      description: A metadata summary of an article version, as returned by the version-history
+        list endpoint. Omits the version's body content - fetch a single version to
+        retrieve its `body` and `body_markdown`.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `article_version`.
+          enum:
+          - article_version
+          example: article_version
+        id:
+          type: string
+          description: The unique identifier for the version.
+          example: '301'
+        article_id:
+          type: string
+          description: The unique identifier of the article this version belongs to.
+          example: '123'
+        title:
+          type: string
+          description: The title of the article at this version.
+          example: This is the article title
+        description:
+          type: string
+          nullable: true
+          description: The description of the article at this version.
+          example: ''
+        author_id:
+          type: string
+          description: The id of the teammate listed as the article's author at this
+            version.
+          example: '991267502'
+        created_by_id:
+          type: string
+          nullable: true
+          description: The id of the teammate who created this version.
+          example: '5017691'
+        created_via:
+          type: string
+          description: How this version was created (for example `web`, `api`).
+          example: web
+        from_version_id:
+          type: string
+          nullable: true
+          description: The id of the version this version was created from, or `null`
+            if this is the first version.
+          example: '300'
+        state:
+          type: string
+          description: Whether this version is the currently published version of
+            the article (`published`) or an earlier non-live version (`draft`).
+          enum:
+          - published
+          - draft
+          example: published
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the version was created, as a UTC Unix timestamp.
+          example: 1734537292
     assign_conversation_request:
       title: Assign Conversation Request
       type: object
@@ -26160,6 +26666,64 @@ components:
           example: collection
         translated_content:
           "$ref": "#/components/schemas/article_translated_content"
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to assign to this article for Fin AI Agent targeting.
+            Sending a top-level `audience_ids` broadcasts the same set to every locale.
+            For per-locale targeting, use `translated_content.<locale>.audience_ids` instead.
+            Sending both top-level and per-locale in the same request causes top-level to win.
+            Unknown audience IDs return a 404 error. No partial commit occurs.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
+        ai_chatbot_availability:
+          type: boolean
+          description: Whether the article should be available for AI Chatbot (Fin).
+            For multilingual articles, this sets the default language's availability.
+          example: true
+        ai_copilot_availability:
+          type: boolean
+          description: Whether the article should be available for AI Copilot. For
+            multilingual articles, this sets the default language's availability.
+          example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the article should be available for AI Sales Agent.
+            For multilingual articles, this sets the default language's availability.
+          example: true
+        scheduled_publish_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            ISO 8601 timestamp at which to schedule a future publish of the article.
+            When set together with `state: "published"`, the article is scheduled
+            instead of published immediately. Setting `null` cancels a pending
+            publish schedule. Timestamps in the past or equal to the current time
+            are rejected with 400 `parameter_invalid` — the value must be strictly
+            in the future. Combining with `state: "draft"` returns 400
+            `parameter_invalid`. Sending in the same request as
+            `scheduled_unpublish_at` returns 400 — only one pending schedule per
+            article. Empty string returns 400 `parameter_invalid`.
+          example: '2026-12-31T09:00:00Z'
+        scheduled_unpublish_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            ISO 8601 timestamp at which to schedule a future unpublish of the article.
+            Setting `null` cancels a pending unpublish schedule. Timestamps in the
+            past or equal to the current time are rejected with 400
+            `parameter_invalid` — the value must be strictly in the future. Rejected
+            with 400 `parameter_invalid` if the article has never been published.
+            Sending in the same request as `scheduled_publish_at` returns 400 — only
+            one pending schedule per article. Empty string returns 400
+            `parameter_invalid`.
+          example: '2026-12-31T17:00:00Z'
       required:
       - title
       - author_id
@@ -26185,6 +26749,36 @@ components:
           type: integer
           description: The id of the owner of the article.
           example: 1295
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to target this internal article to for Fin AI Agent.
+            Pass an empty array or omit the field for no audience targeting.
+            Unknown audience IDs return a `404` error with no partial commit.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
+        ai_chatbot_availability:
+          type: boolean
+          description: Whether the internal article should be available for AI Chatbot
+            (Fin). Defaults to false.
+          default: false
+          example: true
+        ai_copilot_availability:
+          type: boolean
+          description: Whether the internal article should be available for AI Copilot.
+            Defaults to false.
+          default: false
+          example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the internal article should be available for AI Sales
+            Agent. Defaults to false.
+          default: false
+          example: true
       required:
       - title
       - owner_id
@@ -30185,6 +30779,18 @@ components:
           nullable: true
           description: Custom domain configured for the help center
           example: "help.mycompany.com"
+        default:
+          type: boolean
+          description: Whether this help center is the default for the workspace.
+          example: false
+        locales:
+          type: array
+          description: The locales in which the help center is available.
+          items:
+            type: string
+          example:
+          - en
+          - fr
     help_center_list:
       title: Help Centers
       type: object
@@ -32641,6 +33247,65 @@ components:
           example: collection
         translated_content:
           "$ref": "#/components/schemas/article_translated_content"
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to assign to this article for Fin AI Agent targeting.
+            Sending a top-level `audience_ids` broadcasts the same set to every locale.
+            Sending `audience_ids: []` clears all audience memberships from every locale.
+            For per-locale targeting, use `translated_content.<locale>.audience_ids` instead.
+            Sending both top-level and per-locale in the same request causes top-level to win.
+            Unknown audience IDs return a 404 error. No partial commit occurs.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
+        ai_chatbot_availability:
+          type: boolean
+          description: Whether the article should be available for AI Chatbot (Fin).
+            For multilingual articles, this sets the default language's availability.
+          example: true
+        ai_copilot_availability:
+          type: boolean
+          description: Whether the article should be available for AI Copilot. For
+            multilingual articles, this sets the default language's availability.
+          example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the article should be available for AI Sales Agent.
+            For multilingual articles, this sets the default language's availability.
+          example: true
+        scheduled_publish_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            ISO 8601 timestamp at which to schedule a future publish of the article.
+            When set together with `state: "published"`, the article is scheduled
+            instead of published immediately. Setting `null` cancels a pending
+            publish schedule. Timestamps in the past or equal to the current time
+            are rejected with 400 `parameter_invalid` — the value must be strictly
+            in the future. Combining with `state: "draft"` returns 400
+            `parameter_invalid`. Sending in the same request as
+            `scheduled_unpublish_at` returns 400 — only one pending schedule per
+            article. Empty string returns 400 `parameter_invalid`.
+          example: '2026-12-31T09:00:00Z'
+        scheduled_unpublish_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            ISO 8601 timestamp at which to schedule a future unpublish of the article.
+            Setting `null` cancels a pending unpublish schedule. Timestamps in the
+            past or equal to the current time are rejected with 400
+            `parameter_invalid` — the value must be strictly in the future. Rejected
+            with 400 `parameter_invalid` if the article has never been published.
+            Sending in the same request as `scheduled_publish_at` returns 400 — only
+            one pending schedule per article. Empty string returns 400
+            `parameter_invalid`.
+          example: '2026-12-31T17:00:00Z'
     update_internal_article_request:
       description: You can Update an Internal Article
       type: object
@@ -32662,6 +33327,33 @@ components:
           type: integer
           description: The id of the author of the article.
           example: 1295
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to target this internal article to for Fin AI Agent.
+            Omitting the field leaves existing audience memberships unchanged (PATCH semantics).
+            Pass `[]` to clear all audience memberships.
+            Unknown audience IDs return a `404` error with no partial commit.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
+        ai_chatbot_availability:
+          type: boolean
+          description: Whether the internal article should be available for AI Chatbot
+            (Fin).
+          example: true
+        ai_copilot_availability:
+          type: boolean
+          description: Whether the internal article should be available for AI Copilot.
+          example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the internal article should be available for AI Sales
+            Agent.
+          example: true
     update_collection_request:
       description: You can update a collection
       type: object
