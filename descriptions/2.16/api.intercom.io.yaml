@@ -8427,7 +8427,7 @@ paths:
       - name: display_as
         in: query
         required: false
-        description: Set to plaintext to retrieve conversation messages in plain text.
+        description: Set to plaintext to retrieve conversation messages in plain text. This affects both the body and subject fields. Inline links are rendered as `label (url)`, preserving the link URL alongside the visible text.
         example: plaintext
         schema:
           type: string
@@ -8681,7 +8681,7 @@ paths:
       - name: display_as
         in: query
         required: false
-        description: Set to plaintext to retrieve conversation messages in plain text.
+        description: Set to plaintext to retrieve conversation messages in plain text. This affects both the body and subject fields. Inline links are rendered as `label (url)`, preserving the link URL alongside the visible text.
         example: plaintext
         schema:
           type: string
@@ -8965,6 +8965,15 @@ paths:
         required: true
         schema:
           type: integer
+      - name: retain_metrics
+        in: query
+        required: false
+        description: If true (default), deletes the conversation while retaining reporting
+          data. If false, deletes the conversation and all associated reporting data.
+          Setting to false requires the `delete_conversations_and_metrics` OAuth scope.
+        example: true
+        schema:
+          type: boolean
       tags:
       - Conversations
       operationId: deleteConversation
@@ -8973,7 +8982,17 @@ paths:
         Deleting a conversation is permanent and cannot be reversed.
         {% /admonition %}
 
-        Deleting a conversation permanently removes it from the inbox. All sensitive data is deleted, including admin and user replies, conversation attributes, uploads, and related content. The conversation will still appear in reporting, though some data may be incomplete due to the deletion.
+        You can delete a single conversation. The behavior depends on the `retain_metrics` parameter:
+
+        - **With `retain_metrics=true` (default)**: Deletes the conversation while retaining reporting data. The conversation will still appear in reporting, though some data may be incomplete due to the deletion.
+
+        - **With `retain_metrics=false`**: Deletes the conversation and all associated reporting data. The conversation will be completely removed from both the inbox and all reporting.
+
+        {% admonition type="info" name="Required scope for retain_metrics=false" %}
+        Using `retain_metrics=false` requires the `delete_conversations_and_metrics` OAuth scope.
+        {% /admonition %}
+
+        For more info, see [this help center article](https://www.intercom.com/help/en/articles/13885146-deleting-a-conversation).
       responses:
         '200':
           description: successful
@@ -9023,6 +9042,22 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: include_monitors
+        in: query
+        required: false
+        description: If set to true, the response will include a `monitor_evaluations` array on each conversation with any QA monitor results that flagged it.
+        example: true
+        schema:
+          type: boolean
+          default: false
+      - name: include_scorecards
+        in: query
+        required: false
+        description: If set to true, the response will include a `scorecards` array on each conversation with any QA scorecard results.
+        example: true
+        schema:
+          type: boolean
+          default: false
       tags:
       - Conversations
       operationId: searchConversations
@@ -10379,6 +10414,89 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/conversations/{id}/side_conversations":
+    get:
+      summary: List side conversations
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The identifier for the conversation as given by Intercom.
+        example: '123'
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: The page number of results to return (starting from 1).
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of side conversations to return per page (max 50).
+        schema:
+          type: integer
+          default: 25
+          maximum: 50
+      tags:
+      - Conversations
+      operationId: listSideConversations
+      description: |
+        List side conversations for a given conversation. Side conversations are internal threads created by teammates from within a conversation.
+
+        Each side conversation includes its conversation parts (messages). Results are paginated.
+
+        Requires the `read_conversations` OAuth scope.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/side_conversation_list"
+              examples:
+                Successful response:
+                  value:
+                    type: side_conversation.list
+                    side_conversations:
+                    - side_conversation_id: '456'
+                      conversation_parts:
+                      - type: conversation_part
+                        id: '789'
+                        part_type: comment
+                        body: "<p>Internal note about this issue</p>"
+                        author:
+                          type: admin
+                          id: '123'
+                          name: Jane Example
+                          email: jane@example.com
+                        created_at: 1663597223
+                        updated_at: 1663597223
+                      total_count: 1
+                    total_count: 1
+                    pages:
+                      type: pages
+                      page: 1
+                      per_page: 25
+                      total_pages: 1
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/redact":
     post:
       summary: Redact a conversation part
@@ -10530,6 +10648,199 @@ paths:
                   type: conversation_part
                   conversation_id: really_123_doesnt_exist
                   conversation_part_id: really_123_doesnt_exist
+  "/conversations/{id}/merge":
+    post:
+      summary: Merge a conversation
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The identifier for the secondary (source) conversation to merge away.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: mergeConversation
+      description: |
+        Merge a secondary (source) conversation into a primary (target) conversation.
+        The secondary conversation is closed and linked to the primary, which
+        becomes the surviving thread. Returns the primary conversation on success.
+
+        Requires `write_conversations` OAuth scope. When the secondary is a ticket,
+        `write_tickets` scope is also required.
+      responses:
+        '200':
+          description: Conversation merged
+          content:
+            application/json:
+              examples:
+                Conversation merged:
+                  value:
+                    type: conversation
+                    id: '456'
+                    created_at: 1734537559
+                    updated_at: 1734537561
+                    waiting_since: 1734537561
+                    snoozed_until:
+                    source:
+                      type: conversation
+                      id: '403918349'
+                      delivered_as: admin_initiated
+                      subject: ''
+                      body: "<p>this is the message body</p>"
+                      author:
+                        type: admin
+                        id: '991267694'
+                        name: Ciaran212 Lee
+                        email: admin212@email.com
+                      attachments: []
+                      url:
+                      redacted: false
+                    contacts:
+                      type: contact.list
+                      contacts:
+                      - type: contact
+                        id: 6762f1571bb69f9f2193bbbb
+                        external_id: '70'
+                    first_contact_reply:
+                      created_at: 1734537561
+                      type: conversation
+                      url:
+                    admin_assignee_id:
+                    team_assignee_id:
+                    open: true
+                    state: open
+                    read: false
+                    tags:
+                      type: tag.list
+                      tags: []
+                    priority: none
+                    sla_applied:
+                    statistics:
+                    conversation_rating:
+                    teammates:
+                    title:
+                    custom_attributes: {}
+                    topics: {}
+                    ticket:
+                    linked_objects:
+                      type: list
+                      data: []
+                      total_count: 0
+                      has_more: false
+                    ai_topics:
+                    ai_agent:
+                    ai_agent_participated: false
+                    conversation_parts:
+                      type: conversation_part.list
+                      conversation_parts:
+                      - type: conversation_part
+                        id: '133'
+                        part_type: merged_primary_conversation
+                        body:
+                        created_at: 1734537561
+                        updated_at: 1734537561
+                        notified_at: 1734537561
+                        assigned_to:
+                        author:
+                          id: '991267694'
+                          type: bot
+                          name: Operator
+                          email: operator@intercom.io
+                        attachments: []
+                        external_id:
+                        redacted: false
+                        metadata: {}
+                        email_message_metadata:
+                        app_package_code: null
+                      total_count: 1
+              schema:
+                "$ref": "#/components/schemas/conversation"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Bad request:
+                  value:
+                    type: error.list
+                    request_id: 450e0b22-ccc2-40dd-bf54-bc0faaa28f57
+                    errors:
+                    - code: parameter_invalid
+                      message: merge_into_conversation_id must be a valid integer conversation ID
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: b4f6c9d3-2345-6789-abcd-ef0123456789
+                    errors:
+                    - code: forbidden
+                      message: Forbidden request
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Merge failed
+          content:
+            application/json:
+              examples:
+                Primary not found:
+                  value:
+                    type: error.list
+                    request_id: c5a7d0e4-3456-789a-bcde-f01234567890
+                    errors:
+                    - code: merge_failed
+                      message: Primary conversation not found
+                Already merged:
+                  value:
+                    type: error.list
+                    request_id: d6b8e1f5-4567-890b-cdef-012345678901
+                    errors:
+                    - code: merge_failed
+                      message: Secondary conversation has already been merged
+                Self-merge:
+                  value:
+                    type: error.list
+                    request_id: e7c9f2a6-5678-901c-def0-123456789012
+                    errors:
+                    - code: merge_failed
+                      message: Cannot merge a conversation into itself
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/merge_conversations_request"
+            examples:
+              merge_a_conversation:
+                summary: Merge a conversation
+                value:
+                  merge_into_conversation_id: 456
   "/conversations/{conversation_id}/convert":
     post:
       summary: Convert a conversation to a ticket
@@ -10663,6 +10974,100 @@ paths:
                 summary: Bad request
                 value:
                   ticket_type_id: '54'
+  "/conversations/deleted":
+    get:
+      summary: List all deleted conversation IDs
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many results per page
+        schema:
+          type: integer
+          default: 20
+          maximum: 60
+      - name: order
+        in: query
+        required: false
+        description: "`asc` or `desc`. Returns the conversation IDs in ascending or descending order. Defaults to desc"
+        example: desc
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: listDeletedConversationIds
+      description: |+
+        List all deleted conversation IDs.
+
+        {% admonition type="warning" name="Pagination" %}
+          You can use pagination to limit the number of results returned. The default is `20` results per page. You can navigate to next pages using the `page` param.
+        {% /admonition %}
+      responses:
+        '200':
+          description: View all deleted conversation IDs
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: conversations.list
+                    total_count: 4
+                    pages:
+                      type: pages
+                      next: https://api.intercom.io/conversations/deleted?per_page=2&order=desc&page=2
+                      page: 1
+                      per_page: 2
+                      total_pages: 2
+                    conversations:
+                    - type: conversation
+                      id: '512'
+                      metrics_retained: false
+                      deleted_at: 1734537460
+                    - type: conversation
+                      id: '513'
+                      metrics_retained: true
+                      deleted_at: 1734537400
+              schema:
+                "$ref": "#/components/schemas/deleted_conversation_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 310f55b0-2660-43e8-bed4-7e82b2f40920
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Resource not available
+          content:
+            application/json:
+              examples:
+                Resource not available:
+                  value:
+                    type: error.list
+                    request_id: 7a80b950-b392-499f-85db-ea7c6c424d37
+                    errors:
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version.
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/attributes":
     get:
       summary: List all conversation attributes
@@ -19517,6 +19922,37 @@ components:
           nullable: true
         content_sources:
           "$ref": "#/components/schemas/content_sources_list"
+    sales_agent:
+      title: Sales Agent
+      type: object
+      x-tags:
+      - Sales Agent
+      description: Data related to Sales Agent involvement in the conversation.
+      properties:
+        outcome:
+          type: string
+          nullable: true
+          description: The fixed outcome of the sales agent interaction, used for
+            billing and tracking.
+          enum:
+          - qualified
+          - disqualified
+          - product_discovery
+          - escalated_to_support
+          - spam
+          example: qualified
+        routing_outcome:
+          type: string
+          nullable: true
+          description: The identifier of the user-defined routing outcome selected
+            by the sales agent.
+          example: enterprise_sales
+        collected_data:
+          type: object
+          nullable: true
+          description: A flat key-value map of memory fields collected by the sales
+            agent during the conversation.
+          additionalProperties:
     ai_call_response:
       title: AI Call Response
       type: object
@@ -22291,6 +22727,39 @@ components:
         ai_agent:
           "$ref": "#/components/schemas/ai_agent"
           nullable: true
+        sales_agent_participated:
+          type: boolean
+          description: Indicates whether the Sales Agent participated in the conversation.
+          example: false
+        sales_agent:
+          "$ref": "#/components/schemas/sales_agent"
+          nullable: true
+        channel:
+          allOf:
+            - "$ref": "#/components/schemas/conversation_channel"
+          type: object
+          nullable: true
+          description: The channel through which the conversation was initiated and its current channel.
+        external_references:
+          type: array
+          description: References linking this conversation to records in an external helpdesk or CRM system. Populated for Fin Standalone workspaces synced from an external platform; an empty array otherwise. Sorted alphabetically by `type` and capped at 20 entries.
+          items:
+            "$ref": "#/components/schemas/conversation_external_reference"
+          example:
+            - type: zendesk_ticket
+              id: '3633338'
+            - type: zendesk_sunshine_conversation
+              id: abc-def-uuid
+        monitor_evaluations:
+          type: array
+          description: QA monitor evaluations that flagged this conversation. Only included when `include_monitors=true` is passed as a query parameter.
+          items:
+            "$ref": "#/components/schemas/conversation_monitor_evaluation"
+        scorecards:
+          type: array
+          description: QA scorecard results for this conversation. Only included when `include_scorecards=true` is passed as a query parameter.
+          items:
+            "$ref": "#/components/schemas/conversation_scorecard"
     conversation:
       title: Conversation
       type: object
@@ -22409,6 +22878,39 @@ components:
         ai_agent:
           "$ref": "#/components/schemas/ai_agent"
           nullable: true
+        sales_agent_participated:
+          type: boolean
+          description: Indicates whether the Sales Agent participated in the conversation.
+          example: false
+        sales_agent:
+          "$ref": "#/components/schemas/sales_agent"
+          nullable: true
+        channel:
+          allOf:
+            - "$ref": "#/components/schemas/conversation_channel"
+          type: object
+          nullable: true
+          description: The channel through which the conversation was initiated and its current channel.
+        external_references:
+          type: array
+          description: References linking this conversation to records in an external helpdesk or CRM system. Populated for Fin Standalone workspaces synced from an external platform; an empty array otherwise. Sorted alphabetically by `type` and capped at 20 entries.
+          items:
+            "$ref": "#/components/schemas/conversation_external_reference"
+          example:
+            - type: zendesk_ticket
+              id: '3633338'
+            - type: zendesk_sunshine_conversation
+              id: abc-def-uuid
+        monitor_evaluations:
+          type: array
+          description: QA monitor evaluations that flagged this conversation. Only included when `include_monitors=true` is passed as a query parameter.
+          items:
+            "$ref": "#/components/schemas/conversation_monitor_evaluation"
+        scorecards:
+          type: array
+          description: QA scorecard results for this conversation. Only included when `include_scorecards=true` is passed as a query parameter.
+          items:
+            "$ref": "#/components/schemas/conversation_scorecard"
     conversation_attachment_files:
       title: Conversation attachment files
       type: object
@@ -22426,6 +22928,192 @@ components:
           type: string
           description: The name of the file.
           example: test.json
+    conversation_channel:
+      title: Conversation Channel
+      type: object
+      description: The channel through which a conversation was originally initiated and its current channel.
+      properties:
+        initial:
+          type: string
+          nullable: true
+          description: The channel through which the conversation was originally initiated. Possible values include `messenger`, `zendesk_sunshine`, `zendesk_ticket`, `twitter`, `email`. Returns `null` if channel data is unavailable.
+          example: messenger
+        current:
+          type: string
+          nullable: true
+          description: The current channel of the conversation. May differ from `initial` if the conversation was migrated between channels. Returns `null` if channel data is unavailable.
+          example: messenger
+    conversation_external_reference:
+      title: Conversation External Reference
+      type: object
+      description: A reference linking a conversation to a record in an external helpdesk or CRM system, surfaced for Fin Standalone workspaces.
+      properties:
+        type:
+          type: string
+          description: The type of external system the reference points to. Possible values include `zendesk_ticket`, `zendesk_sunshine_conversation`, `salesforce_case`, `salesforce_in_app_message_conversation`, `freshdesk_ticket`, `freshchat_conversation`, `hubspot_conversation`, `custom_helpdesk_conversation`, `api_conversation`.
+          example: zendesk_ticket
+        id:
+          type: string
+          description: The identifier of the record in the external system. Always serialized as a string, since some external IDs exceed 32-bit integer range.
+          example: '3633338'
+    conversation_monitor_evaluation:
+      title: Conversation Monitor Evaluation
+      type: object
+      x-tags:
+      - Conversations
+      description: A QA monitor evaluation that flagged this conversation. Returned in the `monitor_evaluations` array on conversation responses when `include_monitors=true` is passed.
+      properties:
+        monitor_id:
+          type: string
+          description: The unique identifier of the monitor that produced this evaluation.
+          example: '12345'
+        monitor_name:
+          type: string
+          nullable: true
+          description: The name of the monitor at the time of evaluation. Null if the monitor has since been deleted.
+          example: Customer complaint handling
+        monitor_type:
+          type: string
+          nullable: true
+          description: The type of the monitor. Null if the monitor has since been deleted.
+          example: prompt
+        result:
+          type: string
+          description: The evaluation outcome reported by the monitor.
+          example: flagged
+        explanation:
+          type: string
+          nullable: true
+          description: The reasoning provided by the monitor for its result. May be null if no reasoning was generated.
+          example: The customer mentioned wanting a refund without resolution.
+        evaluated_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The time the monitor evaluated this conversation. Null in the rare case the underlying record's timestamp is not yet set.
+          example: 1719493065
+    conversation_scorecard:
+      title: Conversation Scorecard
+      type: object
+      x-tags:
+      - Conversations
+      description: A QA scorecard result for this conversation. Returned in the `scorecards` array on conversation responses when `include_scorecards=true` is passed.
+      properties:
+        scorecard_id:
+          type: string
+          description: The unique identifier of the scorecard definition.
+          example: '67890'
+        scorecard_version_id:
+          type: string
+          description: The unique identifier of the specific scorecard version that produced this result.
+          example: '67891'
+        name:
+          type: string
+          description: The name of the scorecard.
+          example: Standard QA Review
+        scorecard_type:
+          type: string
+          description: The type of scorecard.
+          example: human
+        passed:
+          type: boolean
+          nullable: true
+          description: Whether the conversation passed the scorecard. Null when the scorecard has not been scored.
+          example: true
+        score:
+          type: number
+          nullable: true
+          description: The numeric score for the scorecard. Null when the scorecard has not been scored.
+          example: 0.85
+        ai_score:
+          type: number
+          nullable: true
+          description: The numeric score produced by AI evaluation, if applicable. Null when not AI-scored.
+          example: 0.9
+        evaluated_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The time the scorecard was last evaluated. Null in the rare case the underlying record's timestamp is not yet set.
+          example: 1719493065
+        reviewed_teammate:
+          "$ref": "#/components/schemas/conversation_scorecard_reviewed_teammate"
+        evaluators:
+          type: array
+          description: Per-evaluator results within this scorecard.
+          items:
+            "$ref": "#/components/schemas/conversation_scorecard_evaluator"
+    conversation_scorecard_reviewed_teammate:
+      title: Reviewed Teammate
+      type: object
+      x-tags:
+      - Conversations
+      description: The teammate (or AI agent) whose handling of the conversation was reviewed by this scorecard.
+      properties:
+        type:
+          type: string
+          enum:
+          - ai
+          - admin
+          description: The kind of reviewee. `ai` if the conversation was handled by Fin or scored without a specific teammate; `admin` if a specific teammate was reviewed.
+          example: admin
+        admin_id:
+          type: string
+          nullable: true
+          description: The id of the admin who was reviewed. Present only when `type` is `admin`.
+          example: '991267715'
+    conversation_scorecard_evaluator:
+      title: Conversation Scorecard Evaluator
+      type: object
+      x-tags:
+      - Conversations
+      description: A single evaluator within a scorecard, including its result for this conversation.
+      properties:
+        evaluator_id:
+          type: string
+          description: The unique identifier of the evaluator (criterion) within the scorecard.
+          example: '54321'
+        result:
+          allOf:
+            - "$ref": "#/components/schemas/conversation_scorecard_evaluator_result"
+          nullable: true
+          description: The evaluator's result for this conversation. Null if the evaluator was not scored.
+    conversation_scorecard_evaluator_result:
+      title: Conversation Scorecard Evaluator Result
+      type: object
+      x-tags:
+      - Conversations
+      description: The outcome of a single evaluator within a scorecard.
+      properties:
+        value:
+          type: string
+          nullable: true
+          description: The evaluator's selected value (typically a label such as `pass`, `fail`, or a category identifier).
+          example: pass
+        source:
+          type: string
+          nullable: true
+          description: The origin of the result (for example, `ai` or `human`).
+          example: ai
+        reasoning:
+          type: string
+          nullable: true
+          description: A free-text explanation of the result.
+          example: The agent acknowledged the issue and resolved it within the same response.
+        reason_ids:
+          type: array
+          nullable: true
+          description: Identifiers for structured reasons assigned to the result, if any.
+          items:
+            type: string
+          example:
+          - '101'
+          - '102'
+        other_text:
+          type: string
+          nullable: true
+          description: Free-text entered by the reviewer to supplement or stand in for the structured `reason_ids` — typically captured when the reviewer selects an "Other" option or adds a custom note. Null when not provided.
+          example: Agent acknowledged the issue but missed the follow-up question about billing.
     conversation_contacts:
       title: Contacts
       type: object
@@ -22465,6 +23153,50 @@ components:
           type: boolean
           description: Whether the conversation is deleted or not.
           example: true
+    deleted_conversation_item:
+      title: Conversation
+      type: object
+      x-tags:
+      - Conversation
+      description: A deleted conversation record containing its ID, metrics retained status and deletion timestamp.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `conversation`.
+          example: 'conversation'
+        id:
+          type: string
+          description: The ID of the deleted conversation.
+          example: '512'
+        metrics_retained:
+          type: boolean
+          description: Whether reporting metrics are retained for this conversation ID
+          example: true
+        deleted_at:
+          type: integer
+          format: date-time
+          description: The time when the conversation was deleted.
+          example: 1734537745
+    deleted_conversation_list:
+      title: Conversations
+      type: object
+      description: A paginated list of deleted conversation IDs.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `conversations.list`.
+          example: conversations.list
+        conversations:
+          type: array
+          description: The list of deleted conversation IDs.
+          items:
+            "$ref": "#/components/schemas/deleted_conversation_item"
+        total_count:
+          type: integer
+          description: Total number of items available.
+          example: 10
+        pages:
+          "$ref": "#/components/schemas/pages_link"
     conversation_first_contact_reply:
       title: First contact reply
       type: object
@@ -22735,32 +23467,36 @@ components:
       properties:
         type:
           type: string
-          description: This includes conversation, email, facebook, instagram, phone_call,
-            phone_switch, push, sms, twitter and whatsapp.
-          example: conversation
-          enum:
-          - conversation
-          - email
-          - facebook
-          - instagram
-          - phone_call
-          - phone_switch
-          - push
-          - sms
-          - twitter
-          - whatsapp
+          description: The origin of this conversation.
+          example: email
         id:
           type: string
-          description: The id representing the message.
+          nullable: true
+          description: The id of the source message.
           example: '3'
         delivered_as:
           type: string
-          description: The conversation's initiation type. Possible values are customer_initiated,
-            campaigns_initiated (legacy campaigns), operator_initiated (Custom bot),
-            automated (Series and other outbounds with dynamic audience message) and
-            admin_initiated (fixed audience message, ticket initiated by an admin,
-            group email).
+          description: How the conversation was initiated.
           example: operator_initiated
+        reply_to:
+          type: array
+          nullable: true
+          description: The Reply-To header addresses of the source message, where
+            a reply will be routed. Can differ from the sender's From address. Only
+            present for email conversations.
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+                description: The Reply-To email address.
+                example: replies@example.com
+              name:
+                type: string
+                nullable: true
+                description: The display name associated with the Reply-To address.
+                example: Support Team
         subject:
           type: string
           description: Optional. The message subject. For Twitter, this will show
@@ -22774,7 +23510,7 @@ components:
             payloads for API version 2.15+, this field returns plain text.
           example: "<p>Hey there!</p>"
         author:
-          "$ref": "#/components/schemas/conversation_part_author"
+          "$ref": "#/components/schemas/conversation_source_author"
         attachments:
           type: array
           description: A list of attachments for the part.
@@ -22791,6 +23527,32 @@ components:
           description: Whether or not the source message has been redacted. Only applicable
             for contact initiated messages.
           example: false
+    conversation_source_author:
+      title: Conversation source author
+      type: object
+      description: The author who started the conversation. Can be a Contact, Admin,
+        or Bot.
+      properties:
+        type:
+          type: string
+          description: The type of the author.
+          example: admin
+        id:
+          type: string
+          nullable: true
+          description: The id of the author.
+          example: '274'
+        name:
+          type: string
+          nullable: true
+          description: The name of the author.
+          example: Jane Doe
+        email:
+          type: string
+          format: email
+          nullable: true
+          description: The email of the author.
+          example: jane.doe@example.com
     conversation_statistics:
       title: Conversation statistics
       type: object
@@ -23306,6 +24068,10 @@ components:
           format: date-time
           description: The time the conversation was created as a UTC Unix timestamp. If not provided, the current time will be used. This field is only recommneded for migrating past conversations from another source into Intercom.
           example: 1671028894
+        brand_id:
+          type: string
+          description: The unique identifier of the brand to associate with this conversation.
+          example: "123"
       required:
       - from
       - body
@@ -26988,6 +27754,65 @@ components:
           description: Array of handling events
           items:
             "$ref": "#/components/schemas/handling_event"
+    side_conversation_summary:
+      title: Side Conversation Summary
+      type: object
+      description: A side conversation with its conversation parts.
+      properties:
+        side_conversation_id:
+          type: string
+          description: The unique identifier for the side conversation.
+          example: '456'
+        conversation_parts:
+          type: array
+          description: The conversation parts (messages) in this side conversation.
+          items:
+            "$ref": "#/components/schemas/conversation_part"
+        total_count:
+          type: integer
+          description: The total number of conversation parts in this side conversation.
+          example: 1
+    side_conversation_list:
+      title: Side Conversation List
+      type: object
+      description: A paginated list of side conversations for a conversation.
+      properties:
+        type:
+          type: string
+          description: The type of the response object.
+          enum:
+          - side_conversation.list
+          example: side_conversation.list
+        side_conversations:
+          type: array
+          description: An array of side conversation objects.
+          items:
+            "$ref": "#/components/schemas/side_conversation_summary"
+        total_count:
+          type: integer
+          description: The total number of side conversations.
+          example: 1
+        pages:
+          type: object
+          description: Pagination metadata.
+          properties:
+            type:
+              type: string
+              enum:
+              - pages
+              example: pages
+            page:
+              type: integer
+              description: The current page number.
+              example: 1
+            per_page:
+              type: integer
+              description: The number of results per page.
+              example: 25
+            total_pages:
+              type: integer
+              description: The total number of pages.
+              example: 1
     help_center:
       title: Help Center
       type: object
@@ -27225,6 +28050,19 @@ components:
           description: Set to `true` to merge two contacts that are not duplicates
             (they share no matching email or phone).
           example: true
+    merge_conversations_request:
+      title: Merge Conversations Request
+      type: object
+      description: Payload to merge a secondary conversation into a primary conversation.
+      x-tags:
+      - Conversations
+      properties:
+        merge_into_conversation_id:
+          type: integer
+          description: The ID of the primary (target) conversation to merge into.
+          example: 456
+      required:
+      - merge_into_conversation_id
     message:
       type: object
       title: Message
