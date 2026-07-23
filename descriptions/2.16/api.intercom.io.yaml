@@ -2511,6 +2511,254 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/articles/{id}/draft":
+    get:
+      summary: Retrieve an article draft
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the article which is given by Intercom.
+        example: 123
+        schema:
+          type: integer
+      tags:
+      - Articles
+      operationId: retrieveArticleDraft
+      description: |
+        Fetch the staged draft of a published article by making a GET request to
+        `https://api.intercom.io/articles/<id>/draft`. The response is the article
+        rendered with its draft content, leaving the live article untouched.
+
+        A draft exists only when a published article has unpublished changes staged
+        on top of it. Returns `404` when the article has no staged draft.
+
+        Requires the `read_articles_scope` OAuth scope.
+      responses:
+        '200':
+          description: Article draft found
+          content:
+            application/json:
+              examples:
+                Article draft found:
+                  value:
+                    id: '45'
+                    type: article
+                    workspace_id: this_is_an_id74_that_should_be_at_least_4
+                    parent_ids: []
+                    title: This is the draft title
+                    description: ''
+                    body: <p class="no-margin">Unpublished changes staged as a draft</p>
+                    body_markdown: "Unpublished changes staged as a draft\n"
+                    author_id: 991267502
+                    state: published
+                    created_at: 1734537292
+                    updated_at: 1734537292
+                    has_unpublished_changes: true
+                    draft_updated_at: 1734537292
+                    url: http://help-center.test/myapp-74/en/articles/45-this-is-the-article-title
+                    ai_chatbot_availability: true
+                    ai_copilot_availability: true
+                    ai_sales_agent_availability: true
+              schema:
+                "$ref": "#/components/schemas/article"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+    put:
+      summary: Stage an article draft
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the article which is given by Intercom.
+        example: 123
+        schema:
+          type: integer
+      tags:
+      - Articles
+      operationId: stageArticleDraft
+      description: |
+        Stage changes to a published article as a draft by making a PUT request to
+        `https://api.intercom.io/articles/<id>/draft`. The live article remains
+        unchanged until the draft is published.
+
+        The article must already be published; staging a draft on an article that
+        has never been published returns `422`.
+
+        Only versioned text content (such as `title` and `body`) is staged.
+        Non-versioned fields like AI availability are ignored, leaving the live
+        values untouched.
+
+        Requires the `read_write_articles_scope` OAuth scope.
+      responses:
+        '200':
+          description: Draft staged
+          content:
+            application/json:
+              examples:
+                Draft staged:
+                  value:
+                    id: '48'
+                    type: article
+                    workspace_id: this_is_an_id80_that_should_be_at_least_4
+                    parent_ids: []
+                    title: Christmas is here!
+                    description: ''
+                    body: <p class="no-margin">New gifts in store for the jolly season</p>
+                    body_markdown: "New gifts in store for the jolly season\n"
+                    author_id: 991267508
+                    state: published
+                    created_at: 1734537297
+                    updated_at: 1734537298
+                    has_unpublished_changes: true
+                    draft_updated_at: 1734537298
+                    url: http://help-center.test/myapp-80/en/articles/48-christmas-is-here
+                    ai_chatbot_availability: true
+                    ai_copilot_availability: true
+                    ai_sales_agent_availability: true
+              schema:
+                "$ref": "#/components/schemas/article"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+        '422':
+          description: Article must be published before a draft can be staged
+          content:
+            application/json:
+              examples:
+                Article not published:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: parameter_invalid
+                      message: Article must be published before a draft can be staged
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_article_request"
+            examples:
+              Draft staged:
+                summary: Stage a draft
+                value:
+                  title: Christmas is here!
+                  body: "<p>New gifts in store for the jolly season</p>"
+  "/articles/{id}/draft/publish":
+    post:
+      summary: Publish an article draft
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the article which is given by Intercom.
+        example: 123
+        schema:
+          type: integer
+      tags:
+      - Articles
+      operationId: publishArticleDraft
+      description: |
+        Publish a staged draft by making a POST request to
+        `https://api.intercom.io/articles/<id>/draft/publish`, promoting the draft
+        content to live.
+
+        On a single-language workspace no body is required. On a multilingual
+        workspace you must list which locales to publish via the `locales` array;
+        omitting it returns `422`. Returns `422` when there is no staged draft to
+        publish, or when a requested locale has no pending changes.
+
+        Requires the `read_write_articles_scope` OAuth scope.
+      responses:
+        '200':
+          description: Draft published
+          content:
+            application/json:
+              examples:
+                Draft published:
+                  value:
+                    id: '48'
+                    type: article
+                    workspace_id: this_is_an_id80_that_should_be_at_least_4
+                    parent_ids: []
+                    title: Christmas is here!
+                    description: ''
+                    body: <p class="no-margin">New gifts in store for the jolly season</p>
+                    body_markdown: "New gifts in store for the jolly season\n"
+                    author_id: 991267508
+                    state: published
+                    created_at: 1734537297
+                    updated_at: 1734537299
+                    has_unpublished_changes: false
+                    draft_updated_at: null
+                    url: http://help-center.test/myapp-80/en/articles/48-christmas-is-here
+                    ai_chatbot_availability: true
+                    ai_copilot_availability: true
+                    ai_sales_agent_availability: true
+              schema:
+                "$ref": "#/components/schemas/article"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+        '422':
+          description: No draft to publish, locales not specified on a multilingual workspace, or a requested locale has no pending changes
+          content:
+            application/json:
+              examples:
+                No draft to publish:
+                  value:
+                    type: error.list
+                    request_id: 8a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d
+                    errors:
+                    - code: parameter_invalid
+                      message: Article has no draft to publish
+                Locales required on a multilingual workspace:
+                  value:
+                    type: error.list
+                    request_id: 9b2c3d4e-5f6a-7b8c-9d0e-1f2a3b4c5d6e
+                    errors:
+                    - code: parameter_not_found
+                      message: locales must be specified to publish a draft on a multilingual workspace
+                Locale has no pending changes:
+                  value:
+                    type: error.list
+                    request_id: 0c3d4e5f-6a7b-8c9d-0e1f-2a3b4c5d6e7f
+                    errors:
+                    - code: parameter_invalid
+                      message: 'Cannot publish a draft for locale(s) without pending changes: fr'
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/publish_article_draft_request"
+            examples:
+              Publish specific locales:
+                summary: Publish specific locales on a multilingual workspace
+                value:
+                  locales:
+                  - en
+                  - fr
   "/articles/{article_id}/tags":
     post:
       summary: Add a tag to an article
@@ -23012,6 +23260,18 @@ components:
           format: date-time
           description: The time when the article was last updated (seconds).
           example: 1663597260
+        has_unpublished_changes:
+          type: boolean
+          description: Whether this locale's published content has unpublished
+            changes staged as a draft on top of its live content.
+          example: false
+        draft_updated_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The time, in seconds, when this locale's staged draft was
+            last edited, or `null` when there is no staged draft.
+          example: 1663597260
         url:
           type: string
           description: The URL of the article.
@@ -23170,6 +23430,20 @@ components:
           description: The time when the article was last updated. For multilingual
             articles, this will be the timestamp of last update of the default language's
             content in seconds.
+          example: 1672928610
+        has_unpublished_changes:
+          type: boolean
+          description: Whether the published article has unpublished changes staged
+            as a draft on top of its live content. For multilingual articles this
+            reflects the default language's content; a pure draft (never published)
+            reports `false`.
+          example: false
+        draft_updated_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The time, in seconds, when the staged draft was last edited,
+            or `null` when there is no staged draft.
           example: 1672928610
         url:
           type: string
@@ -33952,6 +34226,25 @@ components:
       required:
       - name
       - companies
+    publish_article_draft_request:
+      description: |
+        Optional body for publishing a staged article draft. On a single-language
+        workspace the body can be omitted. On a multilingual workspace, `locales`
+        is required and lists which locales' drafts to publish.
+      type: object
+      title: Publish Article Draft Request Payload
+      nullable: true
+      properties:
+        locales:
+          type: array
+          description: |
+            The locales whose staged drafts should be published. Required on
+            multilingual workspaces; each locale must have a pending draft.
+          items:
+            type: string
+          example:
+          - en
+          - fr
     update_article_request:
       description: You can Update an Article
       type: object
