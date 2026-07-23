@@ -23043,6 +23043,40 @@ components:
             type: object
           example: []
     app:
+      title: App
+      type: object
+      description: App is a workspace on Intercom
+      nullable: true
+      properties:
+        type:
+          type: string
+          description: ''
+          default: app
+          example: app
+        id_code:
+          type: string
+          description: The id of the app.
+          example: xyz789
+        name:
+          type: string
+          description: The name of the app.
+          example: ACME
+        region:
+          type: string
+          description: The Intercom region the app is located in.
+          example: US
+        timezone:
+          type: string
+          description: The timezone of the region where the app is located.
+          example: America/Los_Angeles
+        created_at:
+          type: integer
+          description: When the app was created.
+          example: 1671465577
+        identity_verification:
+          type: boolean
+          description: Whether or not the app uses identity verification.
+          example: false
     audience:
       title: Audience
       type: object
@@ -23151,40 +23185,6 @@ components:
           type: string
           description: The value to compare against.
           example: Acme
-      title: App
-      type: object
-      description: App is a workspace on Intercom
-      nullable: true
-      properties:
-        type:
-          type: string
-          description: ''
-          default: app
-          example: app
-        id_code:
-          type: string
-          description: The id of the app.
-          example: xyz789
-        name:
-          type: string
-          description: The name of the app.
-          example: ACME
-        region:
-          type: string
-          description: The Intercom region the app is located in.
-          example: US
-        timezone:
-          type: string
-          description: The timezone of the region where the app is located.
-          example: America/Los_Angeles
-        created_at:
-          type: integer
-          description: When the app was created.
-          example: 1671465577
-        identity_verification:
-          type: boolean
-          description: Whether or not the app uses identity verification.
-          example: false
     article:
       title: Article
       type: object
@@ -23312,7 +23312,6 @@ components:
           readOnly: true
           description: The ID of the teammate who last updated this content version.
           example: 5017691
-          example: http://intercom.test/help/en/articles/3-default-language
     internal_article_list:
       title: Internal Articles
       type: object
@@ -23614,7 +23613,6 @@ components:
           type: boolean
           description: Whether the internal article is available for AI Sales Agent.
           example: true
-          example: en
     article_search_highlights:
       title: Article Search Highlights
       type: object
@@ -23788,8 +23786,6 @@ components:
           description: The percentage of Fin AI Agent involvements that resulted in a resolution
             (fin_resolutions / fin_involvements * 100).
           example: 80.0
-            other types of reaction.
-          example: 20.0
     article_translated_content:
       title: Article Translated Content
       type: object
@@ -24288,6 +24284,21 @@ components:
           description: "The Unix timestamp when the status reason was last updated"
           example: 1734537243
     away_status_reason_list:
+      title: Away Status Reasons
+      type: object
+      description: A list of away status reasons.
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: A list of away status reason objects.
+          items:
+            "$ref": "#/components/schemas/away_status_reason"
     banner_list:
       title: Banner List
       type: object
@@ -24429,21 +24440,6 @@ components:
           type: boolean
           description: Whether the banner view is dismissed.
           example: true
-      title: Away Status Reasons
-      type: object
-      description: A list of away status reasons.
-      properties:
-        type:
-          type: string
-          description: The type of the object
-          enum:
-          - list
-          example: list
-        data:
-          type: array
-          description: A list of away status reason objects.
-          items:
-            "$ref": "#/components/schemas/away_status_reason"
     change_ticket_type_request:
       title: Change Ticket Type Request
       description: You can change the type of a Ticket
@@ -25701,6 +25697,16 @@ components:
           description: Whether the contact is archived or not.
           example: false
     contact_blocked:
+      title: Contact Blocked
+      type: object
+      description: blocked contact object
+      allOf:
+      - "$ref": "#/components/schemas/contact_reference"
+      properties:
+        blocked:
+          type: boolean
+          description: Always true.
+          example: true
     content_bulk_action_request:
       title: Content Bulk Action Request Payload
       type: object
@@ -25821,16 +25827,6 @@ components:
         status:
           type: string
           example: queued
-      title: Contact Blocked
-      type: object
-      description: blocked contact object
-      allOf:
-      - "$ref": "#/components/schemas/contact_reference"
-      properties:
-        blocked:
-          type: boolean
-          description: Always true.
-          example: true
     content_import_source:
       title: Content Import Source
       type: object
@@ -25960,6 +25956,24 @@ components:
           description: The ISO 639 language code of the content source.
           example: en
     content_sources_list:
+      title: Content Source List
+      nullable: false
+      properties:
+        type:
+          type: string
+          enum:
+          - content_source.list
+          example: content_source.list
+        total_count:
+          type: integer
+          description: The total number of content sources used by AI Agent in the
+            conversation.
+          example: 1
+        content_sources:
+          type: array
+          description: The content sources used by AI Agent in the conversation.
+          items:
+            "$ref": "#/components/schemas/content_source"
     content_snippet:
       title: Content Snippet
       type: object
@@ -26348,24 +26362,6 @@ components:
           file_source_content: "#/components/schemas/content_search_default_item"
           internal_article: "#/components/schemas/content_search_default_item"
           article: "#/components/schemas/content_search_article_item"
-      title: Content Source List
-      nullable: false
-      properties:
-        type:
-          type: string
-          enum:
-          - content_source.list
-          example: content_source.list
-        total_count:
-          type: integer
-          description: The total number of content sources used by AI Agent in the
-            conversation.
-          example: 1
-        content_sources:
-          type: array
-          description: The content sources used by AI Agent in the conversation.
-          items:
-            "$ref": "#/components/schemas/content_source"
     conversation_list_item:
       title: Conversation List Item
       type: object
@@ -27509,38 +27505,6 @@ components:
       required:
       - ticket_type_id
     convert_visitor_request:
-    create_audience_request:
-      title: Create Audience Request
-      type: object
-      description: The request payload for creating an audience.
-      required:
-      - name
-      properties:
-        name:
-          type: string
-          description: The name of the audience.
-          example: VIP Customers
-        predicates:
-          type: array
-          description: The predicates that define which contacts belong to the audience.
-          items:
-            "$ref": "#/components/schemas/predicate"
-          example:
-          - attribute: company.name
-            type: string
-            comparison: contains
-            value: Acme
-        role_predicates:
-          type: array
-          description: Role-based predicates that further filter audience membership by
-            contact role.
-          items:
-            "$ref": "#/components/schemas/predicate"
-          example:
-          - attribute: role
-            type: role
-            comparison: eq
-            value: user
       description: You can merge a Visitor to a Contact of role type lead or user.
       type: object
       title: Convert Visitor Request Payload
@@ -27601,6 +27565,38 @@ components:
       - type
       - user
       - visitor
+    create_audience_request:
+      title: Create Audience Request
+      type: object
+      description: The request payload for creating an audience.
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          description: The name of the audience.
+          example: VIP Customers
+        predicates:
+          type: array
+          description: The predicates that define which contacts belong to the audience.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: company.name
+            type: string
+            comparison: contains
+            value: Acme
+        role_predicates:
+          type: array
+          description: Role-based predicates that further filter audience membership by
+            contact role.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: role
+            type: role
+            comparison: eq
+            value: user
     create_article_request:
       description: You can create an Article
       type: object
@@ -29514,6 +29510,47 @@ components:
       - "$ref": "#/components/schemas/create_conversation_attribute_relationship_request"
       - "$ref": "#/components/schemas/create_conversation_attribute_files_request"
     update_conversation_attribute_request:
+      title: Update Conversation Attribute Request
+      type: object
+      description: Payload for updating a conversation attribute.
+      properties:
+        name:
+          type: string
+          description: Name of the attribute.
+          example: api_test_renamed
+        description:
+          type: string
+          description: Readable description of the attribute.
+          example: Updated via API
+        multiline:
+          type: boolean
+          description: "(String data type only) Whether this string attribute is multiline."
+          example: false
+        required:
+          type: boolean
+          description: Whether this attribute is required.
+          example: false
+        visible_to_team_ids:
+          type: array
+          description: Team IDs that can see this attribute. Empty array means all teams.
+          items:
+            type: string
+          example: []
+        reference:
+          type: object
+          description: "(Relationship data type only) Reference configuration for related objects."
+          required:
+          - type
+          properties:
+            type:
+              type: string
+              description: "The cardinality of the relationship: `one` or `many`."
+              enum:
+              - one
+              - many
+            object_type_id:
+              type: string
+              description: The ID of the related custom object type.
     create_data_connector_request:
       title: Create Data Connector Request
       type: object
@@ -30298,47 +30335,6 @@ components:
           type: boolean
           description: Whether the data connector was deleted successfully.
           example: true
-      title: Update Conversation Attribute Request
-      type: object
-      description: Payload for updating a conversation attribute.
-      properties:
-        name:
-          type: string
-          description: Name of the attribute.
-          example: api_test_renamed
-        description:
-          type: string
-          description: Readable description of the attribute.
-          example: Updated via API
-        multiline:
-          type: boolean
-          description: "(String data type only) Whether this string attribute is multiline."
-          example: false
-        required:
-          type: boolean
-          description: Whether this attribute is required.
-          example: false
-        visible_to_team_ids:
-          type: array
-          description: Team IDs that can see this attribute. Empty array means all teams.
-          items:
-            type: string
-          example: []
-        reference:
-          type: object
-          description: "(Relationship data type only) Reference configuration for related objects."
-          required:
-          - type
-          properties:
-            type:
-              type: string
-              description: "The cardinality of the relationship: `one` or `many`."
-              enum:
-              - one
-              - many
-            object_type_id:
-              type: string
-              description: The ID of the related custom object type.
     data_event:
       title: Data Event
       type: object
@@ -32086,6 +32082,28 @@ components:
                   description: Base64-encoded cursor containing [updated_at, id] for pagination
                   example: "WzE3MTk0OTM3NTcuMCwgIjEyMyJd"
     merge_contacts_request:
+      description: Merge contact data.
+      type: object
+      title: Merge contact data
+      required:
+      - from
+      - into
+      properties:
+        from:
+          type: string
+          description: The unique identifier for the contact to merge away from. Must
+            be a lead.
+          example: 5d70dd30de4efd54f42fd526
+        into:
+          type: string
+          description: The unique identifier for the contact to merge into. Must be
+            a user.
+          example: 5ba682d23d7cf92bef87bfd4
+        skip_duplicate_validation:
+          type: boolean
+          description: Set to `true` to merge two contacts that are not duplicates
+            (they share no matching email or phone).
+          example: true
     merge_history_item:
       title: Merge History Item
       type: object
@@ -32138,28 +32156,6 @@ components:
           type: boolean
           description: Whether there are more results to fetch.
           example: false
-      description: Merge contact data.
-      type: object
-      title: Merge contact data
-      required:
-      - from
-      - into
-      properties:
-        from:
-          type: string
-          description: The unique identifier for the contact to merge away from. Must
-            be a lead.
-          example: 5d70dd30de4efd54f42fd526
-        into:
-          type: string
-          description: The unique identifier for the contact to merge into. Must be
-            a user.
-          example: 5ba682d23d7cf92bef87bfd4
-        skip_duplicate_validation:
-          type: boolean
-          description: Set to `true` to merge two contacts that are not duplicates
-            (they share no matching email or phone).
-          example: true
     merge_conversations_request:
       title: Merge Conversations Request
       type: object
@@ -34166,6 +34162,35 @@ components:
             object.
           example: en
     untag_company_request:
+      description: You can tag a single company or a list of companies.
+      type: object
+      title: Untag Company Request Payload
+      properties:
+        name:
+          type: string
+          description: The name of the tag which will be untagged from the company
+          example: Independent
+        companies:
+          type: array
+          items:
+            properties:
+              id:
+                type: string
+                description: The Intercom defined id representing the company.
+                example: 531ee472cce572a6ec000006
+              company_id:
+                type: string
+                description: The company id you have defined for the company.
+                example: '6'
+              untag:
+                type: boolean
+                description: Always set to true
+                example: 'true'
+          description: The id or company_id of the company can be passed as input
+            parameters.
+      required:
+      - name
+      - companies
     update_audience_request:
       title: Update Audience Request
       type: object
@@ -34197,35 +34222,6 @@ components:
             type: role
             comparison: eq
             value: user
-      description: You can tag a single company or a list of companies.
-      type: object
-      title: Untag Company Request Payload
-      properties:
-        name:
-          type: string
-          description: The name of the tag which will be untagged from the company
-          example: Independent
-        companies:
-          type: array
-          items:
-            properties:
-              id:
-                type: string
-                description: The Intercom defined id representing the company.
-                example: 531ee472cce572a6ec000006
-              company_id:
-                type: string
-                description: The company id you have defined for the company.
-                example: '6'
-              untag:
-                type: boolean
-                description: Always set to true
-                example: 'true'
-          description: The id or company_id of the company can be passed as input
-            parameters.
-      required:
-      - name
-      - companies
     publish_article_draft_request:
       description: |
         Optional body for publishing a staged article draft. On a single-language
@@ -35295,19 +35291,37 @@ tags:
     You can then iterate through the content from that source via its API and POST it to the External Pages endpoint. That endpoint has an *external_id* parameter which allows you to specify the identifier from the source. The endpoint will then either create a new External Page or update an existing one as appropriate.",
 - name: Articles
   description: Everything about your Articles
+- name: Audiences
+  description: Everything about your Audiences
 - name: Away Status Reasons
   description: Everything about your Away Status Reasons
+- name: Banners
+  description: |
+    Retrieve the banners a contact matches and record dismissals, so you can display
+    banners on surfaces outside the Messenger (native mobile apps, kiosks, embedded
+    tools). These endpoints require an OAuth token with the `read_write_users` scope.
+    Requesting a contact's banners records an impression for each banner returned, and
+    dismissals are shared with the web Messenger.
 - name: Brands
   description: Everything about your Brands
+- name: Calls
+  description: Everything about your Calls
 - name: Companies
   description: Everything about your Companies
 - name: Contacts
   description: Everything about your contacts
+- name: Content
+  description: Search and operations over Knowledge Hub content — articles, snippets,
+    external pages, uploaded files, and internal articles.
+- name: Content Snippets
+  description: Everything about your Content Snippets
 - name: Conversations
   description: Everything about your Conversations
   externalDocs:
     description: What is a conversation?
     url: https://www.intercom.com/help/en/articles/4323904-what-is-a-conversation
+- name: Conversations Attributes
+  description: Manage custom attributes for conversations
 - name: Custom Object Instances
   description: |
     Everything about your Custom Object instances.
@@ -35316,6 +35330,8 @@ tags:
     {% /admonition %}
 - name: Data Attributes
   description: Everything about your Data Attributes
+- name: Data Connectors
+  description: Everything about your Data Connectors
 - name: Data Events
   description: Everything about your Data Events
 - name: Data Export
