@@ -6302,6 +6302,8 @@ paths:
         | tag_id                             | String                         |
         | custom_attributes.{attribute_name} | String                         |
 
+        The `plan.id` and `plan.name` fields are not searchable and return a `400` error with code `invalid_field`.
+
         ### Accepted Operators
 
         The table below shows the operators you can use to define how you want to search for the value. The operator should be put in as a string (`"="`). The operator has to be compatible with the field's type (eg. you cannot search with `>` for a given string value as it's only compatible for integer's and dates). Searching by `tag_id` supports only the `=` and `!=` operators.
@@ -6318,6 +6320,10 @@ paths:
         | !~       | String                           | Doesn't Contain                                                  |
         | ^        | String                           | Starts With                                                      |
         | $        | String                           | Ends With                                                        |
+
+        ### Sorting
+
+        Pass an optional `sort` object with a `field` and an `order` (`ascending` or `descending`; defaults to `descending`) to order the results. An invalid `order` returns a `400` error with code `invalid_sort_order`. `tag_id` can be used as a filter but not as a sort field.
       responses:
         '200':
           description: successful
@@ -6368,7 +6374,7 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/search_request"
+              "$ref": "#/components/schemas/company_search_request"
             examples:
               successful:
                 summary: successful
@@ -6379,6 +6385,9 @@ paths:
                     - field: name
                       operator: "="
                       value: my-company
+                  sort:
+                    field: name
+                    order: ascending
                   pagination:
                     per_page: 5
   "/companies/list":
@@ -36547,6 +36556,39 @@ components:
             title: multiple filter search request
         pagination:
           "$ref": "#/components/schemas/starting_after_paging"
+      required:
+      - query
+    company_search_request:
+      description: Search for companies using Intercom's Search API.
+      type: object
+      title: Company search request
+      properties:
+        query:
+          oneOf:
+          - "$ref": "#/components/schemas/single_filter_search_request"
+            title: Single filter search request
+          - "$ref": "#/components/schemas/multiple_filter_search_request"
+            title: multiple filter search request
+        pagination:
+          "$ref": "#/components/schemas/starting_after_paging"
+        sort:
+          type: object
+          description: An optional object to sort the results by.
+          properties:
+            field:
+              type: string
+              description: The field to sort the results on.
+              example: created_at
+            order:
+              type: string
+              description: The order to sort the results in. Defaults to `descending`
+                when omitted. Values other than `ascending` or `descending` return a
+                `400` error with code `invalid_sort_order`.
+              enum:
+              - ascending
+              - descending
+              default: descending
+              example: descending
       required:
       - query
     segment:
