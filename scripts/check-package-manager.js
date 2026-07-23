@@ -102,21 +102,6 @@ async function main() {
     process.exit(1);
   }
 
-  if (fs.existsSync('node_modules') && !fs.existsSync('node_modules/.pnpm')) {
-    await sendTelemetry('stale-node-modules', {});
-
-    console.error([
-      '',
-      'Stale node_modules detected (installed by yarn/npm, not pnpm).',
-      '',
-      'Delete node_modules and reinstall:',
-      '  rm -rf node_modules',
-      '  pnpm install',
-      '',
-    ].join('\n'));
-    process.exit(1);
-  }
-
   // Success path - track pnpm usage for adoption monitoring
   const pnpmInfo = getToolInfo('pnpm');
   const corepackInfo = getToolInfo('corepack');
