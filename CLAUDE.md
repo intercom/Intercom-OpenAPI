@@ -37,13 +37,10 @@ pnpm install
 No dev server, no test suite, no linting commands. Validation is done via Fern:
 
 ```bash
-pnpm setup                              # one-time, if PNPM_HOME isn't set (fresh shell)
 pnpm add -g fern-api@5.65.3
 fern check                              # Validate spec
 fern generate --preview --group ts-sdk  # Preview SDK generation
 ```
-
-`pnpm setup` writes `PNPM_HOME` + `PATH` entries into your shell rc; re-open the shell (or `source ~/.zshrc`) before the `pnpm add -g` step. Skip if `pnpm bin -g` already prints a path.
 
 > The `fern-api` version is pinned because Intercom's Socket Firewall registry serves the `fern-api` manifest without a `dist-tags` block, and pnpm has no fallback resolver for a missing `latest` tag ([pnpm/pnpm#5564](https://github.com/pnpm/pnpm/issues/5564), [pnpm/pnpm#9944](https://github.com/pnpm/pnpm/issues/9944)). Bump the version here when a new Fern release is needed.
 
