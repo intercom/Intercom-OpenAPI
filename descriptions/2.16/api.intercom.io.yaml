@@ -16056,6 +16056,224 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
   "/messages":
+    post:
+      summary: Create a message
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Messages
+      operationId: createMessage
+      description: "You can create a message that has been initiated by an admin.
+        The conversation can be either an in-app message, an email or whatsapp.\n\n> \U0001F6A7
+        Sending for visitors\n>\n> There can be a short delay between when a contact
+        is created and when a contact becomes available to be messaged through the
+        API. A 404 Not Found error will be returned in this case.\n\nThis will return
+        the Message model that has been created.\n\n> \U0001F6A7 Retrieving Associated
+        Conversations\n>\n> As this is a message, there will be no conversation present
+        until the contact responds. Once they do, you will have to search for a contact's
+        conversations with the id of the message.\n"
+      responses:
+        '200':
+          description: admin message created
+          content:
+            application/json:
+              examples:
+                user message created:
+                  value:
+                    type: user_message
+                    id: '403918396'
+                    created_at: 1734537780
+                    body: heyy
+                    message_type: inapp
+                    conversation_id: '613'
+                lead message created:
+                  value:
+                    type: user_message
+                    id: '403918397'
+                    created_at: 1734537783
+                    body: heyy
+                    message_type: inapp
+                    conversation_id: '614'
+                admin message created:
+                  value:
+                    type: admin_message
+                    id: '19'
+                    created_at: 1734537786
+                    subject: heyy
+                    body: heyy
+                    message_type: inapp
+                    owner:
+                      type: admin
+                      id: '991267816'
+                      name: Ciaran299 Lee
+                      email: admin299@email.com
+                      away_mode_enabled: false
+                      away_mode_reassign: false
+              schema:
+                "$ref": "#/components/schemas/message"
+        '400':
+          description: No body supplied for email message
+          content:
+            application/json:
+              examples:
+                No body supplied for message:
+                  value:
+                    type: error.list
+                    request_id: 3f3e74cc-65af-4408-9bf5-9e71b55c8166
+                    errors:
+                    - code: parameter_invalid
+                      message: Body is required
+                No body supplied for email message:
+                  value:
+                    type: error.list
+                    request_id: 2d6abc61-1441-4860-9ef0-777852f8b24f
+                    errors:
+                    - code: parameter_invalid
+                      message: Body is required
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: No subject supplied for email message
+          content:
+            application/json:
+              examples:
+                No subject supplied for email message:
+                  value:
+                    type: error.list
+                    request_id: 97db463e-7070-4ac9-9846-9a5d31933772
+                    errors:
+                    - code: parameter_not_found
+                      message: No subject supplied for email message
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2c8a20ee-ed09-42c0-a31d-a1b4f5d2742d
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 72b6821e-54ff-4a25-adf9-abdfef5fe72b
+                    errors:
+                    - code: api_plan_restricted
+                      message: Active subscription needed.
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_message_request"
+            examples:
+              user_message_created:
+                summary: user message created
+                value:
+                  from:
+                    type: user
+                    id: 6762f2341bb69f9f2193bc17
+                  body: heyy
+                  referer: https://twitter.com/bob
+              lead_message_created:
+                summary: lead message created
+                value:
+                  from:
+                    type: lead
+                    id: 6762f2371bb69f9f2193bc18
+                  body: heyy
+                  referer: https://twitter.com/bob
+              admin_message_created:
+                summary: admin message created
+                value:
+                  from:
+                    type: admin
+                    id: '991267816'
+                  to:
+                    - type: user
+                      id: 6762f2391bb69f9f2193bc19
+                    - type: lead
+                      id: 6762f23c1bb69f9f2193bc1b
+                    - type: user
+                      id: 6762f23d1bb69f9f2193bc1c
+                  cc:
+                    - type: user
+                      id: 6762f23e1bb69f9f2193bc1d
+                    - type: user
+                      id: 6762f23f1bb69f9f2193bc1e
+                  bcc:
+                    - type: user
+                      id: 6762f23e1bb69f9f2193bc2f
+                  message_type: conversation
+                  body: heyy
+              admin_whatsapp_message_created:
+                summary: admin whatsapp message created
+                value:
+                  from:
+                    type: admin
+                    id: '991267817'
+                  to:
+                    phone: +5547999998888
+                    name: John Doe
+                  message_type: whatsapp
+                  components:
+                    - type: BODY
+                      parameters:
+                        - type: text
+                          text: Username 123
+                  template: keep_live
+                  locale: en
+              no_body_supplied_for_message:
+                summary: No body supplied for message
+                value:
+                  from:
+                    type: admin
+                    id: '991267818'
+                  to:
+                    type: user
+                    id: 6762f23b1bb69f9f2193bc1a
+                  message_type: inapp
+                  body:
+                  subject: heyy
+              no_subject_supplied_for_email_message:
+                summary: No subject supplied for email message
+                value:
+                  from:
+                    type: admin
+                    id: '991267819'
+                  to:
+                    type: user
+                    user_id: '70'
+                  message_type: email
+                  body: hey there
+              no_body_supplied_for_email_message:
+                summary: No body supplied for email message
+                value:
+                  from:
+                    type: admin
+                    id: '991267820'
+                  to:
+                    type: user
+                    id: 6762f23d1bb69f9f2193bc1c
+                  message_type: email
+                  body:
+                  subject: heyy
   "/messages/whatsapp/status":
     get:
       summary: Retrieve WhatsApp message delivery status
@@ -16276,207 +16494,6 @@ paths:
                     message: "Request failed due to an internal error. Please reach out to support"
               schema:
                 "$ref": "#/components/schemas/error"
-    post:
-      summary: Create a message
-      parameters:
-      - name: Intercom-Version
-        in: header
-        schema:
-          "$ref": "#/components/schemas/intercom_version"
-      tags:
-      - Messages
-      operationId: createMessage
-      description: "You can create a message that has been initiated by an admin.
-        The conversation can be either an in-app message or an email.\n\n> \U0001F6A7
-        Sending for visitors\n>\n> There can be a short delay between when a contact
-        is created and when a contact becomes available to be messaged through the
-        API. A 404 Not Found error will be returned in this case.\n\nThis will return
-        the Message model that has been created.\n\n> \U0001F6A7 Retrieving Associated
-        Conversations\n>\n> As this is a message, there will be no conversation present
-        until the contact responds. Once they do, you will have to search for a contact's
-        conversations with the id of the message.\n"
-      responses:
-        '200':
-          description: admin message created
-          content:
-            application/json:
-              examples:
-                user message created:
-                  value:
-                    type: user_message
-                    id: '403918396'
-                    created_at: 1734537780
-                    body: heyy
-                    message_type: inapp
-                    conversation_id: '613'
-                lead message created:
-                  value:
-                    type: user_message
-                    id: '403918397'
-                    created_at: 1734537783
-                    body: heyy
-                    message_type: inapp
-                    conversation_id: '614'
-                admin message created:
-                  value:
-                    type: admin_message
-                    id: '19'
-                    created_at: 1734537786
-                    subject: heyy
-                    body: heyy
-                    message_type: inapp
-                    owner:
-                      type: admin
-                      id: '991267816'
-                      name: Ciaran299 Lee
-                      email: admin299@email.com
-                      away_mode_enabled: false
-                      away_mode_reassign: false
-              schema:
-                "$ref": "#/components/schemas/message"
-        '400':
-          description: No body supplied for email message
-          content:
-            application/json:
-              examples:
-                No body supplied for message:
-                  value:
-                    type: error.list
-                    request_id: 3f3e74cc-65af-4408-9bf5-9e71b55c8166
-                    errors:
-                    - code: parameter_invalid
-                      message: Body is required
-                No body supplied for email message:
-                  value:
-                    type: error.list
-                    request_id: 2d6abc61-1441-4860-9ef0-777852f8b24f
-                    errors:
-                    - code: parameter_invalid
-                      message: Body is required
-              schema:
-                "$ref": "#/components/schemas/error"
-        '422':
-          description: No subject supplied for email message
-          content:
-            application/json:
-              examples:
-                No subject supplied for email message:
-                  value:
-                    type: error.list
-                    request_id: 97db463e-7070-4ac9-9846-9a5d31933772
-                    errors:
-                    - code: parameter_not_found
-                      message: No subject supplied for email message
-              schema:
-                "$ref": "#/components/schemas/error"
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 2c8a20ee-ed09-42c0-a31d-a1b4f5d2742d
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-        '403':
-          description: API plan restricted
-          content:
-            application/json:
-              examples:
-                API plan restricted:
-                  value:
-                    type: error.list
-                    request_id: 72b6821e-54ff-4a25-adf9-abdfef5fe72b
-                    errors:
-                    - code: api_plan_restricted
-                      message: Active subscription needed.
-              schema:
-                "$ref": "#/components/schemas/error"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              "$ref": "#/components/schemas/create_message_request"
-            examples:
-              user_message_created:
-                summary: user message created
-                value:
-                  from:
-                    type: user
-                    id: 6762f2341bb69f9f2193bc17
-                  body: heyy
-                  referer: https://twitter.com/bob
-              lead_message_created:
-                summary: lead message created
-                value:
-                  from:
-                    type: lead
-                    id: 6762f2371bb69f9f2193bc18
-                  body: heyy
-                  referer: https://twitter.com/bob
-              admin_message_created:
-                summary: admin message created
-                value:
-                  from:
-                    type: admin
-                    id: '991267816'
-                  to:
-                    - type: user
-                      id: 6762f2391bb69f9f2193bc19
-                    - type: lead
-                      id: 6762f23c1bb69f9f2193bc1b
-                    - type: user
-                      id: 6762f23d1bb69f9f2193bc1c
-                  cc:
-                    - type: user
-                      id: 6762f23e1bb69f9f2193bc1d
-                    - type: user
-                      id: 6762f23f1bb69f9f2193bc1e
-                  bcc:
-                    - type: user
-                      id: 6762f23e1bb69f9f2193bc2f
-                  message_type: conversation
-                  body: heyy
-              no_body_supplied_for_message:
-                summary: No body supplied for message
-                value:
-                  from:
-                    type: admin
-                    id: '991267818'
-                  to:
-                    type: user
-                    id: 6762f23b1bb69f9f2193bc1a
-                  message_type: inapp
-                  body:
-                  subject: heyy
-              no_subject_supplied_for_email_message:
-                summary: No subject supplied for email message
-                value:
-                  from:
-                    type: admin
-                    id: '991267819'
-                  to:
-                    type: user
-                    user_id: '70'
-                  message_type: email
-                  body: hey there
-              no_body_supplied_for_email_message:
-                summary: No body supplied for email message
-                value:
-                  from:
-                    type: admin
-                    id: '991267820'
-                  to:
-                    type: user
-                    id: 6762f23d1bb69f9f2193bc1c
-                  message_type: email
-                  body:
-                  subject: heyy
   "/news/news_items":
     get:
       summary: List all news items
@@ -27904,10 +27921,11 @@ components:
       properties:
         message_type:
           type: string
-          description: 'The kind of message being created. Values: `in_app` or `email`.'
+          description: 'The kind of message being created. Values: `in_app`, `email` or `whatsapp`.'
           enum:
           - in_app
           - email
+          - whatsapp
           example: in_app
         subject:
           type: string
@@ -27996,6 +28014,13 @@ components:
         required:
         - message_type
         - body
+        - from
+        - to
+      - title: 'message_type: `whatsapp`.'
+        required:
+        - message_type
+        - template
+        - components
         - from
         - to
     recipient:
