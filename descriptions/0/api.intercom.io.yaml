@@ -6252,6 +6252,144 @@ paths:
                 summary: Company not found
                 value:
                   body: Hello
+  "/companies/search":
+    post:
+      summary: Search companies
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Companies
+      operationId: searchCompanies
+      description: |
+        You can search for companies by the value of their attributes in order to fetch exactly the companies you want.
+
+        To search for companies, send a `POST` request to `https://api.intercom.io/companies/search`, with a query object in the body defining your filters.
+
+        Note that the API does not include companies who have no associated users in search results.
+
+        {% admonition type="warning" name="Optimizing search queries" %}
+          Search queries can be complex, so optimizing them can help the performance of your search.
+          Use the `AND` and `OR` operators to combine multiple filters to get the exact results you need and utilize
+          pagination to limit the number of results returned. The default is `15` results per page.
+          See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#example-search-conversations-request) for more details on how to use the `starting_after` param.
+        {% /admonition %}
+
+        ### Nesting & Limitations
+
+        You can nest these filters in order to get even more granular insights that pinpoint exactly what you need. Example: (1 OR 2) AND (3 OR 4).
+        There are some limitations to the amount of multiple's there can be:
+        * There's a limit of max 2 nested filters
+        * There's a limit of max 15 filters for each AND or OR group
+
+        ### Accepted Fields
+
+        Most keys listed as part of the Companies Model are searchable. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `"foobar"`).
+
+        | Field                              | Type                           |
+        | ---------------------------------- | ------------------------------ |
+        | company_id                         | String                         |
+        | name                               | String                         |
+        | created_at                         | Date (UNIX Timestamp)          |
+        | updated_at                         | Date (UNIX Timestamp)          |
+        | remote_created_at                  | Date (UNIX Timestamp)          |
+        | last_request_at                    | Date (UNIX Timestamp)          |
+        | monthly_spend                      | Integer                        |
+        | session_count                      | Integer                        |
+        | user_count                         | Integer                        |
+        | tag_id                             | String                         |
+        | custom_attributes.{attribute_name} | String                         |
+
+        The `plan.id` and `plan.name` fields are not searchable and return a `400` error with code `invalid_field`.
+
+        ### Accepted Operators
+
+        The table below shows the operators you can use to define how you want to search for the value. The operator should be put in as a string (`"="`). The operator has to be compatible with the field's type (eg. you cannot search with `>` for a given string value as it's only compatible for integer's and dates). Searching by `tag_id` supports only the `=` and `!=` operators.
+
+        | Operator | Valid Types                      | Description                                                      |
+        | :------- | :------------------------------- | :--------------------------------------------------------------- |
+        | =        | All                              | Equals                                                           |
+        | !=       | All                              | Doesn't Equal                                                    |
+        | IN       | All                              | In<br>Shortcut for `OR` queries<br>Values must be in Array       |
+        | NIN      | All                              | Not In<br>Shortcut for `OR !` queries<br>Values must be in Array |
+        | >        | Integer<br>Date (UNIX Timestamp) | Greater than                                                     |
+        | <       | Integer<br>Date (UNIX Timestamp) | Lower than                                                       |
+        | ~        | String                           | Contains                                                         |
+        | !~       | String                           | Doesn't Contain                                                  |
+        | ^        | String                           | Starts With                                                      |
+        | $        | String                           | Ends With                                                        |
+
+        ### Sorting
+
+        Pass an optional `sort` object with a `field` and an `order` (`ascending` or `descending`; defaults to `descending`) to order the results. An invalid `order` returns a `400` error with code `invalid_sort_order`. `tag_id` can be used as a filter but not as a sort field.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data: []
+                    total_count: 0
+                    pages:
+                      type: pages
+                      page: 1
+                      per_page: 5
+                      total_pages: 0
+              schema:
+                "$ref": "#/components/schemas/company_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: f0dc95f1-9e46-4e8d-8150-89365c2c5195
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Unsupported field:
+                  value:
+                    type: error.list
+                    request_id: 8d6c1f0a-3b2e-4a17-9c5d-1f0e2a3b4c5d
+                    errors:
+                    - code: invalid_field
+                      message: "segment_id is not a valid search field"
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/company_search_request"
+            examples:
+              successful:
+                summary: successful
+                value:
+                  query:
+                    operator: AND
+                    value:
+                    - field: name
+                      operator: "="
+                      value: my-company
+                  sort:
+                    field: name
+                    order: ascending
+                  pagination:
+                    per_page: 5
   "/companies/list":
     post:
       summary: List all companies
@@ -36457,6 +36595,39 @@ components:
             title: multiple filter search request
         pagination:
           "$ref": "#/components/schemas/starting_after_paging"
+      required:
+      - query
+    company_search_request:
+      description: Search for companies using Intercom's Search API.
+      type: object
+      title: Company search request
+      properties:
+        query:
+          oneOf:
+          - "$ref": "#/components/schemas/single_filter_search_request"
+            title: Single filter search request
+          - "$ref": "#/components/schemas/multiple_filter_search_request"
+            title: multiple filter search request
+        pagination:
+          "$ref": "#/components/schemas/starting_after_paging"
+        sort:
+          type: object
+          description: An optional object to sort the results by.
+          properties:
+            field:
+              type: string
+              description: The field to sort the results on.
+              example: created_at
+            order:
+              type: string
+              description: The order to sort the results in. Defaults to `descending`
+                when omitted. Values other than `ascending` or `descending` return a
+                `400` error with code `invalid_sort_order`.
+              enum:
+              - ascending
+              - descending
+              default: descending
+              example: descending
       required:
       - query
     segment:
