@@ -7931,9 +7931,9 @@ paths:
 
         ### Searching for Timestamp Fields
 
-        All timestamp fields (created_at, updated_at etc.) are indexed as Dates for Contact Search queries; Datetime queries are not currently supported. This means you can only query for timestamp fields by day - not hour, minute or second. The day a timestamp falls on is determined using your workspace's timezone, so the same query can return different results across workspaces in different timezones. Because timestamps are stored in UTC, filtering by a value the API returned may not match the originating contact when your workspace is not set to UTC.
-        For example, on a workspace set to UTC, if you search for all Contacts with a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM UTC), that will be interpreted as 1577836800 (January 1st, 2020 12:00 AM UTC). The search results will then include Contacts created from January 2nd, 2020 12:00 AM UTC onwards. On a workspace in another timezone, the day boundaries fall on that timezone's midnight instead.
-        If you'd like to get contacts created on January 1st, 2020 you should search with a created_at value equal (=) to 1577836800 (January 1st, 2020 12:00 AM UTC).
+        All timestamp fields (created_at, updated_at etc.) are filtered by UTC calendar day in Contact Search. An equality (=) query on a timestamp matches any contact whose value falls on the same UTC day, so filtering by a value the API returned reliably matches that contact regardless of your workspace's timezone. Comparisons (>, <) are evaluated at UTC day granularity.
+        For example, if you search for all Contacts with a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM UTC), that will be interpreted as 1577836800 (January 1st, 2020 12:00 AM UTC). The search results will then include Contacts created from January 2nd, 2020 12:00 AM UTC onwards.
+        If you'd like to get contacts created on January 1st, 2020 (UTC) you should search with a created_at value equal (=) to 1577836800 (January 1st, 2020 12:00 AM UTC).
         This behaviour applies only to timestamps used in search queries. The search results will still contain the full UNIX timestamp and be sorted accordingly.
 
         ### Accepted Fields
@@ -7950,6 +7950,7 @@ paths:
         | email                              | String                         |
         | email_domain                       | String                         |
         | phone                              | String                         |
+        | formatted_phone                    | String                         |
         | external_id                        | String                         |
         | created_at                         | Date (UNIX Timestamp)          |
         | signed_up_at                       | Date (UNIX Timestamp)          |
@@ -8037,11 +8038,25 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid sort order:
+                  value:
+                    type: error.list
+                    request_id: 8d6c1f0a-3b2e-4a17-9c5d-1f0e2a3b4c5d
+                    errors:
+                    - code: invalid_sort_order
+                      message: "Invalid sort order 'desc'. Must be one of: ascending, descending"
+              schema:
+                "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/search_request"
+              "$ref": "#/components/schemas/contact_search_request"
             examples:
               successful:
                 summary: successful
@@ -8052,6 +8067,9 @@ paths:
                     - field: created_at
                       operator: ">"
                       value: '1306054154'
+                  sort:
+                    field: created_at
+                    order: ascending
                   pagination:
                     per_page: 5
   "/contacts":
@@ -24639,6 +24657,39 @@ components:
           maxItems: 10
       required:
       - user_id
+    contact_search_request:
+      description: Search for contacts using Intercom's Search API.
+      type: object
+      title: Contact search request
+      properties:
+        query:
+          oneOf:
+          - "$ref": "#/components/schemas/single_filter_search_request"
+            title: Single filter search request
+          - "$ref": "#/components/schemas/multiple_filter_search_request"
+            title: multiple filter search request
+        pagination:
+          "$ref": "#/components/schemas/starting_after_paging"
+        sort:
+          type: object
+          description: An optional object to sort the results by.
+          properties:
+            field:
+              type: string
+              description: The field to sort the results on.
+              example: created_at
+            order:
+              type: string
+              description: The order to sort the results in. Defaults to `descending`
+                when omitted. Values other than `ascending` or `descending` return a
+                `400` error with code `invalid_sort_order`.
+              enum:
+              - ascending
+              - descending
+              default: descending
+              example: descending
+      required:
+      - query
     contact_segments:
       title: Segments
       type: object
