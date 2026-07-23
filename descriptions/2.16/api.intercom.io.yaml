@@ -1157,6 +1157,197 @@ paths:
                   body: Body of the Article
                   state: published
   "/articles/{article_id}":
+  "/articles/{article_id}/tags":
+    post:
+      summary: Add a tag to an article
+      tags:
+      - Articles
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: article_id
+        in: path
+        required: true
+        description: The unique identifier for the article which is given by Intercom.
+        example: 123
+        schema:
+          type: integer
+      operationId: attachTagToArticle
+      description: |
+        Apply an existing tag to an article. Returns the tag that was applied.
+
+        The tag must already exist in the workspace (create tags with the Tags API),
+        and the authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_articles_scope` OAuth scope.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - id
+              properties:
+                id:
+                  type: string
+                  description: The unique identifier of the tag to apply, as given by
+                    Intercom.
+                  example: '7522907'
+                admin_id:
+                  type: string
+                  nullable: true
+                  description: Optional id of the teammate to attribute the tagging to.
+                    Defaults to the authenticating teammate. Does not affect authorization.
+                  example: '1234'
+            examples:
+              successful:
+                summary: Apply a tag
+                value:
+                  id: '7522907'
+      responses:
+        '200':
+          description: Tag applied
+          content:
+            application/json:
+              examples:
+                Tag applied:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '1234'
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Article or tag not found
+          content:
+            application/json:
+              examples:
+                Article not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: article_not_found
+                      message: Article not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+  "/articles/{article_id}/tags/{id}":
+    delete:
+      summary: Remove a tag from an article
+      tags:
+      - Articles
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: article_id
+        in: path
+        required: true
+        description: The unique identifier for the article which is given by Intercom.
+        example: 123
+        schema:
+          type: integer
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the tag to remove, as given by Intercom.
+        example: '7522907'
+        schema:
+          type: string
+      operationId: detachTagFromArticle
+      description: |
+        Remove a tag from an article. Returns the tag that was removed, with null
+        `applied_at` and `applied_by`.
+
+        The authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_articles_scope` OAuth scope.
+      responses:
+        '200':
+          description: Tag removed
+          content:
+            application/json:
+              examples:
+                Tag removed:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: null
+                    applied_by: null
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Article or tag not found
+          content:
+            application/json:
+              examples:
+                Article not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: article_not_found
+                      message: Article not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
     get:
       summary: Retrieve an article
       parameters:
@@ -1487,6 +1678,402 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
   "/away_status_reasons":
+  "/audiences":
+    get:
+      summary: List all audiences
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to first page.
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Defaults to 50. Maximum
+          is 50.
+        example: 50
+        schema:
+          type: integer
+          maximum: 50
+      tags:
+      - Audiences
+      operationId: listAudiences
+      description: You can fetch a list of all audiences for the workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - type: audience
+                      id: '123'
+                      name: VIP Customers
+                      predicates:
+                      - attribute: company.name
+                        type: string
+                        comparison: contains
+                        value: Acme
+                      role_predicates:
+                      - attribute: role
+                        type: role
+                        comparison: eq
+                        value: user
+                      created_at: 1717200000
+                      updated_at: 1717200000
+                    - type: audience
+                      id: '456'
+                      name: Enterprise Accounts
+                      predicates:
+                      - attribute: custom_attributes.plan
+                        type: string
+                        comparison: eq
+                        value: enterprise
+                      role_predicates:
+                      - attribute: role
+                        type: role
+                        comparison: eq
+                        value: user
+                      created_at: 1717200000
+                      updated_at: 1717200000
+                    total_count: 2
+                    page: 1
+                    per_page: 50
+                    total_pages: 1
+              schema:
+                "$ref": "#/components/schemas/audience_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b1939528-98f0-4a63-a442-2cc9203fc8c7
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create an audience
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Audiences
+      operationId: createAudience
+      description: You can create a new audience by making a POST request to `https://api.intercom.io/audiences`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_audience_request"
+            examples:
+              audience_created:
+                summary: Audience created
+                value:
+                  name: VIP Customers
+                  predicates:
+                  - attribute: company.name
+                    type: string
+                    comparison: contains
+                    value: Acme
+                  role_predicates:
+                  - attribute: role
+                    type: role
+                    comparison: eq
+                    value: user
+      responses:
+        '201':
+          description: Audience created
+          content:
+            application/json:
+              examples:
+                Audience created:
+                  value:
+                    type: audience
+                    id: '789'
+                    name: VIP Customers
+                    predicates:
+                    - attribute: company.name
+                      type: string
+                      comparison: contains
+                      value: Acme
+                    role_predicates:
+                    - attribute: role
+                      type: role
+                      comparison: eq
+                      value: user
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/audience"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Validation error:
+                  value:
+                    type: error.list
+                    request_id: a3e6b0c1-4f2d-4e8a-9c7b-1d2e3f4a5b6c
+                    errors:
+                    - code: validation_error
+                      message: Name is required
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: c1d2e3f4-5a6b-7c8d-9e0f-1a2b3c4d5e6f
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/audiences/{id}":
+    get:
+      summary: Retrieve an audience
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the audience.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Audiences
+      operationId: retrieveAudience
+      description: You can fetch the details of a single audience by making a GET request
+        to `https://api.intercom.io/audiences/{id}`.
+      responses:
+        '200':
+          description: Audience found
+          content:
+            application/json:
+              examples:
+                Audience found:
+                  value:
+                    type: audience
+                    id: '123'
+                    name: VIP Customers
+                    predicates:
+                    - attribute: company.name
+                      type: string
+                      comparison: contains
+                      value: Acme
+                    role_predicates:
+                    - attribute: role
+                      type: role
+                      comparison: eq
+                      value: user
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/audience"
+        '404':
+          description: Audience not found
+          content:
+            application/json:
+              examples:
+                Audience not found:
+                  value:
+                    type: error.list
+                    request_id: d5e6f7a8-1b2c-3d4e-5f6a-7b8c9d0e1f2a
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: c4d5e6f7-8a9b-0c1d-2e3f-4a5b6c7d8e9f
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update an audience
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the audience.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Audiences
+      operationId: updateAudience
+      description: You can update the details of a single audience by making a PUT request
+        to `https://api.intercom.io/audiences/{id}`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_audience_request"
+            examples:
+              audience_updated:
+                summary: Audience updated
+                value:
+                  name: Enterprise Accounts
+                  predicates:
+                  - attribute: custom_attributes.plan
+                    type: string
+                    comparison: eq
+                    value: enterprise
+      responses:
+        '200':
+          description: Audience updated
+          content:
+            application/json:
+              examples:
+                Audience updated:
+                  value:
+                    type: audience
+                    id: '123'
+                    name: Enterprise Accounts
+                    predicates:
+                    - attribute: custom_attributes.plan
+                      type: string
+                      comparison: eq
+                      value: enterprise
+                    role_predicates:
+                    - attribute: role
+                      type: role
+                      comparison: eq
+                      value: user
+                    created_at: 1717200000
+                    updated_at: 1717200100
+              schema:
+                "$ref": "#/components/schemas/audience"
+        '404':
+          description: Audience not found
+          content:
+            application/json:
+              examples:
+                Audience not found:
+                  value:
+                    type: error.list
+                    request_id: e7f8a9b0-1c2d-3e4f-5a6b-7c8d9e0f1a2b
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Validation error:
+                  value:
+                    type: error.list
+                    request_id: f0a1b2c3-4d5e-6f7a-8b9c-0d1e2f3a4b5c
+                    errors:
+                    - code: validation_error
+                      message: Name must not be blank
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: f8a9b0c1-2d3e-4f5a-6b7c-8d9e0f1a2b3c
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete an audience
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the audience.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Audiences
+      operationId: deleteAudience
+      description: You can delete a single audience by making a DELETE request to `https://api.intercom.io/audiences/{id}`.
+      responses:
+        '204':
+          description: Audience deleted
+        '404':
+          description: Audience not found
+          content:
+            application/json:
+              examples:
+                Audience not found:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b2c3d4e5-6f7a-8b9c-0d1e-2f3a4b5c6d7e
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
     get:
       summary: List all away status reasons
       parameters:
@@ -2741,6 +3328,199 @@ paths:
                   title: Thanks for everything
                   body: Body of the Internal Article
   "/internal_articles/{internal_article_id}":
+  "/internal_articles/{internal_article_id}/tags":
+    post:
+      summary: Add a tag to an internal article
+      tags:
+      - Internal Articles
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: internal_article_id
+        in: path
+        required: true
+        description: The unique identifier for the internal article which is given by
+          Intercom.
+        example: 123
+        schema:
+          type: integer
+      operationId: attachTagToInternalArticle
+      description: |
+        Apply an existing tag to an internal article. Returns the tag that was applied.
+
+        The tag must already exist in the workspace (create tags with the Tags API),
+        and the authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_articles_scope` OAuth scope.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - id
+              properties:
+                id:
+                  type: string
+                  description: The unique identifier of the tag to apply, as given by
+                    Intercom.
+                  example: '7522907'
+                admin_id:
+                  type: string
+                  nullable: true
+                  description: Optional id of the teammate to attribute the tagging to.
+                    Defaults to the authenticating teammate. Does not affect authorization.
+                  example: '1234'
+            examples:
+              successful:
+                summary: Apply a tag
+                value:
+                  id: '7522907'
+      responses:
+        '200':
+          description: Tag applied
+          content:
+            application/json:
+              examples:
+                Tag applied:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '1234'
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Internal article or tag not found
+          content:
+            application/json:
+              examples:
+                Internal article not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: internal_article_not_found
+                      message: Internal article not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+  "/internal_articles/{internal_article_id}/tags/{id}":
+    delete:
+      summary: Remove a tag from an internal article
+      tags:
+      - Internal Articles
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: internal_article_id
+        in: path
+        required: true
+        description: The unique identifier for the internal article which is given by
+          Intercom.
+        example: 123
+        schema:
+          type: integer
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the tag to remove, as given by Intercom.
+        example: '7522907'
+        schema:
+          type: string
+      operationId: detachTagFromInternalArticle
+      description: |
+        Remove a tag from an internal article. Returns the tag that was removed, with
+        null `applied_at` and `applied_by`.
+
+        The authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_articles_scope` OAuth scope.
+      responses:
+        '200':
+          description: Tag removed
+          content:
+            application/json:
+              examples:
+                Tag removed:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: null
+                    applied_by: null
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Internal article or tag not found
+          content:
+            application/json:
+              examples:
+                Internal article not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: internal_article_not_found
+                      message: Internal article not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
     get:
       summary: Retrieve an internal article
       parameters:
@@ -6236,6 +7016,965 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/contact_blocked"
+  "/content/bulk_actions":
+    post:
+      summary: Run a bulk action on Knowledge Hub content
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Content
+      operationId: bulkContentActions
+      description: |
+        Asynchronously run a bulk action over up to 1,000 Knowledge Hub content items.
+
+        Six actions are supported:
+          * `publish` and `unpublish` — apply to `article_content` only.
+          * `delete` — permanently delete content (excludes synced sources and `external_content`).
+          * `set_availability` — toggle Fin AI Agent, Copilot, and Sales Agent availability flags.
+          * `set_audience` — manage segment membership on content.
+          * `update_tags` — apply and/or remove existing tags on content. Unlike the other
+            actions, `update_tags` addresses articles by the parent `article` id, not
+            `article_content`. Tags must already exist and not be archived; supply at least one of
+            `add_tag_ids` / `remove_tag_ids`.
+
+        The endpoint validates the request, enqueues background work, and returns 202 with a
+        placeholder envelope. Items whose `type` is not in the action's allowlist are silently
+        dropped before processing. Articles imported from synced sources (Confluence, Notion,
+        Zendesk, Salesforce Knowledge, etc.) are silently skipped on `delete` — they can only be
+        removed by disconnecting the underlying import source.
+
+        Requires the `write_content` OAuth scope.
+      responses:
+        '202':
+          description: Accepted — work has been enqueued
+          content:
+            application/json:
+              examples:
+                Queued:
+                  summary: Queued
+                  value:
+                    type: content_bulk_action
+                    status: queued
+              schema:
+                "$ref": "#/components/schemas/content_bulk_action_response"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2e760b85-9020-471b-89dc-f579ec8a0104
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden — token is missing the `write_content` OAuth scope
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Invalid action, content_ids, or action-specific parameters
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/content_bulk_action_request"
+            examples:
+              publish:
+                summary: Publish articles
+                value:
+                  action: publish
+                  content_ids:
+                  - type: article_content
+                    id: '12345678'
+                  - type: article_content
+                    id: '12345679'
+              unpublish:
+                summary: Unpublish articles
+                value:
+                  action: unpublish
+                  content_ids:
+                  - type: article_content
+                    id: '12345678'
+              delete:
+                summary: Delete content across types
+                value:
+                  action: delete
+                  content_ids:
+                  - type: article_content
+                    id: '12345678'
+                  - type: internal_article
+                    id: '12345679'
+                  - type: content_snippet
+                    id: '12345680'
+              set_availability:
+                summary: Toggle Fin AI Agent on, Copilot off
+                value:
+                  action: set_availability
+                  content_ids:
+                  - type: article_content
+                    id: '12345678'
+                  availability:
+                    ai_agent: true
+                    copilot: false
+              set_audience:
+                summary: Add and remove segments
+                value:
+                  action: set_audience
+                  content_ids:
+                  - type: article_content
+                    id: '12345678'
+                  audience:
+                    add_segment_ids:
+                    - 100
+                    remove_segment_ids:
+                    - 200
+              update_tags:
+                summary: Apply and remove tags on an article
+                value:
+                  action: update_tags
+                  content_ids:
+                  - type: article
+                    id: '12345678'
+                  tags:
+                    add_tag_ids:
+                    - 100
+                    remove_tag_ids:
+                    - 200
+  "/content/search":
+    get:
+      summary: Search knowledge base contents
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: query
+        in: query
+        required: false
+        description: A free-text search term matched against the title and body of
+          each content item. When omitted, returns the most recent content items.
+        example: billing
+        schema:
+          type: string
+          maxLength: 500
+      - name: page
+        in: query
+        required: false
+        description: The page number to fetch. Defaults to 1. Values below 1 are
+          clamped to 1.
+        example: 1
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - name: per_page
+        in: query
+        required: false
+        description: Number of results per page. Defaults to 10. Maximum 50.
+        example: 10
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
+          maximum: 50
+      - name: states
+        in: query
+        required: false
+        description: Filter by publication state. Accepts a comma-separated list
+          or repeated params.
+        example: published,draft
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - published
+            - draft
+        style: form
+        explode: false
+      - name: locales
+        in: query
+        required: false
+        description: Filter by locale codes (e.g. `en`, `fr`, `de`). Accepts a
+          comma-separated list or repeated params.
+        example: en,fr
+        schema:
+          type: array
+          items:
+            type: string
+        style: form
+        explode: false
+      - name: tag_ids
+        in: query
+        required: false
+        description: Filter by tag IDs. Pairs with `tag_operator` to control match
+          semantics. Accepts a comma-separated list or repeated params.
+        example: 1,2,3
+        schema:
+          type: array
+          items:
+            type: integer
+        style: form
+        explode: false
+      - name: tag_operator
+        in: query
+        required: false
+        description: Match operator paired with `tag_ids`. `IN` returns content
+          matching any of the given tags; `NIN` excludes content matching any
+          of them.
+        example: IN
+        schema:
+          type: string
+          enum:
+          - IN
+          - NIN
+      - name: any_tag_ids
+        in: query
+        required: false
+        description: Filter by tag IDs using OR semantics — returns content
+          matching any of the given tags. Alternative to `tag_ids` + `tag_operator`.
+          Accepts a comma-separated list or repeated params.
+        example: 1,2,3
+        schema:
+          type: array
+          items:
+            type: integer
+        style: form
+        explode: false
+      - name: folder_ids
+        in: query
+        required: false
+        description: Filter by folder IDs. Must be sent together with
+          `folder_entity_type`. Accepts a comma-separated list or repeated params.
+        example: 10,20
+        schema:
+          type: array
+          items:
+            type: integer
+        style: form
+        explode: false
+      - name: folder_entity_type
+        in: query
+        required: false
+        description: Required when `folder_ids` is provided. Identifies the entity
+          type the folder IDs refer to.
+        example: folder
+        schema:
+          type: string
+          enum:
+          - folder
+      - name: content_types
+        in: query
+        required: false
+        description: Restrict the search to specific content types. When provided,
+          this REPLACES the default content type set rather than filtering on top
+          of it. Accepts a comma-separated list or repeated params.
+        example: article,snippet
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - snippet
+            - external_content
+            - file_source_content
+            - internal_article
+            - article
+        style: form
+        explode: false
+      - name: copilot_state
+        in: query
+        required: false
+        description: Filter by whether the content is enabled for Copilot.
+        example: 'on'
+        schema:
+          type: string
+          enum:
+          - 'on'
+          - 'off'
+      - name: fin_service_state
+        in: query
+        required: false
+        description: Filter by whether the content is enabled for Fin AI Agent
+          (customer-facing service).
+        example: 'on'
+        schema:
+          type: string
+          enum:
+          - 'on'
+          - 'off'
+      - name: fin_sales_state
+        in: query
+        required: false
+        description: Filter by whether the content is enabled for Fin Sales Agent.
+        example: 'on'
+        schema:
+          type: string
+          enum:
+          - 'on'
+          - 'off'
+      - name: created_by_ids
+        in: query
+        required: false
+        description: Filter by the admin IDs that created the content. Accepts a
+          comma-separated list or repeated params.
+        example: 991267464,991267465
+        schema:
+          type: array
+          items:
+            type: integer
+        style: form
+        explode: false
+      - name: last_updated_by_ids
+        in: query
+        required: false
+        description: Filter by the admin IDs that last updated the content.
+          Accepts a comma-separated list or repeated params.
+        example: 991267464,991267465
+        schema:
+          type: array
+          items:
+            type: integer
+        style: form
+        explode: false
+      - name: created_at_after
+        in: query
+        required: false
+        description: Return content created at or after this time. Unix epoch
+          seconds.
+        example: 1677253093
+        schema:
+          type: integer
+      - name: created_at_before
+        in: query
+        required: false
+        description: Return content created at or before this time. Unix epoch
+          seconds.
+        example: 1677861493
+        schema:
+          type: integer
+      - name: updated_at_after
+        in: query
+        required: false
+        description: Return content last updated at or after this time. Unix
+          epoch seconds.
+        example: 1677253093
+        schema:
+          type: integer
+      - name: updated_at_before
+        in: query
+        required: false
+        description: Return content last updated at or before this time. Unix
+          epoch seconds.
+        example: 1677861493
+        schema:
+          type: integer
+      tags:
+      - Content
+      operationId: searchContent
+      description: |
+        Search the knowledge base contents — articles, snippets, external pages, uploaded files, and internal articles — using a keyword query.
+
+        Each result row has a `type` discriminator. Most types (`content_snippet`, `external_content`, `file_source_content`, `internal_article`) return a flat `{ type, id, title }` shape. Help center articles return a nested shape with a `contents[]` array, one entry per locale.
+
+        Requires the `read_content` OAuth scope.
+      responses:
+        '200':
+          description: Search successful
+          content:
+            application/json:
+              examples:
+                Search successful:
+                  value:
+                    type: list
+                    total_count: 5
+                    pages:
+                      type: pages
+                      page: 1
+                      per_page: 10
+                      total_pages: 1
+                      next:
+                      prev:
+                    data:
+                    - type: content_snippet
+                      id: '123'
+                      title: Billing FAQ
+                    - type: external_content
+                      id: '456'
+                      title: How to reset your password
+                    - type: file_source_content
+                      id: '789'
+                      title: billing-guide.pdf
+                    - type: internal_article
+                      id: '012'
+                      title: 'Internal SOP: Refunds'
+                    - type: article
+                      id: '345'
+                      title: Billing FAQ
+                      contents:
+                      - type: article_content
+                        id: '678'
+                        title: Billing FAQ
+                        locale: en
+                      - type: article_content
+                        id: '910'
+                        title: Facturation FAQ
+                        locale: fr
+              schema:
+                "$ref": "#/components/schemas/content_search_response"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '422':
+          $ref: "#/components/responses/ValidationError"
+  "/content_snippets":
+    get:
+      summary: List all content snippets
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch.
+        schema:
+          type: integer
+          example: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Max value of 50.
+        schema:
+          type: integer
+          example: 20
+      tags:
+      - Content Snippets
+      operationId: listContentSnippets
+      description: You can fetch a list of all content snippets for a workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - type: content_snippet
+                      id: '123'
+                      title: How to reset your password
+                      locale: en
+                      json_blocks:
+                      - type: paragraph
+                        text: Navigate to Settings > Security > Reset password.
+                      body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
+                      chatbot_availability: 1
+                      copilot_availability: 1
+                      ai_chatbot_availability: true
+                      ai_copilot_availability: true
+                      ai_sales_agent_availability: true
+                      created_at: 1663597223
+                      updated_at: 1663597223
+                      audience_ids:
+                      - 1
+                      - 2
+                    total_count: 1
+                    page: 1
+                    per_page: 50
+                    total_pages: 1
+              schema:
+                "$ref": "#/components/schemas/content_snippet_list"
+    post:
+      summary: Create a content snippet
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Content Snippets
+      operationId: createContentSnippet
+      description: You can create a new content snippet.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/content_snippet_create_request"
+            examples:
+              Create a content snippet:
+                value:
+                  title: How to reset your password
+                  json_blocks:
+                  - type: paragraph
+                    text: Navigate to Settings > Security > Reset password.
+                  locale: en
+                  audience_ids:
+                  - 1
+                  - 2
+      responses:
+        '201':
+          description: Content snippet created
+          content:
+            application/json:
+              examples:
+                Content snippet created:
+                  value:
+                    type: content_snippet
+                    id: '456'
+                    title: How to reset your password
+                    locale: en
+                    json_blocks:
+                    - type: paragraph
+                      text: Navigate to Settings > Security > Reset password.
+                    body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
+                    chatbot_availability: 1
+                    copilot_availability: 1
+                    ai_chatbot_availability: true
+                    ai_copilot_availability: true
+                    ai_sales_agent_availability: true
+                    created_at: 1663597223
+                    updated_at: 1663597223
+                    audience_ids:
+                    - 1
+                    - 2
+              schema:
+                "$ref": "#/components/schemas/content_snippet"
+        '404':
+          description: Unknown audience IDs
+          content:
+            application/json:
+              examples:
+                Unknown audience IDs:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: parameter_invalid
+                      message: 'audience_ids contains unknown audience IDs: 999'
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Validation error:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: validation_error
+                      message: The language is not currently supported for Fin
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/content_snippets/{id}":
+    get:
+      summary: Retrieve a content snippet
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the content snippet.
+        schema:
+          type: string
+          example: '123'
+      tags:
+      - Content Snippets
+      operationId: getContentSnippet
+      description: You can fetch a single content snippet by its id.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: content_snippet
+                    id: '123'
+                    title: How to reset your password
+                    locale: en
+                    json_blocks:
+                    - type: paragraph
+                      text: Navigate to Settings > Security > Reset password.
+                    body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
+                    chatbot_availability: 1
+                    copilot_availability: 1
+                    ai_chatbot_availability: true
+                    ai_copilot_availability: true
+                    ai_sales_agent_availability: true
+                    created_at: 1663597223
+                    updated_at: 1663597223
+                    audience_ids:
+                    - 1
+                    - 2
+              schema:
+                "$ref": "#/components/schemas/content_snippet"
+        '404':
+          description: Content snippet not found
+          content:
+            application/json:
+              examples:
+                Content snippet not found:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: not_found
+                      message: Content snippet not found
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update a content snippet
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the content snippet.
+        schema:
+          type: string
+          example: '123'
+      tags:
+      - Content Snippets
+      operationId: updateContentSnippet
+      description: You can update an existing content snippet.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/content_snippet_update_request"
+            examples:
+              Update a content snippet:
+                value:
+                  title: How to reset your password (updated)
+                  json_blocks:
+                  - type: paragraph
+                    text: Go to Settings > Security > Reset password and follow the steps.
+                  audience_ids:
+                  - 1
+                  - 2
+      responses:
+        '200':
+          description: Content snippet updated
+          content:
+            application/json:
+              examples:
+                Content snippet updated:
+                  value:
+                    type: content_snippet
+                    id: '123'
+                    title: How to reset your password (updated)
+                    locale: en
+                    json_blocks:
+                    - type: paragraph
+                      text: Go to Settings > Security > Reset password and follow the steps.
+                    body_markdown: "# How to reset your password (updated)\n\nGo to Settings > Security > Reset password and follow the steps.\n"
+                    chatbot_availability: 1
+                    copilot_availability: 1
+                    ai_chatbot_availability: true
+                    ai_copilot_availability: true
+                    ai_sales_agent_availability: true
+                    created_at: 1663597223
+                    updated_at: 1663597300
+                    audience_ids:
+                    - 1
+                    - 2
+              schema:
+                "$ref": "#/components/schemas/content_snippet"
+        '404':
+          description: Content snippet or audience ID not found
+          content:
+            application/json:
+              examples:
+                Content snippet not found:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: not_found
+                      message: Content snippet not found
+                Unknown audience IDs:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: parameter_invalid
+                      message: 'audience_ids contains unknown audience IDs: 999'
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Validation error:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: validation_error
+                      message: The language is not currently supported for Fin
+              schema:
+                "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete a content snippet
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the content snippet.
+        schema:
+          type: string
+          example: '123'
+      tags:
+      - Content Snippets
+      operationId: deleteContentSnippet
+      description: You can delete a single content snippet by its id.
+      responses:
+        '204':
+          description: Content snippet deleted
+        '404':
+          description: Content snippet not found
+          content:
+            application/json:
+              examples:
+                Content snippet not found:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: not_found
+                      message: Content snippet not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Content snippet has procedure dependencies
+          content:
+            application/json:
+              examples:
+                Content snippet has procedure dependencies:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: content_has_procedure_dependencies
+                      message: Content snippet has dependent procedures and cannot
+                        be deleted
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/content_snippets/{content_snippet_id}/tags":
+    post:
+      summary: Add a tag to a content snippet
+      tags:
+      - Content Snippets
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: content_snippet_id
+        in: path
+        required: true
+        description: The unique identifier for the content snippet.
+        example: '123'
+        schema:
+          type: string
+      operationId: attachTagToContentSnippet
+      description: |
+        Apply an existing tag to a content snippet. Returns the tag that was applied.
+
+        The tag must already exist in the workspace (create tags with the Tags API),
+        and the authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_content_snippets` OAuth scope.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - id
+              properties:
+                id:
+                  type: string
+                  description: The unique identifier of the tag to apply, as given by
+                    Intercom.
+                  example: '7522907'
+                admin_id:
+                  type: string
+                  nullable: true
+                  description: Optional id of the teammate to attribute the tagging to.
+                    Defaults to the authenticating teammate. Does not affect authorization.
+                  example: '1234'
+            examples:
+              successful:
+                summary: Apply a tag
+                value:
+                  id: '7522907'
+      responses:
+        '200':
+          description: Tag applied
+          content:
+            application/json:
+              examples:
+                Tag applied:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '1234'
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Content snippet or tag not found
+          content:
+            application/json:
+              examples:
+                Content snippet not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: content_snippet_not_found
+                      message: Content snippet not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+  "/content_snippets/{content_snippet_id}/tags/{id}":
+    delete:
+      summary: Remove a tag from a content snippet
+      tags:
+      - Content Snippets
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: content_snippet_id
+        in: path
+        required: true
+        description: The unique identifier for the content snippet.
+        example: '123'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the tag to remove, as given by Intercom.
+        example: '7522907'
+        schema:
+          type: string
+      operationId: detachTagFromContentSnippet
+      description: |
+        Remove a tag from a content snippet. Returns the tag that was removed, with
+        null `applied_at` and `applied_by`.
+
+        The authenticating teammate must have the `manage_knowledge_base_content`
+        permission.
+
+        Requires the `read_write_content_snippets` OAuth scope.
+      responses:
+        '200':
+          description: Tag removed
+          content:
+            application/json:
+              examples:
+                Tag removed:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: null
+                    applied_by: null
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Content snippet or tag not found
+          content:
+            application/json:
+              examples:
+                Content snippet not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: content_snippet_not_found
+                      message: Content snippet not found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/conversations/{conversation_id}/tags":
     post:
       summary: Add tag to a conversation
@@ -10351,6 +12090,840 @@ paths:
                   - value: 1-10
                   archived: false
   "/data_attributes/{data_attribute_id}":
+  "/data_connectors":
+    get:
+      summary: List all data connectors
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Defaults to 20, minimum 1, maximum 50.
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 50
+      - name: starting_after
+        in: query
+        required: false
+        description: The cursor value from `pages.next.starting_after` in a previous response. Used to paginate through results.
+        schema:
+          type: string
+      tags:
+      - Data Connectors
+      operationId: listDataConnectors
+      description: |
+        Returns a paginated list of all data connectors for the workspace, ordered by most recently updated first. Data connectors allow workflows and AI agents to make HTTP requests to external APIs.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: data_connector
+                      id: '12345'
+                      name: Order Status Service
+                      description: Fetches order status from external fulfillment API
+                      state: live
+                      http_method: post
+                      direct_fin_usage: false
+                      created_by_admin_id: '128'
+                      updated_by_admin_id: '128'
+                      created_at: '2025-11-15T09:30:00Z'
+                      updated_at: '2026-01-20T14:22:15Z'
+                      execution_results_url: "/data_connectors/12345/execution_results"
+                    pages:
+                      type: pages
+                      per_page: 20
+                      next:
+                        starting_after: WzE3MDc1OTQ3MTUuMCwxMjM0NV0=
+              schema:
+                "$ref": "#/components/schemas/data_connector_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid cursor:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: client_error
+                      message: Invalid starting_after param. Please try again using a starting_after value from a paginated response
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Data Connectors
+      operationId: createDataConnector
+      description: |
+        Create a new data connector. The connector is created in `draft` state. Configure its URL, headers, data inputs, and other settings, then set it to `live` when ready.
+      responses:
+        '201':
+          description: Data connector created
+          content:
+            application/json:
+              examples:
+                Data connector created:
+                  value:
+                    type: data_connector
+                    id: '125'
+                    name: Get Order Status
+                    description: Looks up order status from an external service
+                    state: draft
+                    http_method: get
+                    direct_fin_usage: true
+                    audiences:
+                    - leads
+                    - visitors
+                    execution_type: server_side
+                    configuration_response_type: test_response_type
+                    data_transformation_type: full_access
+                    client_function_timeout_ms: 30000
+                    data_inputs:
+                    - name: order_id
+                      type: string
+                      description: The order ID to look up
+                      required: true
+                      default_value: ''
+                    response_fields: []
+                    object_mappings: []
+                    token_ids: []
+                    customer_authentication: true
+                    bypass_authentication: false
+                    validate_missing_attributes: true
+                    created_by_admin_id: '128'
+                    updated_by_admin_id: '128'
+                    created_at: '2026-03-19T11:27:36Z'
+                    updated_at: '2026-03-19T11:27:36Z'
+                    execution_results_url: "/data_connectors/125/execution_results"
+              schema:
+                "$ref": "#/components/schemas/data_connector_detail"
+        '422':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Missing name:
+                  value:
+                    type: error.list
+                    request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
+                    errors:
+                    - code: parameter_not_found
+                      message: Name is required
+                Invalid audiences:
+                  value:
+                    type: error.list
+                    request_id: c5b56f3d-8b9e-5g4f-0d2b-3e6f9g8b7c4d
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid audiences. Must be a subset of: leads, users, visitors"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_data_connector_request"
+            examples:
+              data_connector_created:
+                summary: Data connector created
+                value:
+                  name: Get Order Status
+                  description: Looks up order status from an external service
+                  http_method: get
+                  url: "https://api.example.com/orders/{{order_id}}/status"
+                  direct_fin_usage: true
+                  audiences:
+                  - leads
+                  - visitors
+                  headers:
+                  - name: Content-Type
+                    value: application/json
+                  data_inputs:
+                  - name: order_id
+                    type: string
+                    description: The order ID to look up
+                    required: true
+                    default_value: ''
+                  customer_authentication: true
+                  bypass_authentication: false
+                  validate_missing_attributes: true
+              minimal:
+                summary: Minimal - name only
+                value:
+                  name: My Connector
+              with_mock_response:
+                summary: With mock response
+                value:
+                  name: Order Lookup
+                  mock_response:
+                    order:
+                      id: 12345
+                      status: shipped
+  "/data_connectors/{id}":
+    get:
+      summary: Retrieve a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        description: The unique identifier of the data connector.
+        example: '12345'
+        required: true
+        schema:
+          type: string
+      - name: state_version
+        in: query
+        required: false
+        description: Which version of the data connector to return. Defaults to live.
+        schema:
+          type: string
+          enum:
+          - draft
+          - live
+          default: live
+      tags:
+      - Data Connectors
+      operationId: RetrieveDataConnector
+      description: |
+        You can retrieve the full detail of a single data connector by its ID.
+
+        The response includes configuration, data inputs, response fields, and object mappings.
+      responses:
+        '200':
+          description: Data connector found
+          content:
+            application/json:
+              examples:
+                Data connector found:
+                  value:
+                    type: data_connector
+                    id: '12345'
+                    name: Order Status Service
+                    description: Fetches order status from external fulfillment API
+                    state: live
+                    http_method: post
+                    direct_fin_usage: false
+                    audiences:
+                    - users
+                    - leads
+                    execution_type: server_side
+                    configuration_response_type: test_response_type
+                    data_transformation_type:
+                    client_function_name:
+                    client_function_timeout_ms:
+                    data_inputs:
+                    - name: conversation_id
+                      type: string
+                      description: The Intercom conversation ID
+                      required: true
+                      default_value: ''
+                    response_fields:
+                    - path: status
+                      type: string
+                      example_value: ok
+                      redacted: false
+                    object_mappings: []
+                    token_ids: []
+                    customer_authentication: false
+                    bypass_authentication: false
+                    validate_missing_attributes:
+                    created_by_admin_id: '456'
+                    updated_by_admin_id: '456'
+                    created_at: '2025-11-15T09:30:00Z'
+                    updated_at: '2026-01-20T14:22:15Z'
+                    execution_results_url: "/data_connectors/12345/execution_results"
+              schema:
+                "$ref": "#/components/schemas/data_connector_detail"
+        '400':
+          description: Invalid state_version parameter
+          content:
+            application/json:
+              examples:
+                Invalid state_version:
+                  value:
+                    type: error.list
+                    request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid state_version. Must be one of: live, draft"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Data connector not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the data connector
+        example: '12345'
+        schema:
+          type: string
+      tags:
+      - Data Connectors
+      operationId: deleteDataConnector
+      description: |
+        Delete an existing data connector. The connector must be in `draft` state and must not be in use by any workflows or AI agents.
+      responses:
+        '200':
+          description: Data connector deleted
+          content:
+            application/json:
+              examples:
+                Data connector deleted:
+                  value:
+                    id: '125'
+                    object: data_connector
+                    deleted: true
+              schema:
+                "$ref": "#/components/schemas/deleted_data_connector_object"
+        '404':
+          description: Data connector not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              examples:
+                Data connector in use:
+                  value:
+                    type: error.list
+                    request_id: d6c78e4f-1a2b-3c4d-5e6f-7a8b9c0d1e2f
+                    errors:
+                    - code: data_connector_in_use
+                      message: Data connector is in use by other resources and cannot be deleted
+                Data connector not in draft:
+                  value:
+                    type: error.list
+                    request_id: e7d89f5g-2b3c-4d5e-6f7g-8a9b0c1d2e3f
+                    errors:
+                    - code: conflict
+                      message: Data connector must be in draft state to be deleted
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    patch:
+      summary: Update a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the data connector.
+        example: '12345'
+        schema:
+          type: string
+      tags:
+      - Data Connectors
+      operationId: updateDataConnector
+      description: |
+        Update an existing data connector. Only provided fields are changed. Set `state` to `live` or `draft` to change the connector's state.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_data_connector_request"
+            examples:
+              Update name and description:
+                summary: Update basic fields
+                value:
+                  name: Updated Connector Name
+                  description: Updated description
+              Set state to live:
+                summary: Set a connector to live
+                value:
+                  state: live
+              Set state to draft:
+                summary: Set a connector to draft
+                value:
+                  state: draft
+              with_mock_response:
+                summary: Update with mock response
+                value:
+                  mock_response:
+                    user:
+                      name: Alice
+                      email: alice@example.com
+      responses:
+        '200':
+          description: Data connector updated
+          content:
+            application/json:
+              examples:
+                Data connector updated:
+                  value:
+                    type: data_connector
+                    id: '12345'
+                    name: Updated Connector Name
+                    description: Updated description
+                    state: draft
+                    http_method: post
+                    direct_fin_usage: false
+                    audiences:
+                    - users
+                    - leads
+                    execution_type: server_side
+                    configuration_response_type: test_response_type
+                    data_transformation_type:
+                    client_function_name:
+                    client_function_timeout_ms:
+                    data_inputs:
+                    - name: conversation_id
+                      type: string
+                      description: The Intercom conversation ID
+                      required: true
+                      default_value: ''
+                    response_fields: []
+                    object_mappings: []
+                    token_ids: []
+                    customer_authentication: false
+                    bypass_authentication: false
+                    validate_missing_attributes: false
+                    created_by_admin_id: '456'
+                    updated_by_admin_id: '456'
+                    created_at: '2025-11-15T09:30:00Z'
+                    updated_at: '2026-03-24T14:22:15Z'
+                    execution_results_url: "/data_connectors/12345/execution_results"
+              schema:
+                "$ref": "#/components/schemas/data_connector_detail"
+        '404':
+          description: Data connector not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              examples:
+                Data connector in use:
+                  value:
+                    type: error.list
+                    request_id: d6c78e4f-1a2b-3c4d-5e6f-7a8b9c0d1e2f
+                    errors:
+                    - code: data_connector_in_use
+                      message: Data connector is in use by other resources and cannot be set to draft
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Invalid audiences:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid audiences. Must be a subset of: leads, users, visitors"
+                Invalid field value:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d
+                    errors:
+                    - code: parameter_invalid
+                      message: "Http Method isn't an option"
+                Invalid state:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid state. Must be one of: draft, live"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/data_connectors/{data_connector_id}/execution_results":
+    get:
+      summary: List execution results for a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: data_connector_id
+        in: path
+        required: true
+        description: The unique identifier for the data connector.
+        schema:
+          type: string
+          example: '12345'
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results per page (1-30, default 10).
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
+          maximum: 30
+      - name: starting_after
+        in: query
+        required: false
+        description: Cursor for pagination. Use the value from `pages.next.starting_after` in a previous response.
+        schema:
+          type: string
+      - name: success
+        in: query
+        required: false
+        description: Filter by success status. Use `true`, `false`, or omit for all.
+        schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+      - name: error_type
+        in: query
+        required: false
+        description: Filter by error type.
+        schema:
+          type: string
+          enum:
+          - request_configuration_error
+          - faraday_error
+          - 3rd_party_error
+          - response_mapping_error
+          - token_refresh_error
+          - fin_action_response_formatting_error
+          - fin_action_identity_verification_error
+          - email_verification_error
+          - non_fin_standalone_action_identity_verification_error
+          - request_validation_error
+          - client_side_action_error
+      - name: start_ts
+        in: query
+        required: false
+        description: Unix timestamp for start of time range (default 1 hour ago).
+        schema:
+          type: integer
+      - name: end_ts
+        in: query
+        required: false
+        description: Unix timestamp for end of time range (default now).
+        schema:
+          type: integer
+      - name: include_bodies
+        in: query
+        required: false
+        description: Include request/response bodies in the response (default false).
+        schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+      tags:
+      - Data Connectors
+      operationId: listDataConnectorExecutionResults
+      description: |
+        Retrieve paginated execution logs for a specific data connector.
+        Results from the last hour are returned by default. Use `start_ts` and `end_ts` to customize the time range.
+
+        Request/response bodies are excluded by default. Use `include_bodies=true` to include them.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: data_connector.execution
+                      id: '99001'
+                      data_connector_id: '12345'
+                      success: true
+                      http_status: 200
+                      http_method: post
+                      request_url: https://api.vendor.com/webhook
+                      execution_time_ms: 150
+                      source_type: workflow
+                      source_id: '5001'
+                      conversation_id: '8001'
+                      created_at: '2026-02-10T18:15:32Z'
+                    - type: data_connector.execution
+                      id: '99000'
+                      data_connector_id: '12345'
+                      success: false
+                      http_status:
+                      http_method: post
+                      error_type: 3rd_party_error
+                      error_message: Connection refused
+                      source_type: inbox
+                      created_at: '2026-02-10T17:45:15Z'
+                    pages:
+                      type: pages
+                      per_page: 10
+                      next:
+                        starting_after: WzE3MDc1OTQ3MTUuMCw5OTAwMF0=
+              schema:
+                "$ref": "#/components/schemas/data_connector_execution_result_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Invalid error_type:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid error_type. Must be one of: request_configuration_error, faraday_error, 3rd_party_error, response_mapping_error, token_refresh_error, fin_action_response_formatting_error, fin_action_identity_verification_error, email_verification_error, non_fin_standalone_action_identity_verification_error, request_validation_error, client_side_action_error"
+                Invalid timestamp:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: start_ts must be a Unix timestamp (integer)
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Data connector not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/data_connectors/{data_connector_id}/execution_results/{id}":
+    get:
+      summary: Retrieve an execution result
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: data_connector_id
+        in: path
+        required: true
+        description: The unique identifier for the data connector.
+        schema:
+          type: string
+          example: '12345'
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the execution result.
+        schema:
+          type: string
+          example: '99001'
+      tags:
+      - Data Connectors
+      operationId: showDataConnectorExecutionResult
+      description: |
+        Retrieve details for a specific data connector execution result.
+        Always includes request/response bodies and the sanitised request URL.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: data_connector.execution
+                    id: '99001'
+                    data_connector_id: '12345'
+                    success: true
+                    http_status: 200
+                    http_method: post
+                    execution_time_ms: 150
+                    source_type: workflow
+                    source_id: '5001'
+                    conversation_id: '8001'
+                    created_at: '2026-02-10T18:15:32Z'
+                    request_url: https://api.example.com/webhook
+                    request_body: '{"channel": "#alerts", "text": "Conversation updated"}'
+                    response_body: '{"ok": true}'
+                    raw_response_body: '{"ok": true}'
+              schema:
+                "$ref": "#/components/schemas/data_connector_execution_result"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Execution result not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+                Execution result not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: execution_result_not_found
+                      message: Execution result not found
+              schema:
+                "$ref": "#/components/schemas/error"
     put:
       summary: Update a data attribute
       parameters:
@@ -16996,6 +19569,114 @@ components:
             type: object
           example: []
     app:
+    audience:
+      title: Audience
+      type: object
+      x-tags:
+      - Audiences
+      description: An audience represents a group of contacts that can be targeted
+        by Fin.
+      properties:
+        type:
+          type: string
+          description: The type of object.
+          enum:
+          - audience
+          example: audience
+          readOnly: true
+        id:
+          type: string
+          description: The unique identifier representing the audience.
+          example: '123'
+          readOnly: true
+        name:
+          type: string
+          description: The name of the audience.
+          example: VIP Customers
+        predicates:
+          type: array
+          description: The predicates that define which contacts belong to the audience.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: company.name
+            type: string
+            comparison: contains
+            value: Acme
+        role_predicates:
+          type: array
+          description: Role-based predicates that further filter audience membership by
+            contact role.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: role
+            type: role
+            comparison: eq
+            value: user
+        created_at:
+          type: integer
+          description: The time the audience was created as a Unix timestamp.
+          example: 1717200000
+          readOnly: true
+        updated_at:
+          type: integer
+          description: The time the audience was last updated as a Unix timestamp.
+          example: 1717200000
+          readOnly: true
+    audience_list:
+      title: Audience List
+      type: object
+      description: A paginated list of audience objects.
+      properties:
+        type:
+          type: string
+          description: The type of the object.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: A list of audience objects.
+          items:
+            "$ref": "#/components/schemas/audience"
+        total_count:
+          type: integer
+          description: The total number of audiences.
+          example: 2
+        page:
+          type: integer
+          description: The current page number.
+          example: 1
+        per_page:
+          type: integer
+          description: The number of results per page.
+          example: 50
+        total_pages:
+          type: integer
+          description: The total number of pages.
+          example: 1
+    predicate:
+      title: Predicate
+      type: object
+      description: A condition used to filter contacts in an audience.
+      properties:
+        attribute:
+          type: string
+          description: The attribute to filter on.
+          example: company.name
+        type:
+          type: string
+          description: The type of the attribute.
+          example: string
+        comparison:
+          type: string
+          description: The comparison operator.
+          example: contains
+        value:
+          type: string
+          description: The value to compare against.
+          example: Acme
       title: App
       type: object
       description: App is a workspace on Intercom
@@ -18830,6 +21511,126 @@ components:
           description: Whether the contact is archived or not.
           example: false
     contact_blocked:
+    content_bulk_action_request:
+      title: Content Bulk Action Request Payload
+      type: object
+      required:
+      - action
+      - content_ids
+      properties:
+        action:
+          type: string
+          description: |
+            The bulk action to perform. Allowed `content_ids[].type` values vary per action:
+              * `publish`, `unpublish`: `article_content`
+              * `delete`: `article_content`, `content_snippet`, `file_source_content`, `internal_article`
+              * `set_availability`, `set_audience`: `article_content`, `content_snippet`, `external_content`, `file_source_content`, `internal_article`
+              * `update_tags`: `article` (the parent Article id, not `article_content`), `content_snippet`, `external_content`, `file_source_content`, `internal_article`
+          enum:
+          - publish
+          - unpublish
+          - delete
+          - set_availability
+          - set_audience
+          - update_tags
+          example: publish
+        content_ids:
+          type: array
+          maxItems: 1000
+          description: Up to 1,000 content items to apply the action to.
+          items:
+            type: object
+            required:
+            - type
+            - id
+            properties:
+              type:
+                type: string
+                enum:
+                - article
+                - article_content
+                - content_snippet
+                - external_content
+                - file_source_content
+                - internal_article
+                example: article_content
+              id:
+                type: string
+                example: '12345678'
+        availability:
+          type: object
+          description: |
+            Required when `action` is `set_availability`. Each field is optional — only the
+            properties present in the request are toggled.
+          properties:
+            ai_agent:
+              type: boolean
+              description: Toggle Fin AI Agent availability.
+            copilot:
+              type: boolean
+              description: Toggle Copilot availability.
+            sales_agent:
+              type: boolean
+              description: Toggle Sales Agent availability.
+        audience:
+          type: object
+          description: Required when `action` is `set_audience`. Manages segment membership.
+          properties:
+            add_segment_ids:
+              type: array
+              description: Segment IDs to assign to the selected content.
+              items:
+                type: integer
+              example:
+              - 100
+            remove_segment_ids:
+              type: array
+              description: Segment IDs to remove from the selected content.
+              items:
+                type: integer
+              example:
+              - 200
+            remove_all:
+              type: boolean
+              description: When `true`, removes all segments from the selected content.
+              example: false
+        tags:
+          type: object
+          description: |
+            Required when `action` is `update_tags`. Applies and/or removes existing tags.
+            Supply at least one of `add_tag_ids` / `remove_tag_ids`. At most 100 distinct tag IDs
+            may be supplied across `add_tag_ids` and `remove_tag_ids` combined. Tag IDs must
+            reference existing, non-archived tags; exceeding the limit or referencing unknown or
+            archived IDs is rejected with `parameter_invalid` (HTTP 422).
+          properties:
+            add_tag_ids:
+              type: array
+              description: Tag IDs to apply to the selected content.
+              items:
+                type: integer
+              example:
+              - 100
+            remove_tag_ids:
+              type: array
+              description: Tag IDs to remove from the selected content.
+              items:
+                type: integer
+              example:
+              - 200
+    content_bulk_action_response:
+      title: Content Bulk Action Response Envelope
+      type: object
+      description: |
+        Phase 1 envelope returned immediately after the request is enqueued. A future
+        Preview release will replace this with a polling-friendly job resource that
+        surfaces progress and per-item results (updated, unchanged, skipped, failed).
+      properties:
+        type:
+          type: string
+          example: content_bulk_action
+        status:
+          type: string
+          example: queued
       title: Contact Blocked
       type: object
       description: blocked contact object
@@ -18969,6 +21770,394 @@ components:
           description: The ISO 639 language code of the content source.
           example: en
     content_sources_list:
+    content_snippet:
+      title: Content Snippet
+      type: object
+      x-tags:
+      - Content Snippets
+      description: A content snippet is a reusable piece of content for your AI agent
+        and Copilot.
+      nullable: false
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `content_snippet`.
+          example: content_snippet
+        id:
+          type: string
+          description: The unique identifier for the content snippet.
+          example: '123'
+        title:
+          type: string
+          description: The title of the content snippet.
+          nullable: true
+          example: How to reset your password
+        locale:
+          type: string
+          description: The locale of the content snippet.
+          example: en
+        json_blocks:
+          type: array
+          description: The content blocks that make up the body of the snippet.
+          items:
+            type: object
+          example:
+          - type: paragraph
+            text: Navigate to Settings > Security > Reset password.
+        body_markdown:
+          type: string
+          nullable: true
+          description: The body of the content snippet in markdown.
+          example: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
+        chatbot_availability:
+          type: integer
+          deprecated: true
+          description: Deprecated. Use ai_chatbot_availability instead. Whether this
+            snippet is available for Fin (1 = on, 0 = off).
+          example: 1
+        copilot_availability:
+          type: integer
+          deprecated: true
+          description: Deprecated. Use ai_copilot_availability instead. Whether this
+            snippet is available for Copilot (1 = on, 0 = off).
+          example: 1
+        ai_chatbot_availability:
+          type: boolean
+          description: Whether the content snippet is available for AI Chatbot (Fin).
+          example: true
+        ai_copilot_availability:
+          type: boolean
+          description: Whether the content snippet is available for AI Copilot.
+          example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the content snippet is available for AI Sales Agent.
+          example: true
+        created_at:
+          type: integer
+          description: The time the snippet was created as a UNIX timestamp.
+          example: 1663597223
+        updated_at:
+          type: integer
+          description: The time the snippet was last updated as a UNIX timestamp.
+          example: 1663597223
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs this content snippet is targeted to for Fin AI Agent.
+            Empty array means no audience targeting is set.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
+    content_snippet_list:
+      title: Content Snippet List
+      type: object
+      description: A paginated list of content snippets.
+      nullable: false
+      properties:
+        type:
+          type: string
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of content snippet objects.
+          items:
+            "$ref": "#/components/schemas/content_snippet"
+        total_count:
+          type: integer
+          description: The total number of content snippets.
+          example: 1
+        page:
+          type: integer
+          description: The current page number.
+          example: 1
+        per_page:
+          type: integer
+          description: The number of results per page.
+          example: 50
+        total_pages:
+          type: integer
+          description: The total number of pages.
+          example: 1
+    content_snippet_create_request:
+      title: Create Content Snippet Request
+      type: object
+      description: The request payload for creating a content snippet. You must provide
+        either `json_blocks` or `body_markdown` for the snippet content — they are
+        mutually exclusive.
+      nullable: false
+      required:
+      - title
+      properties:
+        title:
+          type: string
+          description: The title of the content snippet.
+          maxLength: 255
+          example: How to reset your password
+        json_blocks:
+          type: array
+          description: The content blocks that make up the body of the snippet. Mutually
+            exclusive with `body_markdown`.
+          items:
+            type: object
+          example:
+          - type: paragraph
+            text: Navigate to Settings > Security > Reset password.
+        body_markdown:
+          type: string
+          description: The content of the snippet in markdown. An alternative to `json_blocks` — you
+            can provide content as markdown instead of structured blocks. Mutually exclusive
+            with `json_blocks`.
+          example: "# Hello\n\nSome content.\n"
+        locale:
+          type: string
+          description: The locale of the content snippet. Defaults to `en`.
+          default: en
+          example: en
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to target this content snippet to for Fin AI Agent.
+            Pass an empty array or omit the field for no audience targeting.
+            Unknown audience IDs return a `404` error with no partial commit.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
+        ai_chatbot_availability:
+          type: boolean
+          description: Whether the content snippet should be available for AI Chatbot
+            (Fin). Defaults to false.
+          default: false
+          example: true
+        ai_copilot_availability:
+          type: boolean
+          description: Whether the content snippet should be available for AI Copilot.
+            Defaults to false.
+          default: false
+          example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the content snippet should be available for AI Sales
+            Agent. Defaults to false.
+          default: false
+          example: true
+    content_snippet_update_request:
+      title: Update Content Snippet Request
+      type: object
+      description: The request payload for updating a content snippet. All fields
+        are optional — only provided fields will be updated. `json_blocks` and
+        `body_markdown` are mutually exclusive.
+      nullable: false
+      properties:
+        title:
+          type: string
+          description: The title of the content snippet.
+          maxLength: 255
+          example: How to reset your password
+        json_blocks:
+          type: array
+          description: The content blocks that make up the body of the snippet. Mutually
+            exclusive with `body_markdown`.
+          items:
+            type: object
+          example:
+          - type: paragraph
+            text: Navigate to Settings > Security > Reset password.
+        body_markdown:
+          type: string
+          description: The content of the snippet in markdown. An alternative to `json_blocks` — you
+            can provide content as markdown instead of structured blocks. Mutually exclusive
+            with `json_blocks`.
+          example: "## Updated heading\n\nNew content.\n"
+        locale:
+          type: string
+          description: The locale of the content snippet.
+          example: en
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to target this content snippet to for Fin AI Agent.
+            Omitting the field leaves existing audience memberships unchanged (PATCH semantics).
+            Pass `[]` to clear all audience memberships.
+            Unknown audience IDs return a `404` error with no partial commit.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
+        ai_chatbot_availability:
+          type: boolean
+          description: Whether the content snippet should be available for AI Chatbot
+            (Fin).
+          example: true
+        ai_copilot_availability:
+          type: boolean
+          description: Whether the content snippet should be available for AI Copilot.
+          example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the content snippet should be available for AI Sales
+            Agent.
+          example: true
+    content_search_article_content_item:
+      title: Content Search Article Content Item
+      type: object
+      description: A single locale variant of a help center article returned from
+        Knowledge Hub search.
+      properties:
+        type:
+          type: string
+          description: Always `article_content`.
+          enum:
+          - article_content
+          example: article_content
+        id:
+          type: string
+          description: The unique identifier of the article content.
+          example: '678'
+        title:
+          type: string
+          description: The localized title of the article.
+          example: Billing FAQ
+        locale:
+          type: string
+          description: The locale of this article content.
+          example: en
+    content_search_article_item:
+      title: Content Search Article Item
+      type: object
+      description: A help center article result from Knowledge Hub search, with
+        one nested `article_content` entry per locale.
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          description: Always `article`.
+          enum:
+          - article
+          example: article
+        id:
+          type: string
+          description: The unique identifier of the article.
+          example: '345'
+        title:
+          type: string
+          description: The article's canonical title.
+          example: Billing FAQ
+        contents:
+          type: array
+          description: One entry per locale of the article.
+          items:
+            "$ref": "#/components/schemas/content_search_article_content_item"
+    content_search_default_item:
+      title: Content Search Default Item
+      type: object
+      description: The flat result shape returned from Knowledge Hub search for
+        content snippets, external pages, uploaded files, and internal articles.
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          description: The kind of content item.
+          enum:
+          - content_snippet
+          - external_content
+          - file_source_content
+          - internal_article
+          example: content_snippet
+        id:
+          type: string
+          description: The unique identifier of the content item.
+          example: '123'
+        title:
+          type: string
+          description: The display title of the content item.
+          example: Billing FAQ
+    content_search_response:
+      title: Content Search Response
+      type: object
+      description: A paginated list of Knowledge Hub content results matching a
+        search query.
+      properties:
+        type:
+          type: string
+          description: Always `list`.
+          enum:
+          - list
+          example: list
+        total_count:
+          type: integer
+          description: Total number of results matching the query.
+          example: 5
+        pages:
+          type: object
+          description: Pagination metadata, including links to neighbouring pages.
+          properties:
+            type:
+              type: string
+              enum:
+              - pages
+              example: pages
+            page:
+              type: integer
+              description: The current page number.
+              example: 1
+            per_page:
+              type: integer
+              description: Number of results per page.
+              example: 10
+            total_pages:
+              type: integer
+              description: Total number of pages of results.
+              example: 1
+            next:
+              type: string
+              format: uri
+              description: A link to the next page of results, or null when on
+                the last page.
+              nullable: true
+              example: https://api.intercom.io/content/search?query=billing&page=2
+            prev:
+              type: string
+              format: uri
+              description: A link to the previous page of results, or null when
+                on the first page.
+              nullable: true
+              example:
+        data:
+          type: array
+          description: The list of matched content items. Each item's `type`
+            field determines its shape.
+          items:
+            "$ref": "#/components/schemas/content_search_result"
+    content_search_result:
+      title: Content Search Result
+      description: A single search result. The `type` field discriminates between
+        the flat shape used for snippets, external pages, files, and internal
+        articles, and the nested shape used for help center articles.
+      oneOf:
+      - "$ref": "#/components/schemas/content_search_default_item"
+      - "$ref": "#/components/schemas/content_search_article_item"
+      discriminator:
+        propertyName: type
+        mapping:
+          content_snippet: "#/components/schemas/content_search_default_item"
+          external_content: "#/components/schemas/content_search_default_item"
+          file_source_content: "#/components/schemas/content_search_default_item"
+          internal_article: "#/components/schemas/content_search_default_item"
+          article: "#/components/schemas/content_search_article_item"
       title: Content Source List
       nullable: false
       properties:
@@ -19756,6 +22945,38 @@ components:
       required:
       - ticket_type_id
     convert_visitor_request:
+    create_audience_request:
+      title: Create Audience Request
+      type: object
+      description: The request payload for creating an audience.
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          description: The name of the audience.
+          example: VIP Customers
+        predicates:
+          type: array
+          description: The predicates that define which contacts belong to the audience.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: company.name
+            type: string
+            comparison: contains
+            value: Acme
+        role_predicates:
+          type: array
+          description: Role-based predicates that further filter audience membership by
+            contact role.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: role
+            type: role
+            comparison: eq
+            value: user
       description: You can merge a Visitor to a Contact of role type lead or user.
       type: object
       title: Convert Visitor Request Payload
@@ -21584,6 +24805,790 @@ components:
       - "$ref": "#/components/schemas/create_conversation_attribute_relationship_request"
       - "$ref": "#/components/schemas/create_conversation_attribute_files_request"
     update_conversation_attribute_request:
+    create_data_connector_request:
+      title: Create Data Connector Request
+      type: object
+      description: You can create a data connector by providing the required parameters.
+      properties:
+        name:
+          type: string
+          description: The name of the data connector.
+          example: Get Order Status
+        description:
+          type: string
+          description: A description of what this data connector does.
+          example: Looks up order status from an external service
+        http_method:
+          type: string
+          description: The HTTP method used when calling the external API.
+          enum:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          example: get
+        url:
+          type: string
+          description: The URL of the external API endpoint. Supports template variables like `{{order_id}}`.
+          example: "https://api.example.com/orders/{{order_id}}/status"
+        body:
+          type: string
+          description: The request body template. Supports template variables.
+        direct_fin_usage:
+          type: boolean
+          description: Whether the connector is used directly by Fin (true) or only in workflows (false). Defaults to false.
+          example: false
+        audiences:
+          type: array
+          description: The user types this connector is available for.
+          items:
+            type: string
+            enum:
+            - leads
+            - users
+            - visitors
+          example:
+          - leads
+          - visitors
+        headers:
+          type: array
+          description: HTTP headers to include in the request.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The header name.
+                example: Content-Type
+              value:
+                type: string
+                description: The header value. Supports template variables.
+                example: application/json
+        data_inputs:
+          type: array
+          description: Input parameters accepted by the connector.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The parameter name.
+                example: order_id
+              type:
+                type: string
+                description: The parameter type.
+                enum:
+                - string
+                - integer
+                - decimal
+                - boolean
+                example: string
+              description:
+                type: string
+                description: A description of the parameter.
+                example: The order ID to look up
+              required:
+                type: boolean
+                description: Whether the parameter is required.
+                example: true
+              default_value:
+                type: string
+                description: The default value for the parameter. Defaults to an empty string if omitted.
+        customer_authentication:
+          type: boolean
+          description: Whether the connector requires customer authentication before executing. Defaults to false.
+          example: false
+        bypass_authentication:
+          type: boolean
+          description: Whether authentication is bypassed entirely (public endpoint). Defaults to false.
+          example: false
+        validate_missing_attributes:
+          type: boolean
+          description: Whether to validate that all required data inputs have values before executing.
+          example: false
+        mock_response:
+          type: object
+          description: A sample JSON response from the external API. Auto-generates `response_fields` and sets `configuration_response_type` to `mock_response_type`.
+          example:
+            order:
+              id: 12345
+              status: shipped
+        token_ids:
+          type: array
+          description: IDs of authentication tokens to attach to this data connector.
+          items:
+            type: string
+          example:
+          - '1234'
+          - '5678'
+      required:
+      - name
+    update_data_connector_request:
+      title: Update Data Connector Request
+      type: object
+      description: |
+        Update an existing data connector. All fields are optional — only provided fields will be updated. Set `state` to `live` or `draft` to change the connector's state.
+      properties:
+        name:
+          type: string
+          description: The name of the data connector.
+          example: Updated Connector Name
+        description:
+          type: string
+          description: A description of what this data connector does.
+          example: Updated description
+        state:
+          type: string
+          description: The desired state of the connector.
+          enum:
+          - draft
+          - live
+        http_method:
+          type: string
+          description: The HTTP method used by the data connector.
+          enum:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          example: post
+        url:
+          type: string
+          description: The URL of the external API endpoint. Supports template variables like `{{order_id}}`.
+          example: "https://api.example.com/orders/{{order_id}}/status"
+        body:
+          type: string
+          description: The request body template. Supports template variables.
+        direct_fin_usage:
+          type: boolean
+          description: Whether this connector is used directly by Fin.
+          example: false
+        audiences:
+          type: array
+          description: The audience types this connector targets.
+          items:
+            type: string
+            enum:
+            - leads
+            - users
+            - visitors
+          example:
+          - leads
+          - users
+        headers:
+          type: array
+          description: HTTP headers to include in the request.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The header name.
+                example: Content-Type
+              value:
+                type: string
+                description: The header value. Supports template variables.
+                example: application/json
+        data_inputs:
+          type: array
+          description: The input parameters accepted by this data connector. Replaces all existing inputs.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The name of the input parameter.
+                example: order_id
+              type:
+                type: string
+                description: The data type of the input.
+                enum:
+                - string
+                - integer
+                - decimal
+                - boolean
+                example: string
+              description:
+                type: string
+                description: A description of the input parameter. Required for each input.
+                example: The order ID to look up
+              required:
+                type: boolean
+                description: Whether this input is required.
+                example: true
+              default_value:
+                type: string
+                description: The default value for this input, if any.
+        customer_authentication:
+          type: boolean
+          description: Whether OTP authentication is enabled for this connector.
+          example: false
+        bypass_authentication:
+          type: boolean
+          description: Whether authentication is bypassed for this connector.
+          example: false
+        validate_missing_attributes:
+          type: boolean
+          description: Whether to validate missing attributes before execution.
+          example: true
+        mock_response:
+          type: object
+          description: A sample JSON response from the external API. Auto-generates `response_fields` and sets `configuration_response_type` to `mock_response_type`.
+          example:
+            order:
+              id: 12345
+              status: shipped
+        token_ids:
+          type: array
+          description: IDs of authentication tokens to attach to this data connector. An empty array removes all tokens.
+          items:
+            type: string
+          example:
+          - '1234'
+          - '5678'
+    data_connector:
+      title: Data Connector
+      type: object
+      x-tags:
+      - Data Connectors
+      description: |
+        A data connector allows you to make HTTP requests to external APIs from Intercom workflows and AI agents.
+      properties:
+        type:
+          type: string
+          description: The type of object - `data_connector`.
+          enum:
+          - data_connector
+          example: data_connector
+        id:
+          type: string
+          description: The unique identifier for the data connector.
+          example: '12345'
+        name:
+          type: string
+          description: The name of the data connector.
+          example: Order Status Service
+        description:
+          type: string
+          nullable: true
+          description: A description of what this data connector does.
+          example: Fetches order status from external fulfillment API
+        state:
+          type: string
+          description: The current state of the data connector.
+          enum:
+          - draft
+          - live
+          example: live
+        http_method:
+          type: string
+          description: The HTTP method used by the data connector.
+          enum:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          example: post
+        direct_fin_usage:
+          type: boolean
+          description: Whether this data connector is assigned to Fin for direct usage.
+          example: false
+        created_by_admin_id:
+          type: string
+          description: The ID of the admin who created this data connector.
+          example: '12345'
+        updated_by_admin_id:
+          type: string
+          description: The ID of the admin who last updated this data connector.
+          example: '12345'
+        created_at:
+          type: string
+          format: date-time
+          description: The time the data connector was created.
+          example: '2025-11-15T09:30:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: The time the data connector was last updated.
+          example: '2026-01-20T14:22:15Z'
+        execution_results_url:
+          type: string
+          description: The URL path to fetch execution results for this connector.
+          example: "/data_connectors/12345/execution_results"
+    data_connector_detail:
+      title: Data Connector (Detail)
+      type: object
+      x-tags:
+      - Data Connectors
+      description: |
+        Full detail view of a data connector, returned by `GET /data_connectors/{id}`.
+        Includes configuration, data inputs, response fields, and object mappings.
+      properties:
+        type:
+          type: string
+          description: The type of object - `data_connector`.
+          enum:
+          - data_connector
+          example: data_connector
+        id:
+          type: string
+          description: The unique identifier for the data connector.
+          example: '12345'
+        name:
+          type: string
+          description: The name of the data connector.
+          example: Order Status Service
+        description:
+          type: string
+          nullable: true
+          description: A description of what this data connector does.
+          example: Fetches order status from external fulfillment API
+        state:
+          type: string
+          description: The current state of the data connector.
+          enum:
+          - draft
+          - live
+          example: live
+        url:
+          type: string
+          nullable: true
+          description: The URL of the external API endpoint. Supports template variables like `{{order_id}}`.
+          example: "https://api.example.com/orders/{{order_id}}/status"
+        body:
+          type: string
+          description: The request body template. Supports template variables.
+          example: '{"text": "{{message}}"}'
+        headers:
+          type: array
+          description: HTTP headers for the request. Header values are always redacted as `"****"` in responses.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The header name.
+                example: Authorization
+              value:
+                type: string
+                description: Always `"****"` in responses.
+                example: "****"
+          example:
+          - name: Authorization
+            value: "****"
+        http_method:
+          type: string
+          description: The HTTP method used by the data connector.
+          enum:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          example: post
+        direct_fin_usage:
+          type: boolean
+          description: Whether this connector is used directly by Fin.
+          example: false
+        audiences:
+          type: array
+          description: The audience types this connector targets.
+          items:
+            type: string
+            enum:
+            - users
+            - leads
+            - visitors
+          example:
+          - users
+          - leads
+        execution_type:
+          type: string
+          nullable: true
+          description: How the connector executes.
+          enum:
+          - server_side
+          - client_side
+          example: server_side
+        configuration_response_type:
+          type: string
+          nullable: true
+          description: The expected response format from the connector.
+          enum:
+          - test_response_type
+          - mock_response_type
+          example: test_response_type
+        data_transformation_type:
+          type: string
+          nullable: true
+          description: The type of data transformation applied to the response.
+          enum:
+          - full_access
+          - redacted_access
+          - code_block_transformation
+        client_function_name:
+          type: string
+          nullable: true
+          description: The name of the client-side function, if applicable.
+        client_function_timeout_ms:
+          type: integer
+          nullable: true
+          description: Timeout in milliseconds for the client function, if applicable.
+        data_inputs:
+          type: array
+          description: The input parameters accepted by this data connector.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The name of the input parameter.
+                example: conversation_id
+              type:
+                type: string
+                description: The data type of the input.
+                enum:
+                - string
+                - integer
+                - decimal
+                - boolean
+                example: string
+              description:
+                type: string
+                nullable: true
+                description: A description of the input parameter.
+              required:
+                type: boolean
+                description: Whether this input is required.
+                example: true
+              default_value:
+                type: string
+                description: The default value for this input, if any.
+        response_fields:
+          type: array
+          description: The fields returned in the connector response.
+          items:
+            type: object
+            properties:
+              path:
+                type: string
+                description: The JSON path of the response field.
+                example: status
+              type:
+                type: string
+                description: The data type of the response field.
+                enum:
+                - unknown
+                - string
+                - integer
+                - decimal
+                - datetime
+                - boolean
+                example: string
+              example_value:
+                nullable: true
+                description: An example value for this field.
+                example: ok
+              redacted:
+                type: boolean
+                description: Whether this field is redacted in logs.
+                example: false
+        object_mappings:
+          type: array
+          description: Mappings from connector response objects to Intercom objects.
+          items:
+            type: object
+            properties:
+              response_object_path:
+                type: string
+              intercom_object_type:
+                type: string
+                enum:
+                - conversation
+                - user
+              attribute_mappings:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    response_attribute_path:
+                      type: string
+                    intercom_attribute_identifier:
+                      type: string
+                    mapping_type:
+                      type: string
+                      enum:
+                      - primitive_mapping
+                      - context_mapping
+              reference_mappings:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    intercom_object_type:
+                      type: string
+                      enum:
+                      - conversation
+                      - user
+                    intercom_attribute_identifier:
+                      type: string
+        token_ids:
+          type: array
+          description: IDs of authentication tokens associated with this connector.
+          items:
+            type: string
+          example: []
+        customer_authentication:
+          type: boolean
+          description: Whether OTP authentication is enabled for this connector.
+          example: false
+        bypass_authentication:
+          type: boolean
+          description: Whether authentication is bypassed for this connector.
+          example: false
+        validate_missing_attributes:
+          type: boolean
+          nullable: true
+          description: Whether to validate missing attributes before execution.
+        created_by_admin_id:
+          type: string
+          nullable: true
+          description: The ID of the admin who created this connector.
+          example: '456'
+        updated_by_admin_id:
+          type: string
+          nullable: true
+          description: The ID of the admin who last updated this connector.
+          example: '456'
+        created_at:
+          type: string
+          format: date-time
+          description: The time the data connector was created.
+          example: '2025-11-15T09:30:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: The time the data connector was last updated.
+          example: '2026-01-20T14:22:15Z'
+        execution_results_url:
+          type: string
+          description: The URL path to fetch execution results for this connector.
+          example: "/data_connectors/12345/execution_results"
+    data_connector_execution_result:
+      title: Data Connector Execution Result
+      type: object
+      x-tags:
+      - Data Connectors
+      description: An execution result from a data connector HTTP request.
+      properties:
+        type:
+          type: string
+          description: The type of object - `data_connector.execution`.
+          enum:
+          - data_connector.execution
+          example: data_connector.execution
+        id:
+          type: string
+          description: The unique identifier for the execution result.
+          example: '99001'
+        data_connector_id:
+          type: string
+          description: The unique identifier of the data connector that produced this result.
+          example: '12345'
+        success:
+          type: boolean
+          description: Whether the execution was successful.
+          example: true
+        http_status:
+          type: integer
+          nullable: true
+          description: The HTTP status code returned by the external API.
+          example: 200
+        http_method:
+          type: string
+          description: The HTTP method used for the request.
+          enum:
+          - get
+          - post
+          - put
+          - delete
+          - patch
+          example: post
+        error_type:
+          type: string
+          nullable: true
+          description: The type of error that occurred, if any.
+          enum:
+          - request_configuration_error
+          - faraday_error
+          - 3rd_party_error
+          - response_mapping_error
+          - token_refresh_error
+          - fin_action_response_formatting_error
+          - fin_action_identity_verification_error
+          - email_verification_error
+          - non_fin_standalone_action_identity_verification_error
+          - request_validation_error
+          - client_side_action_error
+          example: 3rd_party_error
+        error_message:
+          type: string
+          nullable: true
+          description: A human-readable error message. Query parameters, userinfo, and fragments in URLs are redacted.
+          example: Connection refused
+        execution_time_ms:
+          type: integer
+          nullable: true
+          description: The execution time in milliseconds.
+          example: 245
+        source_type:
+          type: string
+          nullable: true
+          description: The type of source that triggered this execution.
+          enum:
+          - custom_bot
+          - inbound_custom_bot
+          - button_custom_bot
+          - answer
+          - workflow
+          - saved_reply
+          - triggerable_custom_bot
+          - inbox
+          - fin
+          example: workflow
+        source_id:
+          type: string
+          nullable: true
+          description: The identifier of the source that triggered this execution.
+          example: '5001'
+        conversation_id:
+          type: string
+          nullable: true
+          description: The conversation associated with this execution, if any.
+          example: '8001'
+        created_at:
+          type: string
+          format: date-time
+          description: The time the execution occurred.
+          example: '2026-02-10T18:15:32Z'
+        request_url:
+          type: string
+          nullable: true
+          description: The request URL. Query parameters, userinfo, and fragments are redacted.
+          example: https://api.example.com/webhook
+        request_body:
+          type: string
+          nullable: true
+          description: The request body sent to the external API.
+          example: '{"message": "hello"}'
+        response_body:
+          type: string
+          nullable: true
+          description: The response body from the external API.
+          example: '{"status": "ok"}'
+        raw_response_body:
+          type: string
+          nullable: true
+          description: The raw (unmapped) response body.
+          example: '{"status": "ok"}'
+    data_connector_execution_result_list:
+      title: Data Connector Execution Result List
+      type: object
+      description: A paginated list of data connector execution results.
+      properties:
+        type:
+          type: string
+          description: The type of object - `list`.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of execution result objects.
+          items:
+            "$ref": "#/components/schemas/data_connector_execution_result"
+        pages:
+          type: object
+          description: Pagination information.
+          properties:
+            type:
+              type: string
+              example: pages
+              enum:
+              - pages
+            per_page:
+              type: integer
+              description: The number of results per page.
+              example: 10
+            next:
+              type: object
+              nullable: true
+              description: Cursor for the next page of results.
+              properties:
+                starting_after:
+                  type: string
+                  description: The cursor value to use for the next page.
+                  example: WzE3MDc1OTQ3MTUuMCw5OTAwMF0=
+    data_connector_list:
+      title: Data Connector List
+      type: object
+      description: A paginated list of data connectors.
+      properties:
+        type:
+          type: string
+          description: The type of object - `list`.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of data connector objects.
+          items:
+            "$ref": "#/components/schemas/data_connector"
+        pages:
+          type: object
+          description: Pagination information.
+          properties:
+            type:
+              type: string
+              example: pages
+              enum:
+              - pages
+            per_page:
+              type: integer
+              description: The number of results per page.
+              example: 20
+            next:
+              type: object
+              nullable: true
+              description: Cursor for the next page of results.
+              properties:
+                starting_after:
+                  type: string
+                  description: The cursor value to use for the next page.
+                  example: WzE3MDc1OTQ3MTUuMCwxMjM0NV0=
+    deleted_data_connector_object:
+      title: Deleted Data Connector Object
+      type: object
+      description: Response returned when a data connector is deleted.
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the data connector.
+          example: '125'
+        object:
+          type: string
+          description: The type of object which was deleted.
+          enum:
+          - data_connector
+          example: data_connector
+        deleted:
+          type: boolean
+          description: Whether the data connector was deleted successfully.
+          example: true
       title: Update Conversation Attribute Request
       type: object
       description: Payload for updating a conversation attribute.
@@ -25155,6 +29160,37 @@ components:
             object.
           example: en
     untag_company_request:
+    update_audience_request:
+      title: Update Audience Request
+      type: object
+      description: The request payload for updating an audience. All fields are optional
+        — only provided fields will be updated.
+      properties:
+        name:
+          type: string
+          description: The name of the audience.
+          example: Enterprise Accounts
+        predicates:
+          type: array
+          description: The predicates that define which contacts belong to the audience.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: custom_attributes.plan
+            type: string
+            comparison: eq
+            value: enterprise
+        role_predicates:
+          type: array
+          description: Role-based predicates that further filter audience membership by
+            contact role.
+          items:
+            "$ref": "#/components/schemas/predicate"
+          example:
+          - attribute: role
+            type: role
+            comparison: eq
+            value: user
       description: You can tag a single company or a list of companies.
       type: object
       title: Untag Company Request Payload
