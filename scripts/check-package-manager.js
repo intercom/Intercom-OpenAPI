@@ -101,18 +101,6 @@ async function main() {
     console.error(steps.join('\n'));
     process.exit(1);
   }
-
-  // Success path - track pnpm usage for adoption monitoring
-  const pnpmInfo = getToolInfo('pnpm');
-  const corepackInfo = getToolInfo('corepack');
-  await sendTelemetry('pnpm-install', {
-    pnpm_path: pnpmInfo.path,
-    pnpm_version: pnpmInfo.version,
-    pnpm_via_corepack: pnpmInfo.via_corepack,
-    pnpm_symlink_target: pnpmInfo.symlink_target,
-    corepack_path: corepackInfo.path,
-    corepack_version: corepackInfo.version,
-  });
 }
 
 main();
