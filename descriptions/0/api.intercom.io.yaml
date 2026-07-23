@@ -1718,7 +1718,7 @@ paths:
         A draft exists only when a published article has unpublished changes staged
         on top of it. Returns `404` when the article has no staged draft.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` OAuth scope.
       responses:
         '200':
           description: Article draft found
@@ -1780,7 +1780,7 @@ paths:
         Non-versioned fields like AI availability are ignored, leaving the live
         values untouched.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` OAuth scope.
       responses:
         '200':
           description: Draft staged
@@ -1866,7 +1866,7 @@ paths:
         omitting it returns `422`. Returns `422` when there is no staged draft to
         publish, or when a requested locale has no pending changes.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` OAuth scope.
       responses:
         '200':
           description: Draft published
@@ -1989,7 +1989,7 @@ paths:
         `GET /articles/{article_id}/versions/{id}` to retrieve a single version
         with its full content.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` OAuth scope.
       responses:
         '200':
           description: Versions found
@@ -2087,7 +2087,7 @@ paths:
         `https://api.intercom.io/articles/<article_id>/versions/<id>`. Returns
         the version's full content; the live article remains untouched.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` OAuth scope.
       responses:
         '200':
           description: Version found
@@ -2140,7 +2140,7 @@ paths:
       - name: Intercom-Version
         in: header
         schema:
-          "$ref": "#/components/schemas/intercom_version_preview"
+          "$ref": "#/components/schemas/intercom_version"
       - name: article_id
         in: path
         required: true
@@ -2156,7 +2156,7 @@ paths:
         and the authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` OAuth scope.
       requestBody:
         content:
           application/json:
@@ -2245,7 +2245,7 @@ paths:
       - name: Intercom-Version
         in: header
         schema:
-          "$ref": "#/components/schemas/intercom_version_preview"
+          "$ref": "#/components/schemas/intercom_version"
       - name: article_id
         in: path
         required: true
@@ -2268,7 +2268,7 @@ paths:
         The authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` OAuth scope.
       responses:
         '200':
           description: Tag removed
@@ -3359,7 +3359,7 @@ paths:
   "/export/reporting_data/enqueue":
     post:
       summary: Enqueue a new reporting data export job
-      description: For the **conversation** dataset, from the Preview version this export returns all conversations, including those that never received a user reply. Earlier versions return only conversations that received at least one user reply. Other datasets are unaffected.
+      description: For the **conversation** dataset, from version 2.16 onward this export returns all conversations, including those that never received a user reply. Earlier versions return only conversations that received at least one user reply. Other datasets are unaffected.
       tags: [Reporting Data Export]
       parameters:
       - name: Intercom-Version
@@ -3697,7 +3697,7 @@ paths:
 
         Redirects are returned in descending order on the `updated_at` attribute.
 
-        Requires the `read_help_center_redirects_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_help_center_redirects_scope` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -3773,7 +3773,7 @@ paths:
       description: |
         You can create a new URL redirect by making a POST request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects`.
 
-        Requires the `read_write_help_center_redirects_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_help_center_redirects_scope` OAuth scope.
       responses:
         '200':
           description: redirect created
@@ -3911,7 +3911,7 @@ paths:
       description: |
         You can fetch the details of a single redirect by making a GET request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects/{id}`.
 
-        Requires the `read_help_center_redirects_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_help_center_redirects_scope` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -3986,7 +3986,7 @@ paths:
       description: |
         You can delete a single redirect by making a DELETE request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects/{id}`.
 
-        Requires the `read_write_help_center_redirects_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_help_center_redirects_scope` OAuth scope.
       responses:
         '200':
           description: redirect deleted
@@ -4879,7 +4879,7 @@ paths:
       - name: Intercom-Version
         in: header
         schema:
-          "$ref": "#/components/schemas/intercom_version_preview"
+          "$ref": "#/components/schemas/intercom_version"
       - name: internal_article_id
         in: path
         required: true
@@ -4896,7 +4896,7 @@ paths:
         and the authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` OAuth scope.
       requestBody:
         content:
           application/json:
@@ -4985,7 +4985,7 @@ paths:
       - name: Intercom-Version
         in: header
         schema:
-          "$ref": "#/components/schemas/intercom_version_preview"
+          "$ref": "#/components/schemas/intercom_version"
       - name: internal_article_id
         in: path
         required: true
@@ -5009,7 +5009,7 @@ paths:
         The authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` OAuth scope.
       responses:
         '200':
           description: Tag removed
@@ -9376,7 +9376,7 @@ paths:
                 "$ref": "#/components/schemas/error"
   "/content/bulk_actions":
     post:
-      summary: Run a bulk action on Knowledge Hub content (Preview)
+      summary: Run a bulk action on Knowledge Hub content
       parameters:
       - name: Intercom-Version
         in: header
@@ -9404,7 +9404,7 @@ paths:
         Zendesk, Salesforce Knowledge, etc.) are silently skipped on `delete` — they can only be
         removed by disconnecting the underlying import source.
 
-        Requires the `write_content` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `write_content` OAuth scope.
       responses:
         '202':
           description: Accepted — work has been enqueued
@@ -9519,7 +9519,7 @@ paths:
       - name: Intercom-Version
         in: header
         schema:
-          "$ref": "#/components/schemas/intercom_version_preview"
+          "$ref": "#/components/schemas/intercom_version"
       - name: query
         in: query
         required: false
@@ -10152,7 +10152,7 @@ paths:
       - name: Intercom-Version
         in: header
         schema:
-          "$ref": "#/components/schemas/intercom_version_preview"
+          "$ref": "#/components/schemas/intercom_version"
       - name: content_snippet_id
         in: path
         required: true
@@ -10168,7 +10168,7 @@ paths:
         and the authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_content_snippets` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_content_snippets` OAuth scope.
       requestBody:
         content:
           application/json:
@@ -10257,7 +10257,7 @@ paths:
       - name: Intercom-Version
         in: header
         schema:
-          "$ref": "#/components/schemas/intercom_version_preview"
+          "$ref": "#/components/schemas/intercom_version"
       - name: content_snippet_id
         in: path
         required: true
@@ -10280,7 +10280,7 @@ paths:
         The authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_content_snippets` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_content_snippets` OAuth scope.
       responses:
         '200':
           description: Tag removed
@@ -25791,16 +25791,14 @@ components:
         has_unpublished_changes:
           type: boolean
           description: Whether this locale's published content has unpublished
-            changes staged as a draft on top of its live content. Only returned on
-            the `Preview` API version.
+            changes staged as a draft on top of its live content.
           example: false
         draft_updated_at:
           type: integer
           format: date-time
           nullable: true
           description: The time, in seconds, when this locale's staged draft was
-            last edited, or `null` when there is no staged draft. Only returned on
-            the `Preview` API version.
+            last edited, or `null` when there is no staged draft.
           example: 1663597260
         url:
           type: string
@@ -26027,8 +26025,7 @@ components:
         has_unpublished_changes:
           type: boolean
           description: Whether the published article has unpublished changes staged
-            as a draft on top of its live content. Only returned on the `Preview`
-            API version. For multilingual articles this reflects the default
+            as a draft on top of its live content. For multilingual articles this reflects the default
             language's content; a pure draft (never published) reports `false`.
           example: false
         draft_updated_at:
@@ -26036,8 +26033,7 @@ components:
           format: date-time
           nullable: true
           description: The time, in seconds, when the staged draft was last edited,
-            or `null` when there is no staged draft. Only returned on the `Preview`
-            API version.
+            or `null` when there is no staged draft.
           example: 1672928610
         url:
           type: string
@@ -38978,7 +38974,7 @@ tags:
   description: |
     Retrieve the banners a contact matches and record dismissals, so you can display
     banners on surfaces outside the Messenger (native mobile apps, kiosks, embedded
-    tools). These endpoints are part of the `Preview` API version and require an OAuth
+    tools). These endpoints require an OAuth
     token with the `read_write_users` scope. Requesting a contact's banners records an
     impression for each banner returned, and dismissals are shared with the web Messenger.
 - name: Brands
@@ -38990,7 +38986,7 @@ tags:
 - name: Contacts
   description: Everything about your contacts
 - name: Content
-  description: Search and operations over Knowledge Hub content (Preview) — articles,
+  description: Search and operations over Knowledge Hub content — articles,
     snippets, external pages, uploaded files, and internal articles.
 - name: Content Snippets
   description: Everything about your Content Snippets
