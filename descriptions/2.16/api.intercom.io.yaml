@@ -12,6 +12,371 @@ info:
     url: https://spdx.org/licenses/MIT
 paths:
   "/me":
+  "/macros/{id}":
+    get:
+      summary: Retrieve a macro
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the macro
+        schema:
+          type: string
+        example: "123"
+      tags:
+      - Macros
+      operationId: getMacro
+      description: |
+        You can fetch a single macro (saved reply) by its ID. The macro will only be returned if it is visible to the authenticated user based on its visibility settings.
+
+        **Visibility Rules**
+
+        A macro is returned based on its `visible_to` setting:
+        - `everyone`: Always visible to all team members
+        - `specific_teams`: Only visible if the authenticated user belongs to one of the teams specified in `visible_to_team_ids`
+
+        If a macro exists but is not visible to the authenticated user, a 404 error is returned.
+
+        **Placeholder Transformation**
+
+        The API transforms Intercom placeholders to a more standard XML-like format in the `body` field:
+        - From: `{{user.name | fallback: 'there'}}`
+        - To: `<attribute key="user.name" default="there"/>`
+
+        Default values in placeholders are HTML-escaped for security.
+      responses:
+        '200':
+          description: Macro found
+          content:
+            application/json:
+              examples:
+                support_macro:
+                  summary: Customer support macro with placeholders
+                  value:
+                    type: macro
+                    id: "789"
+                    name: "Refund Process Explanation"
+                    body: "<p>Hi <attribute key=\"user.first_name\" default=\"there\"/>,</p><p>I understand you'd like a refund for order #<attribute key=\"conversation.custom_attributes.order_number\"/>. The refund will be processed within 3-5 business days to your <attribute key=\"user.custom_attributes.payment_method\" default=\"original payment method\"/>.</p><p>Is there anything else I can help you with?</p>"
+                    body_text: "Hi {{user.first_name|fallback:\"there\"}},\n\nI understand you'd like a refund for order #{{conversation.custom_attributes.order_number}}. The refund will be processed within 3-5 business days to your {{user.custom_attributes.payment_method|fallback:\"original payment method\"}}.\n\nIs there anything else I can help you with?"
+                    created_at: "2025-07-21T14:44:35.000Z"
+                    updated_at: "2025-07-21T14:44:35.000Z"
+                    visible_to: "specific_teams"
+                    visible_to_team_ids: ["support_team_1", "support_team_2"]
+                    available_on: ["inbox", "messenger"]
+                sales_macro:
+                  summary: Sales team macro for product inquiries
+                  value:
+                    type: macro
+                    id: "456"
+                    name: "Product Demo Request"
+                    body: "<p>Hello <attribute key=\"user.name\" default=\"valued customer\"/>,</p><p>Thank you for your interest in <attribute key=\"product.name\" default=\"our products\"/>! I'd love to schedule a personalized demo for your team at <attribute key=\"company.name\" default=\"your company\"/>.</p><p>Would <attribute key=\"suggested_time\" default=\"next Tuesday at 2 PM EST\"/> work for you?</p>"
+                    body_text: "Hello {{user.name|fallback:\"valued customer\"}},\n\nThank you for your interest in {{product.name|fallback:\"our products\"}}! I'd love to schedule a personalized demo for your team at {{company.name|fallback:\"your company\"}}.\n\nWould {{suggested_time|fallback:\"next Tuesday at 2 PM EST\"}} work for you?"
+                    created_at: "2025-07-22T11:06:40.000Z"
+                    updated_at: "2025-07-23T00:00:00.000Z"
+                    visible_to: "specific_teams"
+                    visible_to_team_ids: ["sales_team_us", "sales_team_eu"]
+                    available_on: ["messenger"]
+                technical_support:
+                  summary: Technical support macro with nested attributes
+                  value:
+                    type: macro
+                    id: "890"
+                    name: "API Integration Help"
+                    body: "<p>Hi <attribute key=\"user.name\"/>,</p><p>I see you're having trouble with the <attribute key=\"conversation.custom_attributes.api_endpoint\" default=\"API\"/> integration. Your API key for app <attribute key=\"app.id\"/> is configured correctly.</p><p>Error code: <attribute key=\"conversation.custom_attributes.error_code\" default=\"unknown\"/></p><p>Let me help you resolve this issue.</p>"
+                    body_text: "Hi {{user.name}},\n\nI see you're having trouble with the {{conversation.custom_attributes.api_endpoint|fallback:\"API\"}} integration. Your API key for app {{app.id}} is configured correctly.\n\nError code: {{conversation.custom_attributes.error_code|fallback:\"unknown\"}}\n\nLet me help you resolve this issue."
+                    created_at: "2025-07-18T09:15:00.000Z"
+                    updated_at: "2025-07-18T09:15:00.000Z"
+                    visible_to: "everyone"
+                    visible_to_team_ids: []
+                    available_on: ["inbox"]
+                simple_greeting:
+                  summary: Simple macro without placeholders
+                  value:
+                    type: macro
+                    id: "123"
+                    name: "Thank You Response"
+                    body: "<p>Thank you for reaching out! We appreciate your message and will get back to you as soon as possible.</p>"
+                    body_text: "Thank you for reaching out! We appreciate your message and will get back to you as soon as possible."
+                    created_at: "2025-07-17T11:18:08.000Z"
+                    updated_at: "2025-07-17T15:30:24.000Z"
+                    visible_to: "everyone"
+                    visible_to_team_ids: []
+                    available_on: ["inbox", "messenger"]
+              schema:
+                "$ref": "#/components/schemas/macro"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden - missing required OAuth scope
+          content:
+            application/json:
+              examples:
+                Missing required scope:
+                  summary: OAuth token lacks read_conversations scope
+                  value:
+                    type: error.list
+                    request_id: f097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: forbidden
+                      message: You do not have the required scope (read_conversations) to access this resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Macro not found or not accessible
+          content:
+            application/json:
+              examples:
+                Macro not found:
+                  value:
+                    type: error.list
+                    request_id: bc300b1a-492a-405f-924e-a5881cb72e3a
+                    errors:
+                    - code: not_found
+                      message: Macro not found
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/macros":
+    get:
+      summary: List all macros
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 150
+          default: 50
+        description: The number of results per page
+        example: 50
+      - name: starting_after
+        in: query
+        schema:
+          type: string
+        description: Base64-encoded cursor containing [updated_at, id] for pagination
+        example: "WzE3MTk0OTM3NTcuMCwgIjEyMyJd"
+      - name: updated_since
+        in: query
+        schema:
+          type: integer
+          format: int64
+        description: Unix timestamp to filter macros updated after this time
+        example: 1719474966
+      tags:
+      - Macros
+      operationId: listMacros
+      description: |
+        You can fetch a list of all macros (saved replies) in your workspace for use in automating responses.
+
+        The macros are returned in descending order by updated_at.
+
+        **Pagination**
+
+        This endpoint uses cursor-based pagination via the `starting_after` parameter. The cursor is a Base64-encoded JSON array containing `[updated_at, id]` of the last item from the previous page.
+
+        **Placeholder Transformation**
+
+        The API transforms Intercom placeholders to a more standard XML-like format:
+        - From: `{{user.name | fallback: 'there'}}`
+        - To: `<attribute key="user.name" default="there"/>`
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                basic_list:
+                  summary: Basic list of macros
+                  value:
+                    type: list
+                    data:
+                    - type: macro
+                      id: "123"
+                      name: "Order Status Update"
+                      body: "<p>Hi <attribute key=\"user.name\" default=\"there\"/>, your order #<attribute key=\"order.number\"/> is ready for pickup!</p>"
+                      body_text: "Hi {{user.name|fallback:\"there\"}}, your order #{{order.number}} is ready for pickup!"
+                      created_at: "2025-07-17T11:18:08.000Z"
+                      updated_at: "2025-07-17T15:30:24.000Z"
+                      visible_to: "everyone"
+                      visible_to_team_ids: []
+                      available_on: ["inbox", "messenger"]
+                    - type: macro
+                      id: "456"
+                      name: "Welcome Message"
+                      body: "<p>Welcome to our support! I'm <attribute key=\"teammate.name\"/>. How can I help you today?</p>"
+                      body_text: "Welcome to our support! I'm {{teammate.name}}. How can I help you today?"
+                      created_at: "2025-07-21T14:44:35.000Z"
+                      updated_at: "2025-07-21T14:44:35.000Z"
+                      visible_to: "specific_teams"
+                      visible_to_team_ids: ["789", "101"]
+                      available_on: ["inbox"]
+                    pages:
+                      type: pages
+                      per_page: 50
+                      next:
+                        starting_after: "WzE3MTk0OTM3NTcuMCwgIjEyMyJd"
+                pagination_with_cursor:
+                  summary: Paginated response using starting_after cursor
+                  value:
+                    type: list
+                    data:
+                    - type: macro
+                      id: "789"
+                      name: "Refund Process"
+                      body: "<p>I understand you'd like a refund for order #<attribute key=\"conversation.custom_attributes.order_number\"/>. The refund will be processed within 3-5 business days.</p>"
+                      body_text: "I understand you'd like a refund for order #{{conversation.custom_attributes.order_number}}. The refund will be processed within 3-5 business days."
+                      created_at: "2025-07-21T07:15:34.000Z"
+                      updated_at: "2025-07-21T07:15:34.000Z"
+                      visible_to: "everyone"
+                      visible_to_team_ids: []
+                      available_on: ["inbox", "messenger"]
+                    - type: macro
+                      id: "101"
+                      name: "Product Inquiry Response"
+                      body: "<p>Thank you for your interest in <attribute key=\"product.name\" default=\"our products\"/>. I'd be happy to provide more information!</p>"
+                      body_text: "Thank you for your interest in {{product.name|fallback:\"our products\"}}. I'd be happy to provide more information!"
+                      created_at: "2025-07-20T05:33:20.000Z"
+                      updated_at: "2025-07-21T10:00:00.000Z"
+                      visible_to: "everyone"
+                      visible_to_team_ids: []
+                      available_on: ["inbox", "messenger"]
+                    pages:
+                      type: pages
+                      per_page: 50
+                      next:
+                        starting_after: "WzE3MTk0MDAwMDAuMCwgIjEwMSJd"
+                filtered_by_timestamp:
+                  summary: Macros filtered by updated_since parameter
+                  value:
+                    type: list
+                    data:
+                    - type: macro
+                      id: "234"
+                      name: "Shipping Update Template"
+                      body: "<p>Your order has been shipped via <attribute key=\"shipping.carrier\" default=\"our shipping partner\"/>. Tracking number: <attribute key=\"shipping.tracking_number\"/></p>"
+                      body_text: "Your order has been shipped via {{shipping.carrier|fallback:\"our shipping partner\"}}. Tracking number: {{shipping.tracking_number}}"
+                      created_at: "2025-07-22T05:31:01.000Z"
+                      updated_at: "2025-07-22T18:45:12.000Z"
+                      visible_to: "everyone"
+                      visible_to_team_ids: []
+                      available_on: ["inbox"]
+                    pages:
+                      type: pages
+                      per_page: 50
+                      next: null
+                complex_placeholders:
+                  summary: Macros with various placeholder formats
+                  value:
+                    type: list
+                    data:
+                    - type: macro
+                      id: "567"
+                      name: "Account Status Review"
+                      body: "<p>Hi <attribute key=\"user.first_name\" default=\"there\"/>,</p><p>Your account status: <attribute key=\"user.custom_attributes.account_status\" default=\"pending review\"/></p><p>Last activity: <attribute key=\"user.last_seen_at\"/></p>"
+                      body_text: "Hi {{user.first_name|fallback:\"there\"}},\n\nYour account status: {{user.custom_attributes.account_status|fallback:\"pending review\"}}\n\nLast activity: {{user.last_seen_at}}"
+                      created_at: "2025-07-21T09:00:00.000Z"
+                      updated_at: "2025-07-21T09:00:00.000Z"
+                      visible_to: "specific_teams"
+                      visible_to_team_ids: ["security_team"]
+                      available_on: ["inbox"]
+                    pages:
+                      type: pages
+                      per_page: 50
+                      next: null
+                empty_result:
+                  summary: Empty macro list (no macros or all filtered out)
+                  value:
+                    type: list
+                    data: []
+                    pages:
+                      type: pages
+                      per_page: 50
+                      next: null
+                large_list_preview:
+                  summary: Large list with performance optimization
+                  value:
+                    type: list
+                    data:
+                    - type: macro
+                      id: "1001"
+                      name: "Quick Response 1"
+                      body: null
+                      body_text: null
+                      created_at: "2025-07-22T11:08:20.000Z"
+                      updated_at: "2025-07-23T11:08:20.000Z"
+                      visible_to: "everyone"
+                      visible_to_team_ids: []
+                      available_on: ["inbox"]
+                    # Note: When returning 30+ macros, body rendering may be skipped for performance
+                    pages:
+                      type: pages
+                      per_page: 50
+                      next:
+                        starting_after: "WzE3MTk0OTAxMDAuMCwgIjEwMDIiXQ=="
+              schema:
+                "$ref": "#/components/schemas/macro_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid parameter:
+                  value:
+                    type: error.list
+                    request_id: bc300b1a-492a-405f-924e-a5881cb72e3a
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid updated_since timestamp
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden - missing required OAuth scope
+          content:
+            application/json:
+              examples:
+                Missing required scope:
+                  summary: OAuth token lacks read_conversations scope
+                  value:
+                    type: error.list
+                    request_id: f097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: forbidden
+                      message: You do not have the required scope (read_conversations) to access this resource
+              schema:
+                "$ref": "#/components/schemas/error"
     get:
       summary: Identify an admin
       parameters:
@@ -183,6 +548,234 @@ paths:
                   away_mode_enabled: true
                   away_mode_reassign: true
   "/admins/activity_logs":
+  "/admins/activity_logs/search":
+    post:
+      summary: Search activity logs
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Admins
+      operationId: searchActivityLogs
+      description: Search and filter admin activity logs using a POST request
+        with event type filter in the request body. You can find more details
+        about the available event types in the List all activity log event
+        types endpoint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - created_at_after
+              properties:
+                created_at_after:
+                  type: integer
+                  format: date-time
+                  description: The start date that you request data for. It must
+                    be formatted as a UNIX timestamp.
+                  example: 1677253093
+                created_at_before:
+                  type: integer
+                  format: date-time
+                  description: The end date that you request data for. It must
+                    be formatted as a UNIX timestamp.
+                  example: 1677861493
+                event_types:
+                  type: array
+                  description: An optional list of event types to filter activity
+                    logs by. Use the list all activity log event types endpoint
+                    to retrieve available values.
+                  items:
+                    type: string
+                  example:
+                  - app_name_change
+                  - message_state_change
+                page:
+                  type: integer
+                  description: The page number of results to return.
+                  default: 1
+                  example: 1
+                per_page:
+                  type: integer
+                  description: The number of results per page. Must be between
+                    1 and 250.
+                  default: 20
+                  minimum: 1
+                  maximum: 250
+                  example: 20
+            examples:
+              search_with_event_types:
+                summary: Search with event types filter
+                value:
+                  created_at_after: 1677253093
+                  created_at_before: 1677861493
+                  event_types:
+                  - app_name_change
+                  - message_state_change
+              search_without_filters:
+                summary: Search with date range only
+                value:
+                  created_at_after: 1677253093
+                  created_at_before: 1677861493
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: activity_log.list
+                    pages:
+                      type: pages
+                      next:
+                      page: 1
+                      per_page: 20
+                      total_pages: 1
+                    activity_logs:
+                    - id: fca05814-4b72-4dce-ad4f-77a786a2c136
+                      performed_by:
+                        type: admin
+                        id: '991267464'
+                        email: admin5@email.com
+                        ip: 127.0.0.1
+                      metadata:
+                        before: before
+                        after: after
+                      created_at: 1734537253
+                      activity_type: app_name_change
+                      activity_description: Ciaran5 Lee changed your app name
+                        from before to after.
+              schema:
+                "$ref": "#/components/schemas/activity_log_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 57cc6148-2c0a-471b-bd9e-859538110958
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/admins/activity_log_event_types":
+    get:
+      summary: List all activity log event types
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Admins
+      operationId: listActivityLogEventTypes
+      description: |
+        You can get a list of all activity log event types. This is useful for discovering valid values to use with the `event_types` filter on the List all activity logs endpoint.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: activity_log_event_type.list
+                    event_types:
+                    - admin_conversation_assignment_limit_change
+                    - admin_ticket_assignment_limit_change
+                    - admin_avatar_change
+                    - admin_away_mode_change
+                    - admin_deletion
+                    - admin_deprovisioned
+                    - admin_impersonation_end
+                    - admin_impersonation_start
+                    - admin_invite_change
+                    - admin_invite_creation
+                    - admin_invite_deletion
+                    - admin_login_failure
+                    - admin_login_success
+                    - admin_logout
+                    - admin_password_reset_request
+                    - admin_password_reset_success
+                    - admin_permission_change
+                    - admin_provisioned
+                    - admin_two_factor_auth_change
+                    - admin_unauthorized_sign_in_method
+                    - app_admin_join
+                    - app_authentication_method_change
+                    - app_data_deletion
+                    - app_data_export
+                    - app_google_sso_domain_change
+                    - app_identity_verification_change
+                    - app_name_change
+                    - app_outbound_address_change
+                    - app_package_installation
+                    - app_package_token_regeneration
+                    - app_package_uninstallation
+                    - app_team_creation
+                    - app_team_deletion
+                    - app_team_membership_modification
+                    - app_timezone_change
+                    - app_webhook_creation
+                    - app_webhook_deletion
+                    - articles_in_messenger_enabled_change
+                    - bulk_delete
+                    - bulk_export
+                    - campaign_deletion
+                    - campaign_state_change
+                    - conversation_part_deletion
+                    - conversation_pdf_export
+                    - conversation_topic_change
+                    - conversation_topic_creation
+                    - conversation_topic_deletion
+                    - help_center_settings_change
+                    - inbound_conversations_change
+                    - inbox_access_change
+                    - message_deletion
+                    - message_state_change
+                    - messenger_look_and_feel_change
+                    - messenger_search_required_change
+                    - messenger_spaces_change
+                    - office_hours_change
+                    - role_change
+                    - role_creation
+                    - role_deletion
+                    - ruleset_activation_title_preview
+                    - ruleset_creation
+                    - ruleset_deletion
+                    - search_browse_enabled_change
+                    - search_browse_required_change
+                    - seat_change
+                    - seat_revoke
+                    - security_settings_change
+                    - temporary_expectation_change
+                    - upfront_email_collection_change
+                    - welcome_message_change
+                    - hide_csat_from_agents_setting_change
+              schema:
+                "$ref": "#/components/schemas/activity_log_event_type_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 85a1e5b6-e743-4e89-a6e2-1d7c0c3f4a5b
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
     get:
       summary: List all activity logs
       parameters:
@@ -273,6 +866,529 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
   "/admins":
+  "/office_hours_schedules/{office_hours_schedule_id}/office_hours_exceptions/{id}":
+    get:
+      summary: Retrieve an office hours exception
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: office_hours_schedule_id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the office hours exception.
+        example: '456'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: getOfficeHoursException
+      description: You can fetch the details of a single office hours exception.
+      responses:
+        '200':
+          description: Office hours exception found
+          content:
+            application/json:
+              examples:
+                Office hours exception found:
+                  value:
+                    type: office_hours_exception
+                    id: '456'
+                    office_hours_schedule_id: '123'
+                    exception_date: '2026-12-25'
+                    exception_type: closed
+                    name: Christmas Day
+                    time_intervals:
+                    recurring_annually: true
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_exception"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+    put:
+      summary: Update an office hours exception
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: office_hours_schedule_id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the office hours exception.
+        example: '456'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: updateOfficeHoursException
+      description: You can update an existing office hours exception.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_office_hours_exception_request"
+            examples:
+              Update exception:
+                value:
+                  exception_type: custom_hours
+                  name: Christmas Day (reduced hours)
+                  time_intervals:
+                  - start_minute: 540
+                    end_minute: 780
+                  recurring_annually: true
+      responses:
+        '200':
+          description: Office hours exception updated
+          content:
+            application/json:
+              examples:
+                Office hours exception updated:
+                  value:
+                    type: office_hours_exception
+                    id: '456'
+                    office_hours_schedule_id: '123'
+                    exception_date: '2026-12-25'
+                    exception_type: custom_hours
+                    name: Christmas Day (reduced hours)
+                    time_intervals:
+                    - start_minute: 540
+                      end_minute: 780
+                      day_of_week: 4
+                    recurring_annually: true
+                    created_at: 1717200000
+                    updated_at: 1717203600
+              schema:
+                "$ref": "#/components/schemas/office_hours_exception"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    delete:
+      summary: Delete an office hours exception
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: office_hours_schedule_id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the office hours exception.
+        example: '456'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: deleteOfficeHoursException
+      description: You can delete a single office hours exception.
+      responses:
+        '200':
+          description: Office hours exception deleted
+          content:
+            application/json:
+              examples:
+                Office hours exception deleted:
+                  value:
+                    id: '456'
+                    object: office_hours_exception
+                    deleted: true
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: '456'
+                  object:
+                    type: string
+                    example: office_hours_exception
+                  deleted:
+                    type: boolean
+                    example: true
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+  "/office_hours_schedules/{office_hours_schedule_id}/office_hours_exceptions":
+    get:
+      summary: List all office hours exceptions
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: office_hours_schedule_id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: listOfficeHoursExceptions
+      description: You can fetch a list of all exceptions for an office hours schedule.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: office_hours_exception.list
+                    data:
+                    - type: office_hours_exception
+                      id: '456'
+                      office_hours_schedule_id: '123'
+                      exception_date: '2026-12-25'
+                      exception_type: closed
+                      name: Christmas Day
+                      time_intervals:
+                      recurring_annually: true
+                      created_at: 1717200000
+                      updated_at: 1717200000
+                    - type: office_hours_exception
+                      id: '457'
+                      office_hours_schedule_id: '123'
+                      exception_date: '2026-12-24'
+                      exception_type: custom_hours
+                      name: Christmas Eve
+                      time_intervals:
+                      - start_minute: 540
+                        end_minute: 780
+                        day_of_week: 3
+                      recurring_annually: true
+                      created_at: 1717200000
+                      updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_exception_list"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+    post:
+      summary: Create an office hours exception
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: office_hours_schedule_id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: createOfficeHoursException
+      description: You can create an exception for an office hours schedule. Use `closed`
+        to mark the day closed (omit `time_intervals`) or `custom_hours` to supply
+        replacement intervals.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_office_hours_exception_request"
+            examples:
+              Create exception:
+                value:
+                  exception_date: '2026-12-25'
+                  exception_type: closed
+                  name: Christmas Day
+                  recurring_annually: true
+      responses:
+        '201':
+          description: Office hours exception created
+          content:
+            application/json:
+              examples:
+                Office hours exception created:
+                  value:
+                    type: office_hours_exception
+                    id: '458'
+                    office_hours_schedule_id: '123'
+                    exception_date: '2026-12-25'
+                    exception_type: closed
+                    name: Christmas Day
+                    time_intervals:
+                    recurring_annually: true
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_exception"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+  "/office_hours_schedules/{id}":
+    get:
+      summary: Retrieve an office hours schedule
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: getOfficeHoursSchedule
+      description: You can fetch the details of a single office hours schedule.
+      responses:
+        '200':
+          description: Office hours schedule found
+          content:
+            application/json:
+              examples:
+                Office hours schedule found:
+                  value:
+                    type: office_hours_schedule
+                    id: '123'
+                    name: Standard Support Hours
+                    time_zone_name: America/New_York
+                    time_intervals:
+                    - start_minute: 540
+                      end_minute: 1020
+                      day_of_week: 0
+                    twenty_four_seven: false
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_schedule"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+    put:
+      summary: Update an office hours schedule
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: updateOfficeHoursSchedule
+      description: You can update an existing office hours schedule.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_office_hours_schedule_request"
+            examples:
+              Update schedule:
+                value:
+                  name: Extended Support Hours
+                  time_intervals:
+                  - start_minute: 480
+                    end_minute: 1080
+      responses:
+        '200':
+          description: Office hours schedule updated
+          content:
+            application/json:
+              examples:
+                Office hours schedule updated:
+                  value:
+                    type: office_hours_schedule
+                    id: '123'
+                    name: Extended Support Hours
+                    time_zone_name: America/New_York
+                    time_intervals:
+                    - start_minute: 480
+                      end_minute: 1080
+                      day_of_week: 0
+                    twenty_four_seven: false
+                    created_at: 1717200000
+                    updated_at: 1717203600
+              schema:
+                "$ref": "#/components/schemas/office_hours_schedule"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
+    delete:
+      summary: Delete an office hours schedule
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the office hours schedule.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Office Hours
+      operationId: deleteOfficeHoursSchedule
+      description: You can delete a single office hours schedule.
+      responses:
+        '200':
+          description: Office hours schedule deleted
+          content:
+            application/json:
+              examples:
+                Office hours schedule deleted:
+                  value:
+                    id: '123'
+                    object: office_hours_schedule
+                    deleted: true
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: '123'
+                  object:
+                    type: string
+                    example: office_hours_schedule
+                  deleted:
+                    type: boolean
+                    example: true
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          "$ref": "#/components/responses/ObjectNotFound"
+  "/office_hours_schedules":
+    get:
+      summary: List all office hours schedules
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Office Hours
+      operationId: listOfficeHoursSchedules
+      description: You can fetch a list of all office hours schedules for the workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: office_hours_schedule.list
+                    data:
+                    - type: office_hours_schedule
+                      id: '123'
+                      name: Standard Support Hours
+                      time_zone_name: America/New_York
+                      time_intervals:
+                      - start_minute: 540
+                        end_minute: 1020
+                        day_of_week: 0
+                      - start_minute: 1980
+                        end_minute: 2460
+                        day_of_week: 1
+                      twenty_four_seven: false
+                      created_at: 1717200000
+                      updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_schedule_list"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+    post:
+      summary: Create an office hours schedule
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Office Hours
+      operationId: createOfficeHoursSchedule
+      description: You can create a new office hours schedule for the workspace.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_office_hours_schedule_request"
+            examples:
+              Create schedule:
+                value:
+                  name: Standard Support Hours
+                  time_zone_name: America/New_York
+                  time_intervals:
+                  - start_minute: 540
+                    end_minute: 1020
+      responses:
+        '201':
+          description: Office hours schedule created
+          content:
+            application/json:
+              examples:
+                Office hours schedule created:
+                  value:
+                    type: office_hours_schedule
+                    id: '125'
+                    name: Standard Support Hours
+                    time_zone_name: America/New_York
+                    time_intervals:
+                    - start_minute: 540
+                      end_minute: 1020
+                      day_of_week: 0
+                    twenty_four_seven: false
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_schedule"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '422':
+          "$ref": "#/components/responses/ValidationError"
     get:
       summary: List all admins
       parameters:
@@ -2337,7 +3453,12 @@ paths:
                             properties:
                               id:
                                 type: string
+                                description: The simple attribute identifier. Note that this may be ambiguous if the same name exists across different attribute types. Use qualified_id when calling the enqueue endpoint.
                                 example: conversation_id
+                              qualified_id:
+                                type: string
+                                description: A namespaced identifier that uniquely identifies the attribute across all types. Format is "prefix.name" (e.g., "people.Brand", "conversation.Brand"). Required when calling the enqueue endpoint.
+                                example: conversation.conversation_id
                               name:
                                 type: string
                                 example: Conversation ID
@@ -14254,6 +15375,226 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
   "/messages":
+  "/messages/whatsapp/status":
+    get:
+      summary: Retrieve WhatsApp message delivery status
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: message_id
+        in: query
+        required: true
+        description: The WhatsApp message ID to check status for
+        schema:
+          type: string
+      tags:
+      - Messages
+      - WhatsApp
+      operationId: RetrieveWhatsAppMessageStatus
+      description: |
+        Retrieves the delivery status of a specific WhatsApp message by its message ID.
+
+
+        Returns the current status, conversation details, and any error information if the message failed to deliver.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    conversation_id: "123456789"
+                    status: delivered
+                    type: broadcast_outbound
+                    created_at: 1734537980
+                    updated_at: 1734538000
+                    template_name: appointment_reminder
+                    message_id: "wamid_abc123"
+                Failed message with error:
+                  value:
+                    conversation_id: "123456789"
+                    status: failed
+                    type: broadcast_outbound
+                    created_at: 1734537980
+                    updated_at: 1734538000
+                    template_name: appointment_reminder
+                    message_id: "wamid_abc123"
+                    error:
+                      message: "Message delivery failed"
+                      details: "Recipient phone number not on WhatsApp"
+              schema:
+                "$ref": "#/components/schemas/whatsapp_message_status"
+        '400':
+          description: Bad request - missing required parameters
+          content:
+            application/json:
+              examples:
+                missing message_id:
+                  value:
+                    type: error
+                    request_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                    message: "message_id is required"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 8b2e4c6f-1234-5678-9abc-def012345678
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: WhatsApp message not found
+          content:
+            application/json:
+              examples:
+                Message not found:
+                  value:
+                    type: error.list
+                    request_id: c4d5e6f7-8901-2345-6789-abcdef012345
+                    errors:
+                    - code: whatsapp_message_not_found
+                      message: Whatsapp message not found
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/messages/status":
+    get:
+      summary: Get statuses of all messages sent based on the specified ruleset_id
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: ruleset_id
+        in: query
+        required: true
+        description: The unique identifier for the set of messages to check status for
+        schema:
+          type: string
+      - name: per_page
+        in: query
+        required: false
+        description: Number of results per page (default 50, max 100)
+        schema:
+          type: integer
+          default: 50
+          maximum: 100
+      - name: starting_after
+        in: query
+        required: false
+        description: Cursor for pagination, used to fetch the next page of results
+        schema:
+          type: string
+      tags:
+      - Messages
+      - WhatsApp
+      operationId: getWhatsAppMessageStatus
+      description: |
+        Retrieves statuses of messages sent from the Outbound module. Currently, this API only supports WhatsApp messages.
+
+
+        This endpoint returns paginated status events for WhatsApp messages sent via the Outbound module, providing
+        information about delivery state and related message details.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    ruleset_id: 12345
+                    pages:
+                      type: pages
+                      per_page: 50
+                      total_pages: 3
+                      next:
+                        starting_after: "abc123"
+                    total_count: 125
+                    events:
+                      - id: "event_1"
+                        conversation_id: "conv_123"
+                        user_id: "user_123"
+                        status: "delivered"
+                        type: "broadcast_outbound"
+                        created_at: 1734537980
+                        updated_at: 1734538000
+                        whatsapp_message_id: "wamid_123"
+                        template_name: "appointment_reminder"
+                      - id: "event_2"
+                        conversation_id: "conv_456"
+                        user_id: "user_456"
+                        status: "sent"
+                        type: "broadcast_outbound"
+                        created_at: 1734537970
+                        updated_at: 1734538010
+                        whatsapp_message_id: "wamid_456"
+                        template_name: "order_update"
+              schema:
+                "$ref": "#/components/schemas/whatsapp_message_status_list"
+        '400':
+          description: Bad request - missing required parameters
+          content:
+            application/json:
+              examples:
+                missing ruleset_id:
+                  value:
+                    type: error
+                    request_id: "req_123"
+                    message: "ruleset_id is required"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: d7997515-cd92-4fe4-966c-cb1f4bdda1d4
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b0
+                    errors:
+                    - code: api_plan_restricted
+                      message: Active subscription needed.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              examples:
+                server error:
+                  value:
+                    type: error
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b2
+                    message: "Request failed due to an internal error. Please reach out to support"
+              schema:
+                "$ref": "#/components/schemas/error"
     post:
       summary: Create a message
       parameters:
@@ -15998,6 +17339,88 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
   "/teams/{team_id}":
+  "/teams/{team_id}/metrics":
+    get:
+      summary: Retrieve team metrics
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: team_id
+        in: path
+        required: true
+        description: The unique identifier of the team to retrieve metrics for. Use `GET /teams` to list available team IDs.
+        example: "42"
+        schema:
+          type: string
+      - name: idle_threshold
+        in: query
+        required: false
+        description: The number of seconds after which an open conversation is considered idle. Clamped to the range 1–86400. Defaults to 1800 (30 minutes).
+        schema:
+          type: integer
+          default: 1800
+          example: 1800
+      tags:
+      - Teams
+      operationId: getTeamMetrics
+      description: |
+        Returns real-time activity metrics for admins in the specified team. For each admin, the response includes counts of open, idle, and snoozed conversations.
+
+        This endpoint requires the `realtime_monitoring` feature to be enabled for your workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/team_metric_list"
+              examples:
+                successful_response:
+                  value:
+                    type: team_metric.list
+                    data:
+                    - type: team_metric
+                      admin_id: "123"
+                      open: 5
+                      idle: 2
+                      snoozed: 1
+                    - type: team_metric
+                      admin_id: "456"
+                      open: 3
+                      idle: 0
+                      snoozed: 2
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: Feature not enabled
+          content:
+            application/json:
+              examples:
+                feature_disabled:
+                  value:
+                    type: error.list
+                    request_id: "req-456"
+                    errors:
+                    - code: api_plan_restricted
+                      message: "Real-time monitoring is not enabled for your workspace."
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              examples:
+                team_not_found:
+                  value:
+                    type: error.list
+                    request_id: "req-789"
+                    errors:
+                    - code: team_not_found
+                      message: "Team not found"
+              schema:
+                "$ref": "#/components/schemas/error"
     get:
       summary: Retrieve a team
       parameters:
@@ -19585,6 +21008,272 @@ paths:
                 "$ref": "#/components/schemas/error"
 components:
   schemas:
+    office_hours_time_interval:
+      type: object
+      title: Office Hours Time Interval
+      x-tags:
+      - Office Hours
+      description: A single open interval. For schedules, `start_minute` and `end_minute`
+        are minute offsets from the start of the week (Monday 00:00 = 0), in the range
+        0 to 10080. For exceptions, they are minute offsets from midnight on `exception_date`,
+        in the range 0 to 1440.
+      properties:
+        start_minute:
+          type: integer
+          description: Minute the interval starts. For schedules, offset from the start
+            of the week (Monday 00:00 = 0); for exceptions, offset from midnight on
+            `exception_date`.
+          example: 540
+        end_minute:
+          type: integer
+          description: Minute the interval ends. For schedules, offset from the start
+            of the week (Monday 00:00 = 0); for exceptions, offset from midnight on
+            `exception_date`.
+          example: 1020
+        day_of_week:
+          type: integer
+          readOnly: true
+          description: Derived day of the week the interval falls on (0 = Monday … 6
+            = Sunday). For exceptions, this is derived from `exception_date`.
+          example: 0
+    office_hours_schedule:
+      type: object
+      title: Office Hours Schedule
+      x-tags:
+      - Office Hours
+      description: An office hours schedule defines the recurring weekly hours during
+        which the workspace is open.
+      properties:
+        type:
+          type: string
+          description: The type of the object - always `office_hours_schedule`.
+          example: office_hours_schedule
+        id:
+          type: string
+          description: The unique identifier for the office hours schedule.
+          example: '123'
+        name:
+          type: string
+          description: The name of the office hours schedule.
+          example: Standard Support Hours
+        time_zone_name:
+          type: string
+          description: The IANA time zone the schedule's hours are evaluated in.
+          example: America/New_York
+        time_intervals:
+          type: array
+          description: The open intervals that make up the weekly schedule.
+          items:
+            "$ref": "#/components/schemas/office_hours_time_interval"
+        twenty_four_seven:
+          type: boolean
+          description: Whether the schedule is open 24/7.
+          example: false
+        created_at:
+          type: integer
+          description: The time the schedule was created as a Unix timestamp.
+          example: 1717200000
+        updated_at:
+          type: integer
+          description: The time the schedule was last updated as a Unix timestamp.
+          example: 1717200000
+    office_hours_schedule_list:
+      type: object
+      title: Office Hours Schedule List
+      description: A list of office hours schedules.
+      properties:
+        type:
+          type: string
+          description: The type of the object - always `office_hours_schedule.list`.
+          example: office_hours_schedule.list
+        data:
+          type: array
+          description: An array of office hours schedules.
+          items:
+            "$ref": "#/components/schemas/office_hours_schedule"
+    create_office_hours_schedule_request:
+      type: object
+      title: Create Office Hours Schedule Request
+      description: The request payload for creating an office hours schedule.
+      required:
+      - name
+      - time_zone_name
+      - time_intervals
+      properties:
+        name:
+          type: string
+          description: The name of the office hours schedule.
+          example: Standard Support Hours
+        time_zone_name:
+          type: string
+          description: The IANA time zone the schedule's hours are evaluated in.
+          example: America/New_York
+        time_intervals:
+          type: array
+          description: The open intervals for the schedule. `start_minute` and `end_minute`
+            must be on a 15-minute boundary.
+          items:
+            "$ref": "#/components/schemas/office_hours_time_interval"
+    update_office_hours_schedule_request:
+      type: object
+      title: Update Office Hours Schedule Request
+      description: The request payload for updating an office hours schedule. Only the
+        provided fields are updated.
+      properties:
+        name:
+          type: string
+          description: The name of the office hours schedule.
+          example: Extended Support Hours
+        time_zone_name:
+          type: string
+          description: The IANA time zone the schedule's hours are evaluated in.
+          example: America/New_York
+        time_intervals:
+          type: array
+          description: The open intervals for the schedule. `start_minute` and `end_minute`
+            must be on a 15-minute boundary.
+          items:
+            "$ref": "#/components/schemas/office_hours_time_interval"
+    office_hours_exception:
+      type: object
+      title: Office Hours Exception
+      x-tags:
+      - Office Hours
+      description: An exception overrides a schedule's regular hours on a specific date,
+        such as a public holiday.
+      properties:
+        type:
+          type: string
+          description: The type of the object - always `office_hours_exception`.
+          example: office_hours_exception
+        id:
+          type: string
+          description: The unique identifier for the office hours exception.
+          example: '456'
+        office_hours_schedule_id:
+          type: string
+          description: The unique identifier for the schedule this exception belongs to.
+          example: '123'
+        exception_date:
+          type: string
+          format: date
+          description: The date the exception applies to, in `YYYY-MM-DD` format.
+          example: '2026-12-25'
+        exception_type:
+          type: string
+          description: '`closed` means the workspace is closed all day; `custom_hours`
+            replaces the regular hours with `time_intervals`.'
+          enum:
+          - closed
+          - custom_hours
+          example: closed
+        name:
+          type: string
+          nullable: true
+          description: An optional name for the exception.
+          example: Christmas Day
+        time_intervals:
+          type: array
+          nullable: true
+          description: The open intervals for the exception date. `null` when `exception_type`
+            is `closed`.
+          items:
+            "$ref": "#/components/schemas/office_hours_time_interval"
+        recurring_annually:
+          type: boolean
+          description: Whether the exception repeats every year on the same date.
+          example: true
+        created_at:
+          type: integer
+          description: The time the exception was created as a Unix timestamp.
+          example: 1717200000
+        updated_at:
+          type: integer
+          description: The time the exception was last updated as a Unix timestamp.
+          example: 1717200000
+    office_hours_exception_list:
+      type: object
+      title: Office Hours Exception List
+      description: A list of office hours exceptions.
+      properties:
+        type:
+          type: string
+          description: The type of the object - always `office_hours_exception.list`.
+          example: office_hours_exception.list
+        data:
+          type: array
+          description: An array of office hours exceptions.
+          items:
+            "$ref": "#/components/schemas/office_hours_exception"
+    create_office_hours_exception_request:
+      type: object
+      title: Create Office Hours Exception Request
+      description: The request payload for creating an office hours exception. Omit
+        `time_intervals` when `exception_type` is `closed`.
+      required:
+      - exception_date
+      - exception_type
+      properties:
+        exception_date:
+          type: string
+          format: date
+          description: The date the exception applies to, in `YYYY-MM-DD` format.
+          example: '2026-12-25'
+        exception_type:
+          type: string
+          enum:
+          - closed
+          - custom_hours
+          description: The type of exception.
+          example: closed
+        name:
+          type: string
+          description: An optional name for the exception.
+          example: Christmas Day
+        time_intervals:
+          type: array
+          nullable: true
+          description: The open intervals for the exception date. Required for `custom_hours`;
+            omit for `closed`.
+          items:
+            "$ref": "#/components/schemas/office_hours_time_interval"
+        recurring_annually:
+          type: boolean
+          description: Whether the exception repeats every year on the same date.
+          example: true
+    update_office_hours_exception_request:
+      type: object
+      title: Update Office Hours Exception Request
+      description: The request payload for updating an office hours exception. Only
+        the provided fields are updated.
+      properties:
+        exception_date:
+          type: string
+          format: date
+          description: The date the exception applies to, in `YYYY-MM-DD` format.
+          example: '2026-12-25'
+        exception_type:
+          type: string
+          enum:
+          - closed
+          - custom_hours
+          description: The type of exception.
+          example: custom_hours
+        name:
+          type: string
+          description: An optional name for the exception.
+          example: Christmas Day (reduced hours)
+        time_intervals:
+          type: array
+          nullable: true
+          description: The open intervals for the exception date. Required for `custom_hours`;
+            omit for `closed`.
+          items:
+            "$ref": "#/components/schemas/office_hours_time_interval"
+        recurring_annually:
+          type: boolean
+          description: Whether the exception repeats every year on the same date.
+          example: true
     datetime:
       oneOf:
         - title: string
@@ -19752,6 +21441,27 @@ components:
           type: string
           description: A sentence or two describing the activity.
           example: Admin updated the app's name to "My App".
+    activity_log_event_type_list:
+      title: Activity Log Event Types
+      type: object
+      x-tags:
+      - Admins
+      description: A list of all activity log event types.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `activity_log_event_type.list`.
+          example: activity_log_event_type.list
+        event_types:
+          type: array
+          description: An array of activity log event type strings.
+          items:
+            type: string
+          example:
+          - admin_login_success
+          - admin_logout
+          - app_name_change
     activity_log_list:
       title: Paginated Response
       type: object
@@ -19963,6 +21673,25 @@ components:
           example: https://picsum.photos/200/300
         team_priority_level:
           "$ref": "#/components/schemas/team_priority_level"
+        role:
+          type: object
+          nullable: true
+          description: The role assigned to this admin. Only present if the admin has
+            a role assigned.
+          properties:
+            type:
+              type: string
+              description: String representing the object's type. Always has the value
+                `role`.
+              example: role
+            id:
+              type: string
+              description: The id of the role.
+              example: '1'
+            name:
+              type: string
+              description: The name of the role.
+              example: Support Agent
     admin_list:
       title: Admins
       type: object
@@ -21187,6 +22916,40 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/brand"
+    team_metric:
+      type: object
+      description: Per-admin activity metrics within a team.
+      properties:
+        type:
+          type: string
+          example: "team_metric"
+        admin_id:
+          type: string
+          description: The unique identifier for the admin.
+          example: "123"
+        open:
+          type: integer
+          description: The number of open conversations assigned to the admin.
+          example: 5
+        idle:
+          type: integer
+          description: The number of idle conversations assigned to the admin. A conversation is idle when it has been open and waiting for an admin reply longer than the idle_threshold.
+          example: 2
+        snoozed:
+          type: integer
+          description: The number of snoozed conversations assigned to the admin.
+          example: 1
+    team_metric_list:
+      type: object
+      description: A list of team metrics.
+      properties:
+        type:
+          type: string
+          example: "team_metric.list"
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/team_metric"
     away_status_reason:
       type: object
       properties:
@@ -24052,6 +25815,8 @@ components:
           description: Whether or not the source message has been redacted. Only applicable
             for contact initiated messages.
           example: false
+        email_message_metadata:
+          "$ref": "#/components/schemas/source_email_message_metadata"
     conversation_source_author:
       title: Conversation source author
       type: object
@@ -24078,6 +25843,30 @@ components:
           nullable: true
           description: The email of the author.
           example: jane.doe@example.com
+    source_email_message_metadata:
+      title: Email Message Metadata
+      type: object
+      description: Contains metadata if the message was sent as an email
+      properties:
+        message_id:
+          type: string
+          nullable: true
+          description: The unique identifier for the email message as specified in the Message-ID header
+          example: "<CADKw7xrXzqSn8v3mP8K8Q8yZ6K8Q8yZ6@mail.gmail.com>"
+        subject:
+          type: string
+          description: The subject of the email
+          example: Question about my order
+        email_address_headers:
+          title: Email Address Headers
+          type: array
+          description: A list of an email address headers.
+          items:
+            "$ref": "#/components/schemas/email_address_header"
+        history:
+          type: string
+          description: The HTML content of any quoted or forwarded email history from the initial inbound message
+          example: '<div><span>On Jan 28, wrote:</span><blockquote>Previous thread</blockquote></div>'
     conversation_statistics:
       title: Conversation statistics
       type: object
@@ -28561,6 +30350,109 @@ components:
           description: An array containing the linked conversations and linked tickets.
           items:
             "$ref": "#/components/schemas/linked_object"
+    macro:
+      title: Macro
+      type: object
+      x-tags:
+        - Macros
+      description: A macro is a pre-defined response template (saved reply) that can be used to quickly reply to conversations.
+      nullable: true
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `macro`.
+          enum:
+            - macro
+          example: macro
+        id:
+          type: string
+          description: The unique identifier for the macro.
+          example: "123"
+        name:
+          type: string
+          description: The name of the macro.
+          example: "Order Status Update"
+        body:
+          type: string
+          description: The body of the macro in HTML format with placeholders transformed to XML-like format.
+          example: "<p>Hi <attribute key=\"user.name\" default=\"there\"/>, your order is ready!</p>"
+        body_text:
+          type: string
+          description: The plain text version of the macro body with original Intercom placeholder format.
+          example: "Hi {{user.name|fallback:\"there\"}}, your order is ready!"
+        created_at:
+          type: string
+          format: date-time
+          description: The time the macro was created in ISO 8601 format.
+          example: "2025-07-17T11:18:08.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: The time the macro was last updated in ISO 8601 format.
+          example: "2025-07-17T15:30:24.000Z"
+        visible_to:
+          type: string
+          description: Who can view this macro.
+          enum:
+            - everyone
+            - specific_teams
+          example: everyone
+        visible_to_team_ids:
+          type: array
+          description: The team IDs that can view this macro when visible_to is set to specific_teams.
+          items:
+            type: string
+          example: ["456", "789"]
+        available_on:
+          type: array
+          description: Where the macro is available for use.
+          items:
+            type: string
+            enum:
+              - inbox
+              - messenger
+          example: ["inbox", "messenger"]
+    macro_list:
+      title: Macro List
+      type: object
+      x-tags:
+        - Macros
+      description: A paginated list of macros (saved replies) in the workspace.
+      properties:
+        type:
+          type: string
+          description: Always list
+          enum:
+            - list
+          example: list
+        data:
+          type: array
+          description: The list of macro objects
+          items:
+            "$ref": "#/components/schemas/macro"
+        pages:
+          type: object
+          description: Pagination information
+          properties:
+            type:
+              type: string
+              description: The type of pagination
+              enum:
+                - pages
+              example: pages
+            per_page:
+              type: integer
+              description: Number of results per page
+              example: 50
+            next:
+              type: object
+              nullable: true
+              description: Cursor for the next page
+              properties:
+                starting_after:
+                  type: string
+                  description: Base64-encoded cursor containing [updated_at, id] for pagination
+                  example: "WzE3MTk0OTM3NTcuMCwgIjEyMyJd"
     merge_contacts_request:
     merge_history_item:
       title: Merge History Item
@@ -28699,6 +30591,50 @@ components:
       - created_at
       - body
       - message_type
+    whatsapp_message_status:
+      type: object
+      description: The delivery status of a specific WhatsApp message.
+      properties:
+        conversation_id:
+          type: string
+          description: ID of the conversation
+          example: "123456789"
+        status:
+          type: string
+          description: Current delivery status of the message
+          enum: ["sent", "delivered", "read", "failed"]
+          example: delivered
+        type:
+          type: string
+          description: Event type
+          example: broadcast_outbound
+        created_at:
+          type: integer
+          description: Creation timestamp
+          example: 1734537980
+        updated_at:
+          type: integer
+          description: Last update timestamp
+          example: 1734538000
+        template_name:
+          type: string
+          description: Name of the WhatsApp template used
+          example: appointment_reminder
+        message_id:
+          type: string
+          description: The WhatsApp message ID
+          example: "wamid_abc123"
+        error:
+          type: object
+          nullable: true
+          description: Error details, present only when status is "failed"
+          properties:
+            message:
+              type: string
+              description: Error message
+            details:
+              type: string
+              description: Detailed error information
     whatsapp_message_status_list:
       type: object
       required:
@@ -31678,6 +33614,9 @@ tags:
     {% /admonition %}
 - name: Jobs
   description: Everything about jobs
+- name: Macros
+  description: Operations related to saved replies (macros) in conversations
+  x-displayName: Macros
 - name: Messages
   description: Everything about your messages
 - name: News
@@ -31687,6 +33626,10 @@ tags:
     url: https://www.intercom.com/help/en/articles/6362251-news-explained
 - name: Notes
   description: Everything about your Notes
+- name: Office Hours
+  description: |
+    Manage office hours schedules and their exceptions. These endpoints require an
+    OAuth token with the `read_write_office_hours` scope.
 - name: Reporting Data Export
   description: Everything about Reporting Data Export. See this [article](https://www.intercom.com/help/en/articles/12089688-api-metrics-documentation) for details on using the data to generate various metrics.
 - name: Segments
