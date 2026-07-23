@@ -23,8 +23,11 @@ If you're making changes to the OpenAPI spec, you can use the Fern CLI to valida
 #### Installation
 
 ```bash
+pnpm setup                       # one-time, if PNPM_HOME isn't set (fresh shell)
 pnpm add -g fern-api@5.65.3
 ```
+
+`pnpm setup` writes `PNPM_HOME` + `PATH` entries into your shell rc; re-open the shell (or `source ~/.zshrc`) before the `pnpm add -g` step. Skip if `pnpm bin -g` already prints a path.
 
 #### Common Commands
 
