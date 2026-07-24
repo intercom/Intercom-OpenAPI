@@ -22,6 +22,21 @@ paths:
               $ref: '#/components/schemas/CreateArticleRequestBody'
   '/articles/{id}':
     put: null
+  '/articles/{article_id}/versions':
+    get:
+      x-fern-pagination:
+        offset: $request.page
+        results: $response.data
+      x-fern-sdk-group-name:
+        - articles
+      x-fern-sdk-method-name: listVersions
+      x-fern-request-name: ListArticleVersionsRequest
+  '/articles/{article_id}/versions/{id}':
+    get:
+      x-fern-sdk-group-name:
+        - articles
+      x-fern-sdk-method-name: findVersion
+      x-fern-request-name: FindArticleVersionRequest
   '/tickets':
     post: null
   '/ticket_types/{id}':
@@ -78,6 +93,14 @@ paths:
                 summary: Company Not Found
                 value:
                   company_id: '123'
+  '/messages/status':
+    get:
+      responses:
+        '500':
+          content:
+            application/json:
+              examples: null
+
 components:
   schemas:
     intercom_version:
@@ -108,6 +131,8 @@ components:
     update_internal_article_request:
       x-fern-type-name: UpdateInternalArticleRequestBody
       nullable: false
+    merge_conversations_request:
+      x-fern-type-name: MergeConversationsRequestBody
     reply_conversation_request:
       x-fern-type-name: ReplyConversationRequestBody
     update_article_request:
