@@ -8251,7 +8251,7 @@ paths:
 
         Send the same `from` (a `lead`) and `into` (a `user`) contact IDs you would pass to [Merge a lead and a user](/docs/references/preview/rest-api/api.intercom.io/contacts/mergecontact).
 
-        - When `allowed` is `true`, the response contains a `summary`: every attribute change (with the resulting value on the surviving contact) and the number of conversations, notes, and tags that would be reassigned.
+        - When `allowed` is `true`, the response contains a `summary`: every attribute change (with the resulting value on the surviving contact) and the number of conversations, tickets, phone calls, notes, and tags that would be reassigned. `conversations` counts non-ticket conversations only; tickets are reported separately under `tickets`, and `phone_calls` is present only for phone-lead merges.
         - When `allowed` is `false`, the response contains `reasons`. Each reason has a stable `code` you can branch on and a human-readable `message` you can display.
 
         {% admonition type="warning" name="Previewing non-duplicate contacts" %}
@@ -8300,7 +8300,9 @@ paths:
                           new_into_value: "+1999"
                         total_count: 3
                       reassignments:
-                        conversations: 14
+                        conversations: 12
+                        tickets: 2
+                        phone_calls: 1
                         tags: 3
                         notes: 2
                 blocked:
@@ -35521,8 +35523,16 @@ components:
       properties:
         conversations:
           type: integer
-          description: The number of distinct conversations that would be reassigned to the surviving contact, counting both conversations the contact owns and conversations it participates in.
-          example: 14
+          description: The number of distinct non-ticket conversations that would be reassigned to the surviving contact, counting both conversations the contact owns and conversations it participates in. Tickets are excluded here and reported separately under `tickets`.
+          example: 12
+        tickets:
+          type: integer
+          description: The number of tickets (conversations of any ticket type) that would be reassigned to the surviving contact. Counted separately from `conversations` so a single conversation is never counted twice.
+          example: 2
+        phone_calls:
+          type: integer
+          description: The number of phone calls that would be reassigned to the surviving contact. Present only for phone-lead merges.
+          example: 1
         tags:
           type: integer
           description: The number of tags that would be reassigned.
