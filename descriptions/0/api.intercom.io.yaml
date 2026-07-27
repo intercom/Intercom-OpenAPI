@@ -9236,6 +9236,45 @@ paths:
                     email: maria@example.com
                     name: "María García"
                     role: lead
+              all_fields:
+                summary: All supported fields
+                value:
+                  contacts:
+                  - external_id: abc123
+                    email: joe@bloggs.com
+                    name: Joe Bloggs
+                    role: user
+                    phone: "+353871234567"
+                    avatar: https://www.example.com/avatar_image.jpg
+                    signed_up_at: 1571672154
+                    last_seen_at: 1571672154
+                    owner_id: "321"
+                    unsubscribed_from_emails: false
+                    language_override: fr
+                    custom_attributes:
+                      plan: pro
+                    companies:
+                    - company_id: '6'
+                      name: Blue Sun
+                    tags:
+                      add:
+                      - id: '123'
+              with_companies:
+                summary: Associate companies
+                value:
+                  contacts:
+                  - external_id: abc123
+                    email: joe@bloggs.com
+                    companies:
+                    - company_id: '6'
+                      name: Blue Sun
+                    - company_id: '7'
+                      name: Weyland-Yutani
+                  - external_id: def456
+                    email: maria@example.com
+                    company:
+                      company_id: '6'
+                      name: Blue Sun
       responses:
         '202':
           description: Accepted
@@ -9334,6 +9373,41 @@ paths:
                   - id: ghi789
                     language_override: es
                     name: "María García"
+              all_fields:
+                summary: All supported fields
+                value:
+                  contacts:
+                  - id: abc123
+                    external_id: ext123
+                    email: joe@bloggs.com
+                    name: Joe Bloggs
+                    phone: "+353871234567"
+                    avatar: https://www.example.com/avatar_image.jpg
+                    owner_id: "321"
+                    unsubscribed_from_emails: false
+                    language_override: fr
+                    custom_attributes:
+                      plan: pro
+                    companies:
+                    - company_id: '6'
+                      name: Blue Sun
+                    tags:
+                      add:
+                      - id: '123'
+              with_companies:
+                summary: Attach and detach companies
+                value:
+                  contacts:
+                  - id: abc123
+                    companies:
+                    - company_id: '6'
+                      name: Blue Sun
+                    - company_id: '7'
+                      remove: true
+                  - id: def456
+                    company:
+                      company_id: '6'
+                      name: Blue Sun
               with_tags:
                 summary: Add and remove tags
                 value:
@@ -27460,6 +27534,41 @@ components:
                 type: boolean
                 description: Whether the contact is unsubscribed from emails.
                 example: true
+              companies:
+                type: array
+                description: A list of companies to associate with the contact.
+                  Each company is identified by the `company_id` you have defined.
+                  A company that does not exist is created, and one that already
+                  exists has the supplied attributes applied to it.
+                items:
+                  type: object
+                  required:
+                  - company_id
+                  properties:
+                    company_id:
+                      type: string
+                      description: The company ID you have defined for the company.
+                      example: '6'
+                    name:
+                      type: string
+                      description: The name of the company.
+                      example: Blue Sun
+              company:
+                type: object
+                description: A single company to associate with the contact, identified
+                  by the `company_id` you have defined. Created if it does not exist.
+                  Ignored when `role` is `lead` — use `companies` instead.
+                required:
+                - company_id
+                properties:
+                  company_id:
+                    type: string
+                    description: The company ID you have defined for the company.
+                    example: '6'
+                  name:
+                    type: string
+                    description: The name of the company.
+                    example: Blue Sun
               tags:
                 type: object
                 description: |
@@ -27572,6 +27681,46 @@ components:
               custom_attributes:
                 type: object
                 description: Custom attributes to update on the contact.
+              companies:
+                type: array
+                description: A list of companies to associate with the contact.
+                  Each company is identified by the `company_id` you have defined.
+                  A company that does not exist is created, and one that already
+                  exists has the supplied attributes applied to it.
+                items:
+                  type: object
+                  required:
+                  - company_id
+                  properties:
+                    company_id:
+                      type: string
+                      description: The company ID you have defined for the company.
+                      example: '6'
+                    name:
+                      type: string
+                      description: The name of the company.
+                      example: Blue Sun
+                    remove:
+                      type: boolean
+                      description: Set to true to detach this company from the contact
+                        instead of attaching it.
+                      example: true
+              company:
+                type: object
+                description: A single company to associate with the contact, identified
+                  by the `company_id` you have defined. Created if it does not exist.
+                  Ignored for a contact whose role is `lead` — use `companies` instead.
+                required:
+                - company_id
+                properties:
+                  company_id:
+                    type: string
+                    description: The company ID you have defined for the company.
+                    example: '6'
+                  name:
+                    type: string
+                    description: The name of the company.
+                    example: Blue Sun
               tags:
                 type: object
                 description: |
