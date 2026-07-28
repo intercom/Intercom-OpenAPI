@@ -8251,7 +8251,7 @@ paths:
 
         Send the same `from` (a `lead`) and `into` (a `user`) contact IDs you would pass to [Merge a lead and a user](/docs/references/preview/rest-api/api.intercom.io/contacts/mergecontact).
 
-        - When `allowed` is `true`, the response contains a `summary`: every attribute change (with the resulting value on the surviving contact) and the number of conversations, tickets, phone calls, notes, and tags that would be reassigned. `conversations` counts non-ticket conversations only; tickets are reported separately under `tickets`, and `phone_calls` is present only for phone-lead merges.
+        - When `allowed` is `true`, the response contains a `summary`: every attribute change (with the resulting value on the surviving contact) and, for each object type, two counts — `from`, how many are on the lead and would move to the user, and `into`, how many the user already has. Counts are reported for conversations, tickets, phone calls, notes, and tags. `conversations` counts non-ticket conversations only; tickets are reported separately under `tickets`, and `phone_calls` is present only for phone-lead merges.
         - When `allowed` is `false`, the response contains `reasons`. Each reason has a stable `code` you can branch on and a human-readable `message` you can display.
 
         {% admonition type="warning" name="Previewing non-duplicate contacts" %}
@@ -8300,11 +8300,21 @@ paths:
                           new_into_value: "+1999"
                         total_count: 3
                       reassignments:
-                        conversations: 12
-                        tickets: 2
-                        phone_calls: 1
-                        tags: 3
-                        notes: 2
+                        conversations:
+                          from: 12
+                          into: 5
+                        tickets:
+                          from: 2
+                          into: 1
+                        phone_calls:
+                          from: 1
+                          into: 0
+                        tags:
+                          from: 3
+                          into: 4
+                        notes:
+                          from: 2
+                          into: 6
                 blocked:
                   summary: Merge not allowed
                   value:
@@ -35519,28 +35529,83 @@ components:
     merge_preview_reassignments:
       title: Merge preview reassignments
       type: object
-      description: The number of records that would be reassigned to the surviving contact, by type. Only types with reassignments are included.
+      description: Two counts per object type — `from`, how many are on the lead and would move to the surviving contact, and `into`, how many the surviving contact already has. Only types with reassignments are included, and both counts are always present on a type that is included.
       properties:
         conversations:
-          type: integer
-          description: The number of distinct non-ticket conversations that would be reassigned to the surviving contact, counting both conversations the contact owns and conversations it participates in. Tickets are excluded here and reported separately under `tickets`.
-          example: 12
+          type: object
+          description: Distinct non-ticket conversations, counting both conversations the contact owns and conversations it participates in. Tickets are excluded here and reported separately under `tickets`.
+          properties:
+            from:
+              type: integer
+              description: The number of non-ticket conversations on the lead that would be reassigned to the surviving contact.
+              example: 12
+            into:
+              type: integer
+              description: The number of non-ticket conversations the surviving contact already has.
+              example: 5
+          required:
+          - from
+          - into
         tickets:
-          type: integer
-          description: The number of tickets (conversations of any ticket type) that would be reassigned to the surviving contact. Counted separately from `conversations` so a single conversation is never counted twice.
-          example: 2
+          type: object
+          description: Tickets, meaning conversations of any ticket type. Counted separately from `conversations` so a single conversation is never counted twice.
+          properties:
+            from:
+              type: integer
+              description: The number of tickets on the lead that would be reassigned to the surviving contact.
+              example: 2
+            into:
+              type: integer
+              description: The number of tickets the surviving contact already has.
+              example: 1
+          required:
+          - from
+          - into
         phone_calls:
-          type: integer
-          description: The number of phone calls that would be reassigned to the surviving contact. Present only for phone-lead merges.
-          example: 1
+          type: object
+          description: Phone calls. Present only for phone-lead merges.
+          properties:
+            from:
+              type: integer
+              description: The number of phone calls on the lead that would be reassigned to the surviving contact.
+              example: 1
+            into:
+              type: integer
+              description: The number of phone calls the surviving contact already has.
+              example: 0
+          required:
+          - from
+          - into
         tags:
-          type: integer
-          description: The number of tags that would be reassigned.
-          example: 3
+          type: object
+          description: Tags. `from` counts only tags the surviving contact does not already have.
+          properties:
+            from:
+              type: integer
+              description: The number of tags on the lead that would be added to the surviving contact.
+              example: 3
+            into:
+              type: integer
+              description: The number of tags the surviving contact already has.
+              example: 4
+          required:
+          - from
+          - into
         notes:
-          type: integer
-          description: The number of notes that would be reassigned.
-          example: 2
+          type: object
+          description: Notes attached to the contact.
+          properties:
+            from:
+              type: integer
+              description: The number of notes on the lead that would be reassigned to the surviving contact.
+              example: 2
+            into:
+              type: integer
+              description: The number of notes the surviving contact already has.
+              example: 6
+          required:
+          - from
+          - into
     merge_conversations_request:
       title: Merge Conversations Request
       type: object
