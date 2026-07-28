@@ -9212,7 +9212,7 @@ paths:
         {% admonition type="info" name="Handling existing contacts" %}
           If a contact already exists with the given `external_id` or `email` (including an archived contact), that item is rejected and the job's `state` ends as `completed_with_errors`. New contacts in the same request are still created. The job `state` from `GET /contacts/bulk/{id}` is the signal that one or more items were rejected.
 
-          Created contacts aren't returned with IDs in the response. Look them up afterwards with [Get a contact by External ID](/docs/references/preview/rest-api/api.intercom.io/contacts/getcontactbyexternalid) or [Search contacts](/docs/references/preview/rest-api/api.intercom.io/contacts/searchcontacts).
+          Created contacts aren't returned with IDs in the response. Look them up afterwards with [Get a contact by External ID](/docs/references/preview/rest-api/api.intercom.io/contacts/showcontactbyexternalid) or [Search contacts](/docs/references/preview/rest-api/api.intercom.io/contacts/searchcontacts).
         {% /admonition %}
 
         {% admonition type="info" name="Limits" %}
@@ -9227,17 +9227,6 @@ paths:
             examples:
               successful:
                 summary: Successful
-                value:
-                  contacts:
-                  - external_id: abc123
-                    email: joe@bloggs.com
-                    name: Joe Bloggs
-                  - external_id: def456
-                    email: maria@example.com
-                    name: "María García"
-                    role: lead
-              all_fields:
-                summary: All supported fields
                 value:
                   contacts:
                   - external_id: abc123
@@ -9275,6 +9264,15 @@ paths:
                     company:
                       company_id: '6'
                       name: Blue Sun
+              append_to_existing_job:
+                summary: Append to existing job
+                value:
+                  contacts:
+                  - external_id: abc123
+                    email: joe@bloggs.com
+                    language_override: de
+                  job:
+                    id: job_v2_1
       responses:
         '202':
           description: Accepted
@@ -9323,14 +9321,14 @@ paths:
                     type: error.list
                     request_id: 2859da57-c83f-405c-8166-240a312442a3
                     errors:
-                    - code: missing_field
+                    - code: field_not_found
                       message: contacts field must be supplied
                 too_many_contacts:
                   value:
                     type: error.list
                     request_id: 2859da57-c83f-405c-8166-240a312442a3
                     errors:
-                    - code: invalid_parameter
+                    - code: parameter_invalid
                       message: maximum number of contacts per request is 100
               schema:
                 "$ref": "#/components/schemas/error"
@@ -9363,18 +9361,7 @@ paths:
               "$ref": "#/components/schemas/bulk_update_contacts_request"
             examples:
               successful:
-                summary: Successful
-                value:
-                  contacts:
-                  - id: abc123
-                    language_override: fr
-                  - id: def456
-                    name: Updated Name
-                  - id: ghi789
-                    language_override: es
-                    name: "María García"
-              all_fields:
-                summary: All supported fields
+                summary: successful
                 value:
                   contacts:
                   - id: abc123
@@ -9394,6 +9381,8 @@ paths:
                     tags:
                       add:
                       - id: '123'
+                      remove:
+                      - id: '987'
               with_companies:
                 summary: Attach and detach companies
                 value:
@@ -9475,21 +9464,21 @@ paths:
                     type: error.list
                     request_id: 2859da57-c83f-405c-8166-240a312442a3
                     errors:
-                    - code: missing_field
+                    - code: field_not_found
                       message: contacts field must be supplied
                 missing_id:
                   value:
                     type: error.list
                     request_id: 2859da57-c83f-405c-8166-240a312442a3
                     errors:
-                    - code: missing_field
+                    - code: field_not_found
                       message: contacts must be identified by id
                 too_many_contacts:
                   value:
                     type: error.list
                     request_id: 2859da57-c83f-405c-8166-240a312442a3
                     errors:
-                    - code: invalid_parameter
+                    - code: parameter_invalid
                       message: maximum number of contacts per request is 100
               schema:
                 "$ref": "#/components/schemas/error"
@@ -9505,7 +9494,7 @@ paths:
       - Contacts
       operationId: BulkDeleteContacts
       description: |
-        You can permanently delete contacts in bulk by submitting an array of contact `id`s.
+        You can delete contacts in bulk by submitting an array of contact `id`s.
 
         The endpoint creates an async job that processes the deletes in the background. Use the returned job ID with `GET /contacts/bulk/{id}` to check the job status.
 
@@ -9529,6 +9518,13 @@ paths:
                   contacts:
                   - id: abc123
                   - id: def456
+              append_to_existing_job:
+                  summary: Append to existing job
+                  value:
+                    contacts:
+                    - id: abc123
+                    job:
+                      id: job_v2_1
       responses:
         '202':
           description: Accepted
@@ -9577,21 +9573,21 @@ paths:
                     type: error.list
                     request_id: 2859da57-c83f-405c-8166-240a312442a3
                     errors:
-                    - code: missing_field
+                    - code: field_not_found
                       message: contacts field must be supplied
                 missing_id:
                   value:
                     type: error.list
                     request_id: 2859da57-c83f-405c-8166-240a312442a3
                     errors:
-                    - code: missing_field
+                    - code: field_not_found
                       message: contacts must be identified by id
                 too_many_contacts:
                   value:
                     type: error.list
                     request_id: 2859da57-c83f-405c-8166-240a312442a3
                     errors:
-                    - code: invalid_parameter
+                    - code: parameter_invalid
                       message: maximum number of contacts per request is 100
               schema:
                 "$ref": "#/components/schemas/error"
