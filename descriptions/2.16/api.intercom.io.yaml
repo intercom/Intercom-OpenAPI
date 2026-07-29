@@ -3971,7 +3971,7 @@ paths:
         Please reach out to your accounts team to discuss access.
         {% /admonition %}
 
-        Once Fin is initialized, it progresses through a series of statuses such as *thinking*, *awaiting_user_reply*, or *resolved* before ending with a status of *complete*.
+        Once Fin is initialized, it progresses through a series of statuses such as *thinking*, *replying*, *awaiting_user_reply*, or *resolved* before ending with a status of *complete*.
 
         During this workflow, the client should allow Fin to continue uninterrupted until a final *complete* status is returned via webhook, at which point control of the conversation passes back to the client.
       responses:
@@ -4016,6 +4016,7 @@ paths:
                     type: string
                     enum:
                     - thinking
+                    - replying
                     - awaiting_user_reply
                     - escalated
                     - resolved
@@ -4203,6 +4204,7 @@ paths:
                     type: string
                     enum:
                     - thinking
+                    - replying
                     - awaiting_user_reply
                     - escalated
                     - resolved
@@ -31316,11 +31318,13 @@ components:
         status:
           type: string
           enum:
+          - awaiting_user_reply
           - escalated
           - resolved
           - complete
           description: |
             Fin's current status.
+            - awaiting_user_reply: Fin has finished replying and is waiting for the user to respond
             - escalated: The conversation has been escalated to a human
             - resolved: The user's query has been resolved
             - complete: Fin has completed its workflow
@@ -31354,7 +31358,7 @@ components:
       description: |
         Event fired when Fin replies to a user.
         Delivered via webhooks or SSE. The content of the response will be contained in the message object.
-        Fin's status will update to 'awaiting_user_reply'.
+        Intermediate replies have status 'replying'; a separate fin_status_updated event with 'awaiting_user_reply' fires once Fin's reply is done.
       x-tags:
       - Fin Agent
       properties:
@@ -31402,9 +31406,13 @@ components:
         status:
           type: string
           enum:
+          - replying
           - awaiting_user_reply
-          description: Fin's current status (always 'awaiting_user_reply' for this event).
-          example: awaiting_user_reply
+          description: |
+            Fin's current status.
+            - replying: Intermediate reply part; more parts may follow
+            - awaiting_user_reply: Legacy status; instead use the fin_status_updated event with 'awaiting_user_reply', which fires once Fin's reply is done
+          example: replying
         stream_id:
           type: string
           description: |
@@ -35363,7 +35371,7 @@ tags:
 
     Configure a webhook endpoint in the Fin Agent API settings to receive events, or use the `sse_subscription_url` from the API response to subscribe via SSE. See the [setup guide](/docs/guides/fin-agent-api/setup) for configuration details.
 
-    - `fin_status_updated` - Fired when Fin's status changes (escalated, resolved, complete)
+    - `fin_status_updated` - Fired when Fin's status changes (awaiting_user_reply, escalated, resolved, complete)
     - `fin_replied` - Fired when Fin sends a reply to the user
     - `fin_reply_chunk` - SSE-only streaming event fired during reply generation (requires streaming enabled)
 
