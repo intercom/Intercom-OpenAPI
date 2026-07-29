@@ -31358,7 +31358,7 @@ components:
       description: |
         Event fired when Fin replies to a user.
         Delivered via webhooks or SSE. The content of the response will be contained in the message object.
-        Intermediate replies have status 'replying'; a separate fin_status_updated event with 'awaiting_user_reply' fires as a done signal.
+        Intermediate replies have status 'replying'; a separate fin_status_updated event with 'awaiting_user_reply' fires once Fin's reply is done.
       x-tags:
       - Fin Agent
       properties:
@@ -31411,7 +31411,7 @@ components:
           description: |
             Fin's current status.
             - replying: Intermediate reply part; more parts may follow
-            - awaiting_user_reply: Legacy status; use fin_status_updated event as the done signal instead
+            - awaiting_user_reply: Legacy status; instead use the fin_status_updated event with 'awaiting_user_reply', which fires once Fin's reply is done
           example: replying
         stream_id:
           type: string
