@@ -24658,7 +24658,7 @@ paths:
                       properties:
                         type:
                           type: string
-                          description: The kind of capability — `procedure` for a runnable procedure, or a static action such as `reply` or `ask`.
+                          description: The kind of capability — `procedure` for a runnable procedure, or a static action such as `reply`, `ask`, or `escalate`.
                           example: procedure
                         id:
                           type: string
@@ -24741,9 +24741,10 @@ paths:
         Ask Fin a single, self-contained question and receive one informational answer.
 
         Unlike a conversation, `/fin/ask` is non-conversational: Fin will not ask follow-up
-        questions, will not run procedures, and will not escalate to a human on its own. You
-        can still hand an ask conversation to a human with `POST /fin/escalate`; the ask
-        conversation stays closed and the handoff is routed separately.
+        questions and will not run procedures, and escalation is disabled, so Fin does not hand
+        the conversation to a human as part of answering. You can still escalate one yourself
+        with `POST /fin/escalate`; the ask conversation stays closed and the handoff is routed
+        separately.
 
         Fin's answer is delivered asynchronously via the `fin_replied` event. The conversation
         ends with a `complete` status — there is no `awaiting_user_reply` cycle.
@@ -25323,7 +25324,8 @@ paths:
 
         You are notified over the existing webhook or SSE channel with an `escalated` status
         followed by `complete`. The `complete` status signals that Fin is done; it does not close
-        the conversation, which remains open in the human inbox.
+        the conversation. On the Intercom Helpdesk it remains open in the human inbox; on Fin for
+        Platforms it remains open for whoever handles it on your own platform.
       responses:
         '200':
           description: Conversation escalated successfully
