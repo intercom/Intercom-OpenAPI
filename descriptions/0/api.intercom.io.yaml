@@ -11821,7 +11821,7 @@ paths:
       operationId: createConversation
       description: |+
         You can create a conversation that has been initiated by a contact (ie. user or lead).
-        The conversation can be an in-app message only.
+        The conversation can be an in-app message, or an SMS message when migrating historical SMS conversations.
 
         {% admonition type="info" name="Sending for visitors" %}
         You can also send a message from a visitor by specifying their `user_id` or `id` value in the `from` field, along with a `type` field value of `contact`.
@@ -32332,6 +32332,17 @@ components:
           type: string
           description: The unique identifier of the brand to associate with this conversation.
           example: "123"
+        message_type:
+          type: string
+          description: 'The channel the conversation was received on. Defaults to `inapp`. Use `sms` to migrate a historical SMS conversation.'
+          enum:
+          - inapp
+          - sms
+          example: inapp
+        sms_phone_number:
+          type: string
+          description: 'The workspace SMS number this conversation belongs to, in E.164 format. Only valid when `message_type` is `sms`. Agent replies to the conversation will be sent from this number.'
+          example: '+18253605125'
       required:
       - from
       - body
