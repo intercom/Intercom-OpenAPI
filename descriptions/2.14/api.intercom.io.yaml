@@ -1890,7 +1890,7 @@ paths:
                   sse_subscription_url:
                     type: string
                     description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status. When CSAT is enabled, `complete` revocation is deferred until the `csat_requested` survey is delivered.
+                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires.
                     example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
         '400':
           description: Bad Request
@@ -2077,7 +2077,7 @@ paths:
                   sse_subscription_url:
                     type: string
                     description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status. When CSAT is enabled, `complete` revocation is deferred until the `csat_requested` survey is delivered.
+                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires.
                     example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
         '400':
           description: Bad Request
@@ -20137,7 +20137,7 @@ components:
             Fin's current status.
             - escalated: The conversation has been escalated to a human
             - resolved: The user's query has been resolved
-            - complete: Fin has completed its workflow. When CSAT is enabled a csat_requested event may follow, and over SSE the stream is held open until it is delivered or the token expires
+            - complete: Fin has completed its workflow. When CSAT is enabled a csat_requested event may follow, in which case the SSE stream is held open past complete until it is delivered or the token expires
           example: escalated
         reason:
           type: string
