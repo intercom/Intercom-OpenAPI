@@ -1896,7 +1896,7 @@ paths:
                   sse_subscription_url:
                     type: string
                     description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status.
+                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status. When CSAT is enabled, `complete` revocation is deferred until the `csat_requested` survey is delivered.
                     example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
         '400':
           description: Bad Request
@@ -2083,7 +2083,7 @@ paths:
                   sse_subscription_url:
                     type: string
                     description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status.
+                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status. When CSAT is enabled, `complete` revocation is deferred until the `csat_requested` survey is delivered.
                     example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
         '400':
           description: Bad Request
@@ -15036,6 +15036,10 @@ paths:
                   value:
                     errors:
                       base: This rating can no longer be changed because a remark has already been submitted
+                Invalid rating:
+                  value:
+                    errors:
+                      rating: Rating isn't an option
               schema:
                 type: object
                 properties:
