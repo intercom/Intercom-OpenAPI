@@ -25437,6 +25437,149 @@ paths:
                     name: John Doe
                     email: john.doe@example.com
                   message: I need help with my billing issue
+  "/fin/csat":
+    post:
+      summary: Submit a CSAT rating
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Fin Agent
+      operationId: submitFinCsat
+      description: |
+        Record a customer's satisfaction rating for a conversation, with an optional free-text
+        remark.
+
+        Fin decides *when* to ask for a rating — this reuses the CSAT settings on your Fin
+        workflow, not this API. When Fin asks, it fires a `csat_requested` event over webhooks or
+        SSE carrying the rating options to show the user. Present those options, then submit the
+        user's choice here.
+
+        Submitting the same rating again is a no-op and stays successful, so an at-least-once
+        client can safely retry. Submitting a *different* rating updates the stored rating while
+        the update window is still open, and a first remark can be added to an already-rated
+        survey. Once a remark has been recorded the rating is locked and can no longer be changed.
+      responses:
+        '200':
+          description: Rating recorded successfully
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    conversation_id: ext-123
+                    rating: amazing
+                    status: rated
+              schema:
+                type: object
+                properties:
+                  conversation_id:
+                    type: string
+                    description: The external ID of the rated conversation.
+                    example: ext-123
+                  rating:
+                    type: string
+                    enum:
+                    - terrible
+                    - bad
+                    - ok
+                    - good
+                    - amazing
+                    description: The rating now recorded on the conversation.
+                    example: amazing
+                  status:
+                    type: string
+                    enum:
+                    - rated
+                    description: The result of the submission.
+                    example: rated
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: |
+            The rating could not be recorded. Common causes: no conversation exists for the given
+            `conversation_id`, Fin never requested a rating for it, the rating window has closed,
+            the rating is locked because a remark was already submitted, or `rating` is not one of
+            the supported values.
+          content:
+            application/json:
+              examples:
+                Conversation not found:
+                  value:
+                    errors:
+                      external_conversation_id: Conversation not found for the given external_conversation_id
+                No rating requested:
+                  value:
+                    errors:
+                      base: No rating survey found for this conversation
+                Rating window closed:
+                  value:
+                    errors:
+                      base: The rating window for this conversation has closed
+                Rating locked by a remark:
+                  value:
+                    errors:
+                      base: This rating can no longer be changed because a remark has already been submitted
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Validation messages keyed by the field they apply to, or `base` for conversation-level failures.
+                    additionalProperties:
+                      type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conversation_id:
+                  type: string
+                  description: Your external conversation ID — the same ID you started the conversation with, and the one echoed on the `csat_requested` event.
+                  example: ext-123
+                rating:
+                  type: string
+                  enum:
+                  - terrible
+                  - bad
+                  - ok
+                  - good
+                  - amazing
+                  description: The rating the user selected — one of the `key` values from the `csat_requested` event's options.
+                  example: amazing
+                remark:
+                  type: string
+                  description: Optional free-text comment the user left alongside the rating. Can be added to an already-rated survey, but only once — the rating locks after a remark is recorded.
+                  example: Fin solved my problem in seconds.
+              required:
+              - conversation_id
+              - rating
+            examples:
+              Submit a rating:
+                value:
+                  conversation_id: ext-123
+                  rating: amazing
+              Submit a rating with a remark:
+                value:
+                  conversation_id: ext-123
+                  rating: amazing
+                  remark: Fin solved my problem in seconds.
   "/fin/start":
     post:
       summary: Start a conversation with Fin
@@ -36165,7 +36308,7 @@ components:
             - awaiting_user_reply: Fin has finished replying and is waiting for the user to respond
             - escalated: The conversation has been escalated to a human
             - resolved: The user's query has been resolved
-            - complete: Fin has completed its workflow
+            - complete: Fin has completed its workflow. When CSAT is enabled a csat_requested event follows, and over SSE the stream is held open until it is delivered
           example: escalated
         reason:
           type: string
@@ -36326,6 +36469,82 @@ components:
       - stream_id
       - chunk_index
       - chunk_text
+      - created_at_ms
+    fin_agent_csat_requested_event:
+      title: Fin Agent CSAT Requested Event
+      type: object
+      description: |
+        Event fired when Fin asks the user to rate the conversation.
+        Delivered via webhooks or SSE. Carries the rating options to present to the user; submit
+        the user's choice with POST /fin/csat. Unlike the reply events it has no message — a
+        rating survey is a set of options to choose from, not readable text.
+        Over SSE this event arrives after Fin reaches 'complete'. Because a survey is expected,
+        'complete' does not close the stream: the connection is held open so this event can be
+        delivered, and the token is revoked once it is sent.
+      x-tags:
+      - Fin Agent
+      properties:
+        event_name:
+          type: string
+          enum:
+          - csat_requested
+          description: The name of the event.
+          example: csat_requested
+        conversation_id:
+          type: string
+          description: The ID of the conversation.
+          example: '123456'
+        user_id:
+          type: string
+          description: The ID of the user.
+          example: '7891'
+        csat:
+          type: object
+          description: The rating survey to present to the user.
+          properties:
+            options:
+              type: array
+              description: The ordered rating options to show the user.
+              items:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    enum:
+                    - terrible
+                    - bad
+                    - ok
+                    - good
+                    - amazing
+                    description: The stable key to send back as 'rating' on POST /fin/csat.
+                    example: amazing
+                  emoji:
+                    type: string
+                    description: The emoji representing this rating.
+                    example: "🤩"
+                  label:
+                    type: string
+                    description: |
+                      The human-readable label for this rating, localised to the conversation's
+                      detected language. Distinct from 'key' — display the label, but send back
+                      the key.
+                    example: Amazing
+                required:
+                - key
+                - emoji
+                - label
+          required:
+          - options
+        created_at_ms:
+          type: string
+          format: date-time
+          description: The timestamp the event was created at, with millisecond precision.
+          example: '2025-01-24T10:00:00.123Z'
+      required:
+      - event_name
+      - conversation_id
+      - user_id
+      - csat
       - created_at_ms
     file_attribute:
       title: File
@@ -40763,7 +40982,7 @@ tags:
 
     &nbsp;
 
-    Orchestrate Fin from your own agent: discover what Fin can do with `/fin/capabilities`, ask a one-shot question with `/fin/ask`, run a specific procedure with `/fin/procedures/{procedure_id}/run`, continue a conversation with `/fin/reply`, and escalate to a human with `/fin/escalate`. Fin notifies your application of its status and responses through a set of events, delivered via webhooks or Server-Sent Events (SSE).
+    Orchestrate Fin from your own agent: discover what Fin can do with `/fin/capabilities`, ask a one-shot question with `/fin/ask`, run a specific procedure with `/fin/procedures/{procedure_id}/run`, continue a conversation with `/fin/reply`, escalate to a human with `/fin/escalate`, and record a satisfaction rating with `/fin/csat`. Fin notifies your application of its status and responses through a set of events, delivered via webhooks or Server-Sent Events (SSE).
 
     &nbsp;
 
@@ -40778,6 +40997,7 @@ tags:
     - `fin_status_updated` - Fired when Fin's status changes (awaiting_user_reply, escalated, resolved, complete)
     - `fin_replied` - Fired when Fin sends a reply to the user
     - `fin_reply_chunk` - SSE-only streaming event fired during reply generation (requires streaming enabled)
+    - `csat_requested` - Fired when Fin asks the user to rate the conversation (submit the choice with `POST /fin/csat`)
 
     All webhook requests include an `X-Fin-Agent-API-Webhook-Signature` header for request validation.
 - name: Help Center
