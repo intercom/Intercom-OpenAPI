@@ -9201,6 +9201,77 @@ paths:
                     order: ascending
                   pagination:
                     per_page: 5
+  "/contacts/activities":
+    get:
+      summary: List all contact activities
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Defaults to 50, minimum 1, maximum 150.
+        schema:
+          type: integer
+          default: 50
+          minimum: 1
+          maximum: 150
+      - name: starting_after
+        in: query
+        required: false
+        description: The cursor value from `pages.next.starting_after` in a previous response. Used to paginate through results.
+        schema:
+          type: string
+      tags:
+      - Contacts
+      operationId: ListContactActivities
+      description: |
+        You can fetch a list of contact activity events for your workspace, such as when contacts are created, merged, or deleted. Events are returned oldest first.
+
+        This endpoint requires an OAuth token with the `read_users_companies` scope.
+        {% admonition type="warning" name="Pagination" %}
+          You can use pagination to limit the number of results returned. The default is `50` results per page, with a maximum of `150`.
+          See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.
+        {% /admonition %}
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: contact_activity
+                      id: '1717000000000.0000a1'
+                      event_type: contact.created
+                      contact_id: 6329bd9ffe4e2e91dc5d6a1e
+                      role: user
+                      created_at: 1717000000
+                    pages:
+                      type: pages
+                      per_page: 50
+                      next:
+                        starting_after: '1717000000000.0000a1'
+              schema:
+                "$ref": "#/components/schemas/contact_activity_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/contacts":
     get:
       summary: List all contacts
@@ -29634,6 +29705,77 @@ components:
           type: boolean
           description: Whether the contact is deleted or not.
           example: true
+    contact_activity:
+      title: Contact Activity
+      type: object
+      description: An activity event that occurred for a contact, such as creation, merge, or deletion.
+      properties:
+        type:
+          type: string
+          description: Always contact_activity
+          enum:
+          - contact_activity
+          example: contact_activity
+        id:
+          type: string
+          description: The unique identifier for the activity event.
+          example: '1717000000000.0000a1'
+        event_type:
+          type: string
+          description: The type of activity event, e.g. contact.created, contact.merged, contact.deleted, contact.merge_failed.
+          example: contact.created
+        contact_id:
+          type: string
+          description: The unique identifier for the contact the event relates to.
+          example: 6329bd9ffe4e2e91dc5d6a1e
+        external_id:
+          type: string
+          nullable: true
+          description: The external identifier of the contact, if one is set.
+          example: user-42
+        role:
+          type: string
+          nullable: true
+          description: The role of the contact at the time of the event, either user, lead, or visitor.
+          example: user
+        merge_source_id:
+          type: string
+          nullable: true
+          description: For merge events, the identifier of the contact that was merged away.
+          example: 5f7f0d217c3f2e001a4e8b12
+        merge_target_id:
+          type: string
+          nullable: true
+          description: For merge events, the identifier of the contact that was merged into.
+          example: 6329bd9ffe4e2e91dc5d6a1e
+        failure_reason:
+          type: string
+          nullable: true
+          description: For failed events, the reason the activity did not succeed.
+          example: duplicate_external_id
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the activity event occurred, as a Unix timestamp in seconds.
+          example: 1717000000
+    contact_activity_list:
+      title: Contact Activity List
+      type: object
+      description: A paginated list of contact activity events.
+      properties:
+        type:
+          type: string
+          description: Always list
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: The list of contact activity objects.
+          items:
+            "$ref": "#/components/schemas/contact_activity"
+        pages:
+          "$ref": "#/components/schemas/cursor_pages"
     contact_list:
       title: Contact List
       type: object
