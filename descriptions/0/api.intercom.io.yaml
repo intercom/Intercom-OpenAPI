@@ -12149,7 +12149,29 @@ paths:
                             name: Jira Create Issue
                             result: success
                         app_package_code: null
-                      total_count: 4
+                      - type: conversation_part
+                        id: 5
+                        part_type: call_summary
+                        body: "<p>The customer asked about a failed payroll run and was advised to re-submit it.</p>"
+                        created_at: 1740141860
+                        updated_at: 1740141902
+                        notified_at: 1740141860
+                        assigned_to:
+                        author:
+                          type: bot
+                          id: '278'
+                          name: Fin
+                          email: operator+abcd1234@intercom.io
+                        attachments: []
+                        external_id:
+                        redacted: false
+                        email_message_metadata: null
+                        state: closed
+                        tags: []
+                        event_details:
+                          call_id: '3822007689'
+                        app_package_code: null
+                      total_count: 5
                 email conversation with history found:
                   value:
                     type: conversation
@@ -35831,6 +35853,15 @@ components:
           type: string
           description: Name of the SLA that was removed
           example: "Standard SLA"
+    call_summary:
+      title: Part type - call_summary
+      type: object
+      description: Contains the id of the call the summary describes, for conversation part type <code>call_summary</code>. A conversation can contain several calls, and therefore several call summaries, so this identifies which call each summary belongs to. The id matches the <code>id</code> returned by the Calls API and by the <code>call.started</code>, <code>call.ended</code>, <code>call.recording_available</code> and <code>call.transcription_available</code> webhook topics.
+      properties:
+        call_id:
+          type: string
+          description: The id of the call the summary describes
+          example: "3822007689"
     event_details:
       title: Event details of Workflow & actions
       type: object
@@ -35850,6 +35881,7 @@ components:
         - "$ref": "#/components/schemas/conversation_sla_paused"
         - "$ref": "#/components/schemas/conversation_sla_unpaused"
         - "$ref": "#/components/schemas/conversation_sla_removed"
+        - "$ref": "#/components/schemas/call_summary"
     email_setting:
       type: object
       title: Email Setting
