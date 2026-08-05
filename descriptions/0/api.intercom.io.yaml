@@ -8719,7 +8719,7 @@ paths:
                 "$ref": "#/components/schemas/error"
   "/contacts/merge":
     post:
-      summary: Merge a lead and a user
+      summary: Merge contacts
       parameters:
       - name: Intercom-Version
         in: header
@@ -8738,6 +8738,14 @@ paths:
       operationId: MergeContact
       description: |
         You can merge a contact with a `role` of `lead` into a contact with a `role` of `user`.
+
+        You can also merge a contact with a `role` of `user` into another contact with a `role` of `user`. User-to-user merging is being rolled out gradually: on workspaces where it is not yet available, user-to-user requests return `400` with code `invalid_merge`. User-to-user merges follow stricter rules than lead-to-user merges:
+
+        - The two contacts must share an email address or phone number. This requirement can't be bypassed: passing `skip_duplicate_validation` as `true` returns `400` with code `parameter_not_allowed`.
+        - A source contact (`from`) with WhatsApp data can't be merged into another user yet. Such requests return `422` with code `unprocessable_entity`.
+        - A user can never be merged into a lead.
+
+        Use [Preview a contact merge](/docs/references/preview/rest-api/api.intercom.io/contacts/previewmergecontact) with the same `from` and `into` to check whether a merge would be allowed without performing it.
 
         {% admonition type="warning" name="Merged contacts are not retrievable via the API" %}
           Once a merge is completed, the source contact (`from`) is permanently removed from the active contact list. This means:
@@ -8864,6 +8872,34 @@ paths:
                       message: Contacts can only be merged when they are duplicates
                         (matching email or phone). Pass skip_duplicate_validation=true
                         to override this check.
+                Skip duplicate validation on a user-to-user merge:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: parameter_not_allowed
+                      message: skip_duplicate_validation is not supported for user-to-user
+                        merges; contacts must share an email or phone
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                User-to-user contacts are not duplicates:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: unprocessable_entity
+                      message: Contacts can only be merged when they are duplicates
+                        (matching email or phone)
+                User-to-user source contact has WhatsApp data:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: unprocessable_entity
+                      message: User merge cannot move WhatsApp data yet, so a source
+                        contact with WhatsApp data cannot be merged
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -8911,21 +8947,23 @@ paths:
       description: |
         Preview the result of merging one contact into another without applying the merge. This is a read-only dry run: it reports whether the merge is allowed and, if so, exactly what would change, **without modifying any data**.
 
-        Send the same `from` (a `lead`) and `into` (a `user`) contact IDs you would pass to [Merge a lead and a user](/docs/references/preview/rest-api/api.intercom.io/contacts/mergecontact).
+        Send the same `from` and `into` contact IDs you would pass to [Merge contacts](/docs/references/preview/rest-api/api.intercom.io/contacts/mergecontact). For a lead-to-user merge, `from` is a lead and `into` is a user; for a user-to-user merge, both are users.
 
         - When `allowed` is `true`, the response contains a `summary`: every attribute change (with the resulting value on the surviving contact) and, for each object type, two counts — `from`, how many are on the lead and would move to the user, and `into`, how many the user already has. Counts are reported for conversations, tickets, phone calls, notes, and tags. `conversations` counts non-ticket conversations only; tickets are reported separately under `tickets`, and `phone_calls` is present only for phone-lead merges.
         - When `allowed` is `false`, the response contains `reasons`. Each reason has a stable `code` you can branch on and a human-readable `message` you can display.
 
         {% admonition type="warning" name="Previewing non-duplicate contacts" %}
-        By default a merge requires the two contacts to share an identifier (email, phone, or external ID). Set `skip_duplicate_validation` to `true` to preview a merge of contacts that don't — the same rule the merge endpoint enforces.
+        By default a merge requires the two contacts to share an identifier (email, phone, or external ID). Set `skip_duplicate_validation` to `true` to preview a merge of contacts that don't — the same rule the merge endpoint enforces. This bypass only applies to lead-to-user merges: on a user-to-user preview, passing `skip_duplicate_validation` as `true` returns `400` with code `parameter_not_allowed`.
         {% /admonition %}
 
         When `allowed` is `false`, `reasons[].code` is one of:
 
         | code | meaning |
         | --- | --- |
-        | `invalid_merge_role_pair` | The `from`/`into` roles aren't mergeable. `from` must be a lead and `into` a user. |
+        | `invalid_merge_role_pair` | The `from`/`into` roles aren't mergeable. A lead can be merged into a user, and a user into another user; a user can never be merged into a lead. |
         | `no_shared_identifier` | The contacts share no email, phone, or external ID. Set `skip_duplicate_validation` to preview anyway. |
+        | `u2u_no_shared_identifier` | User-to-user only: the contacts share no email or phone. `skip_duplicate_validation` can't bypass this for user-to-user merges. |
+        | `source_has_whatsapp_data` | User-to-user only: the source contact has WhatsApp data, which can't yet be moved by a user-to-user merge. |
         | `facebook_user` | Facebook contacts can't be merged. |
         | `external_lead_channel_not_allowed` | The source is an external-channel lead that isn't eligible for merging. |
         | `mailing_list` | Contacts created from a mailing list can't be merged. |
@@ -8986,6 +9024,20 @@ paths:
                       message: These contacts don't share a common identifier (email, phone, or external ID), so they aren't recognised as duplicates. Set skip_duplicate_validation to true to preview the merge anyway.
               schema:
                 "$ref": "#/components/schemas/merge_preview_response"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Skip duplicate validation on a user-to-user preview:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: parameter_not_allowed
+                      message: skip_duplicate_validation is not supported for user-to-user
+                        merges; contacts must share an email or phone
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -37255,7 +37307,7 @@ components:
         from:
           type: string
           description: The unique identifier for the contact to merge away from. Must
-            be a lead.
+            be a lead, or a user when performing a user-to-user merge.
           example: 5d70dd30de4efd54f42fd526
         into:
           type: string
@@ -37265,7 +37317,9 @@ components:
         skip_duplicate_validation:
           type: boolean
           description: Set to `true` to merge two contacts that are not duplicates
-            (they share no matching email or phone).
+            (they share no matching email or phone). Only supported for lead-to-user
+            merges. A user-to-user merge always requires a shared email or phone,
+            and passing `true` returns `400` with code `parameter_not_allowed`.
           example: true
     merge_preview_request:
       description: Preview a contact merge.
@@ -37277,7 +37331,7 @@ components:
       properties:
         from:
           type: string
-          description: The unique identifier for the contact to merge away from. Must be a lead.
+          description: The unique identifier for the contact to merge away from. Must be a lead, or a user when previewing a user-to-user merge.
           example: 6762f0d51bb69f9f2193bb7f
         into:
           type: string
@@ -37286,7 +37340,7 @@ components:
         skip_duplicate_validation:
           type: boolean
           default: false
-          description: When true, previews the merge even if the contacts don't share a common identifier. Defaults to false.
+          description: When true, previews the merge even if the contacts don't share a common identifier. Defaults to false. Only supported for lead-to-user previews; on a user-to-user preview, passing `true` returns `400` with code `parameter_not_allowed`.
     merge_preview_response:
       title: Merge preview response
       description: The result of a merge preview. Either the merge is allowed (with a summary of the changes) or it is not (with reasons).
@@ -37331,9 +37385,11 @@ components:
           enum:
           - invalid_merge_role_pair
           - no_shared_identifier
+          - u2u_no_shared_identifier
           - facebook_user
           - external_lead_channel_not_allowed
           - mailing_list
+          - source_has_whatsapp_data
         message:
           type: string
           description: A human-readable explanation. Display this to people; do not match on it, as the wording may change.
