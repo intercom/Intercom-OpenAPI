@@ -15233,6 +15233,8 @@ components:
           - admin_login_failure
           - admin_login_success
           - admin_logout
+          - admin_occupancy_setting_change
+          - admin_occupancy_state_change
           - admin_password_reset_request
           - admin_password_reset_success
           - admin_permission_change
@@ -15405,6 +15407,57 @@ components:
           nullable: true
           description: The name of the Admin who initiated the activity.
           example: Joe Example
+        previous_state:
+          type: string
+          nullable: true
+          description: The state before the change. `idle` or `occupied`, and null
+            when the Admin had not been classified yet.
+          example: idle
+        new_state:
+          type: string
+          nullable: true
+          description: The state after the change. `idle` or `occupied`.
+          example: occupied
+        threshold_minutes:
+          type: integer
+          nullable: true
+          description: The inactivity window, in minutes, used to classify the Admin.
+          example: 15
+        last_activity_at:
+          type: integer
+          format: date-time
+          nullable: true
+          description: The time of the Admin's last recorded activity.
+          example: 1671028894
+        auto:
+          type: boolean
+          nullable: true
+          description: Indicates the state was derived automatically rather than set
+            by an Admin.
+          example: true
+        setting_type:
+          type: string
+          nullable: true
+          description: The group of workspace settings the change belongs to, for
+            example `teammate_occupancy` or `automatic_away_mode`.
+          example: teammate_occupancy
+        changes:
+          type: object
+          nullable: true
+          description: The settings altered by the change, keyed by setting name.
+            Only settings whose value actually moved are included, so an unchanged
+            setting is absent rather than present with equal values.
+          additionalProperties:
+            type: object
+            properties:
+              before:
+                description: The value before the change.
+              after:
+                description: The value after the change.
+          example:
+            occupancy_window_minutes:
+              before: 15
+              after: 30
         conversation_assignment_limit:
           type: integer
           nullable: true
