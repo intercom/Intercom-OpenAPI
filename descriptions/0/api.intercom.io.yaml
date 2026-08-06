@@ -9208,7 +9208,7 @@ paths:
       - name: Intercom-Version
         in: header
         schema:
-          "$ref": "#/components/schemas/intercom_version_preview"
+          "$ref": "#/components/schemas/intercom_version"
       - name: per_page
         in: query
         required: false
@@ -9228,9 +9228,8 @@ paths:
       - Contacts
       operationId: ListContactActivities
       description: |
-        You can fetch a list of contact activity events for your workspace, such as when contacts are created, merged, or deleted. Events are returned oldest first.
+        You can fetch a list of contact activity events for your workspace, such as when contacts are created, role updated, merged, or deleted. Events are returned oldest first.
 
-        This endpoint requires an OAuth token with the `read_users_companies` scope.
         {% admonition type="warning" name="Pagination" %}
           You can use pagination to limit the number of results returned. The default is `50` results per page, with a maximum of `150`.
           See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.
@@ -9249,13 +9248,44 @@ paths:
                       id: '1717000000000.0000a1'
                       event_type: contact.created
                       contact_id: 6329bd9ffe4e2e91dc5d6a1e
-                      role: user
+                      external_id: user-42
+                      role: lead
                       created_at: 1717000000
+                    - type: contact_activity
+                      id: '1717000100000.0000b2'
+                      event_type: contact.role_updated
+                      contact_id: 6329bd9ffe4e2e91dc5d6a1e
+                      external_id: user-42
+                      role: user
+                      created_at: 1717000100
+                    - type: contact_activity
+                      id: '1717000200000.0000c3'
+                      event_type: contact.merged
+                      contact_id: 6329bd9ffe4e2e91dc5d6a1e
+                      external_id: user-42
+                      role: user
+                      merge_source_id: 5f7f0d217c3f2e001a4e8b12
+                      merge_target_id: 6329bd9ffe4e2e91dc5d6a1e
+                      created_at: 1717000200
+                    - type: contact_activity
+                      id: '1717000300000.0000d4'
+                      event_type: contact.merge_failed
+                      contact_id: 5f7f0d217c3f2e001a4e8b12
+                      merge_source_id: 5f7f0d217c3f2e001a4e8b12
+                      merge_target_id: 6329bd9ffe4e2e91dc5d6a1e
+                      failure_reason: Merge source_user cannot have role='user_role'
+                      created_at: 1717000300
+                    - type: contact_activity
+                      id: '1717000400000.0000e5'
+                      event_type: contact.deleted
+                      contact_id: 6329bd9ffe4e2e91dc5d6a1e
+                      role: user
+                      created_at: 1717000400
                     pages:
                       type: pages
                       per_page: 50
                       next:
-                        starting_after: '1717000000000.0000a1'
+                        starting_after: '1717000400000.0000e5'
               schema:
                 "$ref": "#/components/schemas/contact_activity_list"
         '401':
@@ -29775,7 +29805,27 @@ components:
           items:
             "$ref": "#/components/schemas/contact_activity"
         pages:
-          "$ref": "#/components/schemas/cursor_pages"
+          type: object
+          description: Pagination information.
+          properties:
+            type:
+              type: string
+              example: pages
+              enum:
+              - pages
+            per_page:
+              type: integer
+              description: The number of results per page.
+              example: 10
+            next:
+              type: object
+              nullable: true
+              description: Cursor for the next page of results.
+              properties:
+                starting_after:
+                  type: string
+                  description: The cursor value to use for the next page.
+                  example: 1717000000000.0000a1
     contact_list:
       title: Contact List
       type: object
