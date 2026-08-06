@@ -14610,6 +14610,81 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/conversations/{conversation_id}/side_conversations/{id}/reply":
+    post:
+      summary: Reply to a side conversation
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: conversation_id
+        in: path
+        required: true
+        description: The identifier for the parent conversation as given by Intercom.
+        example: '123'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The identifier for the side conversation as given by Intercom.
+        example: '456'
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: replySideConversation
+      description: |
+        Reply to a side conversation with a comment or note, authored by a teammate (`admin`) or by a bot (`bot`). Side conversations are internal threads created by teammates from within a conversation.
+
+        Only the `comment` and `note` message types are supported, and replies can only be authored by an `admin` or a `bot`, not by a contact. Replying to Slack-based side conversations is not supported.
+
+        Requires the `write_conversations` OAuth scope.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/side_conversation_reply_request"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/conversation"
+              examples:
+                Successful response:
+                  value:
+                    type: conversation
+                    id: '456'
+                    created_at: 1663597223
+                    updated_at: 1663597260
+        '400':
+          description: Unsupported message type
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Side conversation not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/redact":
     post:
       summary: Redact a conversation part
@@ -26741,6 +26816,71 @@ components:
           - 814865
           items:
             type: integer
+    side_conversation_reply_request:
+      title: Side Conversation Reply
+      description: Payload of the request to reply to a side conversation
+      oneOf:
+      - "$ref": "#/components/schemas/side_conversation_admin_reply_request"
+      - "$ref": "#/components/schemas/side_conversation_bot_reply_request"
+    side_conversation_admin_reply_request:
+      title: Side Conversation Admin Reply
+      type: object
+      description: Payload to reply to a side conversation on behalf of an admin
+      properties:
+        message_type:
+          type: string
+          enum:
+          - comment
+          - note
+          example: comment
+        type:
+          type: string
+          enum:
+          - admin
+          example: admin
+        body:
+          type: string
+          description: The text body of the reply. Notes accept some HTML formatting.
+          example: Hello there!
+        admin_id:
+          type: string
+          description: The id of the admin authoring the reply.
+          example: '3156780'
+      required:
+      - message_type
+      - type
+      - body
+      - admin_id
+    side_conversation_bot_reply_request:
+      title: Side Conversation Bot Reply
+      type: object
+      description: Payload to reply to a side conversation on behalf of Operator (a
+        bot)
+      properties:
+        message_type:
+          type: string
+          enum:
+          - comment
+          - note
+          example: comment
+        type:
+          type: string
+          enum:
+          - bot
+          example: bot
+        body:
+          type: string
+          description: The text body of the reply. Notes accept some HTML formatting.
+          example: Hello there!
+        bot_id:
+          type: string
+          description: The id of the bot authoring the reply.
+          example: '2001'
+      required:
+      - message_type
+      - type
+      - body
+      - bot_id
     admin_reply_conversation_request:
       title: Admin Reply
       type: object
