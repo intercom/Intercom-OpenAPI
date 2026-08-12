@@ -21280,6 +21280,112 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+    put:
+      summary: Update a team's members
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of a given team.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Teams
+      operationId: updateTeam
+      description: You can replace the set of teammates who belong to a team. Send
+        the full list of teammates the team should end up with — any teammate currently
+        on the team and missing from the list is removed. This makes the endpoint safe
+        to call on a schedule to keep Intercom in step with an external rota or workforce
+        management system, since sending an unchanged list makes no changes at all.
+      requestBody:
+        content:
+          application/json:
+            examples:
+              successful:
+                value:
+                  admin_ids:
+                  - 493881
+                  - 493882
+            schema:
+              "$ref": "#/components/schemas/update_team_request"
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: team
+                    id: '991267902'
+                    name: team 1
+                    admin_ids:
+                    - 493881
+                    - 493882
+              schema:
+                "$ref": "#/components/schemas/team"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Invalid admin ids:
+                  value:
+                    type: error.list
+                    request_id: 8ba1e2a4-3d6f-4a1e-9c07-52c8f5b0d1aa
+                    errors:
+                    - code: parameter_invalid
+                      message: admin_ids must contain only numeric admin ids
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 4dd0f4f7-2d4b-4d2f-8b98-cf1e7ba1b2c5
+                    errors:
+                    - code: forbidden
+                      message: You don't have permission to update the members of
+                          this team
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              examples:
+                Team not found:
+                  value:
+                    type: error.list
+                    request_id: 9a3e0b1c-6f27-4f5e-8c31-0f2f4a7d9e88
+                    errors:
+                    - code: team_not_found
+                      message: Team not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 6c1e2f83-5b47-4f0e-9d8a-3b2c1e4f7a90
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/ticket_states":
     get:
       summary: List all ticket states
@@ -40497,6 +40603,26 @@ components:
       - url
       - locale
       - source_id
+    update_team_request:
+      description: |
+        The request payload for updating a team's membership.
+        `admin_ids` is the complete set of teammates who should be on the team once
+        the request completes, not a list of changes to apply. Any teammate currently
+        on the team but absent from `admin_ids` is removed.
+      type: object
+      title: Update Team Request Payload
+      properties:
+        admin_ids:
+          type: array
+          description: The ids of every teammate who should be a member of the team.
+            Must contain at least one id, and no more than 1000.
+          items:
+            type: integer
+          example:
+          - 493881
+          - 493882
+      required:
+      - admin_ids
     update_ticket_request:
       description: You can update a Ticket
       type: object
