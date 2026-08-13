@@ -21392,6 +21392,21 @@ paths:
                       message: Team not found
               schema:
                 "$ref": "#/components/schemas/error"
+        '409':
+          description: Another request is already changing this team's members
+          content:
+            application/json:
+              examples:
+                Conflict:
+                  value:
+                    type: error.list
+                    request_id: 5e7a0c3f-8b16-4d92-a7c4-2f8b6d0e9137
+                    errors:
+                    - code: conflict
+                      message: The members of this team are being changed by another
+                          request. Try again.
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -40630,8 +40645,9 @@ components:
         the request completes, not a list of changes to apply. Any teammate currently
         on the team but absent from `admin_ids` is removed.
 
-        Membership is the only part of a team this endpoint writes. Sending any other
-        field of the team representation returns a 400 rather than ignoring it.
+        Membership is the only part of a team this endpoint writes. `admin_ids` is the
+        only field it accepts; `id` and `type` are allowed so the representation can be
+        sent back unchanged, and any other field returns a 400 rather than being ignored.
 
         On a team that balances assignment across its members, teammates already on the
         team keep their current priority level and teammates being added join as primary
