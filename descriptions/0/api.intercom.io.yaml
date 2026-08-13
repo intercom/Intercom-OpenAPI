@@ -21302,6 +21302,11 @@ paths:
         on the team and missing from the list is removed. This makes the endpoint safe
         to call on a schedule to keep Intercom in step with an external rota or workforce
         management system, since sending an unchanged list makes no changes at all.
+
+
+        A token that acts on behalf of a teammate carries that teammate's permissions:
+        they must be able to manage teams, and any team or teammate their access is
+        restricted from remains out of reach here.
       requestBody:
         content:
           application/json:
@@ -21341,6 +21346,14 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: admin_ids must contain only numeric admin ids
+                Field cannot be updated:
+                  value:
+                    type: error.list
+                    request_id: 1c9d6f0b-7a24-4b8e-9f31-3e5a2c6b8d70
+                    errors:
+                    - code: parameter_invalid
+                      message: Only admin_ids can be updated on a team, but the request
+                          also set name
               schema:
                 "$ref": "#/components/schemas/error"
         '403':
@@ -21356,6 +21369,13 @@ paths:
                     - code: forbidden
                       message: You don't have permission to update the members of
                           this team
+                Cannot manage teams:
+                  value:
+                    type: error.list
+                    request_id: 6b2c8e1d-4f39-4d70-8a52-9c7e1f3b0a44
+                    errors:
+                    - code: forbidden
+                      message: You don't have permission to manage teams in this workspace
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -40609,6 +40629,13 @@ components:
         `admin_ids` is the complete set of teammates who should be on the team once
         the request completes, not a list of changes to apply. Any teammate currently
         on the team but absent from `admin_ids` is removed.
+
+        Membership is the only part of a team this endpoint writes. Sending any other
+        field of the team representation returns a 400 rather than ignoring it.
+
+        On a team that balances assignment across its members, teammates already on the
+        team keep their current priority level and teammates being added join as primary
+        members. Priority levels cannot be set through this endpoint.
       type: object
       title: Update Team Request Payload
       properties:
