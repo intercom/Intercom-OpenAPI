@@ -21297,12 +21297,12 @@ paths:
       tags:
       - Teams
       operationId: updateTeam
-      description: You can replace the set of teammates who belong to a team. Send
-        the full list of teammates the team should end up with — any teammate currently
-        on the team and missing from the list is removed. This makes the endpoint safe
-        to call on a schedule to keep Intercom in step with an external rota or workforce
-        management system, since sending an unchanged list makes no changes at all.
-
+      description: |-
+        You can replace the set of teammates who belong to a team. Send the full list of
+        teammates the team should end up with — any teammate currently on the team and
+        missing from the list is removed. This makes the endpoint safe to call on a
+        schedule to keep Intercom in step with an external rota or workforce management
+        system, since sending an unchanged list makes no changes at all.
 
         A token that acts on behalf of a teammate carries that teammate's permissions:
         they must be able to manage teams, and any team or teammate their access is
@@ -21393,7 +21393,12 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '409':
-          description: Another request is already changing this team's members
+          description: |-
+            Another request is already changing this team's members. Two cases are
+            distinguished by the message: the request was declined before anything was
+            written, so the team is unchanged and the same request can simply be sent
+            again; or the members kept changing while the request was being applied, so
+            it is partly applied and the team should be read again before retrying.
           content:
             application/json:
               examples:
@@ -21405,6 +21410,15 @@ paths:
                     - code: conflict
                       message: The members of this team are being changed by another
                           request. Try again.
+                Partly applied:
+                  value:
+                    type: error.list
+                    request_id: 5e7a0c3f-8b16-4d92-a7c4-2f8b6d0e9137
+                    errors:
+                    - code: conflict
+                      message: The members of this team kept being changed by other
+                          requests, so this one is partly applied. Read the team and
+                          try again.
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
