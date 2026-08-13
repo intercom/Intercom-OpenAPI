@@ -40645,13 +40645,16 @@ components:
         the request completes, not a list of changes to apply. Any teammate currently
         on the team but absent from `admin_ids` is removed.
 
-        Membership is the only part of a team this endpoint writes. `admin_ids` is the
-        only field it accepts; `id` and `type` are allowed so the representation can be
-        sent back unchanged, and any other field returns a 400 rather than being ignored.
+        Membership is the only part of a team this endpoint writes, and `admin_ids` must
+        be sent in the request body rather than the query string. A team read from the
+        API can be sent back whole: the other fields of the representation are accepted
+        as long as they are unchanged. Trying to change one of them returns a 400 rather
+        than being ignored, as does any field a team does not have.
 
         On a team that balances assignment across its members, teammates already on the
         team keep their current priority level and teammates being added join as primary
-        members. Priority levels cannot be set through this endpoint.
+        members. Priority levels cannot be set through this endpoint, so
+        `admin_priority_level` is accepted and disregarded — it follows from `admin_ids`.
       type: object
       title: Update Team Request Payload
       properties:
