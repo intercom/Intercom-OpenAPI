@@ -31865,6 +31865,23 @@ components:
           nullable: true
           example: "test-integration"
           description: The app package code if this part was created via API. null if the part was not created via API.
+        translations:
+          type: object
+          nullable: true
+          description: >-
+            A map of the reply text keyed by locale code. Only present on the
+            Preview API version and backs the `conversation.admin.replied.translated`
+            webhook topic. The special `original` key holds the source locale code
+            of the reply; every other key is a locale code whose value is the reply
+            text translated into that locale. The `body` field is unchanged and always
+            stays in the original source language. Available in the Preview API version
+            only (set `Intercom-Version: Preview`).
+          additionalProperties:
+            type: string
+          example:
+            original: en
+            en: 'Hello'
+            fr: 'Bonjour'
     conversation_part_author:
       title: Conversation part author
       type: object
@@ -39471,6 +39488,23 @@ components:
           nullable: false
           example: text-integration
           description: The app package code if this part was created via API. Note this field won't show if the part was not created via API.
+        translations:
+          type: object
+          nullable: true
+          description: >-
+            A map of the reply text keyed by locale code. Only present on the
+            Preview API version and backs the `ticket.admin.replied.translated`
+            webhook topic. The special `original` key holds the source locale code
+            of the reply; every other key is a locale code whose value is the reply
+            text translated into that locale. The `body` field is unchanged and always
+            stays in the original source language. Available in the Preview API version
+            only (set `Intercom-Version: Preview`).
+          additionalProperties:
+            type: string
+          example:
+            original: en
+            en: 'Hello'
+            fr: 'Bonjour'
         updated_attribute_data:
           title: Updated Attribute
           type: object
