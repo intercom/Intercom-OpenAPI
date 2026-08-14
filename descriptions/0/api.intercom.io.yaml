@@ -21296,7 +21296,7 @@ paths:
           type: string
       tags:
       - Teams
-      operationId: updateTeam
+      operationId: updateTeamMembers
       description: |-
         You can replace the set of teammates who belong to a team. Send the full list of
         teammates the team should end up with — any teammate currently on the team and
@@ -21317,7 +21317,7 @@ paths:
                   - 493881
                   - 493882
             schema:
-              "$ref": "#/components/schemas/update_team_request"
+              "$ref": "#/components/schemas/update_team_members_request"
       responses:
         '200':
           description: successful
@@ -21353,14 +21353,26 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: Only admin_ids can be updated on a team, but the request
-                          also set name
+                          changed name
               schema:
                 "$ref": "#/components/schemas/error"
         '403':
-          description: Forbidden
+          description: |-
+            Two codes are returned here and they mean different things. `api_plan_restricted`
+            means the endpoint is not available to this workspace at all, so no request will
+            succeed until it is enabled. `forbidden` means the workspace has the endpoint but
+            the teammate this token acts for may not make this particular change.
           content:
             application/json:
               examples:
+                Not available for this workspace:
+                  value:
+                    type: error.list
+                    request_id: 2f7b9c04-8e15-4a63-b0d7-6c41e9a3f582
+                    errors:
+                    - code: api_plan_restricted
+                      message: Updating team memberships via the API is not available
+                          for this workspace
                 Forbidden:
                   value:
                     type: error.list
@@ -40652,25 +40664,27 @@ components:
       - url
       - locale
       - source_id
-    update_team_request:
+    update_team_members_request:
       description: |
         The request payload for updating a team's membership.
         `admin_ids` is the complete set of teammates who should be on the team once
         the request completes, not a list of changes to apply. Any teammate currently
         on the team but absent from `admin_ids` is removed.
 
-        Membership is the only part of a team this endpoint writes, and `admin_ids` must
-        be sent in the request body rather than the query string. A team read from the
-        API can be sent back whole: the other fields of the representation are accepted
-        as long as they are unchanged. Trying to change one of them returns a 400 rather
-        than being ignored, as does any field a team does not have.
+        Membership is the only part of a team this endpoint writes, and the request is
+        read from the body: a parameter sent in the query string is rejected rather than
+        applied. A team read from the API can be sent back whole, since the other fields
+        of the representation are accepted as long as they are unchanged. Trying to
+        change one of them returns a 400 rather than being ignored, as does any field a
+        team does not have.
 
         On a team that balances assignment across its members, teammates already on the
         team keep their current priority level and teammates being added join as primary
-        members. Priority levels cannot be set through this endpoint, so
-        `admin_priority_level` is accepted and disregarded — it follows from `admin_ids`.
+        members. Priority levels cannot be set here, so `admin_priority_level` follows
+        from `admin_ids`: it is accepted when sent back unchanged and returns a 400 when
+        the request tries to change it.
       type: object
-      title: Update Team Request Payload
+      title: Update Team Members Request Payload
       properties:
         admin_ids:
           type: array
