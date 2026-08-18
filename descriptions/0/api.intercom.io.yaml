@@ -40695,11 +40695,15 @@ components:
         change one of them returns a 400 rather than being ignored, as does any field a
         team does not have.
 
-        On a team that balances assignment across its members, teammates already on the
-        team keep their current priority level and teammates being added join as primary
-        members. Priority levels cannot be set here, so `admin_priority_level` follows
-        from `admin_ids`: it is accepted when sent back unchanged and returns a 400 when
-        the request tries to change it.
+        On a team that balances assignment across its members, `admin_priority_level`
+        sets which teammates take work first. It is optional, and names only the
+        teammates whose level the request is setting: a teammate it leaves out keeps the
+        level they already have, and one joining the team without a level named becomes a
+        primary member. A level named for a teammate the request removes is ignored, so a
+        team read from the API can still be sent back whole with only `admin_ids` changed.
+        An id belonging to neither the team nor `admin_ids` is a mistake and returns a 400,
+        as does naming the same id at both levels. Only a team that balances assignment can
+        have secondary members, so naming one on any other team returns a 400.
       type: object
       title: Update Team Members Request Payload
       properties:
@@ -40712,6 +40716,8 @@ components:
           example:
           - 493881
           - 493882
+        admin_priority_level:
+          "$ref": "#/components/schemas/admin_priority_level"
       required:
       - admin_ids
     update_ticket_request:
