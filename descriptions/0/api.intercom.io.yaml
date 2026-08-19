@@ -9063,11 +9063,15 @@ paths:
 
         ### Searching for Timestamp Fields
 
-        Standard timestamp fields (created_at, updated_at, last_seen_at etc.) are filtered on the exact second, in UTC. `=` matches only Contacts whose value is that exact second, and `>`, `<`, `>=` and `<=` compare against the exact instant you pass - the value is not rounded or truncated. These fields report a type of `datetime` on the Data Attributes endpoint.
-        Date custom attributes behave differently: they are still truncated to a whole calendar day, and the day boundary is always UTC regardless of your workspace's timezone. On a Date custom attribute, `=` matches the whole UTC day, `>` matches from the start of the *next* UTC day (not from the instant you submitted), and `<` matches everything before the start of that UTC day. The `!=`, `>=`, and `<=` operators are not supported on Date custom attributes and return an error.
-        For example, searching for a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM UTC) returns Contacts created after that exact instant. Passing the same value for a Date custom attribute truncates it to 1577836800 (January 1st, 2020 12:00 AM UTC), so the results include Contacts from January 2nd, 2020 12:00 AM UTC onwards.
-        Note that `!=` on a standard timestamp also matches Contacts that have no value set for that field.
-        Search results always contain the full UNIX timestamp and are sorted on the full value.
+        Standard timestamp fields and Date custom attributes behave differently.
+
+        **Standard timestamp fields** (`created_at`, `updated_at`, `last_seen_at` etc.) are filtered on the exact second, in UTC. `=` matches only Contacts whose value is that exact second, and `>`, `<`, `>=` and `<=` compare against the exact instant you pass - the value is not rounded or truncated. These fields report a type of `datetime` on the Data Attributes endpoint. Note that `!=` also matches Contacts with no value set for the field.
+
+        **Date custom attributes** are matched by calendar day, and the day boundary is always UTC regardless of your workspace's timezone. `=` matches the whole UTC day, `>` matches from the start of the *next* UTC day, and `<` matches everything before the start of that day. The `!=`, `>=`, `<=`, `IN` and `NIN` operators are not supported on these fields and return an error.
+
+        **Example.** Searching for `created_at` greater than `1577869200` (January 1st, 2020 9:00 AM UTC) returns Contacts created after that exact instant. Passing the same value for a Date custom attribute truncates it to `1577836800` (January 1st, 2020 12:00 AM UTC), so those results begin from January 2nd, 2020 12:00 AM UTC.
+
+        Only search queries behave this way. Responses always carry the full UNIX timestamp, and sorting uses the full value.
 
         ### Accepted Fields
 

@@ -3676,11 +3676,23 @@ paths:
 
         ### Searching for Timestamp Fields
 
-        All timestamp fields (created_at, updated_at etc.) and Date custom attributes are truncated to a calendar day for Contact Search queries; sub-day precision (hour, minute, second) is not supported. The day boundary is determined using your workspace's timezone, so the same query can return different results across workspaces in different timezones.
-        Because the value is truncated to a day, `=` matches the whole day, `>` matches from the start of the *next* day (not from the instant you submitted), and `<` matches everything before the start of that day. The `!=`, `>=`, and `<=` operators are not supported on Date fields and return an error.
-        For example, on a workspace set to UTC, if you search for all Contacts with a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM UTC), that timestamp is truncated to 1577836800 (January 1st, 2020 12:00 AM UTC), and because `>` matches from the start of the next day, the search results include Contacts created from January 2nd, 2020 12:00 AM UTC onwards - not from 9:00 AM on January 1st. On a workspace in another timezone, the day boundaries fall on that timezone's midnight instead.
-        If you'd like to get contacts created on January 1st, 2020 you should search with a created_at value equal (=) to 1577836800 (January 1st, 2020 12:00 AM UTC).
-        This behaviour applies only to timestamps used in search queries. The search results will still contain the full UNIX timestamp and be sorted accordingly.
+        Timestamp fields (`created_at`, `updated_at` etc.) and Date custom attributes are matched by calendar day. Sub-day precision (hour, minute, second) is not supported.
+
+        The day boundary uses **your workspace's timezone**, so the same query can return different results on two workspaces in different timezones.
+
+        Because the value is truncated to a day:
+
+        * `=` matches the whole day.
+        * `>` matches from the start of the *next* day, not from the instant you passed.
+        * `<` matches everything before the start of that day.
+
+        The `!=`, `>=`, `<=`, `IN` and `NIN` operators are not supported on Date fields and return an error.
+
+        **Example**, on a workspace set to UTC. Searching for `created_at` greater than `1577869200` (January 1st, 2020 9:00 AM UTC) truncates that value to `1577836800` (January 1st, 2020 12:00 AM UTC). Because `>` starts at the next day, the results begin from January 2nd, 2020 12:00 AM UTC - not from 9:00 AM on January 1st. On a workspace in another timezone, the boundaries fall on that timezone's midnight instead.
+
+        To get contacts created on January 1st, 2020, search for `created_at` equal to `1577836800`.
+
+        Only search queries behave this way. Responses still carry the full UNIX timestamp, and sorting uses the full value.
 
         ### Accepted Fields
 
