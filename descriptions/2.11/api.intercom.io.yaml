@@ -3756,7 +3756,7 @@ paths:
         ### Searching for Timestamp Fields
 
         All timestamp fields (created_at, updated_at etc.) and Date custom attributes are truncated to a calendar day for Contact Search queries; sub-day precision (hour, minute, second) is not supported. The day boundary is determined using your workspace's timezone, so the same query can return different results across workspaces in different timezones.
-        Because the value is truncated to a day, `=` matches the whole day, `>` matches from the start of the *next* day (not from the instant you submitted), and `<` matches everything before the start of that day. The `!=`, `>=`, and `<=` operators are not supported on Date fields and return a 400 error.
+        Because the value is truncated to a day, `=` matches the whole day, `>` matches from the start of the *next* day (not from the instant you submitted), and `<` matches everything before the start of that day. The `!=`, `>=`, and `<=` operators are not supported on Date fields and return an error.
         For example, on a workspace set to UTC, if you search for all Contacts with a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM UTC), that timestamp is truncated to 1577836800 (January 1st, 2020 12:00 AM UTC), and because `>` matches from the start of the next day, the search results include Contacts created from January 2nd, 2020 12:00 AM UTC onwards - not from 9:00 AM on January 1st. On a workspace in another timezone, the day boundaries fall on that timezone's midnight instead.
         If you'd like to get contacts created on January 1st, 2020 you should search with a created_at value equal (=) to 1577836800 (January 1st, 2020 12:00 AM UTC).
         This behaviour applies only to timestamps used in search queries. The search results will still contain the full UNIX timestamp and be sorted accordingly.
@@ -3813,7 +3813,7 @@ paths:
         ### Accepted Operators
 
         {% admonition type="warning" name="Operators not supported on Date fields" %}
-          Date fields (`created_at`, `updated_at`, and any Date custom attribute) do not support the `!=`, `>=`, or `<=` operators. Using them returns a 400 error.
+          Date fields (`created_at`, `updated_at`, and any Date custom attribute) do not support the `!=`, `>=`, or `<=` operators. Using them returns an error.
         {% /admonition %}
 
         The table below shows the operators you can use to define how you want to search for the value. The operator should be put in as a string (`"="`). Which operators are valid depends on the field's type - see the "Valid Types" column below.
@@ -17323,7 +17323,7 @@ components:
             - `string` fields (including tags): `=`, `!=`, `IN`, `NIN`, `~`, `!~`, `^`, `$`
             - `boolean` fields: `=`, `!=`, `IN`, `NIN`
             - `integer` and `float` fields: `=`, `!=`, `IN`, `NIN`, `<`, `>`, `<=`, `>=`
-            - `date` fields (all standard timestamp attributes and date custom attributes): `=`, `IN`, `NIN`, `<`, `>` only. `!=`, `<=`, and `>=` are not supported and return a 400 error.
+            - `date` fields (all standard timestamp attributes and date custom attributes): `=`, `IN`, `NIN`, `<`, `>` only. `!=`, `<=`, and `>=` are not supported and return an error.
           example: ">"
         value:
           oneOf:
