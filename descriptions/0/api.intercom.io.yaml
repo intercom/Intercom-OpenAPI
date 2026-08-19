@@ -9089,14 +9089,14 @@ paths:
         | phone                              | String                         |
         | formatted_phone                    | String                         |
         | external_id                        | String                         |
-        | created_at                         | Date (UNIX Timestamp)          |
-        | signed_up_at                       | Date (UNIX Timestamp)          |
-        | updated_at                         | Date (UNIX Timestamp)          |
-        | last_seen_at                       | Date (UNIX Timestamp)          |
-        | last_contacted_at                  | Date (UNIX Timestamp)          |
-        | last_replied_at                    | Date (UNIX Timestamp)          |
-        | last_email_opened_at               | Date (UNIX Timestamp)          |
-        | last_email_clicked_at              | Date (UNIX Timestamp)          |
+        | created_at                         | Datetime (Unix timestamp in seconds) |
+        | signed_up_at                       | Datetime (Unix timestamp in seconds) |
+        | updated_at                         | Datetime (Unix timestamp in seconds) |
+        | last_seen_at                       | Datetime (Unix timestamp in seconds) |
+        | last_contacted_at                  | Datetime (Unix timestamp in seconds) |
+        | last_replied_at                    | Datetime (Unix timestamp in seconds) |
+        | last_email_opened_at               | Datetime (Unix timestamp in seconds) |
+        | last_email_clicked_at              | Datetime (Unix timestamp in seconds) |
         | language_override                  | String                         |
         | browser                            | String                         |
         | browser_language                   | String                         |
@@ -9107,21 +9107,21 @@ paths:
         | unsubscribed_from_emails           | Boolean                        |
         | marked_email_as_spam               | Boolean                        |
         | has_hard_bounced                   | Boolean                        |
-        | ios_last_seen_at                   | Date (UNIX Timestamp)          |
+        | ios_last_seen_at                   | Datetime (Unix timestamp in seconds) |
         | ios_app_version                    | String                         |
         | ios_device                         | String                         |
         | ios_app_device                     | String                         |
         | ios_os_version                     | String                         |
         | ios_app_name                       | String                         |
         | ios_sdk_version                    | String                         |
-        | android_last_seen_at               | Date (UNIX Timestamp)          |
+        | android_last_seen_at               | Datetime (Unix timestamp in seconds) |
         | android_app_version                | String                         |
         | android_device                     | String                         |
         | android_app_name                   | String                         |
         | andoid_sdk_version                 | String                         |
         | segment_id                         | String                         |
         | tag_id                             | String                         |
-        | custom_attributes.{attribute_name} | String                         |
+        | custom_attributes.{attribute_name} | Matches the attribute's own type<br>(String, Integer, Float, Boolean or Date) |
 
         ### Accepted Operators
 
@@ -33987,6 +33987,7 @@ components:
           - float
           - boolean
           - date
+          - datetime
           example: boolean
         options:
           type: array
@@ -38979,7 +38980,7 @@ components:
           - "^"
           - "$"
           description: |-
-            The accepted operators you can use to define how you want to search for the value. Operator support depends on the field's data type:
+            The accepted operators you can use to define how you want to search for the value. Operator support depends on the field's data type. The breakdown below is for Contacts search; the other search endpoints that share this schema accept a different set per field:
             - `string` fields: `=`, `!=`, `IN`, `NIN`, `~`, `!~`, `^`, `$`
             - `tag_id`: `=` and `!=` only. Every other operator returns an error.
             - `boolean` fields: `=`, `!=`, `IN`, `NIN`
