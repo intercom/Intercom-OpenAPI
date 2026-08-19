@@ -3816,14 +3816,14 @@ paths:
           Date fields (`created_at`, `updated_at`, and any Date custom attribute) do not support the `!=`, `>=`, or `<=` operators. Using them returns an error.
         {% /admonition %}
 
-        The table below shows the operators you can use to define how you want to search for the value. The operator should be put in as a string (`"="`). Which operators are valid depends on the field's type - see the "Valid Types" column below.
+        The table below shows the operators you can use to define how you want to search for the value. The operator should be put in as a string (`"="`). Which operators are valid depends on the field's type - see the "Valid Types" column below. Searching by `tag_id` supports only the `=` and `!=` operators.
 
         | Operator | Valid Types                        | Description                                                            |
         | :------- | :---------------------------------- | :----------------------------------------------------------------------|
         | =        | All                                  | Equals                                                                  |
         | !=       | All except Date                      | Doesn't Equal                                                           |
-        | IN       | All                                  | In<br>Shortcut for `OR` queries<br>Values must be in Array              |
-        | NIN      | All                                  | Not In<br>Shortcut for `OR !` queries<br>Values must be in Array        |
+        | IN       | All except Date and tag_id           | In<br>Shortcut for `OR` queries<br>Values must be in Array              |
+        | NIN      | All except Date and tag_id           | Not In<br>Shortcut for `OR !` queries<br>Values must be in Array        |
         | >        | Integer<br>Float<br>Date             | Greater than<br>On Date fields, matches from the start of the next day |
         | <        | Integer<br>Float<br>Date             | Lower than<br>On Date fields, matches before the start of the day      |
         | >=       | Integer<br>Float                     | Greater than or equal to<br>Not supported on Date fields               |
@@ -17323,7 +17323,7 @@ components:
             - `string` fields (including tags): `=`, `!=`, `IN`, `NIN`, `~`, `!~`, `^`, `$`
             - `boolean` fields: `=`, `!=`, `IN`, `NIN`
             - `integer` and `float` fields: `=`, `!=`, `IN`, `NIN`, `<`, `>`, `<=`, `>=`
-            - `date` fields (all standard timestamp attributes and date custom attributes): `=`, `IN`, `NIN`, `<`, `>` only. `!=`, `<=`, and `>=` are not supported and return an error.
+            - `date` fields (all standard timestamp attributes and date custom attributes): `=`, `<`, `>` only. `!=`, `<=`, `>=`, `IN`, and `NIN` are not supported and return an error.
           example: ">"
         value:
           oneOf:

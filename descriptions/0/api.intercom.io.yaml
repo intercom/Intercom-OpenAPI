@@ -9063,11 +9063,11 @@ paths:
 
         ### Searching for Timestamp Fields
 
-        All timestamp fields (created_at, updated_at etc.) and Date custom attributes are truncated to a calendar day for Contact Search queries; sub-day precision (hour, minute, second) is not supported. On Preview/Unstable, the day boundary is always UTC, regardless of your workspace's timezone.
-        Because the value is truncated to a day, `=` matches the whole UTC day, `>` matches from the start of the *next* UTC day (not from the instant you submitted), and `<` matches everything before the start of that UTC day. The `!=`, `>=`, and `<=` operators are not supported on Date fields and return an error.
-        For example, if you search for all Contacts with a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM UTC), that timestamp is truncated to 1577836800 (January 1st, 2020 12:00 AM UTC), and because `>` matches from the start of the next day, the search results include Contacts created from January 2nd, 2020 12:00 AM UTC onwards - not from 9:00 AM on January 1st.
-        If you'd like to get contacts created on January 1st, 2020 (UTC) you should search with a created_at value equal (=) to 1577836800 (January 1st, 2020 12:00 AM UTC).
-        This behaviour applies only to timestamps used in search queries. The search results will still contain the full UNIX timestamp and be sorted accordingly.
+        Standard timestamp fields (created_at, updated_at, last_seen_at etc.) are filtered on the exact second, in UTC. `=` matches only Contacts whose value is that exact second, and `>`, `<`, `>=` and `<=` compare against the exact instant you pass - the value is not rounded or truncated. These fields report a type of `datetime` on the Data Attributes endpoint.
+        Date custom attributes behave differently: they are still truncated to a whole calendar day, and the day boundary is always UTC regardless of your workspace's timezone. On a Date custom attribute, `=` matches the whole UTC day, `>` matches from the start of the *next* UTC day (not from the instant you submitted), and `<` matches everything before the start of that UTC day. The `!=`, `>=`, and `<=` operators are not supported on Date custom attributes and return an error.
+        For example, searching for a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM UTC) returns Contacts created after that exact instant. Passing the same value for a Date custom attribute truncates it to 1577836800 (January 1st, 2020 12:00 AM UTC), so the results include Contacts from January 2nd, 2020 12:00 AM UTC onwards.
+        Note that `!=` on a standard timestamp also matches Contacts that have no value set for that field.
+        Search results always contain the full UNIX timestamp and are sorted on the full value.
 
         ### Accepted Fields
 
@@ -9121,22 +9121,22 @@ paths:
 
         ### Accepted Operators
 
-        {% admonition type="warning" name="Operators not supported on Date fields" %}
-          Date fields (`created_at`, `updated_at`, and any Date custom attribute) do not support the `!=`, `>=`, or `<=` operators. Using them returns an error.
+        {% admonition type="warning" name="Operators not supported on Date custom attributes" %}
+          Date custom attributes do not support the `!=`, `>=`, or `<=` operators. Using them returns an error. Standard timestamp fields (`created_at`, `updated_at` etc.) do support these operators, and are filtered on the exact second.
         {% /admonition %}
 
-        The table below shows the operators you can use to define how you want to search for the value. The operator should be put in as a string (`"="`). Which operators are valid depends on the field's type - see the "Valid Types" column below.
+        The table below shows the operators you can use to define how you want to search for the value. The operator should be put in as a string (`"="`). Which operators are valid depends on the field's type - see the "Valid Types" column below. Searching by `tag_id` supports only the `=` and `!=` operators.
 
         | Operator | Valid Types                        | Description                                                            |
         | :------- | :---------------------------------- | :----------------------------------------------------------------------|
         | =        | All                                  | Equals                                                                  |
-        | !=       | All except Date                      | Doesn't Equal                                                           |
-        | IN       | All                                  | In<br>Shortcut for `OR` queries<br>Values must be in Array              |
-        | NIN      | All                                  | Not In<br>Shortcut for `OR !` queries<br>Values must be in Array        |
-        | >        | Integer<br>Float<br>Date             | Greater than<br>On Date fields, matches from the start of the next day |
-        | <        | Integer<br>Float<br>Date             | Lower than<br>On Date fields, matches before the start of the day      |
-        | >=       | Integer<br>Float                     | Greater than or equal to<br>Not supported on Date fields               |
-        | <=       | Integer<br>Float                     | Lower than or equal to<br>Not supported on Date fields                 |
+        | !=       | All except Date                      | Doesn't Equal<br>Also matches Contacts with no value set                |
+        | IN       | All except Date, Datetime and tag_id | In<br>Shortcut for `OR` queries<br>Values must be in Array              |
+        | NIN      | All except Date, Datetime and tag_id | Not In<br>Shortcut for `OR !` queries<br>Values must be in Array        |
+        | >        | Integer<br>Float<br>Datetime<br>Date | Greater than<br>On Date custom attributes, matches from the start of the next day |
+        | <        | Integer<br>Float<br>Datetime<br>Date | Lower than<br>On Date custom attributes, matches before the start of the day |
+        | >=       | Integer<br>Float<br>Datetime         | Greater than or equal to<br>Not supported on Date custom attributes    |
+        | <=       | Integer<br>Float<br>Datetime         | Lower than or equal to<br>Not supported on Date custom attributes      |
         | ~        | String                               | Contains                                                                |
         | !~       | String                               | Doesn't Contain                                                         |
         | ^        | String                               | Starts With                                                             |
@@ -38979,7 +38979,8 @@ components:
             - `string` fields (including tags): `=`, `!=`, `IN`, `NIN`, `~`, `!~`, `^`, `$`
             - `boolean` fields: `=`, `!=`, `IN`, `NIN`
             - `integer` and `float` fields: `=`, `!=`, `IN`, `NIN`, `<`, `>`, `<=`, `>=`
-            - `date` fields (all standard timestamp attributes and date custom attributes): `=`, `IN`, `NIN`, `<`, `>` only. `!=`, `<=`, and `>=` are not supported and return an error.
+            - `datetime` fields (standard contact timestamps such as `created_at` and `last_seen_at`): `=`, `!=`, `<`, `>`, `<=`, `>=`. Filtering is on the exact second, in UTC.
+            - `date` fields (Date custom attributes): `=`, `<`, `>` only. `!=`, `<=`, and `>=` are not supported and return an error. Values are truncated to a whole UTC day.
           example: ">"
         value:
           oneOf:
