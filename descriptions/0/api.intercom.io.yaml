@@ -21325,6 +21325,11 @@ paths:
                   admin_ids:
                   - 493881
                   - 493882
+                  admin_priority_level:
+                    primary_admin_ids:
+                    - 493881
+                    secondary_admin_ids:
+                    - 493882
             schema:
               "$ref": "#/components/schemas/update_team_members_request"
       responses:
@@ -21341,6 +21346,13 @@ paths:
                     admin_ids:
                     - 493881
                     - 493882
+                    admin_priority_level:
+                      primary_admin_ids:
+                      - 493881
+                      secondary_admin_ids:
+                      - 493882
+                    assignment_limit: 10
+                    distribution_method: load_balanced
               schema:
                 "$ref": "#/components/schemas/team"
         '400':
@@ -21361,8 +21373,24 @@ paths:
                     request_id: 1c9d6f0b-7a24-4b8e-9f31-3e5a2c6b8d70
                     errors:
                     - code: parameter_invalid
-                      message: Only admin_ids can be updated on a team, but the request
-                          changed name
+                      message: Only admin_ids and admin_priority_level can be updated
+                          on a team, but the request changed name
+                Priority level names someone off the team:
+                  value:
+                    type: error.list
+                    request_id: 0d3a7e51-9c62-4b18-8f74-6a2e5c1b9d38
+                    errors:
+                    - code: parameter_invalid
+                      message: admin_priority_level names 814865, which is on neither
+                          the team nor admin_ids
+                Priority level given twice:
+                  value:
+                    type: error.list
+                    request_id: 7f4b2a90-1e58-4c63-9a07-3d6f8b2e5c14
+                    errors:
+                    - code: parameter_invalid
+                      message: admin_priority_level gives 493881 more than one priority
+                          level
               schema:
                 "$ref": "#/components/schemas/error"
         '403':
@@ -26916,6 +26944,29 @@ components:
           nullable: true
           example:
           - 814865
+          items:
+            type: integer
+    admin_priority_level_request:
+      title: Admin Priority Level Request
+      type: object
+      nullable: true
+      description: The priority levels to set, naming only the teammates whose level
+        is being set
+      properties:
+        primary_admin_ids:
+          type: array
+          description: The ids of the teammates to make primary members of the team
+          nullable: true
+          example:
+          - 493881
+          items:
+            type: integer
+        secondary_admin_ids:
+          type: array
+          description: The ids of the teammates to make secondary members of the team
+          nullable: true
+          example:
+          - 493882
           items:
             type: integer
     admin_reply_conversation_request:
@@ -39352,6 +39403,16 @@ components:
             type: integer
         admin_priority_level:
           "$ref": "#/components/schemas/admin_priority_level"
+        assignment_limit:
+          type: integer
+          nullable: true
+          description: The assignment limit for the team. This field is only present when the team's distribution type is load balanced.
+          example: 10
+        distribution_method:
+          type: string
+          nullable: true
+          description: Describes how assignments are distributed among the team members
+          example: "round_robin"
     team_list:
       title: Team List
       type: object
@@ -40706,18 +40767,30 @@ components:
         the request completes, not a list of changes to apply. Any teammate currently
         on the team but absent from `admin_ids` is removed.
 
-        Membership is the only part of a team this endpoint writes, and the request is
-        read from the body: a parameter sent in the query string is rejected rather than
-        applied. A team read from the API can be sent back whole, since the other fields
-        of the representation are accepted as long as they are unchanged. Trying to
-        change one of them returns a 400 rather than being ignored, as does any field a
-        team does not have.
+        The team's members and their priority levels are the only parts of a team this
+        endpoint writes, and the request is read from the body: a parameter sent in the
+        query string is rejected rather than applied. A team read from the API can be sent
+        back whole, since the other fields of the representation are accepted as long as
+        they are unchanged. Trying to change one of them returns a 400 rather than being
+        ignored, as does any field a team does not have.
 
-        On a team that balances assignment across its members, teammates already on the
-        team keep their current priority level and teammates being added join as primary
-        members. Priority levels cannot be set here, so `admin_priority_level` follows
-        from `admin_ids`: it is accepted when sent back unchanged and returns a 400 when
-        the request tries to change it.
+        `admin_priority_level` sets which teammates take work first. It is optional, and
+        names only the teammates whose level the request is setting: a teammate it leaves
+        out keeps the level they already have, and one joining the team without a level
+        named becomes a primary member. A level named for a teammate the request removes is
+        ignored, so a team read from the API can still be sent back whole with only
+        `admin_ids` changed.
+
+        Naming an id that is on neither the team nor `admin_ids` returns a 400. So does
+        naming the same id at both levels, unless the team really does hold that teammate
+        at both: a read reports that shape, and sending it back settles them at a single
+        level rather than being refused.
+
+        Only a team whose `distribution_method` is `load_balanced` can have secondary
+        members, so `secondary_admin_ids` returns a 400 on any other team.
+        `primary_admin_ids` is accepted on every team, but a team that does not balance
+        assignment does not report `admin_priority_level` back and does not use the levels
+        to decide who work goes to.
       type: object
       title: Update Team Members Request Payload
       properties:
@@ -40730,6 +40803,8 @@ components:
           example:
           - 493881
           - 493882
+        admin_priority_level:
+          "$ref": "#/components/schemas/admin_priority_level_request"
       required:
       - admin_ids
     update_ticket_request:
