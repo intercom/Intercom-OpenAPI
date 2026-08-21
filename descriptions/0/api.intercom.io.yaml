@@ -39716,6 +39716,26 @@ components:
           type: boolean
           description: Whether or not the ticket part has been redacted.
           example: false
+        translations:
+          type: object
+          nullable: true
+          description: >-
+            A map of the reply text keyed by locale code. Only present on the
+            Preview API version and backs the `ticket.admin.replied.translated`
+            webhook topic. The special `original` key holds the source locale code
+            of the reply; every other key is a locale code whose value is the reply
+            text translated into that locale, as HTML in the same format as `body`.
+            The `body` field is unchanged and always
+            stays in the original source language. Available in the Preview API version
+            only (set `Intercom-Version: Preview`).
+          required:
+            - original
+          additionalProperties:
+            type: string
+          example:
+            original: en
+            en: <p>Hello</p>
+            fr: <p>Bonjour</p>
     ticket_request_custom_attributes:
       title: Ticket Attributes
       type: object
