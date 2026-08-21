@@ -12188,6 +12188,10 @@ paths:
                             name: Test tag
                         event_details:
                         app_package_code: null
+                        translations:
+                          original: en
+                          en: <p>Okay!</p>
+                          fr: "<p>D'accord!</p>"
                       - type: conversation_part
                         id: 2
                         part_type: custom_action_started
@@ -12393,6 +12397,10 @@ paths:
                             name: Test tag
                         event_details:
                         app_package_code: null
+                        translations:
+                          original: en
+                          en: <p>Okay!</p>
+                          fr: "<p>D'accord!</p>"
                       - type: conversation_part
                         id: 2
                         part_type: custom_action_started
@@ -14157,6 +14165,10 @@ paths:
                     attachments: []
                     external_id:
                     external_reply_send_state: sent
+                    translations:
+                      original: en
+                      en: "<p>Hello there!</p>"
+                      fr: "<p>Bonjour!</p>"
                 Mark part as seen:
                   value:
                     type: conversation_part
@@ -14176,6 +14188,10 @@ paths:
                     external_id:
                     seen_state:
                       admin_seen: true
+                    translations:
+                      original: en
+                      en: "<p>Hello there!</p>"
+                      fr: "<p>Bonjour!</p>"
               schema:
                 "$ref": "#/components/schemas/conversation_part"
         '401':
@@ -22415,6 +22431,26 @@ paths:
           content:
             application/json:
               examples:
+                Admin reply:
+                  value:
+                    type: ticket_part
+                    id: '155'
+                    part_type: comment
+                    body: "<p>Thanks for reaching out, we're looking into it!</p>"
+                    created_at: 1734537880
+                    updated_at: 1734537880
+                    author:
+                      id: '991267940'
+                      type: admin
+                      name: Ciaran418 Lee
+                      email: admin418@email.com
+                    attachments: []
+                    redacted: false
+                    app_package_code: test-integration
+                    translations:
+                      original: en
+                      en: "<p>Thanks for reaching out, we're looking into it!</p>"
+                      fr: "<p>Merci de nous avoir contactés, nous nous en occupons !</p>"
                 Admin note reply:
                   value:
                     type: ticket_part
@@ -32093,6 +32129,26 @@ components:
           nullable: true
           example: "test-integration"
           description: The app package code if this part was created via API. null if the part was not created via API.
+        translations:
+          type: object
+          nullable: true
+          description: >-
+            A map of the reply text keyed by locale code. Only present on the
+            Preview API version and backs the `conversation.admin.replied.translated`
+            webhook topic. The special `original` key holds the source locale code
+            of the reply; every other key is a locale code whose value is the reply
+            text translated into that locale, as HTML in the same format as `body`.
+            The `body` field is unchanged and always
+            stays in the original source language. Available in the Preview API version
+            only (set `Intercom-Version: Preview`).
+          required:
+            - original
+          additionalProperties:
+            type: string
+          example:
+            original: en
+            en: <p>Hello</p>
+            fr: <p>Bonjour</p>
     conversation_part_author:
       title: Conversation part author
       type: object
@@ -39718,6 +39774,26 @@ components:
           nullable: false
           example: text-integration
           description: The app package code if this part was created via API. Note this field won't show if the part was not created via API.
+        translations:
+          type: object
+          nullable: true
+          description: >-
+            A map of the reply text keyed by locale code. Only present on the
+            Preview API version and backs the `ticket.admin.replied.translated`
+            webhook topic. The special `original` key holds the source locale code
+            of the reply; every other key is a locale code whose value is the reply
+            text translated into that locale, as HTML in the same format as `body`.
+            The `body` field is unchanged and always
+            stays in the original source language. Available in the Preview API version
+            only (set `Intercom-Version: Preview`).
+          required:
+            - original
+          additionalProperties:
+            type: string
+          example:
+            original: en
+            en: <p>Hello</p>
+            fr: <p>Bonjour</p>
         updated_attribute_data:
           title: Updated Attribute
           type: object
@@ -39887,6 +39963,26 @@ components:
           type: boolean
           description: Whether or not the ticket part has been redacted.
           example: false
+        translations:
+          type: object
+          nullable: true
+          description: >-
+            A map of the reply text keyed by locale code. Only present on the
+            Preview API version and backs the `ticket.admin.replied.translated`
+            webhook topic. The special `original` key holds the source locale code
+            of the reply; every other key is a locale code whose value is the reply
+            text translated into that locale, as HTML in the same format as `body`.
+            The `body` field is unchanged and always
+            stays in the original source language. Available in the Preview API version
+            only (set `Intercom-Version: Preview`).
+          required:
+            - original
+          additionalProperties:
+            type: string
+          example:
+            original: en
+            en: <p>Hello</p>
+            fr: <p>Bonjour</p>
     ticket_request_custom_attributes:
       title: Ticket Attributes
       type: object
