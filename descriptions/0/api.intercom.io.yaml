@@ -16429,6 +16429,153 @@ paths:
                       message: Execution result not found
               schema:
                 "$ref": "#/components/schemas/error"
+  "/data_connectors/{data_connector_id}/health":
+    get:
+      summary: Retrieve health metrics for a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: data_connector_id
+        in: path
+        required: true
+        description: The unique identifier for the data connector.
+        schema:
+          type: string
+          example: '12345'
+      - name: start_ts
+        in: query
+        required: false
+        description: Unix timestamp for the start of the time range. Defaults to 7 days before `end_ts`.
+        schema:
+          type: integer
+      - name: end_ts
+        in: query
+        required: false
+        description: Unix timestamp for the end of the time range (default now).
+        schema:
+          type: integer
+      - name: bucket_size_minutes
+        in: query
+        required: false
+        description: Width of each interval in `time_series`, in minutes. Defaults to a width chosen to suit the requested range.
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 1440
+      tags:
+      - Data Connectors
+      operationId: getDataConnectorHealth
+      description: |
+        Retrieve aggregated execution health for a data connector: success rate, latency and payload size percentiles, a breakdown of HTTP statuses and failure reasons, and a time series over the requested range.
+
+        Metrics from the last 7 days are returned by default. Use `start_ts` and `end_ts` to set the range, which may span at most 14 days. How far back data is available depends on your workspace's data connector log retention.
+
+        Responses are cached briefly, so consecutive calls may return identical data.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: data_connector_health
+                    start_ts: 1755000000
+                    end_ts: 1755604800
+                    bucket_size_minutes: 34
+                    summary:
+                      total_executions: 1420
+                      success_rate: 0.9754
+                      overall_status: healthy
+                      external_latency_ms:
+                        p50: 120
+                        p90: 340
+                        p99: 890
+                      internal_latency_ms:
+                        p50: 18
+                        p90: 42
+                        p99: 96
+                      response_payload_size_bytes:
+                        p50: 2048
+                        p90: 8192
+                        p99: 20480
+                      http_status_distribution:
+                      - http_status: 200
+                        count: 1385
+                      - http_status: 500
+                        count: 35
+                      failure_types_distribution:
+                      - error_type: faraday_error
+                        count: 22
+                      - error_type: response_mapping_error
+                        count: 13
+                    time_series:
+                    - bucket_start: 1755000000
+                      execution_count: 12
+                      external_latency_avg_ms: 133
+                      external_latency_max_ms: 402
+                      internal_latency_avg_ms: 21
+                      internal_latency_max_ms: 58
+              schema:
+                "$ref": "#/components/schemas/data_connector_health"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Inverted time range:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: end_ts must not be before start_ts
+                Time range too long:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: the requested window may not exceed 336 hours
+                Invalid bucket size:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: bucket_size_minutes must be between 1 and 1440
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Data connector not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/ecommerce/connectors/{id}/catalog":
     post:
       summary: Upload a product catalog
@@ -32999,6 +33146,168 @@ components:
                   type: string
                   description: The cursor value to use for the next page.
                   example: WzE3MDc1OTQ3MTUuMCw5OTAwMF0=
+    data_connector_health:
+      title: Data Connector Health
+      type: object
+      x-tags:
+      - Data Connectors
+      description: Aggregated execution health for a data connector over a time range.
+      properties:
+        type:
+          type: string
+          description: The type of object - `data_connector_health`.
+          enum:
+          - data_connector_health
+          example: data_connector_health
+        start_ts:
+          type: integer
+          description: Unix timestamp marking the start of the time range this report covers.
+          example: 1755000000
+        end_ts:
+          type: integer
+          description: Unix timestamp marking the end of the time range this report covers.
+          example: 1755604800
+        bucket_size_minutes:
+          type: integer
+          description: The width, in minutes, of each interval in `time_series`.
+          example: 34
+        summary:
+          "$ref": "#/components/schemas/data_connector_health_summary"
+        time_series:
+          type: array
+          description: Intervals covering the requested time range, ordered oldest first. An interval with no executions is omitted rather than returned with zero counts.
+          items:
+            "$ref": "#/components/schemas/data_connector_health_time_series_point"
+    data_connector_health_summary:
+      title: Data Connector Health Summary
+      type: object
+      x-tags:
+      - Data Connectors
+      description: Aggregate health metrics for the requested time range.
+      properties:
+        total_executions:
+          type: integer
+          description: The total number of executions in the requested time range.
+          example: 1420
+        success_rate:
+          type: number
+          description: The proportion of executions that completed successfully, as a decimal between 0.0 and 1.0.
+          example: 0.9754
+        overall_status:
+          type: string
+          nullable: true
+          description: A high-level health signal for the requested time range. This is an advisory heuristic that Intercom may retune, not a stable classification - build on `success_rate` and the latency percentiles if you need consistent behaviour across changes. Null when the range contains no executions.
+          enum:
+          - healthy
+          - degraded
+          - unhealthy
+          example: healthy
+        external_latency_ms:
+          description: Latency percentiles, in milliseconds, for time spent waiting on the external service this connector calls.
+          allOf:
+          - "$ref": "#/components/schemas/data_connector_health_percentiles"
+        internal_latency_ms:
+          description: Latency percentiles, in milliseconds, for time Intercom spent processing each execution, excluding time spent waiting on the external service.
+          allOf:
+          - "$ref": "#/components/schemas/data_connector_health_percentiles"
+        response_payload_size_bytes:
+          description: Response payload size percentiles, in bytes, for the external service's responses.
+          allOf:
+          - "$ref": "#/components/schemas/data_connector_health_percentiles"
+        http_status_distribution:
+          type: array
+          description: A breakdown of executions by the HTTP status code returned, ordered by status code ascending.
+          items:
+            "$ref": "#/components/schemas/data_connector_health_status_count"
+        failure_types_distribution:
+          type: array
+          description: A breakdown of failed executions by failure reason, ordered by count descending.
+          items:
+            "$ref": "#/components/schemas/data_connector_health_failure_count"
+    data_connector_health_percentiles:
+      title: Data Connector Health Percentiles
+      type: object
+      x-tags:
+      - Data Connectors
+      description: Percentile values computed over successful executions. Each is null when no successful execution in the range carried the measurement.
+      properties:
+        p50:
+          type: integer
+          nullable: true
+          description: The 50th percentile (median) value.
+          example: 120
+        p90:
+          type: integer
+          nullable: true
+          description: The 90th percentile value.
+          example: 340
+        p99:
+          type: integer
+          nullable: true
+          description: The 99th percentile value.
+          example: 890
+    data_connector_health_status_count:
+      title: Data Connector Health Status Count
+      type: object
+      x-tags:
+      - Data Connectors
+      description: The number of executions that received a given HTTP status code.
+      properties:
+        http_status:
+          type: integer
+          description: The HTTP status code returned by the external service.
+          example: 200
+        count:
+          type: integer
+          description: The number of executions that received this status code.
+          example: 1385
+    data_connector_health_failure_count:
+      title: Data Connector Health Failure Count
+      type: object
+      x-tags:
+      - Data Connectors
+      description: The number of executions that failed for a given reason.
+      properties:
+        error_type:
+          type: string
+          nullable: true
+          description: A machine-readable failure reason, using the same vocabulary as the `error_type` field and filter on the execution results endpoint - a value returned here can be used directly as that filter. Null when the failed execution carried no recorded reason.
+          example: faraday_error
+        count:
+          type: integer
+          description: The number of executions that failed for this reason.
+          example: 22
+    data_connector_health_time_series_point:
+      title: Data Connector Health Time Series Point
+      type: object
+      x-tags:
+      - Data Connectors
+      description: Execution metrics for one interval of the requested time range.
+      properties:
+        bucket_start:
+          type: integer
+          description: Unix timestamp marking the start of this interval.
+          example: 1755000000
+        execution_count:
+          type: integer
+          description: The number of executions in this interval.
+          example: 12
+        external_latency_avg_ms:
+          type: integer
+          description: The average time, in milliseconds, spent waiting on the external service across executions in this interval.
+          example: 133
+        external_latency_max_ms:
+          type: integer
+          description: The highest time, in milliseconds, spent waiting on the external service in this interval.
+          example: 402
+        internal_latency_avg_ms:
+          type: integer
+          description: The average time, in milliseconds, Intercom spent processing executions in this interval.
+          example: 21
+        internal_latency_max_ms:
+          type: integer
+          description: The highest time, in milliseconds, Intercom spent processing an execution in this interval.
+          example: 58
     data_connector_list:
       title: Data Connector List
       type: object
