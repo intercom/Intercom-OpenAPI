@@ -25107,8 +25107,9 @@ paths:
 
         Unlike a conversation, `/fin/ask` is non-conversational: Fin will not ask follow-up
         questions, will not run procedures, and will not escalate to a human on its own. You can
-        still escalate one yourself with `POST /fin/escalate`; the ask conversation stays closed
-        and the handoff is routed separately.
+        still escalate one yourself with `POST /fin/escalate`; the ask conversation is already
+        closed after its one-shot answer, and escalation leaves it closed while routing the
+        handoff separately.
 
         Fin's answer is delivered asynchronously via the `fin_replied` event. The conversation
         ends with a `complete` status — there is no `awaiting_user_reply` cycle.
@@ -25666,9 +25667,9 @@ paths:
 
         - `conversation_id` — escalate an existing agent conversation, including one started
           with `/fin/ask`. On the Intercom Helpdesk, Fin by default summarises the conversation
-          and opens a new Helpdesk conversation that carries the summary as an internal note;
-          the original agent conversation is not reassigned or closed. Configure an escalation
-          Operator Workflow to change this default.
+          and opens a new Helpdesk conversation that carries the summary as an internal note.
+          Escalation does not change the original agent conversation's assignment or open/closed
+          state. Configure an escalation Operator Workflow to change this default.
         - `user` — escalate on behalf of a user with no prior agent conversation. On the Intercom
           Helpdesk, a new Helpdesk conversation is created for the teammate. Not supported on Fin
           for Platforms — see below.
