@@ -683,13 +683,16 @@ paths:
             properties:
               team_id:
                 type: integer
+                example: 789
               assignee_id:
                 type: integer
+                example: 456
       tags:
       - Admins
       operationId: removeAdmin
       description: |-
         You can remove a single admin (teammate) from your workspace.
+        Requires the `remove_admins` OAuth scope.
 
         This removes the admin's access to the workspace and reassigns their
         work — auto-messages, ownership, article authorship, and conversation
@@ -711,14 +714,17 @@ paths:
                   id:
                     type: string
                     description: The unique identifier of the removed admin.
+                    example: '123'
                   object:
                     type: string
                     enum: [admin]
+                    example: admin
                   removed:
                     type: string
                     description: Whether the admin was removed. Returned as the
                       string `"true"`.
                     enum: ['true']
+                    example: 'true'
         '404':
           description: Admin not found
           content:
