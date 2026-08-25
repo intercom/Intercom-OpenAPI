@@ -32085,6 +32085,16 @@ components:
           nullable: true
           description: The id of the admin that was assigned the conversation by this
             conversation_part (null if there has been no change in assignment.)
+        team_assigned_to:
+          "$ref": "#/components/schemas/reference"
+          nullable: true
+          description: The team that this conversation_part assigned the conversation
+            to, when the part changed the team (null if the part did not change the
+            team). A part can assign a team and a teammate at the same time, for
+            example when the team uses Round Robin distribution and the teammate is
+            resolved inline. In that case assigned_to reports the teammate and this
+            field reports the team. When the part removed the team, type is
+            nobody_team and id is null.
         author:
           "$ref": "#/components/schemas/conversation_part_author"
         attachments:
@@ -39754,6 +39764,15 @@ components:
           nullable: true
           description: The id of the admin that was assigned the ticket by this ticket_part
             (null if there has been no change in assignment.)
+        team_assigned_to:
+          "$ref": "#/components/schemas/reference"
+          nullable: true
+          description: The team that this ticket_part assigned the ticket to, when the
+            part changed the team (null if the part did not change the team). A part
+            can assign a team and a teammate at the same time, for example when the
+            team uses Round Robin distribution and the teammate is resolved inline.
+            In that case assigned_to reports the teammate and this field reports the
+            team. When the part removed the team, type is nobody_team and id is null.
         author:
           "$ref": "#/components/schemas/ticket_part_author"
         attachments:
