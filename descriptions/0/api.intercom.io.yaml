@@ -623,6 +623,161 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/admins/remove":
+    delete:
+      summary: Remove an admin
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: admin_id
+        in: query
+        required: true
+        description: The unique identifier of the admin to remove.
+        example: 123
+        schema:
+          type: integer
+      - name: reassign_messages_admin_id
+        in: query
+        required: false
+        description: The unique identifier of a human admin to reassign the removed
+          admin's auto-message ownership to.
+        example: 456
+        schema:
+          type: integer
+      - name: reassign_owner_admin_id
+        in: query
+        required: false
+        description: The unique identifier of a human admin to reassign the removed
+          admin's ownership (of users and leads) to.
+        example: 456
+        schema:
+          type: integer
+      - name: reassign_articles_author_id
+        in: query
+        required: false
+        description: The unique identifier of a human admin to reassign the removed
+          admin's article authorship to.
+        example: 456
+        schema:
+          type: integer
+      - name: reassign_conversations_admin_id
+        in: query
+        required: false
+        description: The unique identifier of a human admin with Inbox access to
+          reassign the removed admin's conversation replies to. Pass `0` to leave
+          conversations unassigned.
+        example: 456
+        schema:
+          type: integer
+      - name: reassign_replies_teams
+        in: query
+        required: false
+        description: A list of teams and the admin each team's conversation replies
+          should be reassigned to.
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              team_id:
+                type: integer
+              assignee_id:
+                type: integer
+      tags:
+      - Admins
+      operationId: removeAdmin
+      description: |-
+        You can remove a single admin (teammate) from your workspace.
+
+        This removes the admin's access to the workspace and reassigns their
+        work — auto-messages, ownership, article authorship, and conversation
+        replies — to the admins named by the `reassign_*` parameters.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    id: '123'
+                    object: admin
+                    removed: 'true'
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The unique identifier of the removed admin.
+                  object:
+                    type: string
+                    enum: [admin]
+                  removed:
+                    type: string
+                    description: Whether the admin was removed. Returned as the
+                      string `"true"`.
+                    enum: ['true']
+        '404':
+          description: Admin not found
+          content:
+            application/json:
+              examples:
+                Admin not found:
+                  value:
+                    type: error.list
+                    request_id: efcd0531-798b-4c22-bccd-68877ed7faa4
+                    errors:
+                    - code: admin_not_found
+                      message: "Admin for admin_id not found"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '405':
+          description: Method Not Allowed. Returned when `admin_id`, or one of
+            the `reassign_*_admin_id` parameters, refers to a bot or a team rather
+            than a human admin.
+          content:
+            application/json:
+              examples:
+                Method Not Allowed:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: action_forbidden
+                      message: "This method is not allowed for this type of Admin
+                        for admin_id"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden. Returned when `reassign_conversations_admin_id`
+            refers to an admin without Inbox access for the workspace.
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: action_forbidden
+                      message: "The admin for reassign_conversations_admin_id does
+                        not have Inbox access permissions"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e76b2df0-2413-4215-8a5a-b5f6ebd4e642
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/ai/content_import_sources":
     get:
       summary: List content import sources
