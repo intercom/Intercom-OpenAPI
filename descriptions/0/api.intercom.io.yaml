@@ -32089,16 +32089,19 @@ components:
           type: integer
           nullable: true
           description: The id of the teammate that this conversation_part assigned the
-            conversation to. Null or absent when the part did not assign a teammate, and
-            0 when the part removed the teammate.
+            conversation to, or 0 if the part removed the teammate. Null or absent when
+            the part did not change the teammate, including an unassignment that did not
+            name which assignee it cleared. A bot is reported here, because assignment
+            treats anything that is not a team as a teammate.
         team_assignee_id:
           type: integer
           nullable: true
           description: The id of the team that this conversation_part assigned the
-            conversation to. Null or absent when the part did not assign a team, and 0
-            when the part removed the team. A part can assign a team and a teammate at
-            the same time, for example when the team uses Round Robin distribution and
-            the teammate is resolved inline. In that case assigned_to reports only the
+            conversation to, or 0 if the part removed the team. Null or absent when the
+            part did not change the team, including an unassignment that did not name
+            which assignee it cleared. A part can assign a team and a teammate at the
+            same time, for example when the team uses Round Robin distribution and the
+            teammate is resolved inline. In that case assigned_to reports only the
             teammate, and these two fields report each assignee separately.
         author:
           "$ref": "#/components/schemas/conversation_part_author"
@@ -39773,15 +39776,18 @@ components:
           type: integer
           nullable: true
           description: The id of the teammate that this ticket_part assigned the ticket
-            to. Null or absent when the part did not assign a teammate, and 0 when the
-            part removed the teammate.
+            to, or 0 if the part removed the teammate. Null or absent when the part did
+            not change the teammate, including an unassignment that did not name which
+            assignee it cleared. A bot is reported here, because assignment treats
+            anything that is not a team as a teammate.
         team_assignee_id:
           type: integer
           nullable: true
-          description: The id of the team that this ticket_part assigned the ticket to.
-            Null or absent when the part did not assign a team, and 0 when the part
-            removed the team. A part can assign a team and a teammate at the same time,
-            for example when the team uses Round Robin distribution and the teammate is
+          description: The id of the team that this ticket_part assigned the ticket to,
+            or 0 if the part removed the team. Null or absent when the part did not
+            change the team, including an unassignment that did not name which assignee
+            it cleared. A part can assign a team and a teammate at the same time, for
+            example when the team uses Round Robin distribution and the teammate is
             resolved inline. In that case assigned_to reports only the teammate, and
             these two fields report each assignee separately.
         author:
