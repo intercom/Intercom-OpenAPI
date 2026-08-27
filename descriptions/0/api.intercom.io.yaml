@@ -34115,19 +34115,61 @@ components:
           example: 0
         pages:
           "$ref": "#/components/schemas/cursor_pages"
+    ai_topic_subtopic_list:
+      title: AI Topic and Subtopic
+      type: array
+      description: The topics Fin detected in a conversation, returned under the "AI
+        Topic and Subtopic" key of a conversation's custom attributes.
+      items:
+        type: object
+        properties:
+          topic_name:
+            type: string
+            description: The name of the topic.
+            example: Billing
+          subtopic_name:
+            type: string
+            nullable: true
+            description: The name of the subtopic, where the topic has one.
+            example: Refund request
+          id:
+            type: integer
+            nullable: true
+            description: The unique identifier for the subtopic.
+            example: 12345
+    cx_score_reason_list:
+      title: CX Score reasons
+      type: array
+      description: The reasons behind a conversation's CX Score, returned under the
+        "CX Score reasons" key of a conversation's custom attributes.
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            description: The name of the reason.
+            example: Resolution speed
+          value:
+            type: string
+            description: The value recorded for the reason.
+            example: Fast
     custom_attributes:
       title: Custom Attributes
       type: object
       description: An object containing the different custom attributes associated
         to the conversation as key-value pairs. For relationship attributes the value
         will be a list of custom object instance models. System-defined attributes
-        such as "CX Score rating" and "CX Score explanation" may also be included.
+        such as "CX Score rating" and "CX Score explanation" may also be included,
+        as may the AI insights attributes "AI Topic and Subtopic" and "CX Score reasons",
+        whose values are lists of objects.
       additionalProperties:
         anyOf:
         - type: string
         - type: integer
         - $ref: "#/components/schemas/datetime"
         - "$ref": "#/components/schemas/custom_object_instance_list"
+        - "$ref": "#/components/schemas/ai_topic_subtopic_list"
+        - "$ref": "#/components/schemas/cx_score_reason_list"
       example:
         paid_subscriber: true
         monthly_spend: 155.5
@@ -34137,6 +34179,13 @@ components:
         CX Score rating: 4
         CX Score explanation: The conversation was resolved quickly and the customer
           expressed satisfaction with the outcome.
+        AI Topic and Subtopic:
+        - topic_name: Billing
+          subtopic_name: Refund request
+          id: 12345
+        CX Score reasons:
+        - name: Resolution speed
+          value: Fast
     custom_object_instance:
       title: Custom Object Instance
       type: object
