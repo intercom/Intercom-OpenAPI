@@ -33769,7 +33769,7 @@ components:
             continue the conversation in the Messenger.
           example: "+1 1234567890"
         custom_attributes:
-          "$ref": "#/components/schemas/custom_attributes"
+          "$ref": "#/components/schemas/custom_attributes_request"
       required:
       - phone
     create_ticket_reply_with_comment_request:
@@ -34162,11 +34162,12 @@ components:
       type: object
       description: An object containing the different custom attributes associated
         to the conversation as key-value pairs. For relationship attributes the value
-        will be a list of custom object instance models. System-defined attributes
-        such as "CX Score rating" and "CX Score explanation" may also be included,
-        as may the AI insights attributes "AI Topic and Subtopic" and "CX Score reasons",
-        whose values are lists of objects. The AI insights attributes are generated
-        by Fin and appear in responses only; they cannot be set on a request.
+        will be a list of custom object instance models. AI insights attributes that
+        Intercom generates — such as "CX Score rating", "CX Score explanation", "AI
+        Topic and Subtopic" and "CX Score reasons" — may also be included. Two of
+        them, "AI Topic and Subtopic" and "CX Score reasons", carry lists of objects
+        as their values, and are returned in responses only — they cannot be set on
+        a write request.
       additionalProperties:
         anyOf:
         - type: string
@@ -34191,6 +34192,25 @@ components:
         CX Score reasons:
         - name: Resolution speed
           value: Fast
+    custom_attributes_request:
+      title: Custom Attributes (write)
+      type: object
+      description: An object containing the custom attributes to set on the conversation
+        as key-value pairs. For relationship attributes the value should be a list
+        of custom object instance models. Only attributes a caller may set are accepted
+        here — attributes Intercom generates are returned in responses only.
+      additionalProperties:
+        anyOf:
+        - type: string
+        - type: integer
+        - $ref: "#/components/schemas/datetime"
+        - "$ref": "#/components/schemas/custom_object_instance_list"
+      example:
+        paid_subscriber: true
+        monthly_spend: 155.5
+        team_mates: 9
+        start_date_iso8601: "2023-03-04T09:46:14Z"
+        end_date_timestamp: 1677923174
     custom_object_instance:
       title: Custom Object Instance
       type: object
@@ -41074,7 +41094,7 @@ components:
             Defaults to Operator when omitted, and is only used alongside priority.
           example: '394051'
         custom_attributes:
-          "$ref": "#/components/schemas/custom_attributes"
+          "$ref": "#/components/schemas/custom_attributes_request"
         company_id:
           type: string
           description: The ID of the company that the conversation is associated with.
