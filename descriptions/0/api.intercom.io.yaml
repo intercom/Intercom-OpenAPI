@@ -14173,6 +14173,8 @@ paths:
                         assigned_to:
                           type: admin
                           id: '991267715'
+                        admin_assignee_id: 991267715
+                        team_assignee_id: 5017691
                         author:
                           id: '991267715'
                           type: admin
@@ -23718,6 +23720,8 @@ paths:
                         assigned_to:
                           type: admin
                           id: '991268013'
+                        admin_assignee_id: 991268013
+                        team_assignee_id: null
                         author:
                           id: '991268011'
                           type: admin
@@ -32321,6 +32325,26 @@ components:
           nullable: true
           description: The id of the admin that was assigned the conversation by this
             conversation_part (null if there has been no change in assignment.)
+        admin_assignee_id:
+          type: integer
+          nullable: true
+          description: The id of the teammate that this conversation_part assigned the
+            conversation to, or 0 if the part removed the teammate. Null or absent when
+            the part did not change the teammate, including an unassignment that did not
+            name which assignee it cleared. A bot is reported here, because assignment
+            treats anything that is not a team as a teammate.
+          example: 991267715
+        team_assignee_id:
+          type: integer
+          nullable: true
+          description: The id of the team that this conversation_part assigned the
+            conversation to, or 0 if the part removed the team. Null or absent when the
+            part did not change the team, including an unassignment that did not name
+            which assignee it cleared. A part can assign a team and a teammate at the
+            same time, for example when the team uses Round Robin distribution and the
+            teammate is resolved inline. In that case assigned_to reports only the
+            teammate, and these two fields report each assignee separately.
+          example: 5017691
         author:
           "$ref": "#/components/schemas/conversation_part_author"
         attachments:
@@ -40013,6 +40037,26 @@ components:
           nullable: true
           description: The id of the admin that was assigned the ticket by this ticket_part
             (null if there has been no change in assignment.)
+        admin_assignee_id:
+          type: integer
+          nullable: true
+          description: The id of the teammate that this ticket_part assigned the ticket
+            to, or 0 if the part removed the teammate. Null or absent when the part did
+            not change the teammate, including an unassignment that did not name which
+            assignee it cleared. A bot is reported here, because assignment treats
+            anything that is not a team as a teammate.
+          example: 991268013
+        team_assignee_id:
+          type: integer
+          nullable: true
+          description: The id of the team that this ticket_part assigned the ticket to,
+            or 0 if the part removed the team. Null or absent when the part did not
+            change the team, including an unassignment that did not name which assignee
+            it cleared. A part can assign a team and a teammate at the same time, for
+            example when the team uses Round Robin distribution and the teammate is
+            resolved inline. In that case assigned_to reports only the teammate, and
+            these two fields report each assignee separately.
+          example: 5017691
         author:
           "$ref": "#/components/schemas/ticket_part_author"
         attachments:
