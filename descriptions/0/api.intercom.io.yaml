@@ -17246,7 +17246,12 @@ paths:
                     - leads
                     execution_type: server_side
                     configuration_response_type: test_response_type
-                    data_transformation_type:
+                    data_transformation_type: code_block_transformation
+                    transform_code_block:
+                      code: |
+                        def transform(response):
+                            return {"status": response["order_status"]}
+                      language: python
                     client_function_name:
                     client_function_timeout_ms:
                     data_inputs:
@@ -17461,6 +17466,7 @@ paths:
                     execution_type: server_side
                     configuration_response_type: test_response_type
                     data_transformation_type:
+                    transform_code_block:
                     client_function_name:
                     client_function_timeout_ms:
                     data_inputs:
@@ -35295,6 +35301,25 @@ components:
           - full_access
           - redacted_access
           - code_block_transformation
+        transform_code_block:
+          type: object
+          nullable: true
+          description: |
+            The code block used to transform the connector's response when `data_transformation_type` is
+            `code_block_transformation`. Omitted if the connector has no transform code block configured.
+          properties:
+            code:
+              type: string
+              description: The source code of the transform code block.
+              example: |
+                def transform(response):
+                    return {"status": response["order_status"]}
+            language:
+              type: string
+              description: The programming language of the transform code block.
+              enum:
+              - python
+              example: python
         client_function_name:
           type: string
           nullable: true
