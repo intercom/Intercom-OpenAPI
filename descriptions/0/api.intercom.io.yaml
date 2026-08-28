@@ -23801,6 +23801,34 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Teammate without Inbox access:
+                  value:
+                    type: error.list
+                    request_id: 8e4a1ee0-2a4c-4a9f-9c3f-1c2b6d7e5f01
+                    errors:
+                    - code: action_forbidden
+                      message: This admin does not have Inbox access permissions
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                Unrecognised priority level:
+                  value:
+                    type: error.list
+                    request_id: 3f6c9b21-7d58-4e0a-8b44-5a9e2c1d7b03
+                    errors:
+                    - code: parameter_invalid
+                      message: 'priority must be one of: none, low, medium, high, urgent'
+              schema:
+                "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
@@ -23824,6 +23852,7 @@ paths:
                   open: true
                   snoozed_until: 1673609604
                   ticket_state_id: 8498
+                  priority: high
               admin_not_found:
                 summary: Admin not found
                 value:
@@ -41297,6 +41326,18 @@ components:
           description: The ID of the admin or team to which the ticket is assigned.
             Set this 0 to unassign it.
           example: '123'
+        priority:
+          type: string
+          enum:
+          - none
+          - low
+          - medium
+          - high
+          - urgent
+          description: The priority level to set on the ticket. Accepts one of none,
+            low, medium, high, or urgent. Set none to clear an existing priority. The
+            change is attributed to admin_id, or to Operator when admin_id is omitted.
+          example: high
     update_ticket_type_attribute_request:
       description: You can update a Ticket Type Attribute
       type: object
