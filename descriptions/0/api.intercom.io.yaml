@@ -1995,7 +1995,7 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/update_article_request"
+              "$ref": "#/components/schemas/stage_article_draft_request_body"
             examples:
               Draft staged:
                 summary: Stage a draft
@@ -40760,6 +40760,137 @@ components:
           example:
           - en
           - fr
+    stage_article_draft_request_body:
+      description: You can Stage a Draft for an Article
+      type: object
+      title: Stage Article Draft Request Payload
+      nullable: true
+      properties:
+        title:
+          type: string
+          description: The title of the article.For multilingual articles, this will
+            be the title of the default language's content.
+          example: Thanks for everything
+        description:
+          type: string
+          description: The description of the article. For multilingual articles,
+            this will be the description of the default language's content.
+          example: Description of the Article
+        body:
+          type: string
+          description: The content of the article in HTML. For multilingual articles, this
+            will be the body of the default language's content. Mutually exclusive with `body_markdown`.
+          example: "<p>This is the body in html</p>"
+        body_markdown:
+          type: string
+          description: The content of the article in markdown. For multilingual articles, this
+            will be the body of the default language's content. An alternative to `body` — you
+            can provide content as markdown instead of HTML. Mutually exclusive with `body`.
+          example: "## Updated heading\n\nNew content.\n"
+        author_id:
+          type: integer
+          description: The id of the author of the article. For multilingual articles,
+            this will be the id of the author of the default language's content. Must
+            be a teammate on the help center's workspace.
+          example: 1295
+        state:
+          type: string
+          description: Whether the article will be `published` or will be a `draft`.
+            Omitting this field leaves the publish state unchanged, so a draft stays
+            a draft and an edit to a published article goes live immediately unless
+            that article already has a pending draft or a scheduled publish time is
+            set in the same request. The `PUT /articles/{id}/draft` endpoint ignores
+            this field and always stages a draft. For multilingual articles, this
+            will be the state of the default language's content.
+          enum:
+          - published
+          - draft
+          example: draft
+        parent_id:
+          type: string
+          description: The id of the article's parent collection or section. An article
+            without this field stands alone.
+          example: '18'
+        parent_type:
+          type: string
+          description: The type of parent, which can either be a `collection` or `section`.
+          example: collection
+        parent_ids:
+          type: array
+          description: The ids of the parent collections to place this article in.
+            Send an empty array to remove the article from all collections. When
+            provided, this takes precedence over `parent_id` and `parent_type`.
+          items:
+            type: integer
+          example:
+          - 18
+          - 19
+        translated_content:
+          "$ref": "#/components/schemas/article_translated_content"
+        folder_id:
+          type: integer
+          nullable: true
+          description: The ID of the folder to place this article in, or null to remove it from its folder.
+          example: 6
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to assign to this article for Fin AI Agent targeting.
+            Sending a top-level `audience_ids` broadcasts the same set to every locale.
+            Sending `audience_ids: []` clears all audience memberships from every locale.
+            For per-locale targeting, use `translated_content.<locale>.audience_ids` instead.
+            Sending both top-level and per-locale in the same request causes top-level to win.
+            Unknown audience IDs return a 404 error. No partial commit occurs.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
+        ai_chatbot_availability:
+          type: boolean
+          description: Whether the article should be available for AI Chatbot (Fin).
+            For multilingual articles, this sets the default language's availability.
+          example: true
+        ai_copilot_availability:
+          type: boolean
+          description: Whether the article should be available for AI Copilot. For
+            multilingual articles, this sets the default language's availability.
+          example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the article should be available for AI Sales Agent.
+            For multilingual articles, this sets the default language's availability.
+          example: true
+        scheduled_publish_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            ISO 8601 timestamp at which to schedule a future publish of the article.
+            When set together with `state: "published"`, the article is scheduled
+            instead of published immediately. Setting `null` cancels a pending
+            publish schedule. Timestamps in the past or equal to the current time
+            are rejected with 400 `parameter_invalid` — the value must be strictly
+            in the future. Combining with `state: "draft"` returns 400
+            `parameter_invalid`. Sending in the same request as
+            `scheduled_unpublish_at` returns 400 — only one pending schedule per
+            article. Empty string returns 400 `parameter_invalid`.
+          example: '2026-12-31T09:00:00Z'
+        scheduled_unpublish_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            ISO 8601 timestamp at which to schedule a future unpublish of the article.
+            Setting `null` cancels a pending unpublish schedule. Timestamps in the
+            past or equal to the current time are rejected with 400
+            `parameter_invalid` — the value must be strictly in the future. Rejected
+            with 400 `parameter_invalid` if the article has never been published.
+            Sending in the same request as `scheduled_publish_at` returns 400 — only
+            one pending schedule per article. Empty string returns 400
+            `parameter_invalid`.
+          example: '2026-12-31T17:00:00Z'
     update_article_request:
       description: You can Update an Article
       type: object
