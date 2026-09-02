@@ -5971,7 +5971,7 @@ paths:
                     - type: user
                       id: 6657accd6abd0166b52ae296
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_customers_response"
         '404':
           description: Not found
           content:
@@ -6076,7 +6076,7 @@ paths:
                     - type: user
                       id: 6657acdb6abd0166b52ae2a2
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_customers_response"
         '404':
           description: Contact not found
           content:
@@ -11937,6 +11937,31 @@ components:
                 "$ref": "#/components/schemas/customer_request"
             required:
             - email
+    conversation_customers_response:
+      title: Conversation Customers Response
+      type: object
+      description: The contacts participating in the conversation, returned after
+        attaching or detaching a contact
+      properties:
+        customers:
+          type: array
+          description: The contacts participating in the conversation after the change
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: The role of the contact. Can be "user", "lead", or "visitor"
+                example: 'user'
+              id:
+                type: string
+                description: The unique identifier for the contact
+                example: '6762f1a61bb69f9f2193bbd8'
+            required:
+            - type
+            - id
+      required:
+      - customers
     close_conversation_request:
       title: Close Conversation Request
       type: object

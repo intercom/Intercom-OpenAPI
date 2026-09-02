@@ -8382,7 +8382,7 @@ paths:
                     - type: user
                       id: 6762f19b1bb69f9f2193bbd4
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_customers_response"
         '404':
           description: Not found
           content:
@@ -8487,7 +8487,7 @@ paths:
                     - type: user
                       id: 6762f1b41bb69f9f2193bbe0
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_customers_response"
         '404':
           description: Contact not found
           content:
@@ -16636,6 +16636,31 @@ components:
                 "$ref": "#/components/schemas/customer_request"
             required:
             - email
+    conversation_customers_response:
+      title: Conversation Customers Response
+      type: object
+      description: The contacts participating in the conversation, returned after
+        attaching or detaching a contact
+      properties:
+        customers:
+          type: array
+          description: The contacts participating in the conversation after the change
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: The role of the contact. Can be "user", "lead", or "visitor"
+                example: 'user'
+              id:
+                type: string
+                description: The unique identifier for the contact
+                example: '6762f1a61bb69f9f2193bbd8'
+            required:
+            - type
+            - id
+      required:
+      - customers
     brand:
       type: object
       title: Brand
