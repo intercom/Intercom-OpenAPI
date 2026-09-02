@@ -8385,6 +8385,110 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/contacts/deleted":
+    get:
+      summary: List deleted contacts
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: per_page
+        in: query
+        description: The number of results per page. Defaults to `10`, with a maximum
+          of `150`.
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 10
+          maximum: 150
+      - name: page
+        in: query
+        description: The page of results to fetch. Defaults to `1`.
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      tags:
+      - Contacts
+      operationId: listDeletedContacts
+      description: |
+        Fetch a paginated list of the contacts in your workspace that are no longer active,
+        so you can recover ones whose `id`, `email`, or `external_id` you no longer have and
+        then permanently delete them. Each entry carries a `status` describing why the contact
+        is inactive: `archived`, `blocked`, `merged`, `pending_deletion`, or `permanently_deleted`.
+        `merged_into_id` is present only when `status` is `merged`, and `external_id` and `email`
+        are `null` for `permanently_deleted` contacts.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: contact
+                      id: 5ba682d23d7cf92bef87bfd4
+                      external_id: "70"
+                      email: joe@example.com
+                      role: user
+                      status: archived
+                      updated_at: 1756636800
+                    - type: contact
+                      id: 5ba682d23d7cf92bef87bfd5
+                      external_id: "71"
+                      email: jane@example.com
+                      role: user
+                      status: merged
+                      merged_into_id: 5ba682d23d7cf92bef87bfd9
+                      updated_at: 1756636800
+                    - type: contact
+                      id: 5ba682d23d7cf92bef87bfd6
+                      external_id:
+                      email:
+                      role: user
+                      status: permanently_deleted
+                      updated_at: 1756636800
+                    total_count: 3
+                    pages:
+                      type: pages
+                      page: 1
+                      per_page: 10
+                      total_pages: 1
+              schema:
+                "$ref": "#/components/schemas/deleted_contact_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Bad Request:
+                  value:
+                    type: error.list
+                    request_id: 6a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d
+                    errors:
+                    - code: invalid_page
+                      message: page must be a positive integer
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/contacts/{id}":
     put:
       summary: Update a contact
@@ -31015,6 +31119,113 @@ components:
           type: boolean
           description: Whether the contact is archived or not.
           example: false
+    deleted_contact:
+      title: Deleted Contact
+      type: object
+      description: A contact that is no longer active, returned by the list deleted
+        contacts endpoint.
+      properties:
+        type:
+          type: string
+          description: always contact
+          enum:
+          - contact
+          example: contact
+        id:
+          type: string
+          description: The unique identifier for the contact which is given by Intercom.
+          example: 5ba682d23d7cf92bef87bfd4
+        external_id:
+          type: string
+          nullable: true
+          description: The unique identifier for the contact which is provided by the
+            Client. `null` for permanently deleted contacts.
+          example: "70"
+        email:
+          type: string
+          nullable: true
+          description: The contact's email address. `null` for permanently deleted
+            contacts.
+          example: joe@example.com
+        role:
+          type: string
+          description: The role of the contact.
+          enum:
+          - user
+          - lead
+          example: user
+        status:
+          type: string
+          description: Why the contact is no longer active.
+          enum:
+          - archived
+          - blocked
+          - merged
+          - pending_deletion
+          - permanently_deleted
+          example: archived
+        merged_into_id:
+          type: string
+          description: The id of the contact this one was merged into. Present only
+            when `status` is `merged`.
+          example: 5ba682d23d7cf92bef87bfd9
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time the contact record was last updated as a UNIX timestamp.
+            This is a last-modified time, not a deletion time.
+          example: 1756636800
+    deleted_contact_list:
+      title: Deleted Contact List
+      type: object
+      description: A paginated list of deleted contacts.
+      properties:
+        type:
+          type: string
+          description: Always list
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: The list of deleted contact objects.
+          items:
+            "$ref": "#/components/schemas/deleted_contact"
+          example:
+          - type: contact
+            id: 5ba682d23d7cf92bef87bfd4
+            external_id: "70"
+            email: joe@example.com
+            role: user
+            status: archived
+            updated_at: 1756636800
+        total_count:
+          type: integer
+          description: A count of the total number of deleted contacts.
+          example: 100
+        pages:
+          type: object
+          description: Offset-based pagination metadata.
+          example:
+            type: pages
+            page: 1
+            per_page: 10
+            total_pages: 1
+          properties:
+            type:
+              type: string
+              enum:
+              - pages
+              example: pages
+            page:
+              type: integer
+              example: 1
+            per_page:
+              type: integer
+              example: 10
+            total_pages:
+              type: integer
+              example: 1
     contact_blocked:
       title: Contact Blocked
       type: object
