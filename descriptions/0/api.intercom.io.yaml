@@ -12340,6 +12340,20 @@ paths:
         schema:
           type: boolean
           default: false
+      - name: include_part_types
+        in: query
+        required: false
+        description: A comma-separated list of conversation part types to include; only parts of these types are returned. Up to 50 values are accepted, and this parameter cannot be combined with `exclude_part_types` (a 422 is returned if both are supplied). The filter is applied before the conversation parts limit, so the newest matching parts are returned. Only supported from API version 2.6 onward; on earlier versions, or if an unknown part type is supplied, a 422 is returned.
+        example: comment,note
+        schema:
+          type: string
+      - name: exclude_part_types
+        in: query
+        required: false
+        description: A comma-separated list of conversation part types to exclude; parts of these types are omitted from the response. Up to 50 values are accepted, and this parameter cannot be combined with `include_part_types` (a 422 is returned if both are supplied). The filter is applied before the conversation parts limit, so the newest matching parts are returned. Only supported from API version 2.6 onward; on earlier versions, or if an unknown part type is supplied, a 422 is returned.
+        example: assignment
+        schema:
+          type: string
       tags:
       - Conversations
       operationId: retrieveConversation
