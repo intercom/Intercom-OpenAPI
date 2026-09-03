@@ -14807,6 +14807,134 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/conversations/{id}/hitl_events":
+    get:
+      summary: List HITL events
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The identifier for the conversation as given by Intercom.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: listHitlEvents
+      description: |
+        List the human-in-the-loop (HITL) events for a conversation. When Fin is unsure of an answer it can consult a teammate before replying, proposing a draft that the teammate approves, steers with free-text feedback, or takes over. Each consultation is returned as a series of events, oldest first, across every consultation on the conversation.
+
+        Requires the `read_conversations` OAuth scope, and the caller must be able to access the conversation.
+
+        Events are only recorded once a consultation has ended, so a consultation still awaiting a teammate does not appear.
+
+        Which fields appear in `data` depends on `event_type`:
+
+        | `event_type` | `data` fields |
+        |---|---|
+        | `fin_consultation_started` | `channel`, `rule_threshold_percent`, `confidence_percent`, `sharp_ask`, `ask_rationale`, `issue_summary`, `customer_question` |
+        | `fin_draft_proposed` | `draft` |
+        | `fin_teammate_input_received` | `round_index`, `teammate_input`, `reviewer_admin_id`, `regeneration_outcome` |
+        | `fin_draft_revised` | `round_index`, `revised_draft`, `regeneration_outcome` |
+        | `fin_consultation_finished` | `outcome`, `approved_draft_type`, `final_draft`, `sent_text`, `reviewer_admin_id`, `duration_seconds`, `rounds_count`, `payload_truncated` |
+
+        A consultation always produces a `fin_consultation_started` and a `fin_consultation_finished` event. `fin_draft_proposed` appears when Fin proposed a draft. `fin_teammate_input_received` appears once per round of teammate feedback, and `fin_draft_revised` once per round where Fin produced a revised draft in response.
+
+        Notes on interpreting the response:
+
+        - `hitl_cycle_id` identifies the consultation, so it is the same on every event of one consultation. It is not unique per event. A conversation can hold several consultations — a consultation that replaces an outstanding one finishes with an `outcome` of `superseded`.
+        - `conversation_part_id` links an event to a conversation part where one exists. It is `null` in ordinary cases: teammate feedback given through the inbox creates no conversation part, a revised draft has no part of its own, and a consultation that escalated or was superseded sent no reply.
+        - `created_at` on `fin_draft_proposed` is approximate. It reports when the consultation started, which is when the draft was proposed.
+        - `rule_id`, `rule_name` and `rule_threshold_percent` are recorded when the consultation begins and are not updated afterwards, so a rule that has since been renamed or retuned will not match its current settings. They are `null` for consultations not triggered by a rule.
+        - `reviewer_admin_id` identifies the teammate involved in that event: on `fin_teammate_input_received` the teammate who gave the feedback, and on `fin_consultation_finished` the teammate who approved the draft or took over. On a consultation with several rounds these can be different teammates.
+        - `rounds_count` counts every round of teammate feedback the consultation had. Only the ten most recent rounds are retained, so a heavily steered consultation returns fewer `fin_teammate_input_received` events than `rounds_count`.
+        - Redacting a conversation removes this data. Depending on how it was redacted, the conversation either returns no events or returns events whose text fields are all `null`.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/hitl_event_list"
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - hitl_cycle_id: 3f2a91c4-8e77-4d61-9a2b-0c5d7e1f4a80
+                      event_type: fin_consultation_started
+                      conversation_part_id: '4471002'
+                      rule_id: '88'
+                      rule_name: Refunds over $100
+                      created_at: 1767225600
+                      data:
+                        channel: email
+                        rule_threshold_percent: 60
+                        confidence_percent: 42
+                        sharp_ask: How long do refunds take?
+                        ask_rationale: No article covers refund timelines.
+                        issue_summary: Customer chasing a refund.
+                        customer_question: Where is my refund?
+                    - hitl_cycle_id: 3f2a91c4-8e77-4d61-9a2b-0c5d7e1f4a80
+                      event_type: fin_draft_proposed
+                      conversation_part_id: '4471008'
+                      rule_id: '88'
+                      rule_name: Refunds over $100
+                      created_at: 1767225600
+                      data:
+                        draft: Refunds are processed within 30 days.
+                    - hitl_cycle_id: 3f2a91c4-8e77-4d61-9a2b-0c5d7e1f4a80
+                      event_type: fin_teammate_input_received
+                      conversation_part_id:
+                      rule_id: '88'
+                      rule_name: Refunds over $100
+                      created_at: 1767225701
+                      data:
+                        round_index: 1
+                        teammate_input: Tell them 5 business days.
+                        reviewer_admin_id: '4001'
+                        regeneration_outcome: answer
+                    - hitl_cycle_id: 3f2a91c4-8e77-4d61-9a2b-0c5d7e1f4a80
+                      event_type: fin_draft_revised
+                      conversation_part_id:
+                      rule_id: '88'
+                      rule_name: Refunds over $100
+                      created_at: 1767225760
+                      data:
+                        round_index: 1
+                        revised_draft: Refunds take 5 business days.
+                        regeneration_outcome: answer
+                    - hitl_cycle_id: 3f2a91c4-8e77-4d61-9a2b-0c5d7e1f4a80
+                      event_type: fin_consultation_finished
+                      conversation_part_id: '4471029'
+                      rule_id: '88'
+                      rule_name: Refunds over $100
+                      created_at: 1767225780
+                      data:
+                        outcome: approved
+                        approved_draft_type: revised
+                        final_draft: Refunds take 5 business days.
+                        sent_text: Refunds take 5 business days.
+                        reviewer_admin_id: '4001'
+                        duration_seconds: 180
+                        rounds_count: 1
+                        payload_truncated: false
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/{id}/side_conversations":
     get:
       summary: List side conversations
@@ -37909,6 +38037,189 @@ components:
           description: Array of handling events
           items:
             "$ref": "#/components/schemas/handling_event"
+    hitl_event:
+      title: HITL Event
+      type: object
+      description: A single event in a Fin human-in-the-loop consultation on a conversation.
+      properties:
+        hitl_cycle_id:
+          type: string
+          description: Identifies the consultation this event belongs to. The same on every
+            event of one consultation, so it is not unique per event.
+          example: 3f2a91c4-8e77-4d61-9a2b-0c5d7e1f4a80
+        event_type:
+          type: string
+          description: What happened.
+          enum:
+          - fin_consultation_started
+          - fin_draft_proposed
+          - fin_teammate_input_received
+          - fin_draft_revised
+          - fin_consultation_finished
+          example: fin_consultation_started
+        conversation_part_id:
+          type: string
+          description: The conversation part this event relates to, where one exists.
+          example: '4471002'
+          nullable: true
+        rule_id:
+          type: string
+          description: The escalation rule that triggered the consultation, as recorded when
+            it began. Null if no rule triggered it.
+          example: '88'
+          nullable: true
+        rule_name:
+          type: string
+          description: The rule's name as recorded when the consultation began, which may
+            differ from its current name.
+          example: Refunds over $100
+          nullable: true
+        created_at:
+          type: integer
+          description: Unix timestamp for when the event occurred. Approximate on
+            `fin_draft_proposed`.
+          example: 1767225600
+        data:
+          type: object
+          description: |
+            Fields specific to this event. Which are present depends on `event_type` — see the endpoint description for the full mapping.
+          properties:
+            channel:
+              type: string
+              description: The channel the conversation was on when Fin consulted a teammate.
+              enum:
+              - email
+              - chat
+              - voice
+              - unknown
+              example: email
+            rule_threshold_percent:
+              type: integer
+              description: The confidence threshold the rule required, as a percentage.
+              example: 60
+              nullable: true
+            confidence_percent:
+              type: integer
+              description: How confident Fin was in its answer, as a percentage. Compare
+                against `rule_threshold_percent`.
+              example: 42
+              nullable: true
+            sharp_ask:
+              type: string
+              description: The question Fin put to the teammate.
+              example: How long do refunds take?
+              nullable: true
+            ask_rationale:
+              type: string
+              description: Why Fin needed to ask.
+              example: No article covers refund timelines.
+              nullable: true
+            issue_summary:
+              type: string
+              description: Fin's summary of what the customer needs.
+              example: Customer chasing a refund.
+              nullable: true
+            customer_question:
+              type: string
+              description: The customer's message that prompted the consultation.
+              example: Where is my refund?
+              nullable: true
+            draft:
+              type: string
+              description: The reply Fin proposed to the teammate.
+              example: Refunds are processed within 30 days.
+              nullable: true
+            round_index:
+              type: integer
+              description: Which round of teammate feedback this event belongs to, starting
+                at 1.
+              example: 1
+            teammate_input:
+              type: string
+              description: The feedback the teammate gave Fin.
+              example: Tell them 5 business days.
+              nullable: true
+            reviewer_admin_id:
+              type: string
+              description: The teammate involved in this event — who gave the feedback, or
+                who approved the draft or took over.
+              example: '4001'
+              nullable: true
+            regeneration_outcome:
+              type: string
+              description: How Fin responded to the feedback. `answer` means it produced a
+                revised draft, and is the only value accompanied by a `fin_draft_revised`
+                event. `no_answer` means it had nothing to send, `failed` that regeneration
+                failed, `consult_teammate` that it asked the teammate again, and `pending`
+                that the consultation ended before Fin responded.
+              example: answer
+              nullable: true
+            revised_draft:
+              type: string
+              description: The reply Fin produced after the teammate's feedback.
+              example: Refunds take 5 business days.
+              nullable: true
+            outcome:
+              type: string
+              description: How the consultation ended.
+              enum:
+              - approved
+              - taken_over
+              - timed_out_sent
+              - timed_out_escalated
+              - superseded
+              example: approved
+            approved_draft_type:
+              type: string
+              description: Whether the teammate approved Fin's original draft or the one it
+                revised after their feedback.
+              enum:
+              - original
+              - revised
+              example: revised
+              nullable: true
+            final_draft:
+              type: string
+              description: The reply as it stood when the consultation ended.
+              example: Refunds take 5 business days.
+              nullable: true
+            sent_text:
+              type: string
+              description: What was sent to the customer. Null when nothing was sent.
+              example: Refunds take 5 business days.
+              nullable: true
+            duration_seconds:
+              type: integer
+              description: How long the consultation took, in seconds.
+              example: 180
+              nullable: true
+            rounds_count:
+              type: integer
+              description: How many rounds of teammate feedback the consultation had. Only
+                the ten most recent are returned as events, so this can exceed the number of
+                `fin_teammate_input_received` events.
+              example: 1
+            payload_truncated:
+              type: boolean
+              description: Whether any text on this consultation was too long to store in
+                full and was cut.
+              example: false
+    hitl_event_list:
+      title: HITL Event List
+      type: object
+      description: A list of human-in-the-loop events for a conversation, oldest first.
+      properties:
+        type:
+          type: string
+          description: The type of the object.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of HITL event objects.
+          items:
+            "$ref": "#/components/schemas/hitl_event"
     side_conversation_summary:
       title: Side Conversation Summary
       type: object
