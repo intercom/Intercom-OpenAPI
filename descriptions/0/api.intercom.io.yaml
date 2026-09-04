@@ -12340,6 +12340,30 @@ paths:
         schema:
           type: boolean
           default: false
+      - name: include_part_types
+        in: query
+        required: false
+        description: A comma-separated list of conversation part types to keep; only parts of these types are returned. Values are the names this version returns in a part's `part_type` field, such as `assignment`, `note` or `snoozed`; an unrecognised name returns a 422 rather than being silently ignored, so a typo fails loudly instead of filtering nothing. Two names need care — `comment` matches every part that serializes as `comment`, which includes part types this version does not name individually, and the part type that versions below 2.6 return as `note_and_reopen` is named `note_and_unsnooze` here. Up to 50 values are accepted, and `include_part_types` cannot be combined with `exclude_part_types`; both cases return a 422. The filter is applied before the conversation parts limit, so the newest matching parts are returned. Available on the Preview version; a 422 is returned on any other version.
+        example: comment,note
+        schema:
+          type: array
+          maxItems: 50
+          items:
+            type: string
+        style: form
+        explode: false
+      - name: exclude_part_types
+        in: query
+        required: false
+        description: A comma-separated list of conversation part types to drop; parts of these types are omitted and all others are returned. Values are the names this version returns in a part's `part_type` field, such as `assignment`, `note` or `snoozed`; an unrecognised name returns a 422 rather than being silently ignored, so a typo fails loudly instead of filtering nothing. Two names need care — `comment` matches every part that serializes as `comment`, which includes part types this version does not name individually, and the part type that versions below 2.6 return as `note_and_reopen` is named `note_and_unsnooze` here. Up to 50 values are accepted, and `include_part_types` cannot be combined with `exclude_part_types`; both cases return a 422. The filter is applied before the conversation parts limit, so the newest matching parts are returned. Available on the Preview version; a 422 is returned on any other version.
+        example: assignment
+        schema:
+          type: array
+          maxItems: 50
+          items:
+            type: string
+        style: form
+        explode: false
       tags:
       - Conversations
       operationId: retrieveConversation
@@ -12350,7 +12374,7 @@ paths:
         This will return a single Conversation model with all its conversation parts.
 
         {% admonition type="warning" name="Hard limit of 500 parts" %}
-        The maximum number of conversation parts that can be returned via the API is 500. If you have more than that we will return the 500 most recent conversation parts.
+        The maximum number of conversation parts that can be returned via the API is 500. If you have more than that we will return the 500 most recent conversation parts. `include_part_types` and `exclude_part_types` are applied before this limit, so filtering returns the 500 most recent matching parts.
         {% /admonition %}
 
         For AI agent conversation metadata, please note that you need to have the agent enabled in your workspace, which is a [paid feature](https://www.intercom.com/help/en/articles/8205718-fin-resolutions#h_97f8c2e671).
@@ -12817,6 +12841,41 @@ paths:
                     errors:
                     - code: api_plan_restricted
                       message: Active subscription needed.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Invalid part type filter
+          content:
+            application/json:
+              examples:
+                Unknown part type name:
+                  value:
+                    type: error.list
+                    request_id: 1f2e3d4c-5b6a-4798-8c9d-0e1f2a3b4c5d
+                    errors:
+                    - code: parameter_invalid
+                      message: 'Unknown conversation part types: coment'
+                Both filters supplied:
+                  value:
+                    type: error.list
+                    request_id: 2a3b4c5d-6e7f-4890-9a1b-2c3d4e5f6a7b
+                    errors:
+                    - code: parameter_invalid
+                      message: include_part_types and exclude_part_types cannot be used together
+                Too many values:
+                  value:
+                    type: error.list
+                    request_id: 3b4c5d6e-7f80-4901-8b2c-3d4e5f6a7b8c
+                    errors:
+                    - code: parameter_invalid
+                      message: At most 50 conversation part types may be supplied
+                Unsupported API version:
+                  value:
+                    type: error.list
+                    request_id: 4c5d6e7f-8091-4012-9c3d-4e5f6a7b8c9d
+                    errors:
+                    - code: parameter_invalid
+                      message: include_part_types and exclude_part_types are not supported on this API version
               schema:
                 "$ref": "#/components/schemas/error"
     put:
@@ -32666,7 +32725,7 @@ components:
           example: '3'
         part_type:
           type: string
-          description: The type of conversation part.
+          description: The type of conversation part. On the Preview version these are also the values accepted by the `include_part_types` and `exclude_part_types` query parameters when retrieving a conversation.
           example: comment
         body:
           type: string
