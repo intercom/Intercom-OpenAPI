@@ -7047,6 +7047,346 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/contacts/{contact_id}/granted_companies":
+    get:
+      summary: List granted companies for a contact (Preview)
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: contact_id
+        in: path
+        required: true
+        description: The unique identifier for the contact which is given by Intercom
+        example: 63a07ddf05a32042dffac965
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: The page number to retrieve, starting at 1.
+        example: 1
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of company ids to return per page. Values above 150
+          are reduced to 150.
+        example: 50
+        schema:
+          type: integer
+          default: 50
+      - name: order
+        in: query
+        required: false
+        description: The direction to sort the company ids in. Any other value is
+          treated as `desc`.
+        example: asc
+        schema:
+          type: string
+          default: desc
+          enum:
+          - asc
+          - desc
+      tags:
+      - Contacts
+      - Companies
+      operationId: listGrantedCompaniesForAContact
+      description: |
+        List the companies a contact has been granted access to.
+
+        A granted company lets the contact read that company's tickets in the customer portal. It is separate from company membership — granting a company does not attach the contact to it, and [`GET /contacts/{id}/companies`](/docs/references/preview/rest-api/api.intercom.io/contacts/listcompaniesforacontact) does not include grants.
+
+        `company_ids` holds the `company_id` values you set on your companies, so the list round-trips with the `company_ids` you send to `PUT /contacts/{contact_id}/granted_companies`. The list is sorted by company id and paginated.
+
+        Returns an empty list when granted companies are not enabled for the workspace.
+
+        Requires the `read_users_companies` OAuth scope. Set `Intercom-Version: preview`.
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              examples:
+                Successful:
+                  summary: Successful
+                  value:
+                    type: list
+                    company_ids:
+                    - acme-corp
+                    - '1234'
+                    pages:
+                      type: pages
+                      next:
+                      page: 1
+                      per_page: 50
+                      total_pages: 1
+                    total_count: 2
+                No granted companies:
+                  summary: No granted companies
+                  value:
+                    type: list
+                    company_ids: []
+                    pages:
+                      type: pages
+                      next:
+                      page: 1
+                      per_page: 50
+                      total_pages: 0
+                    total_count: 0
+              schema:
+                "$ref": "#/components/schemas/granted_company_list"
+        '404':
+          description: Contact Not Found
+          content:
+            application/json:
+              examples:
+                Contact Not Found:
+                  value:
+                    type: error.list
+                    request_id: 32c856ba-901b-49c4-8e8d-d43fc3ee6ea5
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+    put:
+      summary: Replace granted companies for a contact (Preview)
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: contact_id
+        in: path
+        required: true
+        description: The unique identifier for the contact which is given by Intercom
+        example: 63a07ddf05a32042dffac965
+        schema:
+          type: string
+      tags:
+      - Contacts
+      - Companies
+      operationId: replaceGrantedCompaniesForAContact
+      description: |
+        Replace the full set of companies a contact has been granted access to.
+
+        This is a replacement, not an append. The `company_ids` you send become the contact's entire granted set — any company id you leave out is dropped. To add a company, send the existing ids plus the new one; to remove one, send the existing ids minus that one; to drop every grant, send an empty array.
+
+        Identify companies by the `company_id` you set on them, the same values [`GET /contacts/{contact_id}/granted_companies`](/docs/references/preview/rest-api/api.intercom.io/contacts/listgrantedcompaniesforacontact) returns. Duplicates in the request are collapsed. A contact can be granted at most 1,000 companies.
+
+        The response echoes the stored set, so a `200` is confirmation of exactly what the contact can now read.
+
+        {% admonition type="info" name="Requires granted companies to be enabled" %}
+          This endpoint returns `404` with the code `granted_companies_not_enabled` unless granted companies are enabled for the workspace. Contact Intercom Support to enable it.
+        {% /admonition %}
+
+        Requires the `write_users_companies` OAuth scope. Set `Intercom-Version: preview`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/replace_granted_companies_request"
+            examples:
+              add_a_company:
+                summary: Add a company, keeping the existing grants
+                value:
+                  company_ids:
+                  - acme-corp
+                  - '1234'
+                  - globex
+              replace_and_drop:
+                summary: Replace the set, dropping the ids left out
+                value:
+                  company_ids:
+                  - globex
+              drop_all:
+                summary: Drop every grant
+                value:
+                  company_ids: []
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              examples:
+                Successful:
+                  summary: Successful
+                  value:
+                    type: list
+                    company_ids:
+                    - acme-corp
+                    - '1234'
+                    - globex
+                    pages:
+                    total_count: 3
+                Dropped all grants:
+                  summary: Dropped all grants
+                  value:
+                    type: list
+                    company_ids: []
+                    pages:
+                    total_count: 0
+              schema:
+                "$ref": "#/components/schemas/granted_company_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Company Ids Not Specified:
+                  value:
+                    type: error.list
+                    request_id: 8879ee29-ade4-4b5a-a275-ab1ac531b82a
+                    errors:
+                    - code: parameter_not_found
+                      message: company_ids not specified
+                Company Ids Not A List:
+                  value:
+                    type: error.list
+                    request_id: 9a3d0816-9707-4598-977e-c009ba630148
+                    errors:
+                    - code: parameter_invalid
+                      message: company_ids must be a list of company ids
+                Granted Company Limit Exceeded:
+                  value:
+                    type: error.list
+                    request_id: 4c1d0a5f-2b8e-4f7a-9c31-6d2e8a4b5f10
+                    errors:
+                    - code: granted_company_limit_exceeded
+                      message: A contact can be granted at most 1000 companies
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                Company Not Found:
+                  value:
+                    type: error.list
+                    request_id: 981799ea-f19b-432d-828c-491a3b29ad29
+                    errors:
+                    - code: company_not_found
+                      message: 'Company Not Found: globex'
+                Contact Not Found:
+                  value:
+                    type: error.list
+                    request_id: b5a1f332-1bf1-44bd-a068-2634244b6051
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+                Granted Companies Not Enabled:
+                  value:
+                    type: error.list
+                    request_id: 7e2c4a19-3f5b-4d81-b0a6-9c8e1f2d3a4b
+                    errors:
+                    - code: granted_companies_not_enabled
+                      message: Granted companies are not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '503':
+          description: Service Unavailable — the requested companies could not be
+            read, retry the request
+          content:
+            application/json:
+              examples:
+                Service Unavailable:
+                  value:
+                    type: error.list
+                    request_id: 2f8b6c30-5a4d-41e9-8b7c-0d1e2f3a4b5c
+                    errors:
+                    - code: server_unavailable_error
+                      message: Could not read 1 of the requested companies, please
+                        retry
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/contacts/{contact_id}/granted_companies/{company_id}":
+    delete:
+      summary: Remove a granted company from a contact (Preview)
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: contact_id
+        in: path
+        required: true
+        description: The unique identifier for the contact which is given by Intercom
+        example: 63a07ddf05a32042dffac965
+        schema:
+          type: string
+      - name: company_id
+        in: path
+        required: true
+        description: The `company_id` you set on the company, as returned in `company_ids`.
+        example: acme-corp
+        schema:
+          type: string
+      tags:
+      - Contacts
+      - Companies
+      operationId: removeGrantedCompanyFromAContact
+      description: |
+        Remove a single company from a contact's granted set, leaving the contact's other grants in place.
+
+        Identify the company by the `company_id` you set on it, the same value [`GET /contacts/{contact_id}/granted_companies`](/docs/references/preview/rest-api/api.intercom.io/contacts/listgrantedcompaniesforacontact) returns. A `company_id` containing a dot or a slash is supported — URL-encode a slash as `%2F`.
+
+        This endpoint is not idempotent. Removing a company the contact is not currently granted returns `404` with the code `company_not_found`, so repeating a successful call returns `404` rather than `204`. Treat the first `204` as the confirmation.
+
+        {% admonition type="info" name="Requires granted companies to be enabled" %}
+          This endpoint returns `404` with the code `granted_companies_not_enabled` unless granted companies are enabled for the workspace. Contact Intercom Support to enable it.
+        {% /admonition %}
+
+        Requires the `write_users_companies` OAuth scope. Set `Intercom-Version: preview`.
+      responses:
+        '204':
+          description: The grant was removed. No content is returned.
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                Company Not Granted:
+                  value:
+                    type: error.list
+                    request_id: dcfc3465-8a51-4d78-b24c-2f215d48f339
+                    errors:
+                    - code: company_not_found
+                      message: 'Company Not Granted: acme-corp'
+                Company Not Found:
+                  value:
+                    type: error.list
+                    request_id: 981799ea-f19b-432d-828c-491a3b29ad29
+                    errors:
+                    - code: company_not_found
+                      message: 'Company Not Found: acme-corp'
+                Contact Not Found:
+                  value:
+                    type: error.list
+                    request_id: b5a1f332-1bf1-44bd-a068-2634244b6051
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+                Granted Companies Not Enabled:
+                  value:
+                    type: error.list
+                    request_id: 7e2c4a19-3f5b-4d81-b0a6-9c8e1f2d3a4b
+                    errors:
+                    - code: granted_companies_not_enabled
+                      message: Granted companies are not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/companies/bulk":
     post:
       summary: Bulk create or update companies
@@ -38029,6 +38369,55 @@ components:
         zh-TW:
           description: The content of the group in Chinese (Taiwan)
           "$ref": "#/components/schemas/group_content"
+    granted_company_list:
+      title: Granted Company List
+      type: object
+      description: A list of the company ids a contact has been granted access to.
+      properties:
+        type:
+          type: string
+          description: The type of object
+          enum:
+          - list
+          example: list
+        company_ids:
+          type: array
+          description: The `company_id` values of the companies the contact has been
+            granted access to.
+          items:
+            type: string
+            example: acme-corp
+        pages:
+          allOf:
+          - "$ref": "#/components/schemas/pages_link"
+          type: object
+          description: Pagination details. Null on the replace response, which returns
+            the whole stored set.
+          nullable: true
+        total_count:
+          type: integer
+          description: The total number of companies the contact has been granted
+            access to.
+          example: 2
+    replace_granted_companies_request:
+      title: Replace Granted Companies Request
+      type: object
+      description: The full set of companies to grant the contact access to. Any company
+        id left out is dropped.
+      required:
+      - company_ids
+      properties:
+        company_ids:
+          type: array
+          description: The `company_id` values of the companies to grant the contact
+            access to. Send an empty array to drop every grant. Maximum of 1,000 ids.
+          maxItems: 1000
+          items:
+            type: string
+            example: acme-corp
+          example:
+          - acme-corp
+          - '1234'
     handling_event:
       title: Handling Event
       type: object
