@@ -7079,7 +7079,6 @@ paths:
         schema:
           type: integer
           default: 50
-          maximum: 150
       - name: order
         in: query
         required: false
@@ -7211,9 +7210,6 @@ paths:
                 summary: Drop every grant
                 value:
                   company_ids: []
-              missing_field:
-                summary: Bad Request — company_ids omitted
-                value: {}
       responses:
         '200':
           description: Successful
@@ -38392,7 +38388,12 @@ components:
             type: string
             example: acme-corp
         pages:
-          "$ref": "#/components/schemas/pages_link"
+          allOf:
+          - "$ref": "#/components/schemas/pages_link"
+          type: object
+          description: Pagination details. Null on the replace response, which returns
+            the whole stored set.
+          nullable: true
         total_count:
           type: integer
           description: The total number of companies the contact has been granted
