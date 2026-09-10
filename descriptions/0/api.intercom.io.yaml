@@ -12680,6 +12680,32 @@ paths:
         schema:
           type: boolean
           default: false
+      - name: include_part_types
+        in: query
+        required: false
+        description: A comma-separated list of conversation part types to keep; only parts of these types are returned. Values are the names this version returns in a part's `part_type` field, such as `assignment`, `note` or `snoozed`; an unrecognised name returns a 422 rather than being silently ignored, so a typo fails loudly instead of filtering nothing. Two names need care — a part type this version does not recognise is returned as `unknown`, and `unknown` is not itself an accepted filter value, so those parts are removed by naming the types you do want rather than by filtering them out directly; and the part type that versions below 2.6 return as `note_and_reopen` is named `note_and_unsnooze` here. Up to 50 values are accepted, and `include_part_types` cannot be combined with `exclude_part_types`; both cases return a 422. Supply one comma-separated value; repeating the parameter is not read as a combined list, and only the last occurrence is used. The filter is applied before the conversation parts limit, so the newest matching parts are returned. Available on the Preview version; a 422 is returned on any other version.
+        example: comment,note
+        schema:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: string
+        style: form
+        explode: false
+      - name: exclude_part_types
+        in: query
+        required: false
+        description: A comma-separated list of conversation part types to drop; parts of these types are omitted and all others are returned. Values are the names this version returns in a part's `part_type` field, such as `assignment`, `note` or `snoozed`; an unrecognised name returns a 422 rather than being silently ignored, so a typo fails loudly instead of filtering nothing. Two names need care — a part type this version does not recognise is returned as `unknown`, and `unknown` is not itself an accepted filter value, so those parts are removed by naming the types you do want rather than by filtering them out directly; and the part type that versions below 2.6 return as `note_and_reopen` is named `note_and_unsnooze` here. Up to 50 values are accepted, and `include_part_types` cannot be combined with `exclude_part_types`; both cases return a 422. Supply one comma-separated value; repeating the parameter is not read as a combined list, and only the last occurrence is used. The filter is applied before the conversation parts limit, so the newest matching parts are returned. Available on the Preview version; a 422 is returned on any other version.
+        example: assignment
+        schema:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: string
+        style: form
+        explode: false
       tags:
       - Conversations
       operationId: retrieveConversation
@@ -12690,7 +12716,7 @@ paths:
         This will return a single Conversation model with all its conversation parts.
 
         {% admonition type="warning" name="Hard limit of 500 parts" %}
-        The maximum number of conversation parts that can be returned via the API is 500. If you have more than that we will return the 500 most recent conversation parts.
+        The maximum number of conversation parts that can be returned via the API is 500. If you have more than that we will return the 500 most recent conversation parts. `include_part_types` and `exclude_part_types` are applied before this limit, so filtering returns the 500 most recent matching parts. `conversation_parts.total_count` counts the parts in this response, after filtering — it is not the conversation's total part count.
         {% /admonition %}
 
         For AI agent conversation metadata, please note that you need to have the agent enabled in your workspace, which is a [paid feature](https://www.intercom.com/help/en/articles/8205718-fin-resolutions#h_97f8c2e671).
@@ -13157,6 +13183,62 @@ paths:
                     errors:
                     - code: api_plan_restricted
                       message: Active subscription needed.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Invalid part type filter
+          content:
+            application/json:
+              examples:
+                Unknown part type name:
+                  value:
+                    type: error.list
+                    request_id: 1f2e3d4c-5b6a-4798-8c9d-0e1f2a3b4c5d
+                    errors:
+                    - code: parameter_invalid
+                      message: 'Unknown conversation part types: coment'
+                Filtering on the unknown part type:
+                  value:
+                    type: error.list
+                    request_id: 5d6e7f80-9102-4123-8d4e-5f6a7b8c9d0e
+                    errors:
+                    - code: parameter_invalid
+                      message: 'Unknown conversation part types: unknown'
+                Both filters supplied:
+                  value:
+                    type: error.list
+                    request_id: 2a3b4c5d-6e7f-4890-9a1b-2c3d4e5f6a7b
+                    errors:
+                    - code: parameter_invalid
+                      message: include_part_types and exclude_part_types cannot be used together
+                Too many values:
+                  value:
+                    type: error.list
+                    request_id: 3b4c5d6e-7f80-4901-8b2c-3d4e5f6a7b8c
+                    errors:
+                    - code: parameter_invalid
+                      message: At most 50 conversation part types may be supplied
+                Empty filter value:
+                  value:
+                    type: error.list
+                    request_id: 6e7f8091-0213-4234-9e5f-6a7b8c9d0e1f
+                    errors:
+                    - code: parameter_invalid
+                      message: include_part_types must name at least one conversation part type
+                Non-string filter value:
+                  value:
+                    type: error.list
+                    request_id: 7f809102-1324-4345-8f6a-7b8c9d0e1f2a
+                    errors:
+                    - code: parameter_invalid
+                      message: include_part_types must be a comma-separated list of conversation part types
+                Unsupported API version:
+                  value:
+                    type: error.list
+                    request_id: 4c5d6e7f-8091-4012-9c3d-4e5f6a7b8c9d
+                    errors:
+                    - code: parameter_invalid
+                      message: include_part_types and exclude_part_types are not supported on this API version
               schema:
                 "$ref": "#/components/schemas/error"
     put:
@@ -33034,7 +33116,7 @@ components:
           example: '3'
         part_type:
           type: string
-          description: The type of conversation part.
+          description: The type of conversation part. On the Preview version a part type the API does not recognise is returned as `unknown`; on earlier versions those parts are returned as `comment`. Every value other than `unknown` is also accepted by the `include_part_types` and `exclude_part_types` query parameters when retrieving a conversation.
           example: comment
         body:
           type: string
@@ -33210,7 +33292,9 @@ components:
             "$ref": "#/components/schemas/conversation_part"
         total_count:
           type: integer
-          description: ''
+          description: A count of the conversation parts in this response, after any
+            `include_part_types` or `exclude_part_types` filter has been applied. This
+            is not the conversation's total part count.
           example: 1
     conversation_part_metadata:
       title: Conversation Part Metadata
