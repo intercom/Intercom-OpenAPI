@@ -9347,9 +9347,7 @@ paths:
       description: |
         You can merge one contact into another. Both lead-into-user and user-into-user merges are supported: the source contact (`from`) may have a `role` of `lead` or `user`, and the destination contact (`into`) must have a `role` of `user`.
 
-        By default, the two contacts must be duplicates, meaning they share a matching email or phone number. To merge contacts that are not duplicates, pass `skip_duplicate_validation: true` in the request body. If the contacts are not duplicates and `skip_duplicate_validation` is not `true`, the request returns `400 Bad Request`.
-
-        When you merge a user into another user, the source user's attribute values (standard and custom) are discarded and are not copied onto the target user. The target user keeps its own attribute values. Records associated with the source, such as conversations, notes, and tags, are still reassigned to the target.
+        When you merge a user into another user, the source user's attribute values (standard and custom) are discarded and are not moved onto the target user. The target user keeps its own attribute values. Records associated with the source, such as conversations, notes, and tags, are still reassigned to the target.
 
         Merging a user into another user requires the `merge_users` OAuth scope on your access token, in addition to the scope required for lead-into-user merges. Tokens without this scope receive a `401 Unauthorized` when the source contact is a user.
 
