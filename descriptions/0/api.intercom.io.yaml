@@ -9349,6 +9349,8 @@ paths:
 
         By default, the two contacts must be duplicates, meaning they share a matching email or phone number. To merge contacts that are not duplicates, pass `skip_duplicate_validation: true` in the request body. If the contacts are not duplicates and `skip_duplicate_validation` is not `true`, the request returns `400 Bad Request`.
 
+        When you merge a user into another user, the source user's attribute values (standard and custom) are discarded and are not copied onto the target user. The target user keeps its own attribute values. Records associated with the source, such as conversations, notes, and tags, are still reassigned to the target.
+
         {% admonition type="warning" name="Merged contacts are not retrievable via the API" %}
           Once a merge is completed, the source contact (`from`) is permanently removed from the active contact list. This means:
           - **GET /contacts/{id}** — Requesting the source contact by its original ID will return `410 Gone` with a `Link` header pointing to the canonical (merged-into) contact.
