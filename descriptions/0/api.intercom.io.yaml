@@ -9327,7 +9327,7 @@ paths:
                 "$ref": "#/components/schemas/error"
   "/contacts/merge":
     post:
-      summary: Merge a lead and a user
+      summary: Merge two contacts
       parameters:
       - name: Intercom-Version
         in: header
@@ -9345,7 +9345,13 @@ paths:
       - Contacts
       operationId: MergeContact
       description: |
-        You can merge a contact with a `role` of `lead` into a contact with a `role` of `user`.
+        You can merge one contact into another. Both lead-into-user and user-into-user merges are supported: the source contact (`from`) may have a `role` of `lead` or `user`, and the destination contact (`into`) must have a `role` of `user`.
+
+        {% admonition type="warning" name="User-to-user merges" %}
+          When you merge a user into another user, the source user's attribute values (standard and custom) are discarded and are not moved onto the target user. The target user keeps its own attribute values. Records associated with the source, such as conversations, notes, and tags, are still reassigned to the target.
+
+          Merging a user into another user requires the `merge_users` OAuth scope on your access token, in addition to the scope required for lead-into-user merges. Tokens without this scope receive a `401 Unauthorized` when the source contact is a user.
+        {% /admonition %}
 
         {% admonition type="warning" name="Merged contacts are not retrievable via the API" %}
           Once a merge is completed, the source contact (`from`) is permanently removed from the active contact list. This means:
@@ -9519,24 +9525,30 @@ paths:
       description: |
         Preview the result of merging one contact into another without applying the merge. This is a read-only dry run: it reports whether the merge is allowed and, if so, exactly what would change, **without modifying any data**.
 
-        Send the same `from` (a `lead`) and `into` (a `user`) contact IDs you would pass to [Merge a lead and a user](/docs/references/preview/rest-api/api.intercom.io/contacts/mergecontact).
+        Send the same `from` and `into` contact IDs you would pass to [Merge two contacts](/docs/references/preview/rest-api/api.intercom.io/contacts/mergecontact). As with the merge endpoint, `from` may have a `role` of `lead` or `user`, and `into` must have a `role` of `user`. You can optionally pass `custom_attribute_names` to include specific custom attributes in the previewed attribute changes.
 
-        - When `allowed` is `true`, the response contains a `summary`: every attribute change (with the resulting value on the surviving contact) and, for each object type, two counts — `from`, how many are on the lead and would move to the user, and `into`, how many the user already has. Counts are reported for conversations, tickets, phone calls, notes, and tags. `conversations` counts non-ticket conversations only; tickets are reported separately under `tickets`, and `phone_calls` is present only for phone-lead merges.
+        - When `allowed` is `true`, the response contains a `summary`: every attribute change (with the resulting value on the surviving contact) and, for each object type, two counts — `from`, how many are on the source contact and would move to the destination, and `into`, how many the destination already has. Counts are reported for conversations, tickets, phone calls, notes, and tags. `conversations` counts non-ticket conversations only; tickets are reported separately under `tickets`, and `phone_calls` is present only for phone-channel merges.
         - When `allowed` is `false`, the response contains `reasons`. Each reason has a stable `code` you can branch on and a human-readable `message` you can display.
 
         {% admonition type="warning" name="Previewing non-duplicate contacts" %}
-        By default a merge requires the two contacts to share an identifier (email, phone, or external ID). Set `skip_duplicate_validation` to `true` to preview a merge of contacts that don't — the same rule the merge endpoint enforces.
+        By default a merge requires the two contacts to share an identifier (email or phone). Set `skip_duplicate_validation` to `true` to preview a merge of contacts that don't, the same rule the merge endpoint enforces.
         {% /admonition %}
 
         When `allowed` is `false`, `reasons[].code` is one of:
 
         | code | meaning |
         | --- | --- |
-        | `invalid_merge_role_pair` | The `from`/`into` roles aren't mergeable. `from` must be a lead and `into` a user. |
-        | `no_shared_identifier` | The contacts share no email, phone, or external ID. Set `skip_duplicate_validation` to preview anyway. |
+        | `source_same_as_target` | The source contact (`from`) and the destination contact (`into`) are the same contact. A contact can't be merged into itself. |
+        | `invalid_merge_role_pair` | The `from`/`into` roles aren't mergeable. `into` must be a user. |
+        | `no_shared_identifier` | The contacts share no email or phone. Set `skip_duplicate_validation` to preview anyway. |
         | `facebook_user` | Facebook contacts can't be merged. |
         | `external_lead_channel_not_allowed` | The source is an external-channel lead that isn't eligible for merging. |
         | `mailing_list` | Contacts created from a mailing list can't be merged. |
+        | `user_to_lead` | `into` is a lead or visitor. A user can only be merged into another user. |
+        | `whatsapp_data_cannot_be_merged` | The WhatsApp number on the source contact can't be reassigned to the destination. |
+        | `telegram_data_cannot_be_merged` | The Telegram sender on the source contact can't be reassigned to the destination. |
+        | `source_has_telegram_data` | The source contact has Telegram data, which user-into-user merges don't yet support moving. |
+        | `phone_data_cannot_be_merged` | The phone data on the source contact can't be reassigned to the destination. |
       responses:
         '200':
           description: successful
@@ -9591,7 +9603,7 @@ paths:
                     allowed: false
                     reasons:
                     - code: no_shared_identifier
-                      message: These contacts don't share a common identifier (email, phone, or external ID), so they aren't recognised as duplicates. Set skip_duplicate_validation to true to preview the merge anyway.
+                      message: These contacts don't share a common identifier (email or phone), so they aren't recognised as duplicates. Set skip_duplicate_validation to true to preview the merge anyway.
               schema:
                 "$ref": "#/components/schemas/merge_preview_response"
         '401':
@@ -39191,19 +39203,17 @@ components:
       properties:
         from:
           type: string
-          description: The unique identifier for the contact to merge away from. Must
-            be a lead.
+          description: The unique identifier for the contact to merge away from (the source contact). Can have a `role` of `lead` or `user`.
           example: 5d70dd30de4efd54f42fd526
         into:
           type: string
-          description: The unique identifier for the contact to merge into. Must be
-            a user.
+          description: The unique identifier for the contact to merge into (the destination contact). Must have a `role` of `user`.
           example: 5ba682d23d7cf92bef87bfd4
         skip_duplicate_validation:
           type: boolean
-          description: Set to `true` to merge two contacts that are not duplicates
-            (they share no matching email or phone).
-          example: true
+          default: false
+          description: 'When `true`, bypasses the check that the two contacts must be duplicates (matching email or phone), allowing non-duplicate contacts to be merged. Must be a JSON boolean; the string `"true"` does not bypass the check.'
+          example: false
     merge_preview_request:
       description: Preview a contact merge.
       type: object
@@ -39214,16 +39224,21 @@ components:
       properties:
         from:
           type: string
-          description: The unique identifier for the contact to merge away from. Must be a lead.
+          description: The unique identifier for the contact to merge away from (the source contact). Can have a `role` of `lead` or `user`.
           example: 6762f0d51bb69f9f2193bb7f
         into:
           type: string
-          description: The unique identifier for the contact to merge into. Must be a user.
+          description: The unique identifier for the contact to merge into (the destination contact). Must have a `role` of `user`.
           example: 6762f0d51bb69f9f2193bb80
         skip_duplicate_validation:
           type: boolean
           default: false
-          description: When true, previews the merge even if the contacts don't share a common identifier. Defaults to false.
+          description: 'When `true`, previews the merge even if the contacts don''t share a common identifier. Must be a JSON boolean; the string `"true"` does not bypass the check. Defaults to false.'
+        custom_attribute_names:
+          type: array
+          description: Custom attribute names to include in the previewed attribute changes.
+          items:
+            type: string
     merge_preview_response:
       title: Merge preview response
       description: The result of a merge preview. Either the merge is allowed (with a summary of the changes) or it is not (with reasons).
@@ -39266,11 +39281,17 @@ components:
           type: string
           description: A stable code identifying the reason. Branch on this value.
           enum:
+          - source_same_as_target
           - invalid_merge_role_pair
           - no_shared_identifier
           - facebook_user
           - external_lead_channel_not_allowed
           - mailing_list
+          - user_to_lead
+          - whatsapp_data_cannot_be_merged
+          - telegram_data_cannot_be_merged
+          - source_has_telegram_data
+          - phone_data_cannot_be_merged
         message:
           type: string
           description: A human-readable explanation. Display this to people; do not match on it, as the wording may change.
