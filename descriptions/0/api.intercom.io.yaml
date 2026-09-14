@@ -8947,7 +8947,7 @@ paths:
         - When `allowed` is `false`, the response contains `reasons`. Each reason has a stable `code` you can branch on and a human-readable `message` you can display.
 
         {% admonition type="warning" name="Previewing non-duplicate contacts" %}
-        By default a merge requires the two contacts to share an identifier (email, phone, or external ID). Set `skip_duplicate_validation` to `true` to preview a merge of contacts that don't, the same rule the merge endpoint enforces.
+        By default a merge requires the two contacts to share an identifier (email or phone). Set `skip_duplicate_validation` to `true` to preview a merge of contacts that don't, the same rule the merge endpoint enforces.
         {% /admonition %}
 
         When `allowed` is `false`, `reasons[].code` is one of:
@@ -8956,7 +8956,7 @@ paths:
         | --- | --- |
         | `source_same_as_target` | The source contact (`from`) and the destination contact (`into`) are the same contact. A contact can't be merged into itself. |
         | `invalid_merge_role_pair` | The `from`/`into` roles aren't mergeable. `into` must be a user. |
-        | `no_shared_identifier` | The contacts share no email, phone, or external ID. Set `skip_duplicate_validation` to preview anyway. |
+        | `no_shared_identifier` | The contacts share no email or phone. Set `skip_duplicate_validation` to preview anyway. |
         | `facebook_user` | Facebook contacts can't be merged. |
         | `external_lead_channel_not_allowed` | The source is an external-channel lead that isn't eligible for merging. |
         | `mailing_list` | Contacts created from a mailing list can't be merged. |
@@ -9019,7 +9019,7 @@ paths:
                     allowed: false
                     reasons:
                     - code: no_shared_identifier
-                      message: These contacts don't share a common identifier (email, phone, or external ID), so they aren't recognised as duplicates. Set skip_duplicate_validation to true to preview the merge anyway.
+                      message: These contacts don't share a common identifier (email or phone), so they aren't recognised as duplicates. Set skip_duplicate_validation to true to preview the merge anyway.
               schema:
                 "$ref": "#/components/schemas/merge_preview_response"
         '401':
