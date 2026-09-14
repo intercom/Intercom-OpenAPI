@@ -8739,13 +8739,15 @@ paths:
       description: |
         You can merge a contact with a `role` of `lead` into a contact with a `role` of `user`.
 
-        You can also merge a contact with a `role` of `user` into another contact with a `role` of `user`. User-to-user merging is being rolled out gradually: on workspaces where it is not yet available, user-to-user requests return `400` with code `invalid_merge`. User-to-user merges follow stricter rules than lead-to-user merges:
-
-        - The two contacts must share an email address or phone number. This requirement can't be bypassed: passing `skip_duplicate_validation` as `true` returns `400` with code `parameter_not_allowed`.
-        - A source contact (`from`) with WhatsApp data can't be merged into another user yet. Such requests return `422` with code `unprocessable_entity`.
-        - A user can never be merged into a lead.
-
-        Use [Preview a contact merge](/docs/references/preview/rest-api/api.intercom.io/contacts/previewmergecontact) with the same `from` and `into` to check whether a merge would be allowed without performing it.
+        > 🚧 User-to-user merges
+        >
+        > You can also merge a contact with a `role` of `user` into another contact with a `role` of `user`. User-to-user merging is being rolled out gradually: on workspaces where it is not yet available, user-to-user requests return `400` with code `invalid_merge`. User-to-user merges follow stricter rules than lead-to-user merges:
+        >
+        > - The two contacts must share an email address or phone number. This requirement can't be bypassed: passing `skip_duplicate_validation` as `true` returns `400` with code `parameter_not_allowed`.
+        > - A source contact (`from`) with WhatsApp data can't be merged into another user yet. Such requests return `422` with code `unprocessable_entity`.
+        > - A user can never be merged into a lead.
+        >
+        > Use [Preview a contact merge](/docs/references/preview/rest-api/api.intercom.io/contacts/previewmergecontact) with the same `from` and `into` to check whether a merge would be allowed without performing it.
 
         {% admonition type="warning" name="Merged contacts are not retrievable via the API" %}
           Once a merge is completed, the source contact (`from`) is permanently removed from the active contact list. This means:
