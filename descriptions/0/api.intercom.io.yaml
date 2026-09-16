@@ -17638,6 +17638,155 @@ paths:
                 value:
                   description: Trying to archieve
                   archived: true
+  "/auth_tokens":
+    get:
+      summary: List all auth tokens
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Defaults to 20, minimum 1, maximum 50.
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 50
+      - name: starting_after
+        in: query
+        required: false
+        description: The cursor value from `pages.next.starting_after` in a previous response. Used to paginate through results.
+        schema:
+          type: string
+      tags:
+      - Auth Tokens
+      operationId: listAuthTokens
+      description: |
+        Returns a paginated list of the workspace's stored third-party credentials. Use this to discover the id of a credential you want a data connector to authenticate with — that id is not otherwise available over REST. Only metadata is returned; credential values are never exposed. The list is not exhaustive: credentials a teammate created are listed, as are those created by some Intercom integrations, but credentials installed by an app package, those created by most other integrations, and those minted for an individual teammate's MCP access are not.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: auth_token
+                      id: '12345'
+                      name: Fulfilment API key
+                      description: Used by the order status connector
+                      token_type: header
+                      request_header_key: Authorization
+                      domain: api.fulfilment.example.com
+                      created_at: '2025-11-15T09:30:00Z'
+                      updated_at: '2026-01-20T14:22:15Z'
+                    pages:
+                      type: pages
+                      per_page: 20
+                      next:
+                        starting_after: WzE3MDc1OTQ3MTUuMCwxMjM0NV0=
+              schema:
+                "$ref": "#/components/schemas/auth_token_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid cursor:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: client_error
+                      message: Invalid starting_after param. Please try again using a starting_after value from a paginated response
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/auth_tokens/{id}":
+    get:
+      summary: Retrieve an auth token
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the auth token.
+        example: '12345'
+        schema:
+          type: string
+      tags:
+      - Auth Tokens
+      operationId: retrieveAuthToken
+      description: |
+        Returns the metadata for a single stored third-party credential. A credential that the list endpoint does not return is also not retrievable here, and responds with 404.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: auth_token
+                    id: '12345'
+                    name: Fulfilment API key
+                    description: Used by the order status connector
+                    token_type: header
+                    request_header_key: Authorization
+                    domain: api.fulfilment.example.com
+                    created_at: '2025-11-15T09:30:00Z'
+                    updated_at: '2026-01-20T14:22:15Z'
+              schema:
+                "$ref": "#/components/schemas/auth_token"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                Auth token not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/data_connectors":
     get:
       summary: List all data connectors
@@ -29596,6 +29745,97 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/team_metric"
+    auth_token:
+      title: Auth Token
+      type: object
+      x-tags:
+      - Auth Tokens
+      description: |
+        Metadata for a stored third-party credential that data connectors use to authenticate outbound requests. Only metadata is returned — the credential value itself, and its refresh and OAuth configuration, are never exposed.
+      properties:
+        type:
+          type: string
+          description: The type of object - `auth_token`.
+          enum:
+          - auth_token
+          example: auth_token
+        id:
+          type: string
+          description: The unique identifier for the auth token.
+          example: '12345'
+        name:
+          type: string
+          description: The name given to the credential when it was created.
+          example: Fulfilment API key
+          nullable: true
+        description:
+          type: string
+          description: An optional description of what the credential is used for.
+          example: Used by the order status connector
+          nullable: true
+        token_type:
+          type: string
+          description: How the credential is presented to the external API, for example as a header value or an HMAC signature.
+          example: header
+          nullable: true
+        request_header_key:
+          type: string
+          description: The request header the credential is sent in.
+          example: Authorization
+          nullable: true
+        domain:
+          type: string
+          description: The domain the credential is scoped to, if one was set.
+          example: api.fulfilment.example.com
+          nullable: true
+        created_at:
+          type: string
+          description: The time the credential was created, as an ISO 8601 timestamp.
+          example: '2025-11-15T09:30:00Z'
+          nullable: true
+        updated_at:
+          type: string
+          description: The time the credential was last updated, as an ISO 8601 timestamp.
+          example: '2026-01-20T14:22:15Z'
+          nullable: true
+    auth_token_list:
+      title: Auth Token List
+      type: object
+      description: A paginated list of auth tokens.
+      properties:
+        type:
+          type: string
+          description: The type of object - `list`.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of auth token objects.
+          items:
+            "$ref": "#/components/schemas/auth_token"
+        pages:
+          type: object
+          description: Pagination information.
+          properties:
+            type:
+              type: string
+              example: pages
+              enum:
+              - pages
+            per_page:
+              type: integer
+              description: The number of results per page.
+              example: 20
+            next:
+              type: object
+              nullable: true
+              description: Cursor for the next page of results.
+              properties:
+                starting_after:
+                  type: string
+                  description: The cursor value to use for the next page.
+                  example: WzE3MDc1OTQ3MTUuMCwxMjM0NV0=
     away_status_reason:
       type: object
       properties:
@@ -43205,6 +43445,13 @@ tags:
   description: Everything about your Away Status Reasons
 - name: Audiences
   description: Everything about your Audiences
+- name: Auth Tokens
+  description: |
+    Read the metadata of the third-party credentials stored in your workspace, so you can
+    find the id of the credential a data connector should authenticate with. These endpoints
+    are part of the `Preview` API version and require an OAuth token with the
+    `read_auth_tokens` scope. They are read-only and never return credential values, refresh
+    configuration, or OAuth configuration.
 - name: Banners
   description: |
     Retrieve the banners a contact matches and record dismissals, so you can display
