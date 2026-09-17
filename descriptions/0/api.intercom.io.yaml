@@ -12927,7 +12927,34 @@ paths:
                         event_details:
                           call_id: '3822007689'
                         app_package_code: null
-                      total_count: 5
+                      - type: conversation_part
+                        id: 6
+                        part_type: ai_agent_event
+                        body:
+                        created_at: 1740141870
+                        updated_at: 1740141870
+                        notified_at: 1740141870
+                        assigned_to:
+                        author:
+                          type: bot
+                          id: '278'
+                          name: Fin
+                          email: operator+abcd1234@intercom.io
+                        attachments: []
+                        external_id:
+                        redacted: false
+                        email_message_metadata: null
+                        state: closed
+                        tags: []
+                        event_details:
+                          event:
+                            type: otp_email_verification_failed
+                            value: OTP email verification failed
+                            data:
+                              otp_email_verification_failed:
+                                reason: no_email
+                        app_package_code: null
+                      total_count: 6
                 email conversation with history found:
                   value:
                     type: conversation
@@ -13112,7 +13139,34 @@ paths:
                             name: Jira Create Issue
                             result: success
                         app_package_code: null
-                      total_count: 4
+                      - type: conversation_part
+                        id: 5
+                        part_type: ai_agent_event
+                        body:
+                        created_at: 1740141870
+                        updated_at: 1740141870
+                        notified_at: 1740141870
+                        assigned_to:
+                        author:
+                          type: bot
+                          id: '278'
+                          name: Fin
+                          email: operator+abcd1234@intercom.io
+                        attachments: []
+                        external_id:
+                        redacted: false
+                        email_message_metadata: null
+                        state: closed
+                        tags: []
+                        event_details:
+                          event:
+                            type: otp_email_verification_failed
+                            value: OTP email verification failed
+                            data:
+                              otp_email_verification_failed:
+                                reason: no_email
+                        app_package_code: null
+                      total_count: 5
                 with QA evaluations:
                   summary: Response with `include_monitors=true` and `include_scorecards=true`
                   value:
@@ -37787,6 +37841,46 @@ components:
           type: string
           description: The id of the call the summary describes
           example: "3822007689"
+    ai_agent_event_otp_email_verification_failed:
+      title: Part type - ai_agent_event (otp_email_verification_failed)
+      type: object
+      description: Contains the reason Fin could not verify a contact by one-time passcode email, for conversation part type <code>ai_agent_event</code> when the event type is <code>otp_email_verification_failed</code>. Other <code>ai_agent_event</code> event types are not described here.
+      properties:
+        event:
+          type: object
+          description: The event the part records
+          example:
+            type: "otp_email_verification_failed"
+            value: "OTP email verification failed"
+            data:
+              otp_email_verification_failed:
+                reason: "no_email"
+          properties:
+            type:
+              type: string
+              description: The event type
+              example: "otp_email_verification_failed"
+            value:
+              type: string
+              description: A readable label for the event
+              example: "OTP email verification failed"
+            data:
+              type: object
+              description: Data recorded with the event. Empty when the failure was recorded without a reason.
+              example:
+                otp_email_verification_failed:
+                  reason: "no_email"
+              properties:
+                otp_email_verification_failed:
+                  type: object
+                  description: Details of the failed verification
+                  example:
+                    reason: "no_email"
+                  properties:
+                    reason:
+                      type: string
+                      description: Why the one-time passcode email could not verify the contact. Treat this as a free-form string and fall back to <code>value</code> for a reason you do not recognise. <code>no_email</code> means the contact has no email address on record.
+                      example: "no_email"
     event_details:
       title: Event details of Workflow & actions
       type: object
@@ -37807,6 +37901,7 @@ components:
         - "$ref": "#/components/schemas/conversation_sla_unpaused"
         - "$ref": "#/components/schemas/conversation_sla_removed"
         - "$ref": "#/components/schemas/call_summary"
+        - "$ref": "#/components/schemas/ai_agent_event_otp_email_verification_failed"
     email_setting:
       type: object
       title: Email Setting
