@@ -17774,6 +17774,101 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+    post:
+      summary: Create an auth token
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Auth Tokens
+      operationId: createAuthToken
+      description: |
+        Stores a third-party credential in your workspace so a data connector can authenticate outbound requests with it. Only credentials with a `token_type` of `text` can be created here — the credential value is sent as a request header. The value you supply is stored encrypted and is never returned by any endpoint, including this one.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_auth_token_request"
+            examples:
+              successful:
+                value:
+                  name: Fulfilment API key
+                  token_value: sk_live_9f3c2a7b41e8
+                  request_header_key: Authorization
+                  token_prefix: Bearer
+                  description: Used by the order status connector
+                  domain: api.fulfilment.example.com
+        required: true
+      responses:
+        '201':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: auth_token
+                    id: '12345'
+                    name: Fulfilment API key
+                    description: Used by the order status connector
+                    token_type: text
+                    request_header_key: Authorization
+                    domain: api.fulfilment.example.com
+                    created_at: '2025-11-15T09:30:00Z'
+                    updated_at: '2025-11-15T09:30:00Z'
+              schema:
+                "$ref": "#/components/schemas/auth_token"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Missing required field:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_not_found
+                      message: name parameter is required
+                Rejected field value:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: domain must be a valid domain
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                No teammate associated with the access token:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: forbidden
+                      message: Writing an auth token requires an access token associated with a teammate
+              schema:
+                "$ref": "#/components/schemas/error"
   "/auth_tokens/{id}":
     get:
       summary: Retrieve an auth token
@@ -17825,6 +17920,111 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                Auth token not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+    patch:
+      summary: Update an auth token
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the auth token.
+        example: '12345'
+        schema:
+          type: string
+      tags:
+      - Auth Tokens
+      operationId: updateAuthToken
+      description: |
+        Updates the metadata of a stored third-party credential. A field you omit keeps its current value. The credential value itself cannot be changed here and is never returned. Only credentials with a `token_type` of `text` can be updated; any other type responds with `400`. A credential the list endpoint does not return is also not updatable, and responds with `404`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_auth_token_request"
+            examples:
+              successful:
+                value:
+                  name: Fulfilment API key (rotated host)
+                  description: Used by the order status connector
+        required: true
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: auth_token
+                    id: '12345'
+                    name: Fulfilment API key (rotated host)
+                    description: Used by the order status connector
+                    token_type: text
+                    request_header_key: Authorization
+                    domain: api.fulfilment.example.com
+                    created_at: '2025-11-15T09:30:00Z'
+                    updated_at: '2026-01-20T14:22:15Z'
+              schema:
+                "$ref": "#/components/schemas/auth_token"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Unsupported token type:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: Only auth tokens with token_type "text" can be updated through the API
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                No teammate associated with the access token:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: forbidden
+                      message: Writing an auth token requires an access token associated with a teammate
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -29830,7 +30030,7 @@ components:
         token_type:
           type: string
           description: How the credential is presented to the external API, for example as a header value or an HMAC signature.
-          example: header
+          example: text
           nullable: true
         request_header_key:
           type: string
@@ -29852,6 +30052,66 @@ components:
           description: The time the credential was last updated, as an ISO 8601 timestamp.
           example: '2026-01-20T14:22:15Z'
           nullable: true
+    create_auth_token_request:
+      title: Create Auth Token Request
+      type: object
+      x-tags:
+      - Auth Tokens
+      description: |
+        The fields accepted when storing a new third-party credential. The credential is created with a `token_type` of `text`; no other type can be created over the API.
+      properties:
+        name:
+          type: string
+          description: A name for the credential, so a teammate can identify it later.
+          example: Fulfilment API key
+        token_value:
+          type: string
+          description: The credential value. Stored encrypted and never returned by any endpoint.
+          example: sk_live_9f3c2a7b41e8
+        request_header_key:
+          type: string
+          description: The request header the credential is sent in.
+          example: Authorization
+        token_prefix:
+          type: string
+          description: An optional prefix placed before the credential value in the header, for example `Bearer`.
+          example: Bearer
+        description:
+          type: string
+          description: An optional description of what the credential is used for.
+          example: Used by the order status connector
+        domain:
+          type: string
+          description: An optional domain to scope the credential to.
+          example: api.fulfilment.example.com
+      required:
+      - name
+      - token_value
+      - request_header_key
+    update_auth_token_request:
+      title: Update Auth Token Request
+      type: object
+      x-tags:
+      - Auth Tokens
+      description: |
+        The fields accepted when updating a stored third-party credential. Every field is optional, and one you omit keeps its current value. The credential value cannot be changed here.
+      properties:
+        name:
+          type: string
+          description: A name for the credential, so a teammate can identify it later.
+          example: Fulfilment API key
+        request_header_key:
+          type: string
+          description: The request header the credential is sent in.
+          example: Authorization
+        description:
+          type: string
+          description: An optional description of what the credential is used for.
+          example: Used by the order status connector
+        domain:
+          type: string
+          description: An optional domain to scope the credential to.
+          example: api.fulfilment.example.com
     auth_token_list:
       title: Auth Token List
       type: object
@@ -43539,11 +43799,13 @@ tags:
   description: Everything about your Audiences
 - name: Auth Tokens
   description: |
-    Read the metadata of the third-party credentials stored in your workspace, so you can
-    find the id of the credential a data connector should authenticate with. These endpoints
-    are part of the `Preview` API version and require an OAuth token with the
-    `read_auth_tokens` scope. They are read-only and never return credential values, refresh
-    configuration, or OAuth configuration.
+    Read and write the third-party credentials stored in your workspace, so you can find the
+    id of the credential a data connector should authenticate with, and store a new one
+    without leaving your integration. These endpoints are part of the `Preview` API version.
+    Reading requires an OAuth token with the `read_auth_tokens` scope; creating and updating
+    require the `write_auth_tokens` scope and an access token associated with a teammate.
+    Only credentials with a `token_type` of `text` can be created or updated. No endpoint
+    ever returns a credential value, refresh configuration, or OAuth configuration.
 - name: Banners
   description: |
     Retrieve the banners a contact matches and record dismissals, so you can display
