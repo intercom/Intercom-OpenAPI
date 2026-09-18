@@ -17734,8 +17734,9 @@ paths:
                       id: '12345'
                       name: Fulfilment API key
                       description: Used by the order status connector
-                      token_type: header
+                      token_type: text
                       request_header_key: Authorization
+                      token_prefix: Bearer
                       domain: api.fulfilment.example.com
                       created_at: '2025-11-15T09:30:00Z'
                       updated_at: '2026-01-20T14:22:15Z'
@@ -17815,6 +17816,7 @@ paths:
                     description: Used by the order status connector
                     token_type: text
                     request_header_key: Authorization
+                    token_prefix: Bearer
                     domain: api.fulfilment.example.com
                     created_at: '2025-11-15T09:30:00Z'
                     updated_at: '2025-11-15T09:30:00Z'
@@ -17901,8 +17903,9 @@ paths:
                     id: '12345'
                     name: Fulfilment API key
                     description: Used by the order status connector
-                    token_type: header
+                    token_type: text
                     request_header_key: Authorization
+                    token_prefix: Bearer
                     domain: api.fulfilment.example.com
                     created_at: '2025-11-15T09:30:00Z'
                     updated_at: '2026-01-20T14:22:15Z'
@@ -17980,6 +17983,7 @@ paths:
                     description: Used by the order status connector
                     token_type: text
                     request_header_key: Authorization
+                    token_prefix: Bearer
                     domain: api.fulfilment.example.com
                     created_at: '2025-11-15T09:30:00Z'
                     updated_at: '2026-01-20T14:22:15Z'
@@ -30037,6 +30041,11 @@ components:
           description: The request header the credential is sent in.
           example: Authorization
           nullable: true
+        token_prefix:
+          type: string
+          description: The prefix placed before the credential value in the header, for example `Bearer`.
+          example: Bearer
+          nullable: true
         domain:
           type: string
           description: The domain the credential is scoped to, if one was set.
@@ -30104,6 +30113,10 @@ components:
           type: string
           description: The request header the credential is sent in.
           example: Authorization
+        token_prefix:
+          type: string
+          description: An optional prefix placed before the credential value in the header, for example `Bearer`.
+          example: Bearer
         description:
           type: string
           description: An optional description of what the credential is used for.
