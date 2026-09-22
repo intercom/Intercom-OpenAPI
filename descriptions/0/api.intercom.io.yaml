@@ -21453,6 +21453,117 @@ paths:
                       message: Requested resource is not available in current API version.
               schema:
                 "$ref": "#/components/schemas/error"
+  "/roles":
+    get:
+      summary: List all roles
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Roles
+      operationId: listRoles
+      description: |
+        You can fetch a list of all roles in the workspace.
+
+        Roles define what a teammate can do in a workspace. A teammate's role is
+        returned as part of the teammate's admin object on the teammates endpoint,
+        and this endpoint lets you resolve those role ids to their names and
+        descriptions.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: role
+                      id: '991267902'
+                      name: Support Lead
+                      description: Can view and reply to conversations
+              schema:
+                "$ref": "#/components/schemas/role_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a77dadbc-1f1e-4875-bac3-f0d09bbc214a
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/roles/{id}":
+    get:
+      summary: Retrieve a role
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of a given role.
+        example: '991267902'
+        schema:
+          type: string
+      tags:
+      - Roles
+      operationId: retrieveRole
+      description: |
+        You can fetch the details of a single role by its id. This resolves the
+        role id returned on a teammate's admin object to its name and description.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: role
+                    id: '991267902'
+                    name: Support Lead
+                    description: Can view and reply to conversations
+              schema:
+                "$ref": "#/components/schemas/role"
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              examples:
+                Role not found:
+                  value:
+                    type: error.list
+                    request_id: 3ff156ba-a66e-40d4-93ff-cb6e6afc3c9d
+                    errors:
+                    - code: role_not_found
+                      message: Role not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: fc4b741b-b9f1-4ef9-92c7-eb71e9811df3
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/secure_mode_secrets":
     get:
       summary: List all identity verification secrets
@@ -40962,6 +41073,50 @@ components:
       oneOf:
       - "$ref": "#/components/schemas/contact_reply_conversation_request"
       - "$ref": "#/components/schemas/admin_reply_conversation_request"
+    role:
+      title: Role
+      type: object
+      x-tags:
+      - Roles
+      description: A role defines what a teammate can do in a workspace. A teammate's
+        role is returned on the teammates endpoint, and this schema resolves that
+        role id to a name and description.
+      properties:
+        type:
+          type: string
+          description: Value is always "role"
+          example: role
+        id:
+          type: string
+          description: The id of the role
+          example: '991267902'
+        name:
+          type: string
+          description: The name of the role
+          example: Support Lead
+        description:
+          type: string
+          nullable: true
+          description: The description of the role
+          example: Can view and reply to conversations
+    role_list:
+      title: Role List
+      type: object
+      x-tags:
+      - Roles
+      description: A list of role objects in the workspace.
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: A list of role objects
+          items:
+            "$ref": "#/components/schemas/role"
     search_request:
       description: Search using Intercoms Search APIs.
       type: object
@@ -43957,6 +44112,8 @@ tags:
     {% /admonition %}
 - name: Reporting Data Export
   description: Everything about Reporting Data Export. See this [article](https://www.intercom.com/help/en/articles/12089688-api-metrics-documentation) for details on using the data to generate various metrics.
+- name: Roles
+  description: Everything about your Roles
 - name: Segments
   description: Everything about your Segments
 - name: Subscription Types
