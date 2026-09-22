@@ -21467,10 +21467,10 @@ paths:
       description: |
         You can fetch a list of all roles in the workspace.
 
-        Roles define what a teammate can do in a workspace. A teammate's role is
-        returned as part of the teammate's admin object on the teammates endpoint,
-        and this endpoint lets you resolve those role ids to their names and
-        descriptions.
+        Roles define what a teammate can do in a workspace. The teammates endpoint
+        returns the role a teammate holds, but only the roles that are currently
+        assigned, and only their id and name. This endpoint lists every role in the
+        workspace, each with its description.
       responses:
         '200':
           description: successful
@@ -21520,8 +21520,8 @@ paths:
       - Roles
       operationId: retrieveRole
       description: |
-        You can fetch the details of a single role by its id. This resolves the
-        role id returned on a teammate's admin object to its name and description.
+        You can fetch the details of a single role by its id, including its
+        description, which the teammates endpoint does not return.
       responses:
         '200':
           description: successful
@@ -41078,9 +41078,9 @@ components:
       type: object
       x-tags:
       - Roles
-      description: A role defines what a teammate can do in a workspace. A teammate's
-        role is returned on the teammates endpoint, and this schema resolves that
-        role id to a name and description.
+      description: A role defines what a teammate can do in a workspace. The teammates
+        endpoint returns the id and name of the role a teammate holds; this schema
+        adds the role's description.
       properties:
         type:
           type: string
