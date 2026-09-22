@@ -12501,6 +12501,21 @@ paths:
                         reviewed_teammate:
                           type: admin
                           admin_id: '991267715'
+                        reviewer:
+                          type: admin
+                          admin_id: '884120017'
+                        review_status: submitted
+                        notes:
+                          type: note.list
+                          notes:
+                          - type: note
+                            id: '9001'
+                            created_at: 1734537900
+                            updated_at: 1734537900
+                            author:
+                              type: admin
+                              admin_id: '884120017'
+                            body: Great empathy in the second reply.
                         evaluators:
                         - evaluator_id: '54321'
                           result:
@@ -13201,6 +13216,21 @@ paths:
                       reviewed_teammate:
                         type: admin
                         admin_id: '991267715'
+                      reviewer:
+                        type: admin
+                        admin_id: '884120017'
+                      review_status: submitted
+                      notes:
+                        type: note.list
+                        notes:
+                        - type: note
+                          id: '9001'
+                          created_at: 1734537900
+                          updated_at: 1734537900
+                          author:
+                            type: admin
+                            admin_id: '884120017'
+                          body: Great empathy in the second reply.
                       evaluators:
                       - evaluator_id: '54321'
                         result:
@@ -13931,6 +13961,21 @@ paths:
                         reviewed_teammate:
                           type: admin
                           admin_id: '991267715'
+                        reviewer:
+                          type: admin
+                          admin_id: '884120017'
+                        review_status: submitted
+                        notes:
+                          type: note.list
+                          notes:
+                          - type: note
+                            id: '9001'
+                            created_at: 1734537900
+                            updated_at: 1734537900
+                            author:
+                              type: admin
+                              admin_id: '884120017'
+                            body: Great empathy in the second reply.
                         evaluators:
                         - evaluator_id: '54321'
                           result:
@@ -33450,11 +33495,123 @@ components:
           example: 1719493065
         reviewed_teammate:
           "$ref": "#/components/schemas/conversation_scorecard_reviewed_teammate"
+        reviewer:
+          "$ref": "#/components/schemas/conversation_scorecard_reviewer"
+        review_status:
+          type: string
+          nullable: true
+          enum:
+          - unreviewed
+          - submitted
+          - passed_review
+          - needs_fix
+          - wont_fix
+          - fix_complete
+          description: The status of the review of this scorecard, as shown in the QA reviews list in Intercom. `unreviewed` while the review is waiting for a reviewer's verdict; `submitted` once the review has been submitted; `passed_review`, `needs_fix`, `wont_fix` or `fix_complete` when a teammate set a specific outcome. Null when no review exists for this scorecard.
+          example: submitted
+        notes:
+          "$ref": "#/components/schemas/conversation_scorecard_notes"
         evaluators:
           type: array
           description: Per-evaluator results within this scorecard.
           items:
             "$ref": "#/components/schemas/conversation_scorecard_evaluator"
+    conversation_scorecard_reviewer:
+      title: Reviewer
+      type: object
+      nullable: true
+      x-tags:
+      - Conversations
+      description: Who reviewed this scorecard. `ai` when Fin auto-reviewed it; `admin` when a teammate did. Null when no review exists for this scorecard or no reviewer has been assigned yet.
+      properties:
+        type:
+          type: string
+          enum:
+          - ai
+          - admin
+          description: The kind of reviewer. `ai` if Fin auto-reviewed the scorecard; `admin` if a teammate reviewed it.
+          example: admin
+        admin_id:
+          type: string
+          nullable: true
+          description: The id of the admin who reviewed the scorecard. Present only when `type` is `admin`.
+          example: '884120017'
+    conversation_scorecard_notes:
+      title: Scorecard Notes
+      type: object
+      x-tags:
+      - Conversations
+      description: The notes teammates left on the QA review linked to this scorecard entry. The list is empty when the scorecard has no linked review.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `note.list`.
+          example: note.list
+        notes:
+          type: array
+          description: The notes on the linked review, oldest first.
+          example:
+          - type: note
+            id: '9001'
+            created_at: 1734537900
+            updated_at: 1734537900
+            author:
+              type: admin
+              admin_id: '884120017'
+            body: Great empathy in the second reply.
+          items:
+            "$ref": "#/components/schemas/conversation_scorecard_note"
+    conversation_scorecard_note:
+      title: Scorecard Note
+      type: object
+      x-tags:
+      - Conversations
+      description: A note a teammate left on the QA review of this scorecard.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `note`.
+          example: note
+        id:
+          type: string
+          description: The id of the note.
+          example: '9001'
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the note was created.
+          example: 1734537900
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time the note was last edited. Equal to `created_at` when the note has never been edited.
+          example: 1734537900
+        author:
+          "$ref": "#/components/schemas/conversation_scorecard_note_author"
+        body:
+          type: string
+          description: The text of the note exactly as the teammate entered it. Plain text; it is not rendered as HTML.
+          example: Great empathy in the second reply.
+    conversation_scorecard_note_author:
+      title: Note Author
+      type: object
+      nullable: true
+      x-tags:
+      - Conversations
+      description: Who wrote the note. Null when the teammate who wrote it has since been deleted.
+      properties:
+        type:
+          type: string
+          enum:
+          - ai
+          - admin
+          description: The kind of author. `admin` when a teammate wrote the note; `ai` when Fin did.
+          example: admin
+        admin_id:
+          type: string
+          nullable: true
+          description: The id of the admin who wrote the note. Present only when `type` is `admin`.
+          example: '884120017'
     conversation_scorecard_reviewed_teammate:
       title: Reviewed Teammate
       type: object
