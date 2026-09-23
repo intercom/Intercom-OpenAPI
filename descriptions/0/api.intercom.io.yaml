@@ -17822,7 +17822,7 @@ paths:
       - Auth Tokens
       operationId: createAuthToken
       description: |
-        Stores a third-party credential in your workspace so a data connector can authenticate outbound requests with it. Only credentials with a `token_type` of `text` can be created here — the credential value is sent as a request header. The value you supply is stored encrypted and is never returned by any endpoint, including this one.
+        Stores a third-party credential in your workspace so a data connector can authenticate outbound requests with it. Set `token_type` to `text` (the default) to send the credential value as a request header yourself, or to `oauth` to have Intercom exchange OAuth client credentials for an access token and keep it refreshed. The value you supply is stored encrypted and is never returned by any endpoint, including this one.
       requestBody:
         content:
           application/json:
@@ -17837,6 +17837,16 @@ paths:
                   token_prefix: Bearer
                   description: Used by the order status connector
                   domain: api.fulfilment.example.com
+              OAuth credential:
+                value:
+                  name: Fulfilment OAuth credential
+                  token_type: oauth
+                  oauth_configuration:
+                    token_url: https://auth.fulfilment.example.com/oauth/token
+                    client_id: fulfilment-connector
+                    client_secret: 8f6e2b1a9c4d7e05
+                    scope: orders.read
+                  description: Used by the order status connector
         required: true
       responses:
         '201':
@@ -17854,6 +17864,17 @@ paths:
                     request_header_key: Authorization
                     token_prefix: Bearer
                     domain: api.fulfilment.example.com
+                    created_at: '2025-11-15T09:30:00Z'
+                    updated_at: '2025-11-15T09:30:00Z'
+                OAuth credential:
+                  value:
+                    type: auth_token
+                    id: '12346'
+                    name: Fulfilment OAuth credential
+                    description: Used by the order status connector
+                    token_type: oauth
+                    request_header_key: Authorization
+                    token_prefix: Bearer
                     created_at: '2025-11-15T09:30:00Z'
                     updated_at: '2025-11-15T09:30:00Z'
               schema:
@@ -17877,6 +17898,20 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: domain must be a valid domain
+                Field not accepted for token_type:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: request_header_key is not accepted for oauth tokens
+                OAuth exchange failed:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: Could not obtain an access token from token_url with the given client credentials
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -30232,23 +30267,30 @@ components:
       x-tags:
       - Auth Tokens
       description: |
-        The fields accepted when storing a new third-party credential. The credential is created with a `token_type` of `text`; no other type can be created over the API.
+        The fields accepted when storing a new third-party credential. Set `token_type` to `text` (the default) to store a plain credential value, or to `oauth` to have Intercom obtain and manage an access token via the OAuth client-credentials grant.
       properties:
         name:
           type: string
           description: A name for the credential, so a teammate can identify it later.
           example: Fulfilment API key
+        token_type:
+          type: string
+          description: The type of credential to store. Defaults to `text`.
+          enum:
+          - text
+          - oauth
+          example: text
         token_value:
           type: string
-          description: The credential value. Stored encrypted and never returned by any endpoint.
+          description: The credential value. Required when `token_type` is `text`. Must be omitted when `token_type` is `oauth`. Stored encrypted and never returned by any endpoint.
           example: sk_live_9f3c2a7b41e8
         request_header_key:
           type: string
-          description: The request header the credential is sent in.
+          description: The request header the credential is sent in. Required when `token_type` is `text`. Must be omitted when `token_type` is `oauth`, where it is fixed to `Authorization`.
           example: Authorization
         token_prefix:
           type: string
-          description: An optional prefix placed before the credential value in the header, for example `Bearer`.
+          description: An optional prefix placed before the credential value in the header, for example `Bearer`. Must be omitted when `token_type` is `oauth`, where it is fixed to `Bearer`.
           example: Bearer
         description:
           type: string
@@ -30256,12 +30298,51 @@ components:
           example: Used by the order status connector
         domain:
           type: string
-          description: An optional domain to scope the credential to.
+          description: An optional domain to scope the credential to. Only applies when `token_type` is `text`; must be omitted for `oauth`.
           example: api.fulfilment.example.com
+        oauth_configuration:
+          "$ref": "#/components/schemas/oauth_configuration"
       required:
       - name
-      - token_value
-      - request_header_key
+    oauth_configuration:
+      title: OAuth Configuration
+      type: object
+      x-tags:
+      - Auth Tokens
+      description: |
+        The OAuth client-credentials configuration Intercom uses to obtain and refresh an access token. Required when `token_type` is `oauth`. Must be omitted when `token_type` is `text`.
+      properties:
+        token_url:
+          type: string
+          description: The token endpoint Intercom exchanges the client credentials with. Must be an `https` URL.
+          example: https://auth.fulfilment.example.com/oauth/token
+        client_id:
+          type: string
+          description: The OAuth client ID.
+          example: fulfilment-connector
+        client_secret:
+          type: string
+          description: The OAuth client secret. Stored encrypted and never returned by any endpoint.
+          example: 8f6e2b1a9c4d7e05
+        scope:
+          type: string
+          description: An optional scope to request from the token endpoint.
+          example: orders.read
+        audience:
+          type: string
+          description: An optional audience to request from the token endpoint.
+          example: https://api.fulfilment.example.com
+        request_format:
+          type: string
+          description: The format the client credentials are sent in when requesting a token. Defaults to `json`.
+          enum:
+          - json
+          - form_encoded
+          example: json
+      required:
+      - token_url
+      - client_id
+      - client_secret
     update_auth_token_request:
       title: Update Auth Token Request
       type: object
@@ -44125,8 +44206,10 @@ tags:
     without leaving your integration. These endpoints are part of the `Preview` API version.
     Reading requires an OAuth token with the `read_auth_tokens` scope; creating and updating
     require the `write_auth_tokens` scope and an access token associated with a teammate.
-    Only credentials with a `token_type` of `text` can be created or updated. No endpoint
-    ever returns a credential value, refresh configuration, or OAuth configuration.
+    You can create a `text` credential to send yourself, or an `oauth` credential whose
+    access token Intercom obtains and refreshes automatically via the client-credentials
+    grant. Only credentials with a `token_type` of `text` can be updated. No endpoint ever
+    returns a credential value, client secret, refresh configuration, or OAuth configuration.
 - name: Banners
   description: |
     Retrieve the banners a contact matches and record dismissals, so you can display
