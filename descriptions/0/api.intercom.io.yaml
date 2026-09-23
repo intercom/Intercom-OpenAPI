@@ -17847,7 +17847,6 @@ paths:
                     client_secret: 8f6e2b1a9c4d7e05
                     scope: orders.read
                   description: Used by the order status connector
-                  domain: api.fulfilment.example.com
         required: true
       responses:
         '201':
@@ -17876,7 +17875,6 @@ paths:
                     token_type: oauth
                     request_header_key: Authorization
                     token_prefix: Bearer
-                    domain: api.fulfilment.example.com
                     created_at: '2025-11-15T09:30:00Z'
                     updated_at: '2025-11-15T09:30:00Z'
               schema:
@@ -30300,7 +30298,7 @@ components:
           example: Used by the order status connector
         domain:
           type: string
-          description: An optional domain to scope the credential to.
+          description: An optional domain to scope the credential to. Only applies when `token_type` is `text`; must be omitted for `oauth`.
           example: api.fulfilment.example.com
         oauth_configuration:
           "$ref": "#/components/schemas/oauth_configuration"
