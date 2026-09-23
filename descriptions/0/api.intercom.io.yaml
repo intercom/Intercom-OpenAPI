@@ -12506,16 +12506,13 @@ paths:
                           admin_id: '884120017'
                         review_status: submitted
                         notes:
-                          type: note.list
-                          notes:
-                          - type: note
-                            id: '9001'
-                            created_at: 1734537900
-                            updated_at: 1734537900
-                            author:
-                              type: admin
-                              admin_id: '884120017'
-                            body: Great empathy in the second reply.
+                        - id: '9001'
+                          created_at: 1734537900
+                          updated_at: 1734537900
+                          author:
+                            type: admin
+                            admin_id: '884120017'
+                          body: Great empathy in the second reply.
                         evaluators:
                         - evaluator_id: '54321'
                           result:
@@ -13221,16 +13218,13 @@ paths:
                         admin_id: '884120017'
                       review_status: submitted
                       notes:
-                        type: note.list
-                        notes:
-                        - type: note
-                          id: '9001'
-                          created_at: 1734537900
-                          updated_at: 1734537900
-                          author:
-                            type: admin
-                            admin_id: '884120017'
-                          body: Great empathy in the second reply.
+                      - id: '9001'
+                        created_at: 1734537900
+                        updated_at: 1734537900
+                        author:
+                          type: admin
+                          admin_id: '884120017'
+                        body: Great empathy in the second reply.
                       evaluators:
                       - evaluator_id: '54321'
                         result:
@@ -13966,16 +13960,13 @@ paths:
                           admin_id: '884120017'
                         review_status: submitted
                         notes:
-                          type: note.list
-                          notes:
-                          - type: note
-                            id: '9001'
-                            created_at: 1734537900
-                            updated_at: 1734537900
-                            author:
-                              type: admin
-                              admin_id: '884120017'
-                            body: Great empathy in the second reply.
+                        - id: '9001'
+                          created_at: 1734537900
+                          updated_at: 1734537900
+                          author:
+                            type: admin
+                            admin_id: '884120017'
+                          body: Great empathy in the second reply.
                         evaluators:
                         - evaluator_id: '54321'
                           result:
@@ -33510,7 +33501,18 @@ components:
           description: The status of the review of this scorecard, as shown in the QA reviews list in Intercom. `unreviewed` while the review is waiting for a reviewer's verdict; `submitted` once the review has been submitted; `passed_review`, `needs_fix`, `wont_fix` or `fix_complete` when a teammate set a specific outcome. Null when no review exists for this scorecard.
           example: submitted
         notes:
-          "$ref": "#/components/schemas/conversation_scorecard_notes"
+          type: array
+          description: The notes teammates left on the QA review linked to this scorecard entry. Empty when the scorecard has no linked review.
+          example:
+          - id: '9001'
+            created_at: 1734537900
+            updated_at: 1734537900
+            author:
+              type: admin
+              admin_id: '884120017'
+            body: Great empathy in the second reply.
+          items:
+            "$ref": "#/components/schemas/conversation_scorecard_note"
         evaluators:
           type: array
           description: Per-evaluator results within this scorecard.
@@ -33536,31 +33538,6 @@ components:
           nullable: true
           description: The id of the admin who reviewed the scorecard. Present only when `type` is `admin`.
           example: '884120017'
-    conversation_scorecard_notes:
-      title: Scorecard Notes
-      type: object
-      x-tags:
-      - Conversations
-      description: The notes teammates left on the QA review linked to this scorecard entry. The list is empty when the scorecard has no linked review.
-      properties:
-        type:
-          type: string
-          description: String representing the object's type. Always has the value `note.list`.
-          example: note.list
-        notes:
-          type: array
-          description: The notes on the linked review, oldest first.
-          example:
-          - type: note
-            id: '9001'
-            created_at: 1734537900
-            updated_at: 1734537900
-            author:
-              type: admin
-              admin_id: '884120017'
-            body: Great empathy in the second reply.
-          items:
-            "$ref": "#/components/schemas/conversation_scorecard_note"
     conversation_scorecard_note:
       title: Scorecard Note
       type: object
@@ -33568,10 +33545,6 @@ components:
       - Conversations
       description: A note a teammate left on the QA review of this scorecard.
       properties:
-        type:
-          type: string
-          description: String representing the object's type. Always has the value `note`.
-          example: note
         id:
           type: string
           description: The id of the note.
