@@ -22260,33 +22260,42 @@ paths:
       - Calls
       operationId: showCallTranscript
       description: |
-        Returns the transcript for the specified call as a downloadable text file.
+        Returns the transcript for the specified call as a JSON array of turns. Each turn carries a `speaker_name` when the speaker could be resolved. Clients should fall back to `speaker_label` when `speaker_name` is absent.
       responses:
         '200':
           description: successful
-          headers:
-            Content-Disposition:
-              description: File attachment directive and suggested filename for the transcript
-              schema:
-                type: string
-                example: "attachment; filename=transcription_data-2025-07-17.txt"
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                description: Transcript text
+                type: array
+                items:
+                  "$ref": "#/components/schemas/call_transcript_turn"
               examples:
-                transcript_txt:
-                  value: |-
-                    [00:00:03] Teammate 1: "Hello, thanks for calling. How can I help today?"
-                    [00:00:09] User: "I need help recovering access to my account."
-                    [00:00:15] Teammate 1: "I can help with that. For security, I’ll ask a few generic verification questions."
-                    [00:00:22] User: "Okay."
-                    [00:00:28] Teammate 1: "Please confirm general details on the account (no sensitive data over this call)."
-                    [00:00:35] User: "I can provide non-sensitive info."
-                    [00:00:41] Teammate 1: "Thank you. I’ll initiate a standard account recovery process and send the next steps."
-                    [00:00:48] User: "Great, thanks."
-                    [00:00:53] Teammate 1: "You should receive a message shortly with instructions to complete recovery."
+                transcript:
+                  value:
+                  - start_time: "0.0"
+                    end_time: "3.00"
+                    speaker_label: "Teammate 1"
+                    speaker: "Teammate 1"
+                    content: "Hello, thanks for calling. How can I help today?"
+                    speaker_type: admin
+                    speaker_id: "789"
+                    speaker_name: Jane Doe
+                  - start_time: "3.00"
+                    end_time: "9.00"
+                    speaker_label: User
+                    speaker: User
+                    content: I need help recovering access to my account.
+                    speaker_type: user
+                    speaker_id: "6762f0dd1bb69f9f2193bb83"
+                    speaker_name: John Smith
+                  - start_time: "9.00"
+                    end_time: "15.00"
+                    speaker_label: User
+                    speaker: User
+                    content: I can provide non-sensitive info to verify.
+                    speaker_type: user
+                    speaker_id: "6762f0dd1bb69f9f2193bb84"
         '404':
           description: Not Found
           content:
@@ -22351,7 +22360,14 @@ paths:
                       id: "123"
                       conversation_id: "64619700005694"
                       transcript:
-                      - {}
+                      - start_time: "0.0"
+                        end_time: "3.00"
+                        speaker_label: "Teammate 1"
+                        speaker: "Teammate 1"
+                        content: "Hello, thanks for calling. How can I help today?"
+                        speaker_type: admin
+                        speaker_id: "789"
+                        speaker_name: Jane Doe
                       transcript_status: completed
               schema:
                 type: object
@@ -22370,8 +22386,7 @@ paths:
                             type: array
                             description: The call transcript if available, otherwise an empty array.
                             items:
-                              type: object
-                              additionalProperties: true
+                              "$ref": "#/components/schemas/call_transcript_turn"
                           transcript_status:
                             type: string
                             nullable: true
@@ -35827,6 +35842,45 @@ components:
           example: 0
         pages:
           "$ref": "#/components/schemas/cursor_pages"
+    call_transcript_turn:
+      title: Call Transcript Turn
+      type: object
+      x-tags:
+      - Calls
+      description: A single turn in a call transcript.
+      properties:
+        start_time:
+          type: string
+          description: The start time of the turn, as a seconds offset from the start of the call.
+          example: "0.0"
+        end_time:
+          type: string
+          description: The end time of the turn, as a seconds offset from the start of the call.
+          example: "3.00"
+        speaker_label:
+          type: string
+          description: The diarization label for the speaker.
+          example: "Teammate 1"
+        speaker:
+          type: string
+          description: The diarization label for the speaker. Same value as `speaker_label`.
+          example: "Teammate 1"
+        content:
+          type: string
+          description: The transcribed text spoken during this turn.
+          example: Hello, thanks for calling. How can I help today?
+        speaker_type:
+          type: string
+          description: The type of the speaker - either `admin` for a teammate or `user` for a contact.
+          example: admin
+        speaker_id:
+          type: string
+          description: The id of the teammate or contact who is the speaker.
+          example: "789"
+        speaker_name:
+          type: string
+          description: The resolved display name of the speaker. Omitted when the speaker cannot be resolved or has no name, for example a contact whose record was scrambled by a GDPR deletion request. Clients should fall back to `speaker_label` when this is absent.
+          example: Jane Doe
     custom_attributes:
       title: Custom Attributes
       type: object
