@@ -12515,10 +12515,18 @@ paths:
                           body: Great empathy in the second reply.
                         evaluators:
                         - evaluator_id: '54321'
+                          name: Tone of voice
                           result:
                             value: pass
+                            value_label: Pass
                             source: ai
                             reasoning: The agent acknowledged the issue and resolved it within the same response.
+                            reason_ids:
+                            - '101'
+                            - '102'
+                            reasons:
+                            - name: Clear and concise
+                            - name: Empathetic tone
               schema:
                 "$ref": "#/components/schemas/conversation_list"
         '401':
@@ -13227,10 +13235,18 @@ paths:
                         body: Great empathy in the second reply.
                       evaluators:
                       - evaluator_id: '54321'
+                        name: Tone of voice
                         result:
                           value: pass
+                          value_label: Pass
                           source: ai
                           reasoning: The agent acknowledged the issue and resolved it within the same response.
+                          reason_ids:
+                          - '101'
+                          - '102'
+                          reasons:
+                          - name: Clear and concise
+                          - name: Empathetic tone
               schema:
                 "$ref": "#/components/schemas/conversation"
         '404':
@@ -13969,10 +13985,18 @@ paths:
                           body: Great empathy in the second reply.
                         evaluators:
                         - evaluator_id: '54321'
+                          name: Tone of voice
                           result:
                             value: pass
+                            value_label: Pass
                             source: ai
                             reasoning: The agent acknowledged the issue and resolved it within the same response.
+                            reason_ids:
+                            - '101'
+                            - '102'
+                            reasons:
+                            - name: Clear and concise
+                            - name: Empathetic tone
               schema:
                 "$ref": "#/components/schemas/conversation_list"
       requestBody:
@@ -33750,6 +33774,11 @@ components:
           type: string
           description: The unique identifier of the evaluator (criterion) within the scorecard.
           example: '54321'
+        name:
+          type: string
+          nullable: true
+          description: The name of the evaluator (criterion). Null if the evaluator's name could not be resolved.
+          example: Tone of voice
         result:
           allOf:
             - "$ref": "#/components/schemas/conversation_scorecard_evaluator_result"
@@ -33767,6 +33796,10 @@ components:
           nullable: true
           description: The evaluator's selected value (typically a label such as `pass`, `fail`, or a category identifier).
           example: pass
+        value_label:
+          type: string
+          description: The label of the rating option matching `value` (for example `Needs improvement`). Omitted when the label could not be resolved.
+          example: Pass
         source:
           type: string
           nullable: true
@@ -33786,11 +33819,31 @@ components:
           example:
           - '101'
           - '102'
+        reasons:
+          type: array
+          description: The names of the structured reasons in `reason_ids`, one entry per id, in the same order. Omitted when the result has no `reason_ids`.
+          items:
+            "$ref": "#/components/schemas/conversation_scorecard_evaluator_reason"
+          example:
+          - name: Clear and concise
+          - name: Empathetic tone
         other_text:
           type: string
           nullable: true
           description: Free-text entered by the reviewer to supplement or stand in for the structured `reason_ids` — typically captured when the reviewer selects an "Other" option or adds a custom note. Null when not provided.
           example: Agent acknowledged the issue but missed the follow-up question about billing.
+    conversation_scorecard_evaluator_reason:
+      title: Evaluator Reason
+      type: object
+      x-tags:
+      - Conversations
+      description: A single structured reason assigned to an evaluator's result.
+      properties:
+        name:
+          type: string
+          nullable: true
+          description: The name of the reason. Null if the reason's name could not be resolved.
+          example: Clear and concise
     conversation_channel:
       title: Conversation Channel
       type: object
