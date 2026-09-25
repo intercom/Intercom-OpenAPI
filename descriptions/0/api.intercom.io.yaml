@@ -3975,7 +3975,7 @@ paths:
                     request_id: 816186b3-3187-4b47-adf8-e201bea32209
                     errors:
                     - code: parameter_invalid
-                      message: target_type must be 'article' or 'collection'
+                      message: target_type must be 'article', 'collection' or 'help_center'
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -4018,6 +4018,13 @@ paths:
                     errors:
                     - code: data_invalid
                       message: from_url must be an absolute URL within this help center's URL space
+                Help center target mismatch:
+                  value:
+                    type: error.list
+                    request_id: 45d96ec2-641f-4354-b24e-83a85d33bd34
+                    errors:
+                    - code: data_invalid
+                      message: target_id must match the help center for a help_center redirect
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -4047,6 +4054,12 @@ paths:
                   locale: en
                   target_type: article
                   target_id: '11'
+              help_center_redirect_created:
+                summary: redirect to the help center home page
+                value:
+                  from_url: http://help-center.test/lovelyhelpcenter/en
+                  locale: en-us
+                  target_type: help_center
   "/help_center/help_centers/{help_center_id}/redirects/{id}":
     get:
       summary: Retrieve a redirect
@@ -30538,8 +30551,9 @@ components:
       x-tags:
       - Help Center
       description: |
-        A redirect maps a source URL (`from_url`) to an article or collection within a
-        help center, so that links to old or external URLs resolve to live content.
+        A redirect maps a source URL (`from_url`) to an article, a collection or the
+        home page of a help center, so that links to old or external URLs resolve to
+        live content.
       properties:
         id:
           type: string
@@ -30569,15 +30583,17 @@ components:
           example: '7'
         target_type:
           type: string
-          description: The type of the redirect target.
+          description: The type of the redirect target. `help_center` targets the
+            help center's home page.
           enum:
           - article
           - collection
+          - help_center
           example: article
         target_id:
           type: string
-          description: The unique identifier of the target article or collection. For
-            article targets this is the Article ID.
+          description: The unique identifier of the target article, collection or help
+            center. For article targets this is the Article ID.
           example: '11'
         created_at:
           type: integer
@@ -30626,21 +30642,24 @@ components:
           example: en
         target_type:
           type: string
-          description: The type of the redirect target.
+          description: The type of the redirect target. `help_center` targets the
+            help center's home page.
           enum:
           - article
           - collection
+          - help_center
           example: article
         target_id:
           type: string
-          description: The unique identifier of the target article or collection. The
-            target must be a member of the help center.
+          description: The unique identifier of the target article, collection or help
+            center. The target must be a member of the help center. Required unless
+            `target_type` is `help_center`, where it defaults to the help center in the
+            path and must match it if provided.
           example: '11'
       required:
       - from_url
       - locale
       - target_type
-      - target_id
     deleted_help_center_redirect_object:
       title: Deleted Help Center Redirect Object
       type: object
