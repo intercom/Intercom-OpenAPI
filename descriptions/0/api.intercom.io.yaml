@@ -31469,7 +31469,7 @@ components:
           example: example.com
         email_verified:
           type: boolean
-          description: Whether the contact's email address is marked as verified. It is set when the public API marks it as verified on contact create or update, when the contact is imported from a CSV in the help desk, or when the contact is created from mail arriving from that address. It is false if the address has never been verified, and it returns to false if the contact's email changes, until the new address is verified.
+          description: Whether the contact's current email address has been verified. True only when this address was verified through the Contacts API and has not changed since; a contact whose email came from another Intercom feature or another API, such as a lead created from inbound email or from the Conversations or Tickets APIs, reads false here even though Intercom may still match it by email. Becomes false again if the contact's email changes, until the new address is verified. Only returned on the Preview version; not present on any released API version.
           example: true
         phone:
           type: string
@@ -34848,7 +34848,7 @@ components:
         email_verified:
           type: boolean
           nullable: true
-          description: Whether the contact's email address has been verified. Set to true to indicate you have verified the contact owns this email address, or false to mark it as unverified. Must be supplied together with an email in the same request; sending it without an email returns a 400. Verifying a lead's email also makes that lead reusable whenever Intercom matches an email address to a contact. When inbound email arrives from an address no user has, or an outbound conversation or ticket is created for one, Intercom reuses a lead with that address whose email is verified, instead of creating a new lead. Leads with an unverified email are not matched this way.
+          description: Whether the contact's email address has been verified. Set to true, together with an email in the same request, to record that you have verified the contact owns that address; this replaces any earlier verification state for the contact. Set to false to mark the address as unverified. Omit it, or send null, to leave the contact's current verification state unchanged — a newly created contact starts unverified. A lead with a verified email is reused when Intercom later matches an inbound email, or an outbound conversation or ticket, to that address, instead of creating a new lead. Sending email_verified without an email in the same request returns a 400.
           example: true
         phone:
           type: string
@@ -43124,7 +43124,7 @@ components:
         email_verified:
           type: boolean
           nullable: true
-          description: Whether the contact's email address has been verified. Set to true to indicate you have verified the contact owns this email address, or false to mark it as unverified. Must be supplied together with an email in the same request; sending it without an email returns a 400. Verifying a lead's email also makes that lead reusable whenever Intercom matches an email address to a contact. When inbound email arrives from an address no user has, or an outbound conversation or ticket is created for one, Intercom reuses a lead with that address whose email is verified, instead of creating a new lead. Leads with an unverified email are not matched this way.
+          description: Whether the contact's email address has been verified. Set to true, together with an email in the same request, to record that you have verified the contact owns that address; this replaces any earlier verification state for the contact. Set to false to mark the address as unverified. Omit it, or send null, to leave the contact's current verification state unchanged — a newly created contact starts unverified. A lead with a verified email is reused when Intercom later matches an inbound email, or an outbound conversation or ticket, to that address, instead of creating a new lead. Sending email_verified without an email in the same request returns a 400.
           example: true
         phone:
           type: string
