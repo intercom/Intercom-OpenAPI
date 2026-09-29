@@ -35922,12 +35922,16 @@ components:
       description: A single turn in a call transcript.
       properties:
         start_time:
-          type: string
-          description: The start time of the turn, as a seconds offset from the start of the call.
+          oneOf:
+          - type: string
+          - type: number
+          description: The start time of the turn, as a seconds offset from the start of the call. A string on calls transcribed by Amazon Transcribe, a number on Fin Voice calls.
           example: "0.0"
         end_time:
-          type: string
-          description: The end time of the turn, as a seconds offset from the start of the call.
+          oneOf:
+          - type: string
+          - type: number
+          description: The end time of the turn, as a seconds offset from the start of the call. A string on calls transcribed by Amazon Transcribe, a number on Fin Voice calls.
           example: "3.00"
         speaker_label:
           type: string
@@ -35943,16 +35947,48 @@ components:
           example: Hello, thanks for calling. How can I help today?
         speaker_type:
           type: string
-          description: The type of the speaker - either `admin` for a teammate or `user` for a contact.
+          description: The type of the speaker - either `admin` for a teammate or `user` for a contact. Absent on Fin Voice call transcripts and on calls transcribed before speaker attribution shipped, where only `speaker_label` identifies the speaker.
           example: admin
         speaker_id:
           type: string
-          description: The id of the teammate or contact who is the speaker.
+          description: The id of the teammate or contact who is the speaker. `-1` when the teammate who spoke has since been deleted, in which case `speaker_name` is `Deleted teammate`.
           example: "789"
         speaker_name:
           type: string
-          description: The resolved display name of the speaker. Omitted when the speaker cannot be resolved or has no name, for example a contact whose record was scrambled by a GDPR deletion request. Clients should fall back to `speaker_label` when this is absent.
+          description: The resolved display name of the speaker. A contact who has been merged into another resolves to the name on the surviving record. Omitted when the speaker cannot be resolved or has no name, for example a contact whose record was scrambled by a GDPR deletion request. Clients should fall back to `speaker_label` when this is absent.
           example: Jane Doe
+        article_sources:
+          type: array
+          description: Sources Fin cited during this turn. Only present on Fin Voice call transcripts.
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+                description: The title of the cited source.
+              entity_type:
+                type: integer
+                description: The type of the cited entity.
+              entity_id:
+                type: string
+                description: The id of the cited entity.
+        triggered_guidance:
+          type: array
+          description: Guidance rules that Fin matched during this turn. Only present on Fin Voice call transcripts.
+          items:
+            type: object
+            properties:
+              match_type:
+                type: string
+                description: How the rule was matched.
+                example: clarification
+              rule_id:
+                type: string
+                description: The id of the matched guidance rule.
+                example: "3"
+              rule_text:
+                type: string
+                description: The text of the matched guidance rule.
     custom_attributes:
       title: Custom Attributes
       type: object
