@@ -11784,6 +11784,10 @@ paths:
                             name: Test tag
                         event_details:
                         app_package_code: null
+                        translations:
+                          original: en
+                          en: '<p>Okay!</p>'
+                          es: '<p>¡Vale!</p>'
                       - type: conversation_part
                         id: 2
                         part_type: custom_action_started
@@ -13046,6 +13050,10 @@ paths:
                         metadata: {}
                         email_message_metadata:
                         app_package_code: null
+                        translations:
+                          original: en
+                          en: '<p>Goodbye :)</p>'
+                          es: '<p>¡Adiós! :)</p>'
                       total_count: 1
                 Snooze a conversation:
                   value:
@@ -20242,6 +20250,26 @@ paths:
           content:
             application/json:
               examples:
+                Admin reply:
+                  value:
+                    type: ticket_part
+                    id: '155'
+                    part_type: comment
+                    body: "<p>Thanks for reaching out, we're looking into it!</p>"
+                    created_at: 1734537880
+                    updated_at: 1734537880
+                    author:
+                      id: '991267940'
+                      type: admin
+                      name: Ciaran418 Lee
+                      email: admin418@email.com
+                    attachments: []
+                    redacted: false
+                    app_package_code: test-integration
+                    translations:
+                      original: en
+                      en: '<p>Thanks for reaching out, we''re looking into it!</p>'
+                      fr: '<p>Merci de nous avoir contactés, nous nous en occupons !</p>'
                 Admin note reply:
                   value:
                     type: ticket_part
@@ -20328,6 +20356,13 @@ paths:
                     Ticket.
                   example: true
             examples:
+              admin_reply:
+                summary: Admin reply
+                value:
+                  message_type: comment
+                  type: admin
+                  admin_id: 991267940
+                  body: "<p>Thanks for reaching out, we're looking into it!</p>"
               user_reply:
                 summary: User reply
                 value:
@@ -28052,6 +28087,27 @@ components:
           nullable: true
           example: "test-integration"
           description: The app package code if this part was created via API. null if the part was not created via API.
+        translations:
+          type: object
+          nullable: true
+          description: >-
+            A map of the reply text keyed by locale code. Backs the
+            `conversation.admin.replied.translated` webhook topic. `original` holds
+            the locale code the reply was written in; every other key holds the
+            reply translated into that locale.
+          properties:
+            original:
+              type: string
+              description: The locale code identifying the language the reply was originally written in.
+              example: en
+          additionalProperties:
+            type: string
+          required:
+          - original
+          example:
+            original: en
+            en: '<p>Hello</p>'
+            fr: '<p>Bonjour</p>'
     conversation_part_author:
       title: Conversation part author
       type: object
@@ -34747,6 +34803,27 @@ components:
           nullable: false
           example: text-integration
           description: The app package code if this part was created via API. Note this field won't show if the part was not created via API.
+        translations:
+          type: object
+          nullable: true
+          description: >-
+            A map of the reply text keyed by locale code. Backs the
+            `ticket.admin.replied.translated` webhook topic. `original` holds
+            the locale code the reply was written in; every other key holds the
+            reply translated into that locale.
+          properties:
+            original:
+              type: string
+              description: The locale code identifying the language the reply was originally written in.
+              example: en
+          additionalProperties:
+            type: string
+          required:
+          - original
+          example:
+            original: en
+            en: '<p>Hello</p>'
+            fr: '<p>Bonjour</p>'
         updated_attribute_data:
           title: Updated Attribute
           type: object
@@ -34916,6 +34993,27 @@ components:
           type: boolean
           description: Whether or not the ticket part has been redacted.
           example: false
+        translations:
+          type: object
+          nullable: true
+          description: >-
+            A map of the reply text keyed by locale code. Backs the
+            `ticket.admin.replied.translated` webhook topic. `original` holds
+            the locale code the reply was written in; every other key holds the
+            reply translated into that locale.
+          properties:
+            original:
+              type: string
+              description: The locale code identifying the language the reply was originally written in.
+              example: en
+          additionalProperties:
+            type: string
+          required:
+          - original
+          example:
+            original: en
+            en: '<p>Hello</p>'
+            fr: '<p>Bonjour</p>'
     ticket_request_custom_attributes:
       title: Ticket Attributes
       type: object
