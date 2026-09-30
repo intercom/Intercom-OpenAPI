@@ -11786,8 +11786,8 @@ paths:
                         app_package_code: null
                         translations:
                           original: en
-                          en: <p>Okay!</p>
-                          fr: "<p>D'accord!</p>"
+                          en: '<p>Okay!</p>'
+                          es: '<p>¡Vale!</p>'
                       - type: conversation_part
                         id: 2
                         part_type: custom_action_started
@@ -13050,6 +13050,10 @@ paths:
                         metadata: {}
                         email_message_metadata:
                         app_package_code: null
+                        translations:
+                          original: en
+                          en: '<p>Goodbye :)</p>'
+                          es: '<p>¡Adiós! :)</p>'
                       total_count: 1
                 Snooze a conversation:
                   value:
@@ -20264,8 +20268,8 @@ paths:
                     app_package_code: test-integration
                     translations:
                       original: en
-                      en: "<p>Thanks for reaching out, we're looking into it!</p>"
-                      fr: "<p>Merci de nous avoir contactés, nous nous en occupons !</p>"
+                      en: '<p>Thanks for reaching out, we''re looking into it!</p>'
+                      fr: '<p>Merci de nous avoir contactés, nous nous en occupons !</p>'
                 Admin note reply:
                   value:
                     type: ticket_part
@@ -28080,26 +28084,30 @@ components:
           type: object
           nullable: true
           description: >-
-            A map of the reply text keyed by locale code. Backs the
-            `conversation.admin.replied.translated` webhook topic. The special `original` key holds the source locale code
+            A map of the reply text keyed by locale code, with values in the
+            same HTML format as `body`. Backs the `conversation.admin.replied.translated`
+            webhook topic. The special `original` key holds the source locale code
             of the reply; every other key is a locale code whose value is the reply
-            text translated into that locale, as HTML in the same format as `body`.
-            The `body` field is unchanged and always
-            stays in the original source language. Available from API version 2.16
-            (set `Intercom-Version: 2.16`). This webhook topic is not sent for
-            every translated reply: it is suppressed when the reply's `body` contains
-            any text outside an HTML block element, which includes plain-text replies
-            created through the REST API.
+            text translated into that locale. The `translations` field does not modify
+            `body`; `body` carries the reply as authored.
+            This webhook topic is not sent for every translated reply: it is
+            suppressed when the reply's `body` contains any text outside an HTML block
+            element, which includes plain-text replies created through the REST API.
             Wrap the body in `<p>`, `<div>`, or another supported block element to
             avoid this.
-          required:
-            - original
+          properties:
+            original:
+              type: string
+              description: The locale code identifying the language the reply was originally written in.
+              example: en
           additionalProperties:
             type: string
+          required:
+          - original
           example:
             original: en
-            en: <p>Hello</p>
-            fr: <p>Bonjour</p>
+            en: '<p>Hello</p>'
+            fr: '<p>Bonjour</p>'
     conversation_part_author:
       title: Conversation part author
       type: object
@@ -34792,26 +34800,30 @@ components:
           type: object
           nullable: true
           description: >-
-            A map of the reply text keyed by locale code. Backs the
-            `ticket.admin.replied.translated` webhook topic. The special `original` key holds the source locale code
+            A map of the reply text keyed by locale code, with values in the
+            same HTML format as `body`. Backs the `ticket.admin.replied.translated`
+            webhook topic. The special `original` key holds the source locale code
             of the reply; every other key is a locale code whose value is the reply
-            text translated into that locale, as HTML in the same format as `body`.
-            The `body` field is unchanged and always
-            stays in the original source language. Available from API version 2.16
-            (set `Intercom-Version: 2.16`). This webhook topic is not sent for
-            every translated reply: it is suppressed when the reply's `body` contains
-            any text outside an HTML block element, which includes plain-text replies
-            created through the REST API.
+            text translated into that locale. The `translations` field does not modify
+            `body`; `body` carries the reply as authored.
+            This webhook topic is not sent for every translated reply: it is
+            suppressed when the reply's `body` contains any text outside an HTML block
+            element, which includes plain-text replies created through the REST API.
             Wrap the body in `<p>`, `<div>`, or another supported block element to
             avoid this.
-          required:
-            - original
+          properties:
+            original:
+              type: string
+              description: The locale code identifying the language the reply was originally written in.
+              example: en
           additionalProperties:
             type: string
+          required:
+          - original
           example:
             original: en
-            en: <p>Hello</p>
-            fr: <p>Bonjour</p>
+            en: '<p>Hello</p>'
+            fr: '<p>Bonjour</p>'
         updated_attribute_data:
           title: Updated Attribute
           type: object
@@ -34985,26 +34997,30 @@ components:
           type: object
           nullable: true
           description: >-
-            A map of the reply text keyed by locale code. Backs the
-            `ticket.admin.replied.translated` webhook topic. The special `original` key holds the source locale code
+            A map of the reply text keyed by locale code, with values in the
+            same HTML format as `body`. Backs the `ticket.admin.replied.translated`
+            webhook topic. The special `original` key holds the source locale code
             of the reply; every other key is a locale code whose value is the reply
-            text translated into that locale, as HTML in the same format as `body`.
-            The `body` field is unchanged and always
-            stays in the original source language. Available from API version 2.16
-            (set `Intercom-Version: 2.16`). This webhook topic is not sent for
-            every translated reply: it is suppressed when the reply's `body` contains
-            any text outside an HTML block element, which includes plain-text replies
-            created through the REST API.
+            text translated into that locale. The `translations` field does not modify
+            `body`; `body` carries the reply as authored.
+            This webhook topic is not sent for every translated reply: it is
+            suppressed when the reply's `body` contains any text outside an HTML block
+            element, which includes plain-text replies created through the REST API.
             Wrap the body in `<p>`, `<div>`, or another supported block element to
             avoid this.
-          required:
-            - original
+          properties:
+            original:
+              type: string
+              description: The locale code identifying the language the reply was originally written in.
+              example: en
           additionalProperties:
             type: string
+          required:
+          - original
           example:
             original: en
-            en: <p>Hello</p>
-            fr: <p>Bonjour</p>
+            en: '<p>Hello</p>'
+            fr: '<p>Bonjour</p>'
     ticket_request_custom_attributes:
       title: Ticket Attributes
       type: object
