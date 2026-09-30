@@ -12504,7 +12504,6 @@ paths:
                         evaluated_at: 1734537760
                       scorecards:
                       - scorecard_id: '67890'
-                        scorecard_version_id: '67891'
                         name: Standard QA Review
                         scorecard_type: human
                         passed: true
@@ -12534,9 +12533,6 @@ paths:
                             value_label: Pass
                             source: ai
                             reasoning: The agent acknowledged the issue and resolved it within the same response.
-                            reason_ids:
-                            - '101'
-                            - '102'
                             reasons:
                             - name: Clear and concise
                             - name: Empathetic tone
@@ -13224,7 +13220,6 @@ paths:
                       evaluated_at: 1734537760
                     scorecards:
                     - scorecard_id: '67890'
-                      scorecard_version_id: '67891'
                       name: Standard QA Review
                       scorecard_type: human
                       passed: true
@@ -13254,9 +13249,6 @@ paths:
                           value_label: Pass
                           source: ai
                           reasoning: The agent acknowledged the issue and resolved it within the same response.
-                          reason_ids:
-                          - '101'
-                          - '102'
                           reasons:
                           - name: Clear and concise
                           - name: Empathetic tone
@@ -13974,7 +13966,6 @@ paths:
                         evaluated_at: 1734537760
                       scorecards:
                       - scorecard_id: '67890'
-                        scorecard_version_id: '67891'
                         name: Standard QA Review
                         scorecard_type: human
                         passed: true
@@ -14004,9 +13995,6 @@ paths:
                             value_label: Pass
                             source: ai
                             reasoning: The agent acknowledged the issue and resolved it within the same response.
-                            reason_ids:
-                            - '101'
-                            - '102'
                             reasons:
                             - name: Clear and concise
                             - name: Empathetic tone
@@ -33665,10 +33653,6 @@ components:
           type: string
           description: The unique identifier of the scorecard definition.
           example: '67890'
-        scorecard_version_id:
-          type: string
-          description: The unique identifier of the specific scorecard version that produced this result.
-          example: '67891'
         name:
           type: string
           description: The name of the scorecard.
@@ -33865,18 +33849,9 @@ components:
           nullable: true
           description: A free-text explanation of the result.
           example: The agent acknowledged the issue and resolved it within the same response.
-        reason_ids:
-          type: array
-          nullable: true
-          description: Identifiers for structured reasons assigned to the result, if any.
-          items:
-            type: string
-          example:
-          - '101'
-          - '102'
         reasons:
           type: array
-          description: The names of the structured reasons in `reason_ids`, one entry per id, in the same order. Omitted when the result has no `reason_ids`.
+          description: The structured reasons chosen for this result. Omitted when none were chosen.
           items:
             "$ref": "#/components/schemas/conversation_scorecard_evaluator_reason"
           example:
@@ -33885,7 +33860,7 @@ components:
         other_text:
           type: string
           nullable: true
-          description: Free-text entered by the reviewer to supplement or stand in for the structured `reason_ids` — typically captured when the reviewer selects an "Other" option or adds a custom note. Null when not provided.
+          description: Free-text entered by the reviewer to supplement or stand in for the structured `reasons` — typically captured when the reviewer selects an "Other" option or adds a custom note. Null when not provided.
           example: Agent acknowledged the issue but missed the follow-up question about billing.
     conversation_scorecard_evaluator_reason:
       title: Evaluator Reason
