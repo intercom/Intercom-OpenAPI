@@ -8891,6 +8891,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joebloggs@intercom.io
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name: joe bloggs
@@ -8980,6 +8981,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joebloggs@intercom.io
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name: joe bloggs
@@ -9174,6 +9176,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joe@bloggs.com
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name: Joe Bloggs
@@ -9388,6 +9391,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joe@bloggs.com
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name: Joe Bloggs
@@ -10027,6 +10031,7 @@ paths:
                     external_id:
                     role: user
                     email: joebloggs@intercom.io
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name:
@@ -10188,6 +10193,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joe@bloggs.com
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name: Joe Bloggs
@@ -25988,6 +25994,7 @@ paths:
                     external_id:
                     role: user
                     email: foo@bar.com
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name:
@@ -31527,6 +31534,11 @@ components:
           type: string
           description: The contact's email domain.
           example: example.com
+        email_verified:
+          type: boolean
+          description: >-
+            Whether the contact has proved they own their current email address. `true` only when this address was marked verified through the Contacts API (`email_verified: true` on create or update) and has not changed since; it becomes `false` again if the contact's email changes, until the new address is verified. Intercom reuses a lead with a verified email when it later matches an inbound email, or an outbound conversation or ticket, to that address, instead of creating a new lead. Only returned on the Preview version; not present on any released API version.
+          example: true
         phone:
           type: string
           nullable: true
@@ -34920,7 +34932,14 @@ components:
         email_verified:
           type: boolean
           nullable: true
-          description: Whether the contact's email address has been verified. Set to true to indicate you have verified the contact owns this email address, or false to mark it as unverified. Must be supplied together with an email in the same request; sending it without an email returns a 400. Verifying a lead's email also makes that lead reusable whenever Intercom matches an email address to a contact. When inbound email arrives from an address no user has, or an outbound conversation or ticket is created for one, Intercom reuses a lead with that address whose email is verified, instead of creating a new lead. Leads with an unverified email are not matched this way.
+          description: |-
+            Whether the contact has proved they own this email address, for example by completing a confirmation link or one-time code you sent to it. Send `email_verified` in the same request as `email`, for example `{"email": "jane@example.com", "email_verified": true}`. A request that includes `email_verified` without `email` fails with a `400`.
+
+            - `true`: ownership is proved.
+            - `false`: ownership is not proved.
+            - Omitted: the current verification status stays the same.
+
+            New contacts start unverified. If you change a verified contact's email, the new address is unverified until you verify it. Only send `true` when you have that proof. When an inbound email, outbound conversation, or ticket matches a verified address, Intercom reuses that lead instead of creating a new one.
           example: true
         phone:
           type: string
@@ -43196,7 +43215,14 @@ components:
         email_verified:
           type: boolean
           nullable: true
-          description: Whether the contact's email address has been verified. Set to true to indicate you have verified the contact owns this email address, or false to mark it as unverified. Must be supplied together with an email in the same request; sending it without an email returns a 400. Verifying a lead's email also makes that lead reusable whenever Intercom matches an email address to a contact. When inbound email arrives from an address no user has, or an outbound conversation or ticket is created for one, Intercom reuses a lead with that address whose email is verified, instead of creating a new lead. Leads with an unverified email are not matched this way.
+          description: |-
+            Whether the contact has proved they own this email address, for example by completing a confirmation link or one-time code you sent to it. Send `email_verified` in the same request as `email`, for example `{"email": "jane@example.com", "email_verified": true}`. A request that includes `email_verified` without `email` fails with a `400`.
+
+            - `true`: ownership is proved.
+            - `false`: ownership is not proved.
+            - Omitted: the current verification status stays the same.
+
+            New contacts start unverified. If you change a verified contact's email, the new address is unverified until you verify it. Only send `true` when you have that proof. When an inbound email, outbound conversation, or ticket matches a verified address, Intercom reuses that lead instead of creating a new one.
           example: true
         phone:
           type: string
