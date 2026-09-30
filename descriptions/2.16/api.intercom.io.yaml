@@ -28100,8 +28100,14 @@ components:
         email_verified:
           type: boolean
           nullable: true
-          description: >-
-            Whether the contact has proved they own this email address, for example by completing a confirmation link or one-time code you sent to it. To record that proof, send `email_verified: true` together with `email` in the same request, for example `{"email": "jane@example.com", "email_verified": true}`. Send `email_verified: false` to record that ownership is not proved. `email_verified` must be sent alongside `email` in the same request; a request that includes `email_verified` without `email` fails with a `400`. Omit the field to leave verification as it is; a newly created contact starts unverified, and changing a verified contact's email leaves the new address unverified until you verify it. Only send `true` when you hold that proof: Intercom reuses a lead with a verified email when it later matches an inbound email, or an outbound conversation or ticket, to that address, instead of creating a new lead.
+          description: |-
+            Whether the contact has proved they own this email address, for example by completing a confirmation link or one-time code you sent to it. Send `email_verified` in the same request as `email`, for example `{"email": "jane@example.com", "email_verified": true}`. A request that includes `email_verified` without `email` fails with a `400`.
+
+            - `true`: ownership is proved.
+            - `false`: ownership is not proved.
+            - Omitted: the current verification status stays the same.
+
+            New contacts start unverified. If you change a verified contact's email, the new address is unverified until you verify it. Only send `true` when you have that proof. When an inbound email, outbound conversation, or ticket matches a verified address, Intercom reuses that lead instead of creating a new one.
           example: true
         email:
           type: string
@@ -34840,8 +34846,14 @@ components:
         email_verified:
           type: boolean
           nullable: true
-          description: >-
-            Whether the contact has proved they own this email address, for example by completing a confirmation link or one-time code you sent to it. To record that proof, send `email_verified: true` together with `email` in the same request, for example `{"email": "jane@example.com", "email_verified": true}`. Send `email_verified: false` to record that ownership is not proved. `email_verified` must be sent alongside `email` in the same request; a request that includes `email_verified` without `email` fails with a `400`. Omit the field to leave verification as it is; a newly created contact starts unverified, and changing a verified contact's email leaves the new address unverified until you verify it. Only send `true` when you hold that proof: Intercom reuses a lead with a verified email when it later matches an inbound email, or an outbound conversation or ticket, to that address, instead of creating a new lead.
+          description: |-
+            Whether the contact has proved they own this email address, for example by completing a confirmation link or one-time code you sent to it. Send `email_verified` in the same request as `email`, for example `{"email": "jane@example.com", "email_verified": true}`. A request that includes `email_verified` without `email` fails with a `400`.
+
+            - `true`: ownership is proved.
+            - `false`: ownership is not proved.
+            - Omitted: the current verification status stays the same.
+
+            New contacts start unverified. If you change a verified contact's email, the new address is unverified until you verify it. Only send `true` when you have that proof. When an inbound email, outbound conversation, or ticket matches a verified address, Intercom reuses that lead instead of creating a new one.
           example: true
         phone:
           type: string
