@@ -15370,6 +15370,81 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/conversations/{id}/team_handling_segments":
+    get:
+      summary: List team handling segments
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        required: true
+        description: The identifier for the conversation as given by Intercom.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: listTeamHandlingSegments
+      description: |
+        List the periods teammates actively handled a conversation, attributed to the team assigned to the conversation at the time. A period is split where the team changes. Teammate identity is not included; join with List handling events by time to recover it.
+
+        Periods with no team assigned are returned with `team` set to `null`. `ended_at` is `null` while a period is still open.
+
+        Requires the `read_conversations` OAuth scope, and the caller must be able to access the conversation.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/team_handling_segment_list"
+              examples:
+                Successful response:
+                  value:
+                    team_handling_segments:
+                    - team:
+                        type: team
+                        id: '111'
+                        name: Billing
+                      started_at: "2026-01-20T13:10:05Z"
+                      ended_at: "2026-01-20T13:20:00Z"
+                      start_reason:
+                      end_reason: team_change
+                    - team:
+                        type: team
+                        id: '113'
+                        name: Refunds
+                      started_at: "2026-01-20T13:20:00Z"
+                      ended_at: "2026-01-20T13:31:44Z"
+                      start_reason: team_change
+                      end_reason: assignment
+        '400':
+          description: Intercom-Version is not Preview
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: The teammate cannot access the conversation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/{id}/hitl_events":
     get:
       summary: List HITL events
@@ -42042,6 +42117,74 @@ components:
           nullable: true
           description: Describes how assignments are distributed among the team members
           example: "round_robin"
+    team_handling_segment:
+      title: Team Handling Segment
+      type: object
+      description: A period one teammate actively handled the conversation, attributed
+        to the team assigned to it at the time. Teammate identity is not included.
+      required:
+      - team
+      - started_at
+      - ended_at
+      properties:
+        team:
+          type: object
+          nullable: true
+          description: The team assigned when the period ran, or null if no team was assigned
+          required:
+          - type
+          - id
+          - name
+          properties:
+            type:
+              type: string
+              enum:
+              - team
+              example: team
+            id:
+              type: string
+              example: '814865'
+            name:
+              type: string
+              example: Billing
+        started_at:
+          type: string
+          format: date-time
+          example: "2026-09-28T10:10:00Z"
+        ended_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Null while the period is still open
+          example: "2026-09-28T10:20:00Z"
+        start_reason:
+          type: string
+          nullable: true
+          description: team_change when the period starts at a team reassignment
+          example: team_change
+        end_reason:
+          type: string
+          nullable: true
+          description: Why the period ended (assignment, snooze, close, away, auto_away,
+            session_drop, team_change)
+          example: assignment
+    team_handling_segment_list:
+      title: Team Handling Segment List
+      type: object
+      properties:
+        team_handling_segments:
+          type: array
+          items:
+            "$ref": "#/components/schemas/team_handling_segment"
+          example:
+          - team:
+              type: team
+              id: '814865'
+              name: Billing
+            started_at: "2026-09-28T10:10:00Z"
+            ended_at: "2026-09-28T10:20:00Z"
+            start_reason:
+            end_reason: team_change
     team_list:
       title: Team List
       type: object
