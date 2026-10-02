@@ -18275,6 +18275,34 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: "Invalid audiences. Must be a subset of: leads, users, visitors"
+                Code block missing:
+                  value:
+                    type: error.list
+                    request_id: 8f901234-5678-5576-0718-293041526374
+                    errors:
+                    - code: parameter_invalid
+                      message: "transform_code_block.code is required"
+                Invalid code block language:
+                  value:
+                    type: error.list
+                    request_id: 90123456-7890-6687-1829-304152637485
+                    errors:
+                    - code: parameter_invalid
+                      message: "transform_code_block.language must be 'python'"
+                Code sent without code mode:
+                  value:
+                    type: error.list
+                    request_id: a1234567-8901-7798-2930-415263748596
+                    errors:
+                    - code: parameter_invalid
+                      message: "transform_code_block requires data_transformation_type 'code_block_transformation'"
+                Code mode set without code:
+                  value:
+                    type: error.list
+                    request_id: b2345678-9012-8809-3041-526374859607
+                    errors:
+                    - code: parameter_invalid
+                      message: "data_transformation_type 'code_block_transformation' requires transform_code_block"
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -18583,6 +18611,14 @@ paths:
                     user:
                       name: Alice
                       email: alice@example.com
+              Set the transform code block:
+                summary: Switch to code block transformation
+                value:
+                  data_transformation_type: code_block_transformation
+                  transform_code_block:
+                    code: |
+                      def transform(response):
+                          return {"status": response["order_status"]}
       responses:
         '200':
           description: Data connector updated
@@ -18679,6 +18715,48 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: "Invalid state. Must be one of: draft, live"
+                Code block missing:
+                  value:
+                    type: error.list
+                    request_id: 2f3a4b5c-6d7e-8f90-a1b2-c3d4e5f60718
+                    errors:
+                    - code: parameter_invalid
+                      message: "transform_code_block.code is required"
+                Invalid code block language:
+                  value:
+                    type: error.list
+                    request_id: 3a4b5c6d-7e8f-9021-b2c3-d4e5f6071829
+                    errors:
+                    - code: parameter_invalid
+                      message: "transform_code_block.language must be 'python'"
+                Code sent without code mode:
+                  value:
+                    type: error.list
+                    request_id: 4b5c6d7e-8f90-1132-c3d4-e5f607182930
+                    errors:
+                    - code: parameter_invalid
+                      message: "transform_code_block requires data_transformation_type 'code_block_transformation'"
+                Code mode set without code:
+                  value:
+                    type: error.list
+                    request_id: 5c6d7e8f-9012-2243-d4e5-f60718293041
+                    errors:
+                    - code: parameter_invalid
+                      message: "data_transformation_type 'code_block_transformation' requires transform_code_block"
+                Code block never tested:
+                  value:
+                    type: error.list
+                    request_id: 6d7e8f90-1234-3354-e5f6-071829304152
+                    errors:
+                    - code: parameter_invalid
+                      message: "Test this data connector in Intercom, or set a mock_response, before setting transform_code_block"
+                Code block test failed:
+                  value:
+                    type: error.list
+                    request_id: 7e8f9012-3456-4465-f607-182930415263
+                    errors:
+                    - code: parameter_invalid
+                      message: "Code block test failed: KeyError: 'order_status'"
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -36892,6 +36970,38 @@ components:
           example:
           - '1234'
           - '5678'
+        data_transformation_type:
+          type: string
+          nullable: true
+          description: The type of data transformation to apply to the response. Setting this to `code_block_transformation` requires `transform_code_block` to also be set.
+          enum:
+          - full_access
+          - redacted_access
+          - code_block_transformation
+          example: code_block_transformation
+        transform_code_block:
+          type: object
+          nullable: true
+          required:
+          - code
+          description: |
+            The code block to use when `data_transformation_type` is `code_block_transformation`. New connectors are created in `draft` state, so the code block test described on [Update a data connector](/docs/references/preview/rest-api/api.intercom.io/data-connectors/updatedataconnector) does not run until the connector is published. `null` is the same as omitting this field.
+          example:
+            code: |
+              def transform(response):
+                  return {"status": response["order_status"]}
+            language: python
+          properties:
+            code:
+              type: string
+              description: The source code of the transform code block.
+              example: |
+                def transform(response):
+                    return {"status": response["order_status"]}
+            language:
+              type: string
+              description: The programming language of the transform code block. Must be `python` if provided.
+              example: python
       required:
       - name
     update_data_connector_request:
@@ -37018,6 +37128,38 @@ components:
           example:
           - '1234'
           - '5678'
+        data_transformation_type:
+          type: string
+          nullable: true
+          description: The type of data transformation to apply to the response. Setting this to `code_block_transformation` requires `transform_code_block` to be set on this request, or already configured on the connector.
+          enum:
+          - full_access
+          - redacted_access
+          - code_block_transformation
+          example: code_block_transformation
+        transform_code_block:
+          type: object
+          nullable: true
+          required:
+          - code
+          description: |
+            The code block to use when `data_transformation_type` is `code_block_transformation` (on this request, or already configured on the connector). For a live connector already in code mode, changing `code` runs the connector's code block test — against its mock response, or its last successful test response — before saving; if the test fails, or can't start, the request fails with a 422 and nothing is saved. Draft connectors are not tested. `null` is the same as omitting this field.
+          example:
+            code: |
+              def transform(response):
+                  return {"status": response["order_status"]}
+            language: python
+          properties:
+            code:
+              type: string
+              description: The source code of the transform code block.
+              example: |
+                def transform(response):
+                    return {"status": response["order_status"]}
+            language:
+              type: string
+              description: The programming language of the transform code block. Must be `python` if provided.
+              example: python
     data_connector:
       title: Data Connector
       type: object
