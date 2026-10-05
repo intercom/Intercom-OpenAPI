@@ -1995,7 +1995,7 @@ paths:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/update_article_request"
+              "$ref": "#/components/schemas/stage_article_draft_request_body"
             examples:
               Draft staged:
                 summary: Stage a draft
@@ -3975,7 +3975,7 @@ paths:
                     request_id: 816186b3-3187-4b47-adf8-e201bea32209
                     errors:
                     - code: parameter_invalid
-                      message: target_type must be 'article' or 'collection'
+                      message: target_type must be 'article', 'collection' or 'help_center'
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -4018,6 +4018,13 @@ paths:
                     errors:
                     - code: data_invalid
                       message: from_url must be an absolute URL within this help center's URL space
+                Help center target mismatch:
+                  value:
+                    type: error.list
+                    request_id: 45d96ec2-641f-4354-b24e-83a85d33bd34
+                    errors:
+                    - code: data_invalid
+                      message: target_id must match the help center for a help_center redirect
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -4047,6 +4054,12 @@ paths:
                   locale: en
                   target_type: article
                   target_id: '11'
+              help_center_redirect_created:
+                summary: redirect to the help center home page
+                value:
+                  from_url: http://help-center.test/lovelyhelpcenter/en
+                  locale: en-us
+                  target_type: help_center
   "/help_center/help_centers/{help_center_id}/redirects/{id}":
     get:
       summary: Retrieve a redirect
@@ -6039,9 +6052,7 @@ paths:
       description: |
         Delete a single company.
 
-        This endpoint does not permanently remove the company. It archives the company record and detaches any contacts attached to it; the contacts themselves are not deleted. A `company.deleted` webhook is sent once archival completes.
-
-        The endpoint returns `200` with `"deleted": true` as soon as the request is accepted — archival is processed asynchronously.
+        The company record is kept in your workspace, but all contacts are detached. The contacts themselves are not deleted. Detaching contacts is permanent and can't be reversed. A `company.deleted` webhook is sent when the company is deleted. These changes may take some time to be reflected in your workspace.
 
         {% admonition type="warning" %}
         Third-party integrations that sync companies into Intercom (for example, Salesforce or Chargebee) will recreate any company deleted through this endpoint on their next sync. To prevent recreation, remove or filter the company at the source integration before deleting it via the API.
@@ -7047,6 +7058,346 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/contacts/{contact_id}/granted_companies":
+    get:
+      summary: List granted companies for a contact (Preview)
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: contact_id
+        in: path
+        required: true
+        description: The unique identifier for the contact which is given by Intercom
+        example: 63a07ddf05a32042dffac965
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: The page number to retrieve, starting at 1.
+        example: 1
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of company ids to return per page. Values above 150
+          are reduced to 150.
+        example: 50
+        schema:
+          type: integer
+          default: 50
+      - name: order
+        in: query
+        required: false
+        description: The direction to sort the company ids in. Any other value is
+          treated as `desc`.
+        example: asc
+        schema:
+          type: string
+          default: desc
+          enum:
+          - asc
+          - desc
+      tags:
+      - Contacts
+      - Companies
+      operationId: listGrantedCompaniesForAContact
+      description: |
+        List the companies a contact has been granted access to.
+
+        A granted company lets the contact read that company's tickets in the customer portal. It is separate from company membership — granting a company does not attach the contact to it, and [`GET /contacts/{id}/companies`](/docs/references/preview/rest-api/api.intercom.io/contacts/listcompaniesforacontact) does not include grants.
+
+        `company_ids` holds the `company_id` values you set on your companies, so the list round-trips with the `company_ids` you send to `PUT /contacts/{contact_id}/granted_companies`. The list is sorted by company id and paginated.
+
+        Returns an empty list when granted companies are not enabled for the workspace.
+
+        Requires the `read_users_companies` OAuth scope. Set `Intercom-Version: Preview`.
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              examples:
+                Successful:
+                  summary: Successful
+                  value:
+                    type: list
+                    company_ids:
+                    - acme-corp
+                    - '1234'
+                    pages:
+                      type: pages
+                      next:
+                      page: 1
+                      per_page: 50
+                      total_pages: 1
+                    total_count: 2
+                No granted companies:
+                  summary: No granted companies
+                  value:
+                    type: list
+                    company_ids: []
+                    pages:
+                      type: pages
+                      next:
+                      page: 1
+                      per_page: 50
+                      total_pages: 0
+                    total_count: 0
+              schema:
+                "$ref": "#/components/schemas/granted_company_list"
+        '404':
+          description: Contact Not Found
+          content:
+            application/json:
+              examples:
+                Contact Not Found:
+                  value:
+                    type: error.list
+                    request_id: 32c856ba-901b-49c4-8e8d-d43fc3ee6ea5
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+    put:
+      summary: Replace granted companies for a contact (Preview)
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: contact_id
+        in: path
+        required: true
+        description: The unique identifier for the contact which is given by Intercom
+        example: 63a07ddf05a32042dffac965
+        schema:
+          type: string
+      tags:
+      - Contacts
+      - Companies
+      operationId: replaceGrantedCompaniesForAContact
+      description: |
+        Replace the full set of companies a contact has been granted access to.
+
+        This is a replacement, not an append. The `company_ids` you send become the contact's entire granted set — any company id you leave out is dropped. To add a company, send the existing ids plus the new one; to remove one, send the existing ids minus that one; to drop every grant, send an empty array.
+
+        Identify companies by the `company_id` you set on them, the same values [`GET /contacts/{contact_id}/granted_companies`](/docs/references/preview/rest-api/api.intercom.io/contacts/listgrantedcompaniesforacontact) returns. Duplicates in the request are collapsed. A contact can be granted at most 100 companies.
+
+        The response echoes the stored set, so a `200` is confirmation of exactly what the contact can now read.
+
+        {% admonition type="info" name="Requires granted companies to be enabled" %}
+          This endpoint returns `404` with the code `granted_companies_not_enabled` unless granted companies are enabled for the workspace. Contact Intercom Support to enable it.
+        {% /admonition %}
+
+        Requires the `write_users_companies` OAuth scope. Set `Intercom-Version: Preview`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/replace_granted_companies_request"
+            examples:
+              add_a_company:
+                summary: Add a company, keeping the existing grants
+                value:
+                  company_ids:
+                  - acme-corp
+                  - '1234'
+                  - globex
+              replace_and_drop:
+                summary: Replace the set, dropping the ids left out
+                value:
+                  company_ids:
+                  - globex
+              drop_all:
+                summary: Drop every grant
+                value:
+                  company_ids: []
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              examples:
+                Successful:
+                  summary: Successful
+                  value:
+                    type: list
+                    company_ids:
+                    - acme-corp
+                    - '1234'
+                    - globex
+                    pages:
+                    total_count: 3
+                Dropped all grants:
+                  summary: Dropped all grants
+                  value:
+                    type: list
+                    company_ids: []
+                    pages:
+                    total_count: 0
+              schema:
+                "$ref": "#/components/schemas/granted_company_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Company Ids Not Specified:
+                  value:
+                    type: error.list
+                    request_id: 8879ee29-ade4-4b5a-a275-ab1ac531b82a
+                    errors:
+                    - code: parameter_not_found
+                      message: company_ids not specified
+                Company Ids Not A List:
+                  value:
+                    type: error.list
+                    request_id: 9a3d0816-9707-4598-977e-c009ba630148
+                    errors:
+                    - code: parameter_invalid
+                      message: company_ids must be a list of company ids
+                Granted Company Limit Exceeded:
+                  value:
+                    type: error.list
+                    request_id: 4c1d0a5f-2b8e-4f7a-9c31-6d2e8a4b5f10
+                    errors:
+                    - code: granted_company_limit_exceeded
+                      message: A contact can be granted at most 100 companies
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                Company Not Found:
+                  value:
+                    type: error.list
+                    request_id: 981799ea-f19b-432d-828c-491a3b29ad29
+                    errors:
+                    - code: company_not_found
+                      message: 'Company Not Found: globex'
+                Contact Not Found:
+                  value:
+                    type: error.list
+                    request_id: b5a1f332-1bf1-44bd-a068-2634244b6051
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+                Granted Companies Not Enabled:
+                  value:
+                    type: error.list
+                    request_id: 7e2c4a19-3f5b-4d81-b0a6-9c8e1f2d3a4b
+                    errors:
+                    - code: granted_companies_not_enabled
+                      message: Granted companies are not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '503':
+          description: Service Unavailable — the requested companies could not be
+            read, retry the request
+          content:
+            application/json:
+              examples:
+                Service Unavailable:
+                  value:
+                    type: error.list
+                    request_id: 2f8b6c30-5a4d-41e9-8b7c-0d1e2f3a4b5c
+                    errors:
+                    - code: server_unavailable_error
+                      message: Could not read 1 of the requested companies, please
+                        retry
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/contacts/{contact_id}/granted_companies/{company_id}":
+    delete:
+      summary: Remove a granted company from a contact (Preview)
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: contact_id
+        in: path
+        required: true
+        description: The unique identifier for the contact which is given by Intercom
+        example: 63a07ddf05a32042dffac965
+        schema:
+          type: string
+      - name: company_id
+        in: path
+        required: true
+        description: The `company_id` you set on the company, as returned in `company_ids`.
+        example: acme-corp
+        schema:
+          type: string
+      tags:
+      - Contacts
+      - Companies
+      operationId: removeGrantedCompanyFromAContact
+      description: |
+        Remove a single company from a contact's granted set, leaving the contact's other grants in place.
+
+        Identify the company by the `company_id` you set on it, the same value [`GET /contacts/{contact_id}/granted_companies`](/docs/references/preview/rest-api/api.intercom.io/contacts/listgrantedcompaniesforacontact) returns. A `company_id` containing a dot or a slash is supported — URL-encode a slash as `%2F`.
+
+        This endpoint is not idempotent. Removing a company the contact is not currently granted returns `404` with the code `company_not_found`, so repeating a successful call returns `404` rather than `204`. Treat the first `204` as the confirmation.
+
+        {% admonition type="info" name="Requires granted companies to be enabled" %}
+          This endpoint returns `404` with the code `granted_companies_not_enabled` unless granted companies are enabled for the workspace. Contact Intercom Support to enable it.
+        {% /admonition %}
+
+        Requires the `write_users_companies` OAuth scope. Set `Intercom-Version: Preview`.
+      responses:
+        '204':
+          description: The grant was removed. No content is returned.
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                Company Not Granted:
+                  value:
+                    type: error.list
+                    request_id: dcfc3465-8a51-4d78-b24c-2f215d48f339
+                    errors:
+                    - code: company_not_found
+                      message: 'Company Not Granted: acme-corp'
+                Company Not Found:
+                  value:
+                    type: error.list
+                    request_id: 981799ea-f19b-432d-828c-491a3b29ad29
+                    errors:
+                    - code: company_not_found
+                      message: 'Company Not Found: acme-corp'
+                Contact Not Found:
+                  value:
+                    type: error.list
+                    request_id: b5a1f332-1bf1-44bd-a068-2634244b6051
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+                Granted Companies Not Enabled:
+                  value:
+                    type: error.list
+                    request_id: 7e2c4a19-3f5b-4d81-b0a6-9c8e1f2d3a4b
+                    errors:
+                    - code: granted_companies_not_enabled
+                      message: Granted companies are not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/companies/bulk":
     post:
       summary: Bulk create or update companies
@@ -8385,6 +8736,110 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/contacts/deleted":
+    get:
+      summary: List deleted contacts
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: per_page
+        in: query
+        description: The number of results per page. Defaults to `10`, with a maximum
+          of `150`.
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 10
+          maximum: 150
+      - name: page
+        in: query
+        description: The page of results to fetch. Defaults to `1`.
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      tags:
+      - Contacts
+      operationId: listDeletedContacts
+      description: |
+        Fetch a paginated list of the contacts in your workspace that are no longer active,
+        so you can recover ones whose `id`, `email`, or `external_id` you no longer have and
+        then permanently delete them. Each entry carries a `status` describing why the contact
+        is inactive: `archived`, `blocked`, `merged`, `pending_deletion`, or `permanently_deleted`.
+        `merged_into_id` is present only when `status` is `merged`, and `external_id` and `email`
+        are `null` for `permanently_deleted` contacts.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: contact
+                      id: 5ba682d23d7cf92bef87bfd4
+                      external_id: "70"
+                      email: joe@example.com
+                      role: user
+                      status: archived
+                      updated_at: 1756636800
+                    - type: contact
+                      id: 5ba682d23d7cf92bef87bfd5
+                      external_id: "71"
+                      email: jane@example.com
+                      role: user
+                      status: merged
+                      merged_into_id: 5ba682d23d7cf92bef87bfd9
+                      updated_at: 1756636800
+                    - type: contact
+                      id: 5ba682d23d7cf92bef87bfd6
+                      external_id:
+                      email:
+                      role: user
+                      status: permanently_deleted
+                      updated_at: 1756636800
+                    total_count: 3
+                    pages:
+                      type: pages
+                      page: 1
+                      per_page: 10
+                      total_pages: 1
+              schema:
+                "$ref": "#/components/schemas/deleted_contact_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Bad Request:
+                  value:
+                    type: error.list
+                    request_id: 6a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d
+                    errors:
+                    - code: invalid_page
+                      message: page must be a positive integer
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/contacts/{id}":
     put:
       summary: Update a contact
@@ -8434,6 +8889,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joebloggs@intercom.io
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name: joe bloggs
@@ -8523,6 +8979,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joebloggs@intercom.io
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name: joe bloggs
@@ -8717,6 +9174,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joe@bloggs.com
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name: Joe Bloggs
@@ -8883,7 +9341,7 @@ paths:
                 "$ref": "#/components/schemas/error"
   "/contacts/merge":
     post:
-      summary: Merge a lead and a user
+      summary: Merge two contacts
       parameters:
       - name: Intercom-Version
         in: header
@@ -8901,7 +9359,13 @@ paths:
       - Contacts
       operationId: MergeContact
       description: |
-        You can merge a contact with a `role` of `lead` into a contact with a `role` of `user`.
+        You can merge one contact into another. Both lead-into-user and user-into-user merges are supported: the source contact (`from`) may have a `role` of `lead` or `user`, and the destination contact (`into`) must have a `role` of `user`.
+
+        {% admonition type="warning" name="User-to-user merges" %}
+          When you merge a user into another user, the source user's attribute values (standard and custom) are discarded and are not moved onto the target user. The target user keeps its own attribute values. Records associated with the source, such as conversations, notes, and tags, are still reassigned to the target.
+
+          Merging a user into another user requires the `merge_users` OAuth scope on your access token, in addition to the scope required for lead-into-user merges. Tokens without this scope receive a `401 Unauthorized` when the source contact is a user.
+        {% /admonition %}
 
         {% admonition type="warning" name="Merged contacts are not retrievable via the API" %}
           Once a merge is completed, the source contact (`from`) is permanently removed from the active contact list. This means:
@@ -8925,6 +9389,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joe@bloggs.com
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name: Joe Bloggs
@@ -9075,24 +9540,30 @@ paths:
       description: |
         Preview the result of merging one contact into another without applying the merge. This is a read-only dry run: it reports whether the merge is allowed and, if so, exactly what would change, **without modifying any data**.
 
-        Send the same `from` (a `lead`) and `into` (a `user`) contact IDs you would pass to [Merge a lead and a user](/docs/references/preview/rest-api/api.intercom.io/contacts/mergecontact).
+        Send the same `from` and `into` contact IDs you would pass to [Merge two contacts](/docs/references/preview/rest-api/api.intercom.io/contacts/mergecontact). As with the merge endpoint, `from` may have a `role` of `lead` or `user`, and `into` must have a `role` of `user`. You can optionally pass `custom_attribute_names` to include specific custom attributes in the previewed attribute changes.
 
-        - When `allowed` is `true`, the response contains a `summary`: every attribute change (with the resulting value on the surviving contact) and, for each object type, two counts — `from`, how many are on the lead and would move to the user, and `into`, how many the user already has. Counts are reported for conversations, tickets, phone calls, notes, and tags. `conversations` counts non-ticket conversations only; tickets are reported separately under `tickets`, and `phone_calls` is present only for phone-lead merges.
+        - When `allowed` is `true`, the response contains a `summary`: every attribute change (with the resulting value on the surviving contact) and, for each object type, two counts — `from`, how many are on the source contact and would move to the destination, and `into`, how many the destination already has. Counts are reported for conversations, tickets, phone calls, notes, and tags. `conversations` counts non-ticket conversations only; tickets are reported separately under `tickets`, and `phone_calls` is present only for phone-channel merges.
         - When `allowed` is `false`, the response contains `reasons`. Each reason has a stable `code` you can branch on and a human-readable `message` you can display.
 
         {% admonition type="warning" name="Previewing non-duplicate contacts" %}
-        By default a merge requires the two contacts to share an identifier (email, phone, or external ID). Set `skip_duplicate_validation` to `true` to preview a merge of contacts that don't — the same rule the merge endpoint enforces.
+        By default a merge requires the two contacts to share an identifier (email or phone). Set `skip_duplicate_validation` to `true` to preview a merge of contacts that don't, the same rule the merge endpoint enforces.
         {% /admonition %}
 
         When `allowed` is `false`, `reasons[].code` is one of:
 
         | code | meaning |
         | --- | --- |
-        | `invalid_merge_role_pair` | The `from`/`into` roles aren't mergeable. `from` must be a lead and `into` a user. |
-        | `no_shared_identifier` | The contacts share no email, phone, or external ID. Set `skip_duplicate_validation` to preview anyway. |
+        | `source_same_as_target` | The source contact (`from`) and the destination contact (`into`) are the same contact. A contact can't be merged into itself. |
+        | `invalid_merge_role_pair` | The `from`/`into` roles aren't mergeable. `into` must be a user. |
+        | `no_shared_identifier` | The contacts share no email or phone. Set `skip_duplicate_validation` to preview anyway. |
         | `facebook_user` | Facebook contacts can't be merged. |
         | `external_lead_channel_not_allowed` | The source is an external-channel lead that isn't eligible for merging. |
         | `mailing_list` | Contacts created from a mailing list can't be merged. |
+        | `user_to_lead` | `into` is a lead or visitor. A user can only be merged into another user. |
+        | `whatsapp_data_cannot_be_merged` | The WhatsApp number on the source contact can't be reassigned to the destination. |
+        | `telegram_data_cannot_be_merged` | The Telegram sender on the source contact can't be reassigned to the destination. |
+        | `source_has_telegram_data` | The source contact has Telegram data, which user-into-user merges don't yet support moving. |
+        | `phone_data_cannot_be_merged` | The phone data on the source contact can't be reassigned to the destination. |
       responses:
         '200':
           description: successful
@@ -9147,7 +9618,7 @@ paths:
                     allowed: false
                     reasons:
                     - code: no_shared_identifier
-                      message: These contacts don't share a common identifier (email, phone, or external ID), so they aren't recognised as duplicates. Set skip_duplicate_validation to true to preview the merge anyway.
+                      message: These contacts don't share a common identifier (email or phone), so they aren't recognised as duplicates. Set skip_duplicate_validation to true to preview the merge anyway.
               schema:
                 "$ref": "#/components/schemas/merge_preview_response"
         '401':
@@ -9558,6 +10029,7 @@ paths:
                     external_id:
                     role: user
                     email: joebloggs@intercom.io
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name:
@@ -9719,6 +10191,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joe@bloggs.com
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name: Joe Bloggs
@@ -12035,7 +12508,6 @@ paths:
                         evaluated_at: 1734537760
                       scorecards:
                       - scorecard_id: '67890'
-                        scorecard_version_id: '67891'
                         name: Standard QA Review
                         scorecard_type: human
                         passed: true
@@ -12045,12 +12517,29 @@ paths:
                         reviewed_teammate:
                           type: admin
                           admin_id: '991267715'
+                        reviewer:
+                          type: admin
+                          admin_id: '884120017'
+                        review_status: submitted
+                        notes:
+                        - id: '9001'
+                          created_at: 1734537900
+                          updated_at: 1734537900
+                          author:
+                            type: admin
+                            admin_id: '884120017'
+                          body: Great empathy in the second reply.
                         evaluators:
                         - evaluator_id: '54321'
+                          name: Tone of voice
                           result:
                             value: pass
+                            value_label: Pass
                             source: ai
                             reasoning: The agent acknowledged the issue and resolved it within the same response.
+                            reasons:
+                            - name: Clear and concise
+                            - name: Empathetic tone
               schema:
                 "$ref": "#/components/schemas/conversation_list"
         '401':
@@ -12236,6 +12725,32 @@ paths:
         schema:
           type: boolean
           default: false
+      - name: include_part_types
+        in: query
+        required: false
+        description: A comma-separated list of conversation part types to return, such as `assignment`, `note` or `snoozed`. Cannot be combined with `exclude_part_types`.
+        example: comment,note
+        schema:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: string
+        style: form
+        explode: false
+      - name: exclude_part_types
+        in: query
+        required: false
+        description: A comma-separated list of conversation part types to leave out, such as `assignment`, `note` or `snoozed`. Cannot be combined with `include_part_types`.
+        example: assignment
+        schema:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: string
+        style: form
+        explode: false
       tags:
       - Conversations
       operationId: retrieveConversation
@@ -12246,7 +12761,7 @@ paths:
         This will return a single Conversation model with all its conversation parts.
 
         {% admonition type="warning" name="Hard limit of 500 parts" %}
-        The maximum number of conversation parts that can be returned via the API is 500. If you have more than that we will return the 500 most recent conversation parts.
+        The maximum number of conversation parts that can be returned via the API is 500. If you have more than that we will return the 500 most recent conversation parts. `include_part_types` and `exclude_part_types` are applied before this limit, so filtering returns the 500 most recent matching parts. `conversation_parts.total_count` counts the parts in this response, after filtering — it is not the conversation's total part count.
         {% /admonition %}
 
         For AI agent conversation metadata, please note that you need to have the agent enabled in your workspace, which is a [paid feature](https://www.intercom.com/help/en/articles/8205718-fin-resolutions#h_97f8c2e671).
@@ -12331,8 +12846,6 @@ paths:
                         updated_at: 1663597260
                         notified_at: 1663597260
                         assigned_to:
-                          type: contact
-                          id: '1a2b3c'
                         author:
                           type: admin
                           id: '274'
@@ -12449,6 +12962,33 @@ paths:
                         app_package_code: null
                       - type: conversation_part
                         id: 6
+                        part_type: ai_agent_event
+                        body:
+                        created_at: 1740141870
+                        updated_at: 1740141870
+                        notified_at: 1740141870
+                        assigned_to:
+                        author:
+                          type: bot
+                          id: '278'
+                          name: Fin
+                          email: operator+abcd1234@intercom.io
+                        attachments: []
+                        external_id:
+                        redacted: false
+                        email_message_metadata: null
+                        state: closed
+                        tags: []
+                        event_details:
+                          event:
+                            type: otp_email_verification_failed
+                            value: OTP email verification failed
+                            data:
+                              otp_email_verification_failed:
+                                reason: no_email
+                        app_package_code: null
+                      - type: conversation_part
+                        id: 7
                         part_type: standalone_platform_handoff
                         body:
                         created_at: 1740141910
@@ -12471,7 +13011,7 @@ paths:
                             type: zendesk_ticket
                             success: true
                         app_package_code: null
-                      total_count: 6
+                      total_count: 7
                 email conversation with history found:
                   value:
                     type: conversation
@@ -12564,8 +13104,6 @@ paths:
                         updated_at: 1663597260
                         notified_at: 1663597260
                         assigned_to:
-                          type: contact
-                          id: '1a2b3c'
                         author:
                           type: admin
                           id: '274'
@@ -12658,7 +13196,34 @@ paths:
                             name: Jira Create Issue
                             result: success
                         app_package_code: null
-                      total_count: 4
+                      - type: conversation_part
+                        id: 5
+                        part_type: ai_agent_event
+                        body:
+                        created_at: 1740141870
+                        updated_at: 1740141870
+                        notified_at: 1740141870
+                        assigned_to:
+                        author:
+                          type: bot
+                          id: '278'
+                          name: Fin
+                          email: operator+abcd1234@intercom.io
+                        attachments: []
+                        external_id:
+                        redacted: false
+                        email_message_metadata: null
+                        state: closed
+                        tags: []
+                        event_details:
+                          event:
+                            type: otp_email_verification_failed
+                            value: OTP email verification failed
+                            data:
+                              otp_email_verification_failed:
+                                reason: no_email
+                        app_package_code: null
+                      total_count: 5
                 with QA evaluations:
                   summary: Response with `include_monitors=true` and `include_scorecards=true`
                   value:
@@ -12683,7 +13248,6 @@ paths:
                       evaluated_at: 1734537760
                     scorecards:
                     - scorecard_id: '67890'
-                      scorecard_version_id: '67891'
                       name: Standard QA Review
                       scorecard_type: human
                       passed: true
@@ -12693,12 +13257,29 @@ paths:
                       reviewed_teammate:
                         type: admin
                         admin_id: '991267715'
+                      reviewer:
+                        type: admin
+                        admin_id: '884120017'
+                      review_status: submitted
+                      notes:
+                      - id: '9001'
+                        created_at: 1734537900
+                        updated_at: 1734537900
+                        author:
+                          type: admin
+                          admin_id: '884120017'
+                        body: Great empathy in the second reply.
                       evaluators:
                       - evaluator_id: '54321'
+                        name: Tone of voice
                         result:
                           value: pass
+                          value_label: Pass
                           source: ai
                           reasoning: The agent acknowledged the issue and resolved it within the same response.
+                          reasons:
+                          - name: Clear and concise
+                          - name: Empathetic tone
               schema:
                 "$ref": "#/components/schemas/conversation"
         '404':
@@ -12741,6 +13322,62 @@ paths:
                     errors:
                     - code: api_plan_restricted
                       message: Active subscription needed.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Invalid part type filter
+          content:
+            application/json:
+              examples:
+                Unknown part type name:
+                  value:
+                    type: error.list
+                    request_id: 1f2e3d4c-5b6a-4798-8c9d-0e1f2a3b4c5d
+                    errors:
+                    - code: parameter_invalid
+                      message: 'Unknown conversation part types: foo'
+                Filtering on the unknown part type:
+                  value:
+                    type: error.list
+                    request_id: 5d6e7f80-9102-4123-8d4e-5f6a7b8c9d0e
+                    errors:
+                    - code: parameter_invalid
+                      message: 'Unknown conversation part types: unknown'
+                Both filters supplied:
+                  value:
+                    type: error.list
+                    request_id: 2a3b4c5d-6e7f-4890-9a1b-2c3d4e5f6a7b
+                    errors:
+                    - code: parameter_invalid
+                      message: include_part_types and exclude_part_types cannot be used together
+                Too many values:
+                  value:
+                    type: error.list
+                    request_id: 3b4c5d6e-7f80-4901-8b2c-3d4e5f6a7b8c
+                    errors:
+                    - code: parameter_invalid
+                      message: At most 50 conversation part types may be supplied
+                Empty filter value:
+                  value:
+                    type: error.list
+                    request_id: 6e7f8091-0213-4234-9e5f-6a7b8c9d0e1f
+                    errors:
+                    - code: parameter_invalid
+                      message: include_part_types must name at least one conversation part type
+                Non-string filter value:
+                  value:
+                    type: error.list
+                    request_id: 7f809102-1324-4345-8f6a-7b8c9d0e1f2a
+                    errors:
+                    - code: parameter_invalid
+                      message: include_part_types must be a comma-separated list of conversation part types
+                Unsupported API version:
+                  value:
+                    type: error.list
+                    request_id: 4c5d6e7f-8091-4012-9c3d-4e5f6a7b8c9d
+                    errors:
+                    - code: parameter_invalid
+                      message: include_part_types and exclude_part_types are not supported on this API version
               schema:
                 "$ref": "#/components/schemas/error"
     put:
@@ -13357,7 +13994,6 @@ paths:
                         evaluated_at: 1734537760
                       scorecards:
                       - scorecard_id: '67890'
-                        scorecard_version_id: '67891'
                         name: Standard QA Review
                         scorecard_type: human
                         passed: true
@@ -13367,12 +14003,29 @@ paths:
                         reviewed_teammate:
                           type: admin
                           admin_id: '991267715'
+                        reviewer:
+                          type: admin
+                          admin_id: '884120017'
+                        review_status: submitted
+                        notes:
+                        - id: '9001'
+                          created_at: 1734537900
+                          updated_at: 1734537900
+                          author:
+                            type: admin
+                            admin_id: '884120017'
+                          body: Great empathy in the second reply.
                         evaluators:
                         - evaluator_id: '54321'
+                          name: Tone of voice
                           result:
                             value: pass
+                            value_label: Pass
                             source: ai
                             reasoning: The agent acknowledged the issue and resolved it within the same response.
+                            reasons:
+                            - name: Clear and concise
+                            - name: Empathetic tone
               schema:
                 "$ref": "#/components/schemas/conversation_list"
       requestBody:
@@ -13418,6 +14071,10 @@ paths:
         By default, bot or Operator replies to an inbound email conversation aren't sent to your customer. The reply is stored as an unnotifiable bot comment, and no `seen` receipt is generated until an email is actually delivered.
 
         To send these replies as outbound emails, reach out to your accounts team to enable the email-reply feature flag for your workspace.
+        {% /admonition %}
+
+        {% admonition type="info" name="Managing a conversation" %}
+        To close, open, snooze or assign a conversation, use [Manage a conversation](/docs/references/preview/rest-api/api.intercom.io/conversations/manageconversation).
         {% /admonition %}
       responses:
         '200':
@@ -13881,6 +14538,10 @@ paths:
         - Snooze a conversation to reopen on a future date
         - Open a conversation which is `snoozed` or `closed`
         - Assign a conversation to an admin and/or team.
+
+        {% admonition type="info" name="Sending messages" %}
+        To send a comment, note or quick reply, use [Reply to a conversation](/docs/references/preview/rest-api/api.intercom.io/conversations/replyconversation).
+        {% /admonition %}
       responses:
         '200':
           description: Assign a conversation
@@ -14197,6 +14858,8 @@ paths:
                         assigned_to:
                           type: admin
                           id: '991267715'
+                        admin_assignee_id: 991267715
+                        team_assignee_id: 5017691
                         author:
                           id: '991267715'
                           type: admin
@@ -14478,7 +15141,7 @@ paths:
                     - type: user
                       id: 6762f19b1bb69f9f2193bbd4
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_participants_response"
         '404':
           description: Not found
           content:
@@ -14583,7 +15246,7 @@ paths:
                     - type: user
                       id: 6762f1b41bb69f9f2193bbe0
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_participants_response"
         '404':
           description: Contact not found
           content:
@@ -14657,26 +15320,18 @@ paths:
                 summary: Detach a contact from a group conversation
                 value:
                   admin_id: 991267739
-                  customer:
-                    intercom_user_id: 6762f1a61bb69f9f2193bbd8
               conversation_not_found:
                 summary: Conversation not found
                 value:
                   admin_id: 991267742
-                  customer:
-                    intercom_user_id: 6762f1b61bb69f9f2193bbe1
               contact_not_found:
                 summary: Contact not found
                 value:
                   admin_id: 991267745
-                  customer:
-                    intercom_user_id: 6762f1c41bb69f9f2193bbe9
               last_customer:
                 summary: Last customer
                 value:
                   admin_id: 991267748
-                  customer:
-                    intercom_user_id: 6762f1d11bb69f9f2193bbf1
   "/conversations/{id}/handling_events":
     get:
       summary: List handling events
@@ -14725,6 +15380,209 @@ paths:
                         email: jane@example.com
                       type: resumed
                       timestamp: "2026-01-09T09:10:00Z"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/conversations/{id}/team_handling_segments":
+    get:
+      summary: List team handling segments
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        required: true
+        description: The identifier for the conversation as given by Intercom.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: listTeamHandlingSegments
+      description: |
+        List the periods teammates actively handled a conversation, attributed to the team assigned to the conversation at the time. A period is split where the team changes. Teammate identity is not included; join with List handling events by time to recover it.
+
+        Periods with no team assigned are returned with `team` set to `null`. `ended_at` is `null` while a period is still open.
+
+        Requires the `read_conversations` OAuth scope, and the caller must be able to access the conversation.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/team_handling_segment_list"
+              examples:
+                Successful response:
+                  value:
+                    team_handling_segments:
+                    - team:
+                        type: team
+                        id: '111'
+                        name: Billing
+                      started_at: "2026-01-20T13:10:05Z"
+                      ended_at: "2026-01-20T13:20:00Z"
+                      start_reason:
+                      end_reason: team_change
+                    - team:
+                        type: team
+                        id: '113'
+                        name: Refunds
+                      started_at: "2026-01-20T13:20:00Z"
+                      ended_at: "2026-01-20T13:31:44Z"
+                      start_reason: team_change
+                      end_reason: assignment
+        '400':
+          description: Intercom-Version is not Preview
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: The teammate cannot access the conversation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/conversations/{id}/hitl_events":
+    get:
+      summary: List HITL events
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The identifier for the conversation as given by Intercom.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: listHitlEvents
+      description: |
+        List the human-in-the-loop (HITL) events for a conversation. When Fin is unsure of an answer it can consult a teammate before replying, proposing a draft that the teammate approves, steers with free-text feedback, or takes over. Each consultation is returned as a series of events, oldest first, across every consultation on the conversation.
+
+        Requires the `read_conversations` OAuth scope, and the caller must be able to access the conversation.
+
+        Events are only recorded once a consultation has ended, so a consultation still awaiting a teammate does not appear.
+
+        Which fields appear in `data` depends on `event_type`:
+
+        | `event_type` | `data` fields |
+        |---|---|
+        | `fin_consultation_started` | `channel`, `rule_threshold_percent`, `confidence_percent`, `sharp_ask`, `ask_rationale`, `issue_summary`, `customer_question` |
+        | `fin_draft_proposed` | `draft` |
+        | `fin_teammate_input_received` | `round_index`, `teammate_input`, `reviewer_admin_id`, `regeneration_outcome` |
+        | `fin_draft_revised` | `round_index`, `revised_draft`, `regeneration_outcome` |
+        | `fin_consultation_finished` | `outcome`, `approved_draft_type`, `final_draft`, `sent_text`, `reviewer_admin_id`, `duration_seconds`, `rounds_count`, `payload_truncated` |
+
+        A consultation always produces a `fin_consultation_started` and a `fin_consultation_finished` event. `fin_draft_proposed` appears when Fin proposed a draft. `fin_teammate_input_received` appears once per round of teammate feedback, and `fin_draft_revised` once per round where Fin produced a revised draft in response.
+
+        Notes on interpreting the response:
+
+        - `hitl_cycle_id` identifies the consultation, so it is the same on every event of one consultation. It is not unique per event. A conversation can hold several consultations — a consultation that replaces an outstanding one finishes with an `outcome` of `superseded`.
+        - `conversation_part_id` links an event to a conversation part where one exists. It is `null` in ordinary cases: teammate feedback given through the inbox creates no conversation part, a revised draft has no part of its own, and a consultation that escalated or was superseded sent no reply.
+        - `created_at` on `fin_draft_proposed` is approximate. It reports when the consultation started, which is when the draft was proposed.
+        - `rule_id`, `rule_name` and `rule_threshold_percent` are recorded when the consultation begins and are not updated afterwards, so a rule that has since been renamed or retuned will not match its current settings. They are `null` for consultations not triggered by a rule.
+        - `reviewer_admin_id` identifies the teammate involved in that event: on `fin_teammate_input_received` the teammate who gave the feedback, and on `fin_consultation_finished` the teammate who approved the draft or took over. On a consultation with several rounds these can be different teammates.
+        - `rounds_count` counts every round of teammate feedback the consultation had. Only the ten most recent rounds are retained, so a heavily steered consultation returns fewer `fin_teammate_input_received` events than `rounds_count`.
+        - Redacting a conversation removes this data. Depending on how it was redacted, the conversation either returns no events or returns events whose text fields are all `null`.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/hitl_event_list"
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - hitl_cycle_id: 3f2a91c4-8e77-4d61-9a2b-0c5d7e1f4a80
+                      event_type: fin_consultation_started
+                      conversation_part_id: '4471002'
+                      rule_id: '88'
+                      rule_name: Refunds over $100
+                      created_at: 1767225600
+                      data:
+                        channel: email
+                        rule_threshold_percent: 60
+                        confidence_percent: 42
+                        sharp_ask: How long do refunds take?
+                        ask_rationale: No article covers refund timelines.
+                        issue_summary: Customer chasing a refund.
+                        customer_question: Where is my refund?
+                    - hitl_cycle_id: 3f2a91c4-8e77-4d61-9a2b-0c5d7e1f4a80
+                      event_type: fin_draft_proposed
+                      conversation_part_id: '4471008'
+                      rule_id: '88'
+                      rule_name: Refunds over $100
+                      created_at: 1767225600
+                      data:
+                        draft: Refunds are processed within 30 days.
+                    - hitl_cycle_id: 3f2a91c4-8e77-4d61-9a2b-0c5d7e1f4a80
+                      event_type: fin_teammate_input_received
+                      conversation_part_id:
+                      rule_id: '88'
+                      rule_name: Refunds over $100
+                      created_at: 1767225701
+                      data:
+                        round_index: 1
+                        teammate_input: Tell them 5 business days.
+                        reviewer_admin_id: '4001'
+                        regeneration_outcome: answer
+                    - hitl_cycle_id: 3f2a91c4-8e77-4d61-9a2b-0c5d7e1f4a80
+                      event_type: fin_draft_revised
+                      conversation_part_id:
+                      rule_id: '88'
+                      rule_name: Refunds over $100
+                      created_at: 1767225760
+                      data:
+                        round_index: 1
+                        revised_draft: Refunds take 5 business days.
+                        regeneration_outcome: answer
+                    - hitl_cycle_id: 3f2a91c4-8e77-4d61-9a2b-0c5d7e1f4a80
+                      event_type: fin_consultation_finished
+                      conversation_part_id: '4471029'
+                      rule_id: '88'
+                      rule_name: Refunds over $100
+                      created_at: 1767225780
+                      data:
+                        outcome: approved
+                        approved_draft_type: revised
+                        final_draft: Refunds take 5 business days.
+                        sent_text: Refunds take 5 business days.
+                        reviewer_admin_id: '4001'
+                        duration_seconds: 180
+                        rounds_count: 1
+                        payload_truncated: false
         '401':
           description: Unauthorized
           content:
@@ -17006,6 +17864,359 @@ paths:
                 value:
                   description: Trying to archieve
                   archived: true
+  "/auth_tokens":
+    get:
+      summary: List all auth tokens
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Defaults to 20, minimum 1, maximum 50.
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 50
+      - name: starting_after
+        in: query
+        required: false
+        description: The cursor value from `pages.next.starting_after` in a previous response. Used to paginate through results.
+        schema:
+          type: string
+      tags:
+      - Auth Tokens
+      operationId: listAuthTokens
+      description: |
+        Returns a paginated list of the workspace's stored third-party credentials. Use this to discover the id of a credential you want a data connector to authenticate with — that id is not otherwise available over REST. Only metadata is returned; credential values are never exposed. The list is not exhaustive: credentials a teammate created are listed, as are those created by some Intercom integrations, but credentials installed by an app package, those created by most other integrations, and those minted for an individual teammate's MCP access are not.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: auth_token
+                      id: '12345'
+                      name: Fulfilment API key
+                      description: Used by the order status connector
+                      token_type: text
+                      request_header_key: Authorization
+                      token_prefix: Bearer
+                      domain: api.fulfilment.example.com
+                      created_at: '2025-11-15T09:30:00Z'
+                      updated_at: '2026-01-20T14:22:15Z'
+                    pages:
+                      type: pages
+                      per_page: 20
+                      next:
+                        starting_after: WzE3MDc1OTQ3MTUuMCwxMjM0NV0=
+              schema:
+                "$ref": "#/components/schemas/auth_token_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid cursor:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: client_error
+                      message: Invalid starting_after param. Please try again using a starting_after value from a paginated response
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create an auth token
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      tags:
+      - Auth Tokens
+      operationId: createAuthToken
+      description: |
+        Stores a third-party credential in your workspace so a data connector can authenticate outbound requests with it. Only credentials with a `token_type` of `text` can be created here — the credential value is sent as a request header. The value you supply is stored encrypted and is never returned by any endpoint, including this one.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_auth_token_request"
+            examples:
+              successful:
+                value:
+                  name: Fulfilment API key
+                  token_value: sk_live_9f3c2a7b41e8
+                  request_header_key: Authorization
+                  token_prefix: Bearer
+                  description: Used by the order status connector
+                  domain: api.fulfilment.example.com
+        required: true
+      responses:
+        '201':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: auth_token
+                    id: '12345'
+                    name: Fulfilment API key
+                    description: Used by the order status connector
+                    token_type: text
+                    request_header_key: Authorization
+                    token_prefix: Bearer
+                    domain: api.fulfilment.example.com
+                    created_at: '2025-11-15T09:30:00Z'
+                    updated_at: '2025-11-15T09:30:00Z'
+              schema:
+                "$ref": "#/components/schemas/auth_token"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Missing required field:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_not_found
+                      message: name parameter is required
+                Rejected field value:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: domain must be a valid domain
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                No teammate associated with the access token:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: forbidden
+                      message: Writing an auth token requires an access token associated with a teammate
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/auth_tokens/{id}":
+    get:
+      summary: Retrieve an auth token
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the auth token.
+        example: '12345'
+        schema:
+          type: string
+      tags:
+      - Auth Tokens
+      operationId: retrieveAuthToken
+      description: |
+        Returns the metadata for a single stored third-party credential. A credential that the list endpoint does not return is also not retrievable here, and responds with 404.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: auth_token
+                    id: '12345'
+                    name: Fulfilment API key
+                    description: Used by the order status connector
+                    token_type: text
+                    request_header_key: Authorization
+                    token_prefix: Bearer
+                    domain: api.fulfilment.example.com
+                    created_at: '2025-11-15T09:30:00Z'
+                    updated_at: '2026-01-20T14:22:15Z'
+              schema:
+                "$ref": "#/components/schemas/auth_token"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                Auth token not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+    patch:
+      summary: Update an auth token
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the auth token.
+        example: '12345'
+        schema:
+          type: string
+      tags:
+      - Auth Tokens
+      operationId: updateAuthToken
+      description: |
+        Updates the metadata of a stored third-party credential. A field you omit keeps its current value. The credential value itself cannot be changed here and is never returned. Only credentials with a `token_type` of `text` can be updated; any other type responds with `400`. A credential the list endpoint does not return is also not updatable, and responds with `404`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_auth_token_request"
+            examples:
+              successful:
+                value:
+                  name: Fulfilment API key (rotated host)
+                  description: Used by the order status connector
+        required: true
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: auth_token
+                    id: '12345'
+                    name: Fulfilment API key (rotated host)
+                    description: Used by the order status connector
+                    token_type: text
+                    request_header_key: Authorization
+                    token_prefix: Bearer
+                    domain: api.fulfilment.example.com
+                    created_at: '2025-11-15T09:30:00Z'
+                    updated_at: '2026-01-20T14:22:15Z'
+              schema:
+                "$ref": "#/components/schemas/auth_token"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Unsupported token type:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: parameter_invalid
+                      message: Only auth tokens with token_type "text" can be updated through the API
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                No teammate associated with the access token:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: forbidden
+                      message: Writing an auth token requires an access token associated with a teammate
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                Auth token not found:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/data_connectors":
     get:
       summary: List all data connectors
@@ -17272,7 +18483,12 @@ paths:
                     - leads
                     execution_type: server_side
                     configuration_response_type: test_response_type
-                    data_transformation_type:
+                    data_transformation_type: code_block_transformation
+                    transform_code_block:
+                      code: |
+                        def transform(response):
+                            return {"status": response["order_status"]}
+                      language: python
                     client_function_name:
                     client_function_timeout_ms:
                     data_inputs:
@@ -20409,6 +21625,117 @@ paths:
                       message: Requested resource is not available in current API version.
               schema:
                 "$ref": "#/components/schemas/error"
+  "/roles":
+    get:
+      summary: List all roles
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      tags:
+      - Roles
+      operationId: listRoles
+      description: |
+        You can fetch a list of all roles in the workspace.
+
+        Roles define what a teammate can do in a workspace. The teammates endpoint
+        returns the role a teammate holds, but only the roles that are currently
+        assigned, and only their id and name. This endpoint lists every role in the
+        workspace, each with its description.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: role
+                      id: '991267902'
+                      name: Support Lead
+                      description: Can view and reply to conversations
+              schema:
+                "$ref": "#/components/schemas/role_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a77dadbc-1f1e-4875-bac3-f0d09bbc214a
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/roles/{id}":
+    get:
+      summary: Retrieve a role
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of a given role.
+        example: '991267902'
+        schema:
+          type: string
+      tags:
+      - Roles
+      operationId: retrieveRole
+      description: |
+        You can fetch the details of a single role by its id, including its
+        description, which the teammates endpoint does not return.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: role
+                    id: '991267902'
+                    name: Support Lead
+                    description: Can view and reply to conversations
+              schema:
+                "$ref": "#/components/schemas/role"
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              examples:
+                Role not found:
+                  value:
+                    type: error.list
+                    request_id: 3ff156ba-a66e-40d4-93ff-cb6e6afc3c9d
+                    errors:
+                    - code: role_not_found
+                      message: Role not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: fc4b741b-b9f1-4ef9-92c7-eb71e9811df3
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/secure_mode_secrets":
     get:
       summary: List all identity verification secrets
@@ -21069,33 +22396,42 @@ paths:
       - Calls
       operationId: showCallTranscript
       description: |
-        Returns the transcript for the specified call as a downloadable text file.
+        Returns the transcript for the specified call as a JSON array of turns. Each turn carries a `speaker_name` when the speaker could be resolved. Clients should fall back to `speaker_label` when `speaker_name` is absent.
       responses:
         '200':
           description: successful
-          headers:
-            Content-Disposition:
-              description: File attachment directive and suggested filename for the transcript
-              schema:
-                type: string
-                example: "attachment; filename=transcription_data-2025-07-17.txt"
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                description: Transcript text
+                type: array
+                items:
+                  "$ref": "#/components/schemas/call_transcript_turn"
               examples:
-                transcript_txt:
-                  value: |-
-                    [00:00:03] Teammate 1: "Hello, thanks for calling. How can I help today?"
-                    [00:00:09] User: "I need help recovering access to my account."
-                    [00:00:15] Teammate 1: "I can help with that. For security, I’ll ask a few generic verification questions."
-                    [00:00:22] User: "Okay."
-                    [00:00:28] Teammate 1: "Please confirm general details on the account (no sensitive data over this call)."
-                    [00:00:35] User: "I can provide non-sensitive info."
-                    [00:00:41] Teammate 1: "Thank you. I’ll initiate a standard account recovery process and send the next steps."
-                    [00:00:48] User: "Great, thanks."
-                    [00:00:53] Teammate 1: "You should receive a message shortly with instructions to complete recovery."
+                transcript:
+                  value:
+                  - start_time: "0.0"
+                    end_time: "3.00"
+                    speaker_label: "Teammate 1"
+                    speaker: "Teammate 1"
+                    content: "Hello, thanks for calling. How can I help today?"
+                    speaker_type: admin
+                    speaker_id: "789"
+                    speaker_name: Jane Doe
+                  - start_time: "3.00"
+                    end_time: "9.00"
+                    speaker_label: User
+                    speaker: User
+                    content: I need help recovering access to my account.
+                    speaker_type: user
+                    speaker_id: "6762f0dd1bb69f9f2193bb83"
+                    speaker_name: John Smith
+                  - start_time: "9.00"
+                    end_time: "15.00"
+                    speaker_label: User
+                    speaker: User
+                    content: I can provide non-sensitive info to verify.
+                    speaker_type: user
+                    speaker_id: "6762f0dd1bb69f9f2193bb84"
         '404':
           description: Not Found
           content:
@@ -21160,7 +22496,14 @@ paths:
                       id: "123"
                       conversation_id: "64619700005694"
                       transcript:
-                      - {}
+                      - start_time: "0.0"
+                        end_time: "3.00"
+                        speaker_label: "Teammate 1"
+                        speaker: "Teammate 1"
+                        content: "Hello, thanks for calling. How can I help today?"
+                        speaker_type: admin
+                        speaker_id: "789"
+                        speaker_name: Jane Doe
                       transcript_status: completed
               schema:
                 type: object
@@ -21179,8 +22522,7 @@ paths:
                             type: array
                             description: The call transcript if available, otherwise an empty array.
                             items:
-                              type: object
-                              additionalProperties: true
+                              "$ref": "#/components/schemas/call_transcript_turn"
                           transcript_status:
                             type: string
                             nullable: true
@@ -22672,7 +24014,7 @@ paths:
       - Tickets
       responses:
         '400':
-          description: User reply
+          description: Bad Request
           content:
             application/json:
               examples:
@@ -22683,6 +24025,21 @@ paths:
                     errors:
                     - code: parameter_mismatch
                       message: User replies are not allowed on Backoffice tickets
+                Admin comment on a back-office ticket:
+                  value:
+                    type: error.list
+                    request_id: 7a1c9f02-5d3e-4b8a-9c21-6f0d84e5b713
+                    errors:
+                    - code: parameter_mismatch
+                      message: Comments are not allowed on Backoffice tickets not
+                        shared with user
+                Admin comment on a tracker ticket:
+                  value:
+                    type: error.list
+                    request_id: c4e2a980-31bf-4d76-8a05-2e9cb17f4d6a
+                    errors:
+                    - code: parameter_mismatch
+                      message: Comments are not allowed on Tracker tickets
               schema:
                 "$ref": "#/components/schemas/error"
         '200':
@@ -23742,6 +25099,8 @@ paths:
                         assigned_to:
                           type: admin
                           id: '991268013'
+                        admin_assignee_id: 991268013
+                        team_assignee_id: null
                         author:
                           id: '991268011'
                           type: admin
@@ -23820,6 +25179,34 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Teammate without Inbox access:
+                  value:
+                    type: error.list
+                    request_id: 8e4a1ee0-2a4c-4a9f-9c3f-1c2b6d7e5f01
+                    errors:
+                    - code: action_forbidden
+                      message: This admin does not have Inbox access permissions
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                Unrecognised priority level:
+                  value:
+                    type: error.list
+                    request_id: 3f6c9b21-7d58-4e0a-8b44-5a9e2c1d7b03
+                    errors:
+                    - code: parameter_invalid
+                      message: 'priority must be one of: none, low, medium, high, urgent'
+              schema:
+                "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
@@ -23843,6 +25230,7 @@ paths:
                   open: true
                   snoozed_until: 1673609604
                   ticket_state_id: 8498
+                  priority: high
               admin_not_found:
                 summary: Admin not found
                 value:
@@ -24718,6 +26106,7 @@ paths:
                     external_id:
                     role: user
                     email: foo@bar.com
+                    email_verified: false
                     phone:
                     formatted_phone:
                     name:
@@ -25243,6 +26632,10 @@ paths:
         The response is audience-matched to the supplied user: each live, API-triggerable
         procedure is checked against that user before being included, alongside the static
         `reply` and `ask` actions.
+
+        {% admonition type="warning" %}
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        {% /admonition %}
       responses:
         '200':
           description: Capabilities returned successfully
@@ -25372,6 +26765,10 @@ paths:
 
         Fin's answer is delivered asynchronously via the `fin_replied` event. The conversation
         ends with a `complete` status — there is no `awaiting_user_reply` cycle.
+
+        {% admonition type="warning" %}
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        {% /admonition %}
       responses:
         '200':
           description: Question accepted successfully
@@ -25381,6 +26778,7 @@ paths:
                 Successful response:
                   value:
                     conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
@@ -25388,6 +26786,7 @@ paths:
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
@@ -25403,6 +26802,10 @@ paths:
                     type: string
                     description: The external ID of the conversation.
                     example: ext-123
+                  intercom_conversation_id:
+                    type: string
+                    description: The internal Intercom conversation ID, useful for matching this Agent API session to the conversation in Intercom.
+                    example: '192837465'
                   user_id:
                     type: string
                     description: The ID of the user.
@@ -25545,6 +26948,10 @@ paths:
         Send a follow-up message in an existing conversation. When Fin needs more information to
         complete an action, it sets the conversation to `awaiting_user_reply` — send the user's
         response so Fin can continue.
+
+        {% admonition type="warning" %}
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        {% /admonition %}
       responses:
         '200':
           description: Reply sent successfully
@@ -25554,6 +26961,7 @@ paths:
                 Successful response:
                   value:
                     conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
@@ -25561,6 +26969,7 @@ paths:
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
@@ -25576,6 +26985,10 @@ paths:
                     type: string
                     description: The ID of the conversation.
                     example: ext-123
+                  intercom_conversation_id:
+                    type: string
+                    description: The internal Intercom conversation ID, useful for matching this Agent API session to the conversation in Intercom.
+                    example: '192837465'
                   user_id:
                     type: string
                     description: The ID of the user.
@@ -25724,6 +27137,10 @@ paths:
         Fin's progress is delivered asynchronously via events or Server-Sent Events. If the
         procedure pauses for user input, the conversation status becomes `awaiting_user_reply` —
         send the user's response with [`/fin/reply`](/docs/references/preview/rest-api/api.intercom.io/fin-agent/replytofin).
+
+        {% admonition type="warning" %}
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        {% /admonition %}
       responses:
         '200':
           description: Procedure run started successfully
@@ -25733,6 +27150,7 @@ paths:
                 Successful response:
                   value:
                     conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
                     user_id: user-456
                     procedure_id: '12345'
                     status: thinking
@@ -25741,6 +27159,7 @@ paths:
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
                     user_id: user-456
                     procedure_id: '12345'
                     status: thinking
@@ -25757,6 +27176,10 @@ paths:
                     type: string
                     description: The ID of the conversation.
                     example: ext-123
+                  intercom_conversation_id:
+                    type: string
+                    description: The internal Intercom conversation ID, useful for matching this Agent API session to the conversation in Intercom.
+                    example: '192837465'
                   user_id:
                     type: string
                     description: The ID of the user.
@@ -25952,6 +27375,10 @@ paths:
         followed by `complete`. The `complete` status signals that Fin is done; it does not close
         the conversation. On the Intercom Helpdesk, the new human conversation remains open; on
         Fin for Platforms, the conversation remains open for whoever handles it on your platform.
+
+        {% admonition type="warning" %}
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        {% /admonition %}
       responses:
         '200':
           description: Conversation escalated successfully
@@ -26086,6 +27513,10 @@ paths:
         stored rating while the update window is still open, and a first remark can be added to
         an already-rated survey. Once a remark has been recorded the rating is locked and can no
         longer be changed.
+
+        {% admonition type="warning" %}
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        {% /admonition %}
       responses:
         '200':
           description: Rating recorded successfully
@@ -26239,6 +27670,10 @@ paths:
         During this workflow, the client should allow Fin to continue uninterrupted until a final *complete* status is returned, at which point control of the conversation passes back to the client.
 
         Events can be received via webhooks or Server-Sent Events (SSE) using the `sse_subscription_url` in the response.
+
+        {% admonition type="warning" %}
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        {% /admonition %}
       responses:
         '200':
           description: Fin conversation started successfully
@@ -26248,6 +27683,7 @@ paths:
                 Successful response:
                   value:
                     conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
@@ -26255,6 +27691,7 @@ paths:
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
@@ -26273,6 +27710,10 @@ paths:
                     type: string
                     description: The ID of the conversation.
                     example: ext-123
+                  intercom_conversation_id:
+                    type: string
+                    description: The internal Intercom conversation ID, useful for matching this Agent API session to the conversation in Intercom.
+                    example: '192837465'
                   user_id:
                     type: string
                     description: The ID of the user.
@@ -27336,6 +28777,9 @@ components:
       properties:
         message_type:
           type: string
+          description: The type of reply. Tracker tickets and back-office tickets
+            that are not shared with the customer do not support `comment`; use
+            `note` instead.
           enum:
           - comment
           - note
@@ -28809,6 +30253,14 @@ components:
           description: Optionally you can send a response in the conversation when
             it is assigned.
           example: Let me pass you over to one of my colleagues.
+        skip_reopen:
+          type: boolean
+          default: false
+          description: When true, assigning a closed conversation leaves it closed
+            instead of reopening it. No reopen event is recorded, so the conversation
+            keeps its original close timestamp and the assignment does not count as
+            a new closure in reporting.
+          example: true
       required:
       - message_type
       - type
@@ -28858,6 +30310,34 @@ components:
                 "$ref": "#/components/schemas/customer_request"
             required:
             - email
+    conversation_participants_response:
+      title: Conversation Participants Response
+      type: object
+      description: The participants of the conversation, returned after attaching
+        or detaching a contact
+      properties:
+        customers:
+          type: array
+          description: The conversation participants after the change
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: The role of the participant. Can be "user" or "lead"
+                example: 'user'
+              id:
+                type: string
+                description: The unique identifier for the participant
+                example: '6762f1a61bb69f9f2193bbd8'
+            required:
+            - type
+            - id
+          example:
+          - type: user
+            id: '6762f1a61bb69f9f2193bbd8'
+      required:
+      - customers
     team_metric:
       type: object
       description: Per-admin activity metrics within a team.
@@ -28892,6 +30372,166 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/team_metric"
+    auth_token:
+      title: Auth Token
+      type: object
+      x-tags:
+      - Auth Tokens
+      description: |
+        Metadata for a stored third-party credential that data connectors use to authenticate outbound requests. Only metadata is returned — the credential value itself, and its refresh and OAuth configuration, are never exposed.
+      properties:
+        type:
+          type: string
+          description: The type of object - `auth_token`.
+          enum:
+          - auth_token
+          example: auth_token
+        id:
+          type: string
+          description: The unique identifier for the auth token.
+          example: '12345'
+        name:
+          type: string
+          description: The name given to the credential when it was created.
+          example: Fulfilment API key
+          nullable: true
+        description:
+          type: string
+          description: An optional description of what the credential is used for.
+          example: Used by the order status connector
+          nullable: true
+        token_type:
+          type: string
+          description: How the credential is presented to the external API, for example as a header value or an HMAC signature.
+          example: text
+          nullable: true
+        request_header_key:
+          type: string
+          description: The request header the credential is sent in.
+          example: Authorization
+          nullable: true
+        token_prefix:
+          type: string
+          description: The prefix placed before the credential value in the header, for example `Bearer`.
+          example: Bearer
+          nullable: true
+        domain:
+          type: string
+          description: The domain the credential is scoped to, if one was set.
+          example: api.fulfilment.example.com
+          nullable: true
+        created_at:
+          type: string
+          description: The time the credential was created, as an ISO 8601 timestamp.
+          example: '2025-11-15T09:30:00Z'
+          nullable: true
+        updated_at:
+          type: string
+          description: The time the credential was last updated, as an ISO 8601 timestamp.
+          example: '2026-01-20T14:22:15Z'
+          nullable: true
+    create_auth_token_request:
+      title: Create Auth Token Request
+      type: object
+      x-tags:
+      - Auth Tokens
+      description: |
+        The fields accepted when storing a new third-party credential. The credential is created with a `token_type` of `text`; no other type can be created over the API.
+      properties:
+        name:
+          type: string
+          description: A name for the credential, so a teammate can identify it later.
+          example: Fulfilment API key
+        token_value:
+          type: string
+          description: The credential value. Stored encrypted and never returned by any endpoint.
+          example: sk_live_9f3c2a7b41e8
+        request_header_key:
+          type: string
+          description: The request header the credential is sent in.
+          example: Authorization
+        token_prefix:
+          type: string
+          description: An optional prefix placed before the credential value in the header, for example `Bearer`.
+          example: Bearer
+        description:
+          type: string
+          description: An optional description of what the credential is used for.
+          example: Used by the order status connector
+        domain:
+          type: string
+          description: An optional domain to scope the credential to.
+          example: api.fulfilment.example.com
+      required:
+      - name
+      - token_value
+      - request_header_key
+    update_auth_token_request:
+      title: Update Auth Token Request
+      type: object
+      x-tags:
+      - Auth Tokens
+      description: |
+        The fields accepted when updating a stored third-party credential. Every field is optional, and one you omit keeps its current value. The credential value cannot be changed here.
+      properties:
+        name:
+          type: string
+          description: A name for the credential, so a teammate can identify it later.
+          example: Fulfilment API key
+        request_header_key:
+          type: string
+          description: The request header the credential is sent in.
+          example: Authorization
+        token_prefix:
+          type: string
+          description: An optional prefix placed before the credential value in the header, for example `Bearer`.
+          example: Bearer
+        description:
+          type: string
+          description: An optional description of what the credential is used for.
+          example: Used by the order status connector
+        domain:
+          type: string
+          description: An optional domain to scope the credential to.
+          example: api.fulfilment.example.com
+    auth_token_list:
+      title: Auth Token List
+      type: object
+      description: A paginated list of auth tokens.
+      properties:
+        type:
+          type: string
+          description: The type of object - `list`.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of auth token objects.
+          items:
+            "$ref": "#/components/schemas/auth_token"
+        pages:
+          type: object
+          description: Pagination information.
+          properties:
+            type:
+              type: string
+              example: pages
+              enum:
+              - pages
+            per_page:
+              type: integer
+              description: The number of results per page.
+              example: 20
+            next:
+              type: object
+              nullable: true
+              description: Cursor for the next page of results.
+              properties:
+                starting_after:
+                  type: string
+                  description: The cursor value to use for the next page.
+                  example: WzE3MDc1OTQ3MTUuMCwxMjM0NV0=
     away_status_reason:
       type: object
       properties:
@@ -29078,8 +30718,9 @@ components:
       x-tags:
       - Help Center
       description: |
-        A redirect maps a source URL (`from_url`) to an article or collection within a
-        help center, so that links to old or external URLs resolve to live content.
+        A redirect maps a source URL (`from_url`) to an article, a collection or the
+        home page of a help center, so that links to old or external URLs resolve to
+        live content.
       properties:
         id:
           type: string
@@ -29109,15 +30750,17 @@ components:
           example: '7'
         target_type:
           type: string
-          description: The type of the redirect target.
+          description: The type of the redirect target. `help_center` targets the
+            help center's home page.
           enum:
           - article
           - collection
+          - help_center
           example: article
         target_id:
           type: string
-          description: The unique identifier of the target article or collection. For
-            article targets this is the Article ID.
+          description: The unique identifier of the target article, collection or help
+            center. For article targets this is the Article ID.
           example: '11'
         created_at:
           type: integer
@@ -29166,21 +30809,24 @@ components:
           example: en
         target_type:
           type: string
-          description: The type of the redirect target.
+          description: The type of the redirect target. `help_center` targets the
+            help center's home page.
           enum:
           - article
           - collection
+          - help_center
           example: article
         target_id:
           type: string
-          description: The unique identifier of the target article or collection. The
-            target must be a member of the help center.
+          description: The unique identifier of the target article, collection or help
+            center. The target must be a member of the help center. Required unless
+            `target_type` is `help_center`, where it defaults to the help center in the
+            path and must match it if provided.
           example: '11'
       required:
       - from_url
       - locale
       - target_type
-      - target_id
     deleted_help_center_redirect_object:
       title: Deleted Help Center Redirect Object
       type: object
@@ -29469,6 +31115,14 @@ components:
                 type: string
                 description: The contact's email address.
                 example: joe@example.com
+              email_verified:
+                type: boolean
+                nullable: true
+                description: |-
+                  Whether the contact has proved they own this email address, for example through a confirmation link or one-time code you sent. Send it together with `email`. `email_verified` without `email` is rejected.
+
+                  Changing a contact's email resets it to not verified. Intercom reuses leads with a verified email when an inbound email, conversation or ticket matches the address.
+                example: true
               name:
                 type: string
                 description: The contact's name.
@@ -29612,6 +31266,14 @@ components:
                 type: string
                 description: The contact's email address.
                 example: joe@example.com
+              email_verified:
+                type: boolean
+                nullable: true
+                description: |-
+                  Whether the contact has proved they own this email address, for example through a confirmation link or one-time code you sent. Send it together with `email`. `email_verified` without `email` is rejected.
+
+                  Changing a contact's email resets it to not verified. Intercom reuses leads with a verified email when an inbound email, conversation or ticket matches the address.
+                example: true
               name:
                 type: string
                 description: The contact's name.
@@ -30000,6 +31662,11 @@ components:
           type: string
           description: The contact's email domain.
           example: example.com
+        email_verified:
+          type: boolean
+          description: >-
+            Whether the contact has proved they own their current email address. `true` only when this address was marked verified through the Contacts API (`email_verified: true` on create or update) and has not changed since; it becomes `false` again if the contact's email changes, until the new address is verified. Intercom reuses a lead with a verified email when it later matches an inbound email, or an outbound conversation or ticket, to that address, instead of creating a new lead. Only returned on the Preview version; not present on any released API version.
+          example: true
         phone:
           type: string
           nullable: true
@@ -31005,6 +32672,113 @@ components:
           type: boolean
           description: Whether the contact is archived or not.
           example: false
+    deleted_contact:
+      title: Deleted Contact
+      type: object
+      description: A contact that is no longer active, returned by the list deleted
+        contacts endpoint.
+      properties:
+        type:
+          type: string
+          description: always contact
+          enum:
+          - contact
+          example: contact
+        id:
+          type: string
+          description: The unique identifier for the contact which is given by Intercom.
+          example: 5ba682d23d7cf92bef87bfd4
+        external_id:
+          type: string
+          nullable: true
+          description: The unique identifier for the contact which is provided by the
+            Client. `null` for permanently deleted contacts.
+          example: "70"
+        email:
+          type: string
+          nullable: true
+          description: The contact's email address. `null` for permanently deleted
+            contacts.
+          example: joe@example.com
+        role:
+          type: string
+          description: The role of the contact.
+          enum:
+          - user
+          - lead
+          example: user
+        status:
+          type: string
+          description: Why the contact is no longer active.
+          enum:
+          - archived
+          - blocked
+          - merged
+          - pending_deletion
+          - permanently_deleted
+          example: archived
+        merged_into_id:
+          type: string
+          description: The id of the contact this one was merged into. Present only
+            when `status` is `merged`.
+          example: 5ba682d23d7cf92bef87bfd9
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time the contact record was last updated as a UNIX timestamp.
+            This is a last-modified time, not a deletion time.
+          example: 1756636800
+    deleted_contact_list:
+      title: Deleted Contact List
+      type: object
+      description: A paginated list of deleted contacts.
+      properties:
+        type:
+          type: string
+          description: Always list
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: The list of deleted contact objects.
+          items:
+            "$ref": "#/components/schemas/deleted_contact"
+          example:
+          - type: contact
+            id: 5ba682d23d7cf92bef87bfd4
+            external_id: "70"
+            email: joe@example.com
+            role: user
+            status: archived
+            updated_at: 1756636800
+        total_count:
+          type: integer
+          description: A count of the total number of deleted contacts.
+          example: 100
+        pages:
+          type: object
+          description: Offset-based pagination metadata.
+          example:
+            type: pages
+            page: 1
+            per_page: 10
+            total_pages: 1
+          properties:
+            type:
+              type: string
+              enum:
+              - pages
+              example: pages
+            page:
+              type: integer
+              example: 1
+            per_page:
+              type: integer
+              example: 10
+            total_pages:
+              type: integer
+              example: 1
     contact_blocked:
       title: Contact Blocked
       type: object
@@ -31251,6 +33025,7 @@ components:
           - external_content
           - content_snippet
           - workflow_connector_action
+          - internal_article
         url:
           type: string
           description: The internal URL linking to the content source for teammates.
@@ -32018,10 +33793,6 @@ components:
           type: string
           description: The unique identifier of the scorecard definition.
           example: '67890'
-        scorecard_version_id:
-          type: string
-          description: The unique identifier of the specific scorecard version that produced this result.
-          example: '67891'
         name:
           type: string
           description: The name of the scorecard.
@@ -32053,11 +33824,105 @@ components:
           example: 1719493065
         reviewed_teammate:
           "$ref": "#/components/schemas/conversation_scorecard_reviewed_teammate"
+        reviewer:
+          "$ref": "#/components/schemas/conversation_scorecard_reviewer"
+        review_status:
+          type: string
+          nullable: true
+          enum:
+          - unreviewed
+          - submitted
+          - passed_review
+          - needs_fix
+          - wont_fix
+          - fix_complete
+          description: The status of the review of this scorecard, as shown in the QA reviews list in Intercom. `unreviewed` while the review is waiting for a reviewer's verdict; `submitted` once the review has been submitted; `passed_review`, `needs_fix`, `wont_fix` or `fix_complete` when a teammate set a specific outcome. Null when no review exists for this scorecard.
+          example: submitted
+        notes:
+          type: array
+          description: The notes teammates left on the QA review linked to this scorecard entry. Empty when the scorecard has no linked review.
+          example:
+          - id: '9001'
+            created_at: 1734537900
+            updated_at: 1734537900
+            author:
+              type: admin
+              admin_id: '884120017'
+            body: Great empathy in the second reply.
+          items:
+            "$ref": "#/components/schemas/conversation_scorecard_note"
         evaluators:
           type: array
           description: Per-evaluator results within this scorecard.
           items:
             "$ref": "#/components/schemas/conversation_scorecard_evaluator"
+    conversation_scorecard_reviewer:
+      title: Reviewer
+      type: object
+      nullable: true
+      x-tags:
+      - Conversations
+      description: Who reviewed this scorecard. `ai` when Fin auto-reviewed it; `admin` when a teammate did. Null when no review exists for this scorecard or no reviewer has been assigned yet.
+      properties:
+        type:
+          type: string
+          enum:
+          - ai
+          - admin
+          description: The kind of reviewer. `ai` if Fin auto-reviewed the scorecard; `admin` if a teammate reviewed it.
+          example: admin
+        admin_id:
+          type: string
+          nullable: true
+          description: The id of the admin who reviewed the scorecard. Present only when `type` is `admin`.
+          example: '884120017'
+    conversation_scorecard_note:
+      title: Scorecard Note
+      type: object
+      x-tags:
+      - Conversations
+      description: A note a teammate left on the QA review of this scorecard.
+      properties:
+        id:
+          type: string
+          description: The id of the note.
+          example: '9001'
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the note was created.
+          example: 1734537900
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time the note was last edited. Equal to `created_at` when the note has never been edited.
+          example: 1734537900
+        author:
+          "$ref": "#/components/schemas/conversation_scorecard_note_author"
+        body:
+          type: string
+          description: The text of the note exactly as the teammate entered it. Plain text; it is not rendered as HTML.
+          example: Great empathy in the second reply.
+    conversation_scorecard_note_author:
+      title: Note Author
+      type: object
+      nullable: true
+      x-tags:
+      - Conversations
+      description: Who wrote the note. Null when the teammate who wrote it has since been deleted.
+      properties:
+        type:
+          type: string
+          enum:
+          - ai
+          - admin
+          description: The kind of author. `admin` when a teammate wrote the note; `ai` when Fin did.
+          example: admin
+        admin_id:
+          type: string
+          nullable: true
+          description: The id of the admin who wrote the note. Present only when `type` is `admin`.
+          example: '884120017'
     conversation_scorecard_reviewed_teammate:
       title: Reviewed Teammate
       type: object
@@ -32088,6 +33953,11 @@ components:
           type: string
           description: The unique identifier of the evaluator (criterion) within the scorecard.
           example: '54321'
+        name:
+          type: string
+          nullable: true
+          description: The name of the evaluator (criterion). Null if the evaluator's name could not be resolved.
+          example: Tone of voice
         result:
           allOf:
             - "$ref": "#/components/schemas/conversation_scorecard_evaluator_result"
@@ -32105,6 +33975,10 @@ components:
           nullable: true
           description: The evaluator's selected value (typically a label such as `pass`, `fail`, or a category identifier).
           example: pass
+        value_label:
+          type: string
+          description: The label of the rating option matching `value` (for example `Needs improvement`). Omitted when the label could not be resolved.
+          example: Pass
         source:
           type: string
           nullable: true
@@ -32115,20 +33989,31 @@ components:
           nullable: true
           description: A free-text explanation of the result.
           example: The agent acknowledged the issue and resolved it within the same response.
-        reason_ids:
+        reasons:
           type: array
-          nullable: true
-          description: Identifiers for structured reasons assigned to the result, if any.
+          description: The structured reasons chosen for this result. Omitted when none were chosen.
           items:
-            type: string
+            "$ref": "#/components/schemas/conversation_scorecard_evaluator_reason"
           example:
-          - '101'
-          - '102'
+          - name: Clear and concise
+          - name: Empathetic tone
         other_text:
           type: string
           nullable: true
-          description: Free-text entered by the reviewer to supplement or stand in for the structured `reason_ids` — typically captured when the reviewer selects an "Other" option or adds a custom note. Null when not provided.
+          description: Free-text entered by the reviewer to supplement or stand in for the structured `reasons` — typically captured when the reviewer selects an "Other" option or adds a custom note. Null when not provided.
           example: Agent acknowledged the issue but missed the follow-up question about billing.
+    conversation_scorecard_evaluator_reason:
+      title: Evaluator Reason
+      type: object
+      x-tags:
+      - Conversations
+      description: A single structured reason assigned to an evaluator's result.
+      properties:
+        name:
+          type: string
+          nullable: true
+          description: The name of the reason. Null if the reason's name could not be resolved.
+          example: Clear and concise
     conversation_channel:
       title: Conversation Channel
       type: object
@@ -32317,7 +34202,7 @@ components:
           example: '3'
         part_type:
           type: string
-          description: The type of conversation part.
+          description: The type of conversation part. On the Preview version a part type the API does not recognise is returned as `unknown`; on earlier versions those parts are returned as `comment`. Every value other than `unknown` is also accepted by the `include_part_types` and `exclude_part_types` query parameters when retrieving a conversation.
           example: comment
         body:
           type: string
@@ -32343,8 +34228,30 @@ components:
         assigned_to:
           "$ref": "#/components/schemas/reference"
           nullable: true
-          description: The id of the admin that was assigned the conversation by this
-            conversation_part (null if there has been no change in assignment.)
+          description: The assignee this conversation_part assigned the conversation to, as
+            a reference whose `type` is `admin`, `team` or `bot`. When the part unassigned
+            the conversation, `type` is `nobody_admin` and `id` is `null`. Null when the
+            part did not change the assignment, or when the assignee has since been deleted.
+        admin_assignee_id:
+          type: integer
+          nullable: true
+          description: The id of the teammate that this conversation_part assigned the
+            conversation to, or 0 if the part removed the teammate. Null or absent when
+            the part did not change the teammate, including an unassignment that did not
+            name which assignee it cleared. A bot is reported here, because assignment
+            treats anything that is not a team as a teammate.
+          example: 991267715
+        team_assignee_id:
+          type: integer
+          nullable: true
+          description: The id of the team that this conversation_part assigned the
+            conversation to, or 0 if the part removed the team. Null or absent when the
+            part did not change the team, including an unassignment that did not name
+            which assignee it cleared. A part can assign a team and a teammate at the
+            same time, for example when the team uses Round Robin distribution and the
+            teammate is resolved inline. In that case assigned_to reports only the
+            teammate, and these two fields report each assignee separately.
+          example: 5017691
         author:
           "$ref": "#/components/schemas/conversation_part_author"
         attachments:
@@ -32405,6 +34312,8 @@ components:
             every translated reply: it is suppressed when the reply's `body` contains
             any text outside an HTML block element, which includes plain-text replies
             created through the REST API.
+            Wrap the body in `<p>`, `<div>`, or another supported block element to
+            avoid this.
           required:
             - original
           additionalProperties:
@@ -32468,7 +34377,9 @@ components:
             "$ref": "#/components/schemas/conversation_part"
         total_count:
           type: integer
-          description: ''
+          description: A count of the conversation parts in this response, after any
+            `include_part_types` or `exclude_part_types` filter has been applied. This
+            is not the conversation's total part count.
           example: 1
     conversation_part_metadata:
       title: Conversation Part Metadata
@@ -33149,7 +35060,10 @@ components:
         email_verified:
           type: boolean
           nullable: true
-          description: Whether the contact's email address has been verified. Set to true to indicate you have verified the contact owns this email address, or false to mark it as unverified. Must be supplied together with an email in the same request; sending it without an email returns a 400.
+          description: |-
+            Whether the contact has proved they own this email address, for example through a confirmation link or one-time code you sent. Send it together with `email`. `email_verified` without `email` is rejected.
+
+            Changing a contact's email resets it to not verified. Intercom reuses leads with a verified email when an inbound email, conversation or ticket matches the address.
           example: true
         phone:
           type: string
@@ -34139,6 +36053,93 @@ components:
           example: 0
         pages:
           "$ref": "#/components/schemas/cursor_pages"
+    call_transcript_turn:
+      title: Call Transcript Turn
+      type: object
+      x-tags:
+      - Calls
+      description: A single turn in a call transcript.
+      properties:
+        start_time:
+          oneOf:
+          - type: string
+          - type: number
+          description: The start time of the turn, as a seconds offset from the start of the call. A string on calls transcribed by Amazon Transcribe, a number on Fin Voice calls.
+          example: "0.0"
+        end_time:
+          oneOf:
+          - type: string
+          - type: number
+          description: The end time of the turn, as a seconds offset from the start of the call. A string on calls transcribed by Amazon Transcribe, a number on Fin Voice calls.
+          example: "3.00"
+        speaker_label:
+          type: string
+          description: The diarization label for the speaker.
+          example: "Teammate 1"
+        speaker:
+          type: string
+          description: The diarization label for the speaker. Same value as `speaker_label`.
+          example: "Teammate 1"
+        content:
+          type: string
+          description: The transcribed text spoken during this turn.
+          example: Hello, thanks for calling. How can I help today?
+        speaker_type:
+          type: string
+          description: The type of the speaker - either `admin` for a teammate or `user` for a contact. Absent on Fin Voice call transcripts and on calls transcribed before speaker attribution shipped, where only `speaker_label` identifies the speaker.
+          example: admin
+        speaker_id:
+          type: string
+          description: The id of the teammate or contact who is the speaker. `-1` when the teammate who spoke has since been deleted, in which case `speaker_name` is `Deleted teammate`.
+          example: "789"
+        speaker_name:
+          type: string
+          description: The resolved display name of the speaker. A contact who has been merged into another resolves to the name on the surviving record. Omitted when the speaker cannot be resolved or has no name, for example a contact whose record was scrambled by a GDPR deletion request. Clients should fall back to `speaker_label` when this is absent.
+          example: Jane Doe
+        article_sources:
+          type: array
+          description: Sources Fin cited during this turn. Only present on Fin Voice call transcripts.
+          example:
+          - title: Password Reset Guide
+            entity_type: 120
+            entity_id: "8185560"
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+                description: The title of the cited source.
+                example: Password Reset Guide
+              entity_type:
+                type: integer
+                description: The type of the cited entity.
+                example: 120
+              entity_id:
+                type: string
+                description: The id of the cited entity.
+                example: "8185560"
+        triggered_guidance:
+          type: array
+          description: Guidance rules that Fin matched during this turn. Only present on Fin Voice call transcripts.
+          example:
+          - match_type: clarification
+            rule_id: "3"
+            rule_text: If the customer asks about pricing, ask which plan they're interested in before answering
+          items:
+            type: object
+            properties:
+              match_type:
+                type: string
+                description: How the rule was matched.
+                example: clarification
+              rule_id:
+                type: string
+                description: The id of the matched guidance rule.
+                example: "3"
+              rule_text:
+                type: string
+                description: The text of the matched guidance rule.
+                example: If the customer asks about pricing, ask which plan they're interested in before answering
     custom_attributes:
       title: Custom Attributes
       type: object
@@ -35297,6 +37298,28 @@ components:
           - full_access
           - redacted_access
           - code_block_transformation
+        transform_code_block:
+          type: object
+          nullable: true
+          description: |
+            The code block used to transform the connector's response when `data_transformation_type` is
+            `code_block_transformation`. Omitted if the connector has no transform code block configured.
+          example:
+            code: |
+              def transform(response):
+                  return {"status": response["order_status"]}
+            language: python
+          properties:
+            code:
+              type: string
+              description: The source code of the transform code block.
+              example: |
+                def transform(response):
+                    return {"status": response["order_status"]}
+            language:
+              type: string
+              description: The programming language of the transform code block. Currently always `python`.
+              example: python
         client_function_name:
           type: string
           nullable: true
@@ -36686,6 +38709,46 @@ components:
           type: string
           description: The id of the call the summary describes
           example: "3822007689"
+    ai_agent_event_otp_email_verification_failed:
+      title: Part type - ai_agent_event (otp_email_verification_failed)
+      type: object
+      description: Contains the reason Fin could not verify a contact by one-time passcode email, for conversation part type <code>ai_agent_event</code> when the event type is <code>otp_email_verification_failed</code>. Other <code>ai_agent_event</code> event types are not described here.
+      properties:
+        event:
+          type: object
+          description: The event the part records
+          example:
+            type: "otp_email_verification_failed"
+            value: "OTP email verification failed"
+            data:
+              otp_email_verification_failed:
+                reason: "no_email"
+          properties:
+            type:
+              type: string
+              description: The event type
+              example: "otp_email_verification_failed"
+            value:
+              type: string
+              description: A readable label for the event
+              example: "OTP email verification failed"
+            data:
+              type: object
+              description: Data recorded with the event. Empty when the failure was recorded without a reason.
+              example:
+                otp_email_verification_failed:
+                  reason: "no_email"
+              properties:
+                otp_email_verification_failed:
+                  type: object
+                  description: Details of the failed verification
+                  example:
+                    reason: "no_email"
+                  properties:
+                    reason:
+                      type: string
+                      description: Why the one-time passcode email could not verify the contact. Treat this as a free-form string and fall back to <code>value</code> for a reason you do not recognise. <code>no_email</code> means the contact has no email address on record.
+                      example: "no_email"
     standalone_platform_handoff:
       title: Part type - standalone_platform_handoff
       type: object
@@ -36726,6 +38789,7 @@ components:
         - "$ref": "#/components/schemas/conversation_sla_unpaused"
         - "$ref": "#/components/schemas/conversation_sla_removed"
         - "$ref": "#/components/schemas/call_summary"
+        - "$ref": "#/components/schemas/ai_agent_event_otp_email_verification_failed"
         - "$ref": "#/components/schemas/standalone_platform_handoff"
     email_setting:
       type: object
@@ -37265,6 +39329,37 @@ components:
               format: date-time
               description: The timestamp the message was created at, with millisecond precision.
               example: '2025-01-24T09:01:00.456Z'
+            sources:
+              type: array
+              description: |
+                The content sources Fin used to generate this reply, in the same order as the
+                [n] citation markers in the body. Present only when Fin cited content.
+              items:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    description: The title of the source.
+                    example: Managing your account
+                  type:
+                    type: string
+                    enum:
+                    - article
+                    - external
+                    description: Whether the source is an Intercom article or external content.
+                    example: article
+                  url:
+                    type: string
+                    description: The URL of the source.
+                    example: https://www.example.com/help/en/articles/1-managing-your-account
+                required:
+                - title
+                - type
+                - url
+              example:
+              - title: Managing your account
+                type: article
+                url: https://www.example.com/help/en/articles/1-managing-your-account
           required:
           - author
           - body
@@ -37626,6 +39721,55 @@ components:
         zh-TW:
           description: The content of the group in Chinese (Taiwan)
           "$ref": "#/components/schemas/group_content"
+    granted_company_list:
+      title: Granted Company List
+      type: object
+      description: A list of the company ids a contact has been granted access to.
+      properties:
+        type:
+          type: string
+          description: The type of object
+          enum:
+          - list
+          example: list
+        company_ids:
+          type: array
+          description: The `company_id` values of the companies the contact has been
+            granted access to.
+          items:
+            type: string
+            example: acme-corp
+        pages:
+          allOf:
+          - "$ref": "#/components/schemas/pages_link"
+          type: object
+          description: Pagination details. Null on the replace response, which returns
+            the whole stored set.
+          nullable: true
+        total_count:
+          type: integer
+          description: The total number of companies the contact has been granted
+            access to.
+          example: 2
+    replace_granted_companies_request:
+      title: Replace Granted Companies Request
+      type: object
+      description: The full set of companies to grant the contact access to. Any company
+        id left out is dropped.
+      required:
+      - company_ids
+      properties:
+        company_ids:
+          type: array
+          description: The `company_id` values of the companies to grant the contact
+            access to. Send an empty array to drop every grant. Maximum of 100 ids.
+          maxItems: 100
+          items:
+            type: string
+            example: acme-corp
+          example:
+          - acme-corp
+          - '1234'
     handling_event:
       title: Handling Event
       type: object
@@ -37662,6 +39806,189 @@ components:
           description: Array of handling events
           items:
             "$ref": "#/components/schemas/handling_event"
+    hitl_event:
+      title: HITL Event
+      type: object
+      description: A single event in a Fin human-in-the-loop consultation on a conversation.
+      properties:
+        hitl_cycle_id:
+          type: string
+          description: Identifies the consultation this event belongs to. The same on every
+            event of one consultation, so it is not unique per event.
+          example: 3f2a91c4-8e77-4d61-9a2b-0c5d7e1f4a80
+        event_type:
+          type: string
+          description: What happened.
+          enum:
+          - fin_consultation_started
+          - fin_draft_proposed
+          - fin_teammate_input_received
+          - fin_draft_revised
+          - fin_consultation_finished
+          example: fin_consultation_started
+        conversation_part_id:
+          type: string
+          description: The conversation part this event relates to, where one exists.
+          example: '4471002'
+          nullable: true
+        rule_id:
+          type: string
+          description: The escalation rule that triggered the consultation, as recorded when
+            it began. Null if no rule triggered it.
+          example: '88'
+          nullable: true
+        rule_name:
+          type: string
+          description: The rule's name as recorded when the consultation began, which may
+            differ from its current name.
+          example: Refunds over $100
+          nullable: true
+        created_at:
+          type: integer
+          description: Unix timestamp for when the event occurred. Approximate on
+            `fin_draft_proposed`.
+          example: 1767225600
+        data:
+          type: object
+          description: |
+            Fields specific to this event. Which are present depends on `event_type` — see the endpoint description for the full mapping.
+          properties:
+            channel:
+              type: string
+              description: The channel the conversation was on when Fin consulted a teammate.
+              enum:
+              - email
+              - chat
+              - voice
+              - unknown
+              example: email
+            rule_threshold_percent:
+              type: integer
+              description: The confidence threshold the rule required, as a percentage.
+              example: 60
+              nullable: true
+            confidence_percent:
+              type: integer
+              description: How confident Fin was in its answer, as a percentage. Compare
+                against `rule_threshold_percent`.
+              example: 42
+              nullable: true
+            sharp_ask:
+              type: string
+              description: The question Fin put to the teammate.
+              example: How long do refunds take?
+              nullable: true
+            ask_rationale:
+              type: string
+              description: Why Fin needed to ask.
+              example: No article covers refund timelines.
+              nullable: true
+            issue_summary:
+              type: string
+              description: Fin's summary of what the customer needs.
+              example: Customer chasing a refund.
+              nullable: true
+            customer_question:
+              type: string
+              description: The customer's message that prompted the consultation.
+              example: Where is my refund?
+              nullable: true
+            draft:
+              type: string
+              description: The reply Fin proposed to the teammate.
+              example: Refunds are processed within 30 days.
+              nullable: true
+            round_index:
+              type: integer
+              description: Which round of teammate feedback this event belongs to, starting
+                at 1.
+              example: 1
+            teammate_input:
+              type: string
+              description: The feedback the teammate gave Fin.
+              example: Tell them 5 business days.
+              nullable: true
+            reviewer_admin_id:
+              type: string
+              description: The teammate involved in this event — who gave the feedback, or
+                who approved the draft or took over.
+              example: '4001'
+              nullable: true
+            regeneration_outcome:
+              type: string
+              description: How Fin responded to the feedback. `answer` means it produced a
+                revised draft, and is the only value accompanied by a `fin_draft_revised`
+                event. `no_answer` means it had nothing to send, `failed` that regeneration
+                failed, `consult_teammate` that it asked the teammate again, and `pending`
+                that the consultation ended before Fin responded.
+              example: answer
+              nullable: true
+            revised_draft:
+              type: string
+              description: The reply Fin produced after the teammate's feedback.
+              example: Refunds take 5 business days.
+              nullable: true
+            outcome:
+              type: string
+              description: How the consultation ended.
+              enum:
+              - approved
+              - taken_over
+              - timed_out_sent
+              - timed_out_escalated
+              - superseded
+              example: approved
+            approved_draft_type:
+              type: string
+              description: Whether the teammate approved Fin's original draft or the one it
+                revised after their feedback.
+              enum:
+              - original
+              - revised
+              example: revised
+              nullable: true
+            final_draft:
+              type: string
+              description: The reply as it stood when the consultation ended.
+              example: Refunds take 5 business days.
+              nullable: true
+            sent_text:
+              type: string
+              description: What was sent to the customer. Null when nothing was sent.
+              example: Refunds take 5 business days.
+              nullable: true
+            duration_seconds:
+              type: integer
+              description: How long the consultation took, in seconds.
+              example: 180
+              nullable: true
+            rounds_count:
+              type: integer
+              description: How many rounds of teammate feedback the consultation had. Only
+                the ten most recent are returned as events, so this can exceed the number of
+                `fin_teammate_input_received` events.
+              example: 1
+            payload_truncated:
+              type: boolean
+              description: Whether any text on this consultation was too long to store in
+                full and was cut.
+              example: false
+    hitl_event_list:
+      title: HITL Event List
+      type: object
+      description: A list of human-in-the-loop events for a conversation, oldest first.
+      properties:
+        type:
+          type: string
+          description: The type of the object.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of HITL event objects.
+          items:
+            "$ref": "#/components/schemas/hitl_event"
     side_conversation_summary:
       title: Side Conversation Summary
       type: object
@@ -37990,10 +40317,10 @@ components:
     intercom_version_preview:
       description: Preview Intercom API version. Used for closed beta endpoints or other features under managed availability.
       type: string
-      example: preview
-      default: preview
+      example: Preview
+      default: Preview
       enum:
-        - preview
+        - Preview
     linked_object_list:
       title: Linked Objects
       type: object
@@ -38132,19 +40459,17 @@ components:
       properties:
         from:
           type: string
-          description: The unique identifier for the contact to merge away from. Must
-            be a lead.
+          description: The unique identifier for the contact to merge away from (the source contact). Can have a `role` of `lead` or `user`.
           example: 5d70dd30de4efd54f42fd526
         into:
           type: string
-          description: The unique identifier for the contact to merge into. Must be
-            a user.
+          description: The unique identifier for the contact to merge into (the destination contact). Must have a `role` of `user`.
           example: 5ba682d23d7cf92bef87bfd4
         skip_duplicate_validation:
           type: boolean
-          description: Set to `true` to merge two contacts that are not duplicates
-            (they share no matching email or phone).
-          example: true
+          default: false
+          description: 'When `true`, bypasses the check that the two contacts must be duplicates (matching email or phone), allowing non-duplicate contacts to be merged. Must be a JSON boolean; the string `"true"` does not bypass the check.'
+          example: false
     merge_preview_request:
       description: Preview a contact merge.
       type: object
@@ -38155,16 +40480,21 @@ components:
       properties:
         from:
           type: string
-          description: The unique identifier for the contact to merge away from. Must be a lead.
+          description: The unique identifier for the contact to merge away from (the source contact). Can have a `role` of `lead` or `user`.
           example: 6762f0d51bb69f9f2193bb7f
         into:
           type: string
-          description: The unique identifier for the contact to merge into. Must be a user.
+          description: The unique identifier for the contact to merge into (the destination contact). Must have a `role` of `user`.
           example: 6762f0d51bb69f9f2193bb80
         skip_duplicate_validation:
           type: boolean
           default: false
-          description: When true, previews the merge even if the contacts don't share a common identifier. Defaults to false.
+          description: 'When `true`, previews the merge even if the contacts don''t share a common identifier. Must be a JSON boolean; the string `"true"` does not bypass the check. Defaults to false.'
+        custom_attribute_names:
+          type: array
+          description: Custom attribute names to include in the previewed attribute changes.
+          items:
+            type: string
     merge_preview_response:
       title: Merge preview response
       description: The result of a merge preview. Either the merge is allowed (with a summary of the changes) or it is not (with reasons).
@@ -38207,11 +40537,17 @@ components:
           type: string
           description: A stable code identifying the reason. Branch on this value.
           enum:
+          - source_same_as_target
           - invalid_merge_role_pair
           - no_shared_identifier
           - facebook_user
           - external_lead_channel_not_allowed
           - mailing_list
+          - user_to_lead
+          - whatsapp_data_cannot_be_merged
+          - telegram_data_cannot_be_merged
+          - source_has_telegram_data
+          - phone_data_cannot_be_merged
         message:
           type: string
           description: A human-readable explanation. Display this to people; do not match on it, as the wording may change.
@@ -39256,6 +41592,55 @@ components:
       oneOf:
       - "$ref": "#/components/schemas/contact_reply_conversation_request"
       - "$ref": "#/components/schemas/admin_reply_conversation_request"
+    role:
+      title: Role
+      type: object
+      x-tags:
+      - Roles
+      description: A role defines what a teammate can do in a workspace. The teammates
+        endpoint returns the id and name of the role a teammate holds; this schema
+        adds the role's description.
+      properties:
+        type:
+          type: string
+          description: Value is always "role"
+          example: role
+        id:
+          type: string
+          description: The id of the role
+          example: '991267902'
+        name:
+          type: string
+          description: The name of the role
+          example: Support Lead
+        description:
+          type: string
+          nullable: true
+          description: The description of the role
+          example: Can view and reply to conversations
+    role_list:
+      title: Role List
+      type: object
+      x-tags:
+      - Roles
+      description: A list of role objects in the workspace.
+      properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: A list of role objects
+          items:
+            "$ref": "#/components/schemas/role"
+          example:
+          - type: role
+            id: '991267902'
+            name: Support Lead
+            description: Can view and reply to conversations
     search_request:
       description: Search using Intercoms Search APIs.
       type: object
@@ -39775,6 +42160,74 @@ components:
           nullable: true
           description: Describes how assignments are distributed among the team members
           example: "round_robin"
+    team_handling_segment:
+      title: Team Handling Segment
+      type: object
+      description: A period one teammate actively handled the conversation, attributed
+        to the team assigned to it at the time. Teammate identity is not included.
+      required:
+      - team
+      - started_at
+      - ended_at
+      properties:
+        team:
+          type: object
+          nullable: true
+          description: The team assigned when the period ran, or null if no team was assigned
+          required:
+          - type
+          - id
+          - name
+          properties:
+            type:
+              type: string
+              enum:
+              - team
+              example: team
+            id:
+              type: string
+              example: '814865'
+            name:
+              type: string
+              example: Billing
+        started_at:
+          type: string
+          format: date-time
+          example: "2026-09-28T10:10:00Z"
+        ended_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Null while the period is still open
+          example: "2026-09-28T10:20:00Z"
+        start_reason:
+          type: string
+          nullable: true
+          description: team_change when the period starts at a team reassignment
+          example: team_change
+        end_reason:
+          type: string
+          nullable: true
+          description: Why the period ended (assignment, snooze, close, away, auto_away,
+            session_drop, team_change)
+          example: assignment
+    team_handling_segment_list:
+      title: Team Handling Segment List
+      type: object
+      properties:
+        team_handling_segments:
+          type: array
+          items:
+            "$ref": "#/components/schemas/team_handling_segment"
+          example:
+          - team:
+              type: team
+              id: '814865'
+              name: Billing
+            started_at: "2026-09-28T10:10:00Z"
+            ended_at: "2026-09-28T10:20:00Z"
+            start_reason:
+            end_reason: team_change
     team_list:
       title: Team List
       type: object
@@ -40056,8 +42509,30 @@ components:
         assigned_to:
           "$ref": "#/components/schemas/reference"
           nullable: true
-          description: The id of the admin that was assigned the ticket by this ticket_part
-            (null if there has been no change in assignment.)
+          description: The assignee this ticket_part assigned the ticket to, as a reference
+            whose `type` is `admin`, `team` or `bot`. When the part unassigned the ticket,
+            `type` is `nobody_admin` and `id` is `null`. Null when the part did not change
+            the assignment, or when the assignee has since been deleted.
+        admin_assignee_id:
+          type: integer
+          nullable: true
+          description: The id of the teammate that this ticket_part assigned the ticket
+            to, or 0 if the part removed the teammate. Null or absent when the part did
+            not change the teammate, including an unassignment that did not name which
+            assignee it cleared. A bot is reported here, because assignment treats
+            anything that is not a team as a teammate.
+          example: 991268013
+        team_assignee_id:
+          type: integer
+          nullable: true
+          description: The id of the team that this ticket_part assigned the ticket to,
+            or 0 if the part removed the team. Null or absent when the part did not
+            change the team, including an unassignment that did not name which assignee
+            it cleared. A part can assign a team and a teammate at the same time, for
+            example when the team uses Round Robin distribution and the teammate is
+            resolved inline. In that case assigned_to reports only the teammate, and
+            these two fields report each assignee separately.
+          example: 5017691
         author:
           "$ref": "#/components/schemas/ticket_part_author"
         attachments:
@@ -40095,6 +42570,8 @@ components:
             every translated reply: it is suppressed when the reply's `body` contains
             any text outside an HTML block element, which includes plain-text replies
             created through the REST API.
+            Wrap the body in `<p>`, `<div>`, or another supported block element to
+            avoid this.
           required:
             - original
           additionalProperties:
@@ -40287,6 +42764,8 @@ components:
             every translated reply: it is suppressed when the reply's `body` contains
             any text outside an HTML block element, which includes plain-text replies
             created through the REST API.
+            Wrap the body in `<p>`, `<div>`, or another supported block element to
+            avoid this.
           required:
             - original
           additionalProperties:
@@ -40705,6 +43184,137 @@ components:
           example:
           - en
           - fr
+    stage_article_draft_request_body:
+      description: You can Stage a Draft for an Article
+      type: object
+      title: Stage Article Draft Request Payload
+      nullable: true
+      properties:
+        title:
+          type: string
+          description: The title of the article.For multilingual articles, this will
+            be the title of the default language's content.
+          example: Thanks for everything
+        description:
+          type: string
+          description: The description of the article. For multilingual articles,
+            this will be the description of the default language's content.
+          example: Description of the Article
+        body:
+          type: string
+          description: The content of the article in HTML. For multilingual articles, this
+            will be the body of the default language's content. Mutually exclusive with `body_markdown`.
+          example: "<p>This is the body in html</p>"
+        body_markdown:
+          type: string
+          description: The content of the article in markdown. For multilingual articles, this
+            will be the body of the default language's content. An alternative to `body` — you
+            can provide content as markdown instead of HTML. Mutually exclusive with `body`.
+          example: "## Updated heading\n\nNew content.\n"
+        author_id:
+          type: integer
+          description: The id of the author of the article. For multilingual articles,
+            this will be the id of the author of the default language's content. Must
+            be a teammate on the help center's workspace.
+          example: 1295
+        state:
+          type: string
+          description: Whether the article will be `published` or will be a `draft`.
+            Omitting this field leaves the publish state unchanged, so a draft stays
+            a draft and an edit to a published article goes live immediately unless
+            that article already has a pending draft or a scheduled publish time is
+            set in the same request. The `PUT /articles/{id}/draft` endpoint ignores
+            this field and always stages a draft. For multilingual articles, this
+            will be the state of the default language's content.
+          enum:
+          - published
+          - draft
+          example: draft
+        parent_id:
+          type: string
+          description: The id of the article's parent collection or section. An article
+            without this field stands alone.
+          example: '18'
+        parent_type:
+          type: string
+          description: The type of parent, which can either be a `collection` or `section`.
+          example: collection
+        parent_ids:
+          type: array
+          description: The ids of the parent collections to place this article in.
+            Send an empty array to remove the article from all collections. When
+            provided, this takes precedence over `parent_id` and `parent_type`.
+          items:
+            type: integer
+          example:
+          - 18
+          - 19
+        translated_content:
+          "$ref": "#/components/schemas/article_translated_content"
+        folder_id:
+          type: integer
+          nullable: true
+          description: The ID of the folder to place this article in, or null to remove it from its folder.
+          example: 6
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to assign to this article for Fin AI Agent targeting.
+            Sending a top-level `audience_ids` broadcasts the same set to every locale.
+            Sending `audience_ids: []` clears all audience memberships from every locale.
+            For per-locale targeting, use `translated_content.<locale>.audience_ids` instead.
+            Sending both top-level and per-locale in the same request causes top-level to win.
+            Unknown audience IDs return a 404 error. No partial commit occurs.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
+        ai_chatbot_availability:
+          type: boolean
+          description: Whether the article should be available for AI Chatbot (Fin).
+            For multilingual articles, this sets the default language's availability.
+          example: true
+        ai_copilot_availability:
+          type: boolean
+          description: Whether the article should be available for AI Copilot. For
+            multilingual articles, this sets the default language's availability.
+          example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the article should be available for AI Sales Agent.
+            For multilingual articles, this sets the default language's availability.
+          example: true
+        scheduled_publish_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            ISO 8601 timestamp at which to schedule a future publish of the article.
+            When set together with `state: "published"`, the article is scheduled
+            instead of published immediately. Setting `null` cancels a pending
+            publish schedule. Timestamps in the past or equal to the current time
+            are rejected with 400 `parameter_invalid` — the value must be strictly
+            in the future. Combining with `state: "draft"` returns 400
+            `parameter_invalid`. Sending in the same request as
+            `scheduled_unpublish_at` returns 400 — only one pending schedule per
+            article. Empty string returns 400 `parameter_invalid`.
+          example: '2026-12-31T09:00:00Z'
+        scheduled_unpublish_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            ISO 8601 timestamp at which to schedule a future unpublish of the article.
+            Setting `null` cancels a pending unpublish schedule. Timestamps in the
+            past or equal to the current time are rejected with 400
+            `parameter_invalid` — the value must be strictly in the future. Rejected
+            with 400 `parameter_invalid` if the article has never been published.
+            Sending in the same request as `scheduled_publish_at` returns 400 — only
+            one pending schedule per article. Empty string returns 400
+            `parameter_invalid`.
+          example: '2026-12-31T17:00:00Z'
     update_article_request:
       description: You can Update an Article
       type: object
@@ -40936,7 +43546,10 @@ components:
         email_verified:
           type: boolean
           nullable: true
-          description: Whether the contact's email address has been verified. Set to true to indicate you have verified the contact owns this email address, or false to mark it as unverified. Must be supplied together with an email in the same request; sending it without an email returns a 400.
+          description: |-
+            Whether the contact has proved they own this email address, for example through a confirmation link or one-time code you sent. Send it together with `email`. `email_verified` without `email` is rejected.
+
+            Changing a contact's email resets it to not verified. Intercom reuses leads with a verified email when an inbound email, conversation or ticket matches the address.
           example: true
         phone:
           type: string
@@ -41237,7 +43850,10 @@ components:
         company_id:
           type: string
           description: The ID of the company that the ticket is associated with. The
-            unique identifier for the company which is given by Intercom. Set to nil to remove company.
+            unique identifier for the company which is given by Intercom. The company
+            must be associated with one of the contacts on the ticket, otherwise the
+            request will fail with a `parameter_invalid` error. Set to nil to remove
+            company.
           example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
         open:
           type: boolean
@@ -41263,6 +43879,18 @@ components:
           description: The ID of the admin or team to which the ticket is assigned.
             Set this 0 to unassign it.
           example: '123'
+        priority:
+          type: string
+          enum:
+          - none
+          - low
+          - medium
+          - high
+          - urgent
+          description: The priority level to set on the ticket. Accepts one of none,
+            low, medium, high, or urgent. Set none to clear an existing priority. The
+            change is attributed to admin_id, or to Operator when admin_id is omitted.
+          example: high
     update_ticket_type_attribute_request:
       description: You can update a Ticket Type Attribute
       type: object
@@ -41950,6 +44578,15 @@ tags:
   description: Everything about your Away Status Reasons
 - name: Audiences
   description: Everything about your Audiences
+- name: Auth Tokens
+  description: |
+    Read and write the third-party credentials stored in your workspace, so you can find the
+    id of the credential a data connector should authenticate with, and store a new one
+    without leaving your integration. These endpoints are part of the `Preview` API version.
+    Reading requires an OAuth token with the `read_auth_tokens` scope; creating and updating
+    require the `write_auth_tokens` scope and an access token associated with a teammate.
+    Only credentials with a `token_type` of `text` can be created or updated. No endpoint
+    ever returns a credential value, refresh configuration, or OAuth configuration.
 - name: Banners
   description: |
     Retrieve the banners a contact matches and record dismissals, so you can display
@@ -42008,7 +44645,7 @@ tags:
     &nbsp;
 
     {% admonition type="warning" %}
-    Please reach out to your accounts team to discuss access and tailored, hands-on support.
+    To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
     {% /admonition %}
 
     &nbsp;
@@ -42070,6 +44707,8 @@ tags:
     {% /admonition %}
 - name: Reporting Data Export
   description: Everything about Reporting Data Export. See this [article](https://www.intercom.com/help/en/articles/12089688-api-metrics-documentation) for details on using the data to generate various metrics.
+- name: Roles
+  description: Everything about your Roles
 - name: Segments
   description: Everything about your Segments
 - name: Subscription Types

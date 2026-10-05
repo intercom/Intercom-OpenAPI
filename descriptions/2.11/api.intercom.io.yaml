@@ -1756,9 +1756,7 @@ paths:
       description: |
         Delete a single company.
 
-        This endpoint does not permanently remove the company. It archives the company record and detaches any contacts attached to it; the contacts themselves are not deleted. A `company.deleted` webhook is sent once archival completes.
-
-        The endpoint returns `200` with `"deleted": true` as soon as the request is accepted — archival is processed asynchronously.
+        The company record is kept in your workspace, but all contacts are detached. The contacts themselves are not deleted. Detaching contacts is permanent and can't be reversed. A `company.deleted` webhook is sent when the company is deleted. These changes may take some time to be reflected in your workspace.
 
         {% admonition type="warning" %}
         Third-party integrations that sync companies into Intercom (for example, Salesforce or Chargebee) will recreate any company deleted through this endpoint on their next sync. To prevent recreation, remove or filter the company at the source integration before deleting it via the API.
@@ -6081,7 +6079,7 @@ paths:
                     - type: user
                       id: 667d61168a68186f43bafe0d
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_participants_response"
         '404':
           description: Not found
           content:
@@ -6186,7 +6184,7 @@ paths:
                     - type: user
                       id: 667d61228a68186f43bafe19
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_participants_response"
         '404':
           description: Contact not found
           content:
@@ -6260,26 +6258,18 @@ paths:
                 summary: Detach a contact from a group conversation
                 value:
                   admin_id: 991267639
-                  customer:
-                    intercom_user_id: 667d611c8a68186f43bafe11
               conversation_not_found:
                 summary: Conversation not found
                 value:
                   admin_id: 991267642
-                  customer:
-                    intercom_user_id: 667d61248a68186f43bafe1a
               contact_not_found:
                 summary: Contact not found
                 value:
                   admin_id: 991267645
-                  customer:
-                    intercom_user_id: 667d612b8a68186f43bafe22
               last_customer:
                 summary: Last customer
                 value:
                   admin_id: 991267648
-                  customer:
-                    intercom_user_id: 667d61338a68186f43bafe2a
   "/conversations/redact":
     post:
       summary: Redact a conversation part
@@ -9542,7 +9532,7 @@ paths:
       - Tickets
       responses:
         '400':
-          description: User reply
+          description: Bad Request
           content:
             application/json:
               examples:
@@ -9553,6 +9543,21 @@ paths:
                     errors:
                     - code: parameter_mismatch
                       message: User replies are not allowed on Backoffice tickets
+                Admin comment on a back-office ticket:
+                  value:
+                    type: error.list
+                    request_id: 7a1c9f02-5d3e-4b8a-9c21-6f0d84e5b713
+                    errors:
+                    - code: parameter_mismatch
+                      message: Comments are not allowed on Backoffice tickets not
+                        shared with user
+                Admin comment on a tracker ticket:
+                  value:
+                    type: error.list
+                    request_id: c4e2a980-31bf-4d76-8a05-2e9cb17f4d6a
+                    errors:
+                    - code: parameter_mismatch
+                      message: Comments are not allowed on Tracker tickets
               schema:
                 "$ref": "#/components/schemas/error"
         '200':
@@ -11372,6 +11377,9 @@ components:
       properties:
         message_type:
           type: string
+          description: The type of reply. Tracker tickets and back-office tickets
+            that are not shared with the customer do not support `comment`; use
+            `note` instead.
           enum:
           - comment
           - note
@@ -12187,6 +12195,34 @@ components:
                 nullable: true
             required:
             - email
+    conversation_participants_response:
+      title: Conversation Participants Response
+      type: object
+      description: The participants of the conversation, returned after attaching
+        or detaching a contact
+      properties:
+        customers:
+          type: array
+          description: The conversation participants after the change
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: The role of the participant. Can be "user" or "lead"
+                example: 'user'
+              id:
+                type: string
+                description: The unique identifier for the participant
+                example: '6762f1a61bb69f9f2193bbd8'
+            required:
+            - type
+            - id
+          example:
+          - type: user
+            id: '6762f1a61bb69f9f2193bbd8'
+      required:
+      - customers
     button_component:
       title: Button Component
       type: object
@@ -14074,8 +14110,10 @@ components:
         assigned_to:
           "$ref": "#/components/schemas/reference"
           nullable: true
-          description: The id of the admin that was assigned the conversation by this
-            conversation_part (null if there has been no change in assignment.)
+          description: The assignee this conversation_part assigned the conversation to, as
+            a reference whose `type` is `admin`, `team` or `bot`. When the part unassigned
+            the conversation, `type` is `nobody_admin` and `id` is `null`. Null when the
+            part did not change the assignment, or when the assignee has since been deleted.
         author:
           "$ref": "#/components/schemas/conversation_part_author"
         attachments:
@@ -18226,8 +18264,10 @@ components:
         assigned_to:
           "$ref": "#/components/schemas/reference"
           nullable: true
-          description: The id of the admin that was assigned the ticket by this ticket_part
-            (null if there has been no change in assignment.)
+          description: The assignee this ticket_part assigned the ticket to, as a reference
+            whose `type` is `admin`, `team` or `bot`. When the part unassigned the ticket,
+            `type` is `nobody_admin` and `id` is `null`. Null when the part did not change
+            the assignment, or when the assignee has since been deleted.
         author:
           "$ref": "#/components/schemas/ticket_part_author"
         attachments:

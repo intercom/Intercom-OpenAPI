@@ -1825,7 +1825,7 @@ paths:
         These additional pieces of context will be used by Fin to provide a better and more contextual answer to the user.
 
         {% admonition type="warning" %}
-        Please reach out to your accounts team to discuss access.
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
         {% /admonition %}
 
         Once Fin is initialized, it progresses through a series of statuses such as *thinking*, *awaiting_user_reply*, or *resolved* before ending with a status of *complete*.
@@ -1840,6 +1840,7 @@ paths:
                 Successful response:
                   value:
                     conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
@@ -1847,6 +1848,7 @@ paths:
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
@@ -1865,6 +1867,10 @@ paths:
                     type: string
                     description: The ID of the conversation.
                     example: ext-123
+                  intercom_conversation_id:
+                    type: string
+                    description: The internal Intercom conversation ID, useful for matching this Agent API session to the conversation in Intercom.
+                    example: '192837465'
                   user_id:
                     type: string
                     description: The ID of the user.
@@ -2019,7 +2025,7 @@ paths:
         If a user replies, use this endpoint to send this response to Fin.
 
         {% admonition type="warning" %}
-        Please reach out to your accounts team to discuss access.
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
         {% /admonition %}
       responses:
         '200':
@@ -2030,6 +2036,7 @@ paths:
                 Successful response:
                   value:
                     conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
@@ -2037,6 +2044,7 @@ paths:
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
@@ -2052,6 +2060,10 @@ paths:
                     type: string
                     description: The ID of the conversation.
                     example: ext-123
+                  intercom_conversation_id:
+                    type: string
+                    description: The internal Intercom conversation ID, useful for matching this Agent API session to the conversation in Intercom.
+                    example: '192837465'
                   user_id:
                     type: string
                     description: The ID of the user.
@@ -2185,7 +2197,7 @@ paths:
         longer be changed.
 
         {% admonition type="warning" %}
-        Please reach out to your accounts team to discuss access.
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
         {% /admonition %}
       responses:
         '200':
@@ -2312,6 +2324,689 @@ paths:
                   conversation_id: ext-123
                   rating: amazing
                   remark: Fin solved my problem in seconds.
+  "/fin/capabilities":
+    post:
+      summary: Discover Fin's capabilities
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Fin Agent
+      operationId: listFinCapabilities
+      description: |
+        Return a machine-readable, per-user list of what Fin can do for a given end user, so an
+        orchestrating agent can decide which endpoint to call.
+
+        The response is audience-matched to the supplied user: each live, API-triggerable
+        procedure is checked against that user before being included, alongside the static
+        `reply` and `ask` actions.
+
+        {% admonition type="warning" %}
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        {% /admonition %}
+      responses:
+        '200':
+          description: Capabilities returned successfully
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    version: "2.14"
+                    capabilities:
+                    - type: procedure
+                      id: '12345'
+                      name: Reset password
+                      description: Walk the user through resetting their password.
+                      endpoint: /fin/procedures/12345/run
+                      method: POST
+                    - type: reply
+                      description: Reply to an in-progress Fin conversation.
+                      endpoint: /fin/reply
+                      method: POST
+                    - type: ask
+                      description: Ask Fin a single, self-contained question.
+                      endpoint: /fin/ask
+                      method: POST
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    description: The API version the capabilities document was generated for.
+                    example: "2.14"
+                  capabilities:
+                    type: array
+                    description: The list of capabilities available to this user.
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          description: The kind of capability — `procedure` for a runnable procedure, or a static action such as `reply`, `ask`, or `escalate`.
+                          example: procedure
+                        id:
+                          type: string
+                          description: The procedure ID. Present only when `type` is `procedure`.
+                          example: '12345'
+                        name:
+                          type: string
+                          description: The procedure name. Present only when `type` is `procedure`.
+                          example: Reset password
+                        description:
+                          type: string
+                          description: A human-readable description of the capability.
+                          example: Walk the user through resetting their password.
+                        endpoint:
+                          type: string
+                          description: The endpoint path to call to use this capability.
+                          example: /fin/procedures/12345/run
+                        method:
+                          type: string
+                          description: The HTTP method to use.
+                          example: POST
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Too many attributes:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: Cannot update more than 10 attributes at once.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  allOf:
+                  - "$ref": "#/components/schemas/fin_agent_user"
+                  - description: The user to list capabilities for. If no user exists for the id, one is created from the supplied details; if the user already exists, the supplied email and attributes update it.
+              required:
+              - user
+            examples:
+              Capabilities for a user:
+                value:
+                  user:
+                    id: '123456'
+  "/fin/ask":
+    post:
+      summary: Ask Fin
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Fin Agent
+      operationId: askFin
+      description: |
+        Ask Fin a single, self-contained question and receive one informational answer.
+
+        Unlike a conversation, `/fin/ask` is non-conversational: Fin will not ask follow-up
+        questions, will not run procedures, and will not escalate to a human on its own. You can
+        still escalate one yourself with `POST /fin/escalate`; the ask conversation is already
+        closed after its one-shot answer, and escalation leaves it closed while routing the
+        handoff separately.
+
+        Fin's answer is delivered asynchronously via the `fin_replied` event. The conversation
+        ends with a `complete` status — there is no `awaiting_user_reply` cycle.
+
+        {% admonition type="warning" %}
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        {% /admonition %}
+      responses:
+        '200':
+          description: Question accepted successfully
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+                Response with attribute errors:
+                  value:
+                    conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
+                    user_id: user-456
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+                    errors:
+                      user:
+                        attributes:
+                          invalid_attr: User attribute 'invalid_attr' does not exist
+              schema:
+                type: object
+                properties:
+                  conversation_id:
+                    type: string
+                    description: The external ID of the conversation.
+                    example: ext-123
+                  intercom_conversation_id:
+                    type: string
+                    description: The internal Intercom conversation ID, useful for matching this Agent API session to the conversation in Intercom.
+                    example: '192837465'
+                  user_id:
+                    type: string
+                    description: The ID of the user.
+                    example: user-456
+                  status:
+                    type: string
+                    enum:
+                    - thinking
+                    - replying
+                    - resolved
+                    - complete
+                    description: |
+                      Fin's current status in the conversation workflow.
+                    example: thinking
+                  created_at_ms:
+                    type: string
+                    format: date-time
+                    description: The timestamp the response was created at, with millisecond precision.
+                    example: '2025-01-24T10:00:00.123Z'
+                  errors:
+                    "$ref": "#/components/schemas/fin_agent_attribute_errors"
+                  sse_subscription_url:
+                    type: string
+                    description: |
+                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires.
+                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Conversation ID missing:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: External Conversation ID is required
+                User ID missing:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: User ID is required
+                Too many history items:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: Conversation history cannot contain more than 10 items
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conversation_id:
+                  type: string
+                  description: Your external conversation ID. Fin creates a conversation for this ID. If a conversation already exists for it, use `/fin/reply` instead.
+                  example: ext-123
+                message:
+                  "$ref": "#/components/schemas/fin_agent_message"
+                user:
+                  "$ref": "#/components/schemas/fin_agent_user"
+                conversation_metadata:
+                  "$ref": "#/components/schemas/fin_agent_conversation_metadata"
+                attachments:
+                  type: array
+                  description: An array of attachments to include with the message. Maximum of 10 attachments.
+                  maxItems: 10
+                  items:
+                    "$ref": "#/components/schemas/fin_agent_attachment"
+              required:
+              - conversation_id
+              - message
+              - user
+            examples:
+              Basic question:
+                value:
+                  conversation_id: ext-123
+                  message:
+                    author: user
+                    body: How do I reset my password?
+                    timestamp: '2025-01-24T10:01:20.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+              Question with history and attributes:
+                value:
+                  conversation_id: ext-123
+                  message:
+                    author: user
+                    body: And how long does that take to apply?
+                    timestamp: '2025-01-24T10:02:00.000Z'
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+                    attributes:
+                      plan_type: Pro
+                  conversation_metadata:
+                    history:
+                    - author: user
+                      body: How do I reset my password?
+                      timestamp: '2025-01-24T10:01:20.000Z'
+                    attributes:
+                      order_id: '98765'
+  "/fin/procedures/{procedure_id}/run":
+    post:
+      summary: Run a Fin procedure
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: procedure_id
+        in: path
+        required: true
+        description: The ID of the procedure to run.
+        schema:
+          type: string
+        example: '12345'
+      tags:
+      - Fin Agent
+      operationId: runFinProcedure
+      description: |
+        Deterministically run a specific procedure on a new conversation. Calling this endpoint
+        guarantees that the named procedure runs — there is no non-deterministic routing.
+
+        Fin's progress is delivered asynchronously via events or Server-Sent Events. If the
+        procedure pauses for user input, the conversation status becomes `awaiting_user_reply` —
+        send the user's response with [`/fin/reply`](/docs/references/2.14/rest-api/api.intercom.io/fin-agent/replytofin).
+
+        {% admonition type="warning" %}
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        {% /admonition %}
+      responses:
+        '200':
+          description: Procedure run started successfully
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
+                    user_id: user-456
+                    procedure_id: '12345'
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+                Response with attribute errors:
+                  value:
+                    conversation_id: ext-123
+                    intercom_conversation_id: '192837465'
+                    user_id: user-456
+                    procedure_id: '12345'
+                    status: thinking
+                    created_at_ms: '2025-01-24T10:00:00.123Z'
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+                    errors:
+                      user:
+                        attributes:
+                          invalid_attr: User attribute 'invalid_attr' does not exist
+              schema:
+                type: object
+                properties:
+                  conversation_id:
+                    type: string
+                    description: The ID of the conversation.
+                    example: ext-123
+                  intercom_conversation_id:
+                    type: string
+                    description: The internal Intercom conversation ID, useful for matching this Agent API session to the conversation in Intercom.
+                    example: '192837465'
+                  user_id:
+                    type: string
+                    description: The ID of the user.
+                    example: user-456
+                  procedure_id:
+                    type: string
+                    description: The ID of the procedure that was run.
+                    example: '12345'
+                  status:
+                    type: string
+                    enum:
+                    - thinking
+                    - replying
+                    - awaiting_user_reply
+                    - escalated
+                    - resolved
+                    - complete
+                    description: |
+                      Fin's current status in the conversation workflow.
+                    example: thinking
+                  created_at_ms:
+                    type: string
+                    format: date-time
+                    description: The timestamp the response was created at, with millisecond precision.
+                    example: '2025-01-24T10:00:00.123Z'
+                  errors:
+                    "$ref": "#/components/schemas/fin_agent_attribute_errors"
+                  sse_subscription_url:
+                    type: string
+                    description: |
+                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires.
+                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Procedure not found:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: Procedure not found
+                Procedure not live:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: Procedure is not live
+                Procedure has no API trigger:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: Procedure does not have an API trigger
+                No Fin profile:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: No Fin profile is configured to handle this conversation. Configure a Fin profile and retry.
+                Conversation already exists:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: Fin session already exists for this conversation. Please use /reply to continue the conversation.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conversation_id:
+                  type: string
+                  description: Your external conversation ID. Fin creates a conversation for this ID. If a conversation already exists for it, use `/fin/reply` instead.
+                  example: ext-123
+                user:
+                  "$ref": "#/components/schemas/fin_agent_user"
+                message:
+                  "$ref": "#/components/schemas/fin_agent_message"
+                conversation_metadata:
+                  type: object
+                  description: Metadata about the conversation. Only attributes are accepted (no history).
+                  properties:
+                    attributes:
+                      type: object
+                      description: |
+                        A hash of conversation attributes. Limit to 10 attributes.
+                      additionalProperties: true
+                      example:
+                        order_id: '98765'
+              required:
+              - conversation_id
+              - user
+            examples:
+              Basic procedure run:
+                value:
+                  conversation_id: ext-123
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+              Procedure run with trigger message and attributes:
+                value:
+                  conversation_id: ext-123
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+                  message:
+                    author: agent
+                    body: Starting your refund request.
+                  conversation_metadata:
+                    attributes:
+                      order_id: '98765'
+  "/fin/escalate":
+    post:
+      summary: Escalate to a human
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Fin Agent
+      operationId: escalateFinConversation
+      description: |
+        Hand a conversation off to a human teammate. If you use the Intercom Helpdesk, the
+        handoff lands in your team inbox.
+
+        Provide either `conversation_id` or `user`:
+
+        - `conversation_id` — escalate an existing agent conversation, including one started
+          with `/fin/ask`. On the Intercom Helpdesk, Fin by default summarises the conversation
+          and opens a new Helpdesk conversation that carries the summary as an internal note.
+          Escalation does not change the original agent conversation's assignment or open/closed
+          state. Configure an escalation Operator Workflow to change this default.
+        - `user` — escalate on behalf of a user with no prior agent conversation. On the Intercom
+          Helpdesk, a new Helpdesk conversation is created for the teammate. Not supported on Fin
+          for Platforms — see below.
+
+        In both cases, pass the optional `context` to give the receiving teammate background your
+        orchestrating agent has and Fin does not. On the Intercom Helpdesk, it appears above the
+        summary in the internal note of the new conversation the teammate picks up. It is never
+        shown to the end user.
+
+        Escalating an existing conversation also sets its AI Agent resolution state to
+        `escalated`, readable as `ai_agent.resolution_state` on the Conversations API. This is a
+        resolution state, not a billable resolution.
+
+        On Fin for Platforms, `conversation_id` is required — `user` is not supported and is
+        rejected, because there is no Intercom Helpdesk in which to create a conversation. There
+        is no Intercom inbox either, so an escalation that no workflow handles does not open a
+        Helpdesk conversation for a teammate. `context` is not surfaced, and the conversation is
+        left open for your platform to hand off and continue driving.
+
+        You are notified over the existing webhook or SSE channel with an `escalated` status
+        followed by `complete`. The `complete` status signals that Fin is done; it does not close
+        the conversation. On the Intercom Helpdesk, the new human conversation remains open; on
+        Fin for Platforms, the conversation remains open for whoever handles it on your platform.
+
+        {% admonition type="warning" %}
+        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        {% /admonition %}
+      responses:
+        '200':
+          description: Conversation escalated successfully
+          content:
+            application/json:
+              examples:
+                Existing conversation:
+                  value:
+                    conversation_id: ext-123
+                    status: escalated
+                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+                New conversation:
+                  value:
+                    intercom_conversation_id: '987654321'
+                    status: escalated
+              schema:
+                type: object
+                properties:
+                  conversation_id:
+                    type: string
+                    description: The external ID of the conversation. Returned when you escalate an existing conversation by `conversation_id` (echoed back). When you escalate a `user`, a new conversation is created and only `intercom_conversation_id` is returned.
+                    example: ext-123
+                  intercom_conversation_id:
+                    type: string
+                    description: The internal Intercom conversation ID. Returned when a new conversation was created for the escalation.
+                    example: '987654321'
+                  sse_subscription_url:
+                    type: string
+                    description: |
+                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires. Includes a `rewind` window so a subscriber that connects after the escalation is processed can still receive the `escalated` and `complete` events.
+                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
+                  status:
+                    type: string
+                    enum:
+                    - escalated
+                    description: The resulting status of the conversation.
+                    example: escalated
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Neither identifier provided:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: Either conversation_id or user must be provided
+                Conversation not found:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: parameter_invalid
+                      message: Conversation not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                conversation_id:
+                  type: string
+                  description: The external ID of the conversation to escalate. Provide this or `user`. Required on Fin for Platforms, where `user` is not supported.
+                  example: ext-123
+                user:
+                  allOf:
+                  - "$ref": "#/components/schemas/fin_agent_user"
+                  - description: The user to escalate on behalf of, creating a new conversation. Provide this or `conversation_id`. Not supported on Fin for Platforms.
+                context:
+                  type: string
+                  maxLength: 10000
+                  description: Optional background for the receiving teammate, valid with either `conversation_id` or `user`. On the Intercom Helpdesk, it appears above the summary in the internal note of the new conversation the teammate picks up, and is never shown to the end user. Not surfaced on Fin for Platforms. Avoid including credentials or unnecessary personal data — it is visible to any teammate with access to the conversation.
+                  example: Customer is requesting a refund and is frustrated.
+              oneOf:
+              - required:
+                - conversation_id
+              - required:
+                - user
+            examples:
+              Escalate an existing conversation:
+                value:
+                  conversation_id: ext-123
+                  context: Customer is requesting a refund and is frustrated.
+              Escalate on behalf of a user:
+                value:
+                  user:
+                    id: '123456'
+                    name: John Doe
+                    email: john.doe@example.com
+                  context: I need help with my billing issue
   "/help_center/collections":
     get:
       summary: List all collections
@@ -3683,9 +4378,7 @@ paths:
       description: |
         Delete a single company.
 
-        This endpoint does not permanently remove the company. It archives the company record and detaches any contacts attached to it; the contacts themselves are not deleted. A `company.deleted` webhook is sent once archival completes.
-
-        The endpoint returns `200` with `"deleted": true` as soon as the request is accepted — archival is processed asynchronously.
+        The company record is kept in your workspace, but all contacts are detached. The contacts themselves are not deleted. Detaching contacts is permanent and can't be reversed. A `company.deleted` webhook is sent when the company is deleted. These changes may take some time to be reflected in your workspace.
 
         {% admonition type="warning" %}
         Third-party integrations that sync companies into Intercom (for example, Salesforce or Chargebee) will recreate any company deleted through this endpoint on their next sync. To prevent recreation, remove or filter the company at the source integration before deleting it via the API.
@@ -6870,8 +7563,6 @@ paths:
                         updated_at: 1663597260
                         notified_at: 1663597260
                         assigned_to:
-                          type: contact
-                          id: '1a2b3c'
                         author:
                           type: admin
                           id: '274'
@@ -8461,7 +9152,7 @@ paths:
                     - type: user
                       id: 6762f19b1bb69f9f2193bbd4
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_participants_response"
         '404':
           description: Not found
           content:
@@ -8566,7 +9257,7 @@ paths:
                     - type: user
                       id: 6762f1b41bb69f9f2193bbe0
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_participants_response"
         '404':
           description: Contact not found
           content:
@@ -8640,26 +9331,18 @@ paths:
                 summary: Detach a contact from a group conversation
                 value:
                   admin_id: 991267739
-                  customer:
-                    intercom_user_id: 6762f1a61bb69f9f2193bbd8
               conversation_not_found:
                 summary: Conversation not found
                 value:
                   admin_id: 991267742
-                  customer:
-                    intercom_user_id: 6762f1b61bb69f9f2193bbe1
               contact_not_found:
                 summary: Contact not found
                 value:
                   admin_id: 991267745
-                  customer:
-                    intercom_user_id: 6762f1c41bb69f9f2193bbe9
               last_customer:
                 summary: Last customer
                 value:
                   admin_id: 991267748
-                  customer:
-                    intercom_user_id: 6762f1d11bb69f9f2193bbf1
   "/conversations/redact":
     post:
       summary: Redact a conversation part
@@ -12893,7 +13576,7 @@ paths:
       - Tickets
       responses:
         '400':
-          description: User reply
+          description: Bad Request
           content:
             application/json:
               examples:
@@ -12904,6 +13587,21 @@ paths:
                     errors:
                     - code: parameter_mismatch
                       message: User replies are not allowed on Backoffice tickets
+                Admin comment on a back-office ticket:
+                  value:
+                    type: error.list
+                    request_id: 7a1c9f02-5d3e-4b8a-9c21-6f0d84e5b713
+                    errors:
+                    - code: parameter_mismatch
+                      message: Comments are not allowed on Backoffice tickets not
+                        shared with user
+                Admin comment on a tracker ticket:
+                  value:
+                    type: error.list
+                    request_id: c4e2a980-31bf-4d76-8a05-2e9cb17f4d6a
+                    errors:
+                    - code: parameter_mismatch
+                      message: Comments are not allowed on Tracker tickets
               schema:
                 "$ref": "#/components/schemas/error"
         '200':
@@ -15086,6 +15784,9 @@ components:
       properties:
         message_type:
           type: string
+          description: The type of reply. Tracker tickets and back-office tickets
+            that are not shared with the customer do not support `comment`; use
+            `note` instead.
           enum:
           - comment
           - note
@@ -15961,6 +16662,34 @@ components:
                 "$ref": "#/components/schemas/customer_request"
             required:
             - email
+    conversation_participants_response:
+      title: Conversation Participants Response
+      type: object
+      description: The participants of the conversation, returned after attaching
+        or detaching a contact
+      properties:
+        customers:
+          type: array
+          description: The conversation participants after the change
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: The role of the participant. Can be "user" or "lead"
+                example: 'user'
+              id:
+                type: string
+                description: The unique identifier for the participant
+                example: '6762f1a61bb69f9f2193bbd8'
+            required:
+            - type
+            - id
+          example:
+          - type: user
+            id: '6762f1a61bb69f9f2193bbd8'
+      required:
+      - customers
     away_status_reason:
       type: object
       properties:
@@ -17529,8 +18258,10 @@ components:
         assigned_to:
           "$ref": "#/components/schemas/reference"
           nullable: true
-          description: The id of the admin that was assigned the conversation by this
-            conversation_part (null if there has been no change in assignment.)
+          description: The assignee this conversation_part assigned the conversation to, as
+            a reference whose `type` is `admin`, `team` or `bot`. When the part unassigned
+            the conversation, `type` is `nobody_admin` and `id` is `null`. Null when the
+            part did not change the assignment, or when the assignee has since been deleted.
         author:
           "$ref": "#/components/schemas/conversation_part_author"
         attachments:
@@ -20277,6 +21008,37 @@ components:
               format: date-time
               description: The timestamp the message was created at, with millisecond precision.
               example: '2025-01-24T09:01:00.456Z'
+            sources:
+              type: array
+              description: |
+                The content sources Fin used to generate this reply, in the same order as the
+                [n] citation markers in the body. Present only when Fin cited content.
+              items:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    description: The title of the source.
+                    example: Managing your account
+                  type:
+                    type: string
+                    enum:
+                    - article
+                    - external
+                    description: Whether the source is an Intercom article or external content.
+                    example: article
+                  url:
+                    type: string
+                    description: The URL of the source.
+                    example: https://www.example.com/help/en/articles/1-managing-your-account
+                required:
+                - title
+                - type
+                - url
+              example:
+              - title: Managing your account
+                type: article
+                url: https://www.example.com/help/en/articles/1-managing-your-account
           required:
           - author
           - body
@@ -22177,8 +22939,10 @@ components:
         assigned_to:
           "$ref": "#/components/schemas/reference"
           nullable: true
-          description: The id of the admin that was assigned the ticket by this ticket_part
-            (null if there has been no change in assignment.)
+          description: The assignee this ticket_part assigned the ticket to, as a reference
+            whose `type` is `admin`, `team` or `bot`. When the part unassigned the ticket,
+            `type` is `nobody_admin` and `id` is `null`. Null when the part did not change
+            the assignment, or when the assignee has since been deleted.
         author:
           "$ref": "#/components/schemas/ticket_part_author"
         attachments:
@@ -23608,12 +24372,12 @@ tags:
     &nbsp;
 
     {% admonition type="warning" %}
-    Please reach out to your accounts team to discuss access and tailored, hands-on support.
+    To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
     {% /admonition %}
 
     &nbsp;
 
-    Integration is centered around two endpoints (`/fin/start` and `/fin/reply`) and a set of events that notify your application of Fin's status and responses. Events can be delivered via webhooks or Server-Sent Events (SSE). You can also record a customer satisfaction rating with `/fin/csat`.
+    Integration centres on the Fin Agent API endpoints — start a conversation with `/fin/start` and continue it with `/fin/reply`, or drive Fin from your own agent with `/fin/capabilities`, `/fin/ask`, `/fin/procedures/{procedure_id}/run`, and `/fin/escalate` — plus a set of events that notify your application of Fin's status and responses. Events can be delivered via webhooks or Server-Sent Events (SSE). You can also record a customer satisfaction rating with `/fin/csat`.
 
     &nbsp;
 
