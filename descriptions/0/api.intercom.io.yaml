@@ -12521,6 +12521,10 @@ paths:
                           type: admin
                           admin_id: '884120017'
                         review_status: submitted
+                        submitted_by:
+                          type: admin
+                          admin_id: '884120017'
+                        revised_by: null
                         notes:
                         - id: '9001'
                           created_at: 1734537900
@@ -13261,6 +13265,10 @@ paths:
                         type: admin
                         admin_id: '884120017'
                       review_status: submitted
+                      submitted_by:
+                        type: admin
+                        admin_id: '884120017'
+                      revised_by: null
                       notes:
                       - id: '9001'
                         created_at: 1734537900
@@ -14007,6 +14015,10 @@ paths:
                           type: admin
                           admin_id: '884120017'
                         review_status: submitted
+                        submitted_by:
+                          type: admin
+                          admin_id: '884120017'
+                        revised_by: null
                         notes:
                         - id: '9001'
                           created_at: 1734537900
@@ -33840,6 +33852,10 @@ components:
           - fix_complete
           description: The status of the review of this scorecard, as shown in the QA reviews list in Intercom. `unreviewed` while the review is waiting for a reviewer's verdict; `submitted` once the review has been submitted; `passed_review`, `needs_fix`, `wont_fix` or `fix_complete` when a teammate set a specific outcome. Null when no review exists for this scorecard.
           example: submitted
+        submitted_by:
+          "$ref": "#/components/schemas/conversation_scorecard_submitted_by"
+        revised_by:
+          "$ref": "#/components/schemas/conversation_scorecard_revised_by"
         notes:
           type: array
           description: The notes teammates left on the QA review linked to this scorecard entry. Empty when the scorecard has no linked review.
@@ -33864,19 +33880,59 @@ components:
       nullable: true
       x-tags:
       - Conversations
-      description: Who reviewed this scorecard. `ai` when Fin auto-reviewed it; `admin` when a teammate did. Null when no review exists for this scorecard or no reviewer has been assigned yet.
+      description: Who the review of this scorecard is assigned to. `ai` when it is assigned to Fin; `admin` when it is assigned to a teammate. Null when no review exists for this scorecard or the review is unassigned.
       properties:
         type:
           type: string
           enum:
           - ai
           - admin
-          description: The kind of reviewer. `ai` if Fin auto-reviewed the scorecard; `admin` if a teammate reviewed it.
+          description: The kind of reviewer. `ai` if the review is assigned to Fin; `admin` if it is assigned to a teammate.
           example: admin
         admin_id:
           type: string
           nullable: true
-          description: The id of the admin who reviewed the scorecard. Present only when `type` is `admin`.
+          description: The id of the admin the review is assigned to. Present only when `type` is `admin`.
+          example: '884120017'
+    conversation_scorecard_submitted_by:
+      title: Submitted By
+      type: object
+      nullable: true
+      x-tags:
+      - Conversations
+      description: Who last submitted the review of this scorecard, which can differ from the `reviewer` it is assigned to. `ai` when Fin submitted it; `admin` when a teammate did. Null while the review is unreviewed or when no review exists for this scorecard.
+      properties:
+        type:
+          type: string
+          enum:
+          - ai
+          - admin
+          description: The kind of submitter. `ai` if Fin submitted the review; `admin` if a teammate did.
+          example: admin
+        admin_id:
+          type: string
+          nullable: true
+          description: The id of the admin who submitted the review. Present only when `type` is `admin`.
+          example: '884120017'
+    conversation_scorecard_revised_by:
+      title: Revised By
+      type: object
+      nullable: true
+      x-tags:
+      - Conversations
+      description: Who last changed the review of this scorecard after it was submitted. `ai` when Fin made the change; `admin` when a teammate did. Null while the review is unreviewed, when it has not been changed since it was submitted, or when no review exists for this scorecard.
+      properties:
+        type:
+          type: string
+          enum:
+          - ai
+          - admin
+          description: The kind of reviser. `ai` if Fin changed the review; `admin` if a teammate did.
+          example: admin
+        admin_id:
+          type: string
+          nullable: true
+          description: The id of the admin who last changed the review. Present only when `type` is `admin`.
           example: '884120017'
     conversation_scorecard_note:
       title: Scorecard Note
