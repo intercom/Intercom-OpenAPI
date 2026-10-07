@@ -12204,6 +12204,7 @@ paths:
                         brand_id:
                         text_content: "+1-555-0100"
                         json_blocks:
+                        intentionally_empty: false
                         created_at: 1663597223
                         updated_at: 1663597223
                       created_at: 1663597223
@@ -12288,6 +12289,7 @@ paths:
                       brand_id:
                       text_content: "+1-555-0100"
                       json_blocks:
+                      intentionally_empty: false
                       created_at: 1663597223
                       updated_at: 1663597223
                     - type: dynamic_content_variation
@@ -12296,6 +12298,7 @@ paths:
                       brand_id:
                       text_content: "+33 1 23 45 67 89"
                       json_blocks:
+                      intentionally_empty: false
                       created_at: 1663597223
                       updated_at: 1663597223
                     created_at: 1663597223
@@ -12398,6 +12401,7 @@ paths:
                       json_blocks:
                       - type: paragraph
                         text: You can request a refund within 30 days of purchase.
+                      intentionally_empty: false
                       created_at: 1663597223
                       updated_at: 1663597223
                     - type: dynamic_content_variation
@@ -12408,6 +12412,7 @@ paths:
                       json_blocks:
                       - type: paragraph
                         text: You can request a refund within 60 days of purchase.
+                      intentionally_empty: false
                       created_at: 1663597223
                       updated_at: 1663597223
                     created_at: 1663597223
@@ -12498,6 +12503,7 @@ paths:
                       brand_id:
                       text_content: "+1-555-0199"
                       json_blocks:
+                      intentionally_empty: false
                       created_at: 1663597223
                       updated_at: 1663597300
                     - type: dynamic_content_variation
@@ -12506,6 +12512,7 @@ paths:
                       brand_id:
                       text_content: "+33 1 23 45 67 89"
                       json_blocks:
+                      intentionally_empty: false
                       created_at: 1663597223
                       updated_at: 1663597223
                     created_at: 1663597223
@@ -34012,6 +34019,12 @@ components:
           example:
           - type: paragraph
             text: You can request a refund within 30 days of purchase.
+        intentionally_empty:
+          type: boolean
+          description: Whether the variation is intentionally empty. An intentionally
+            empty variation shows nothing instead of falling back to the default
+            content, and has an empty `text_content` or `json_blocks`.
+          example: false
         created_at:
           type: integer
           format: date-time
@@ -34082,6 +34095,13 @@ components:
           type: string
           description: The content of a block variation in HTML.
           example: "<p>You can request a refund within 30 days of purchase.</p>"
+        intentionally_empty:
+          type: boolean
+          description: Set to `true` to make the variation show nothing instead of
+            falling back to the default content. Any `text_content` or `body` sent
+            with it is ignored.
+          default: false
+          example: false
     dynamic_content_create_request:
       title: Create Dynamic Content Request
       type: object
