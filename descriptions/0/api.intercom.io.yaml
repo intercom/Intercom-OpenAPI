@@ -12987,7 +12987,31 @@ paths:
                               otp_email_verification_failed:
                                 reason: no_email
                         app_package_code: null
-                      total_count: 6
+                      - type: conversation_part
+                        id: 7
+                        part_type: standalone_platform_handoff
+                        body:
+                        created_at: 1740141910
+                        updated_at: 1740141910
+                        notified_at: 1740141910
+                        assigned_to:
+                        author:
+                          type: bot
+                          id: '278'
+                          name: Fin
+                          email: operator+abcd1234@intercom.io
+                        attachments: []
+                        external_id:
+                        redacted: false
+                        email_message_metadata: null
+                        state: closed
+                        tags: []
+                        event_details:
+                          handoff:
+                            type: zendesk_ticket
+                            success: true
+                        app_package_code: null
+                      total_count: 7
                 email conversation with history found:
                   value:
                     type: conversation
@@ -15358,6 +15382,81 @@ paths:
                       timestamp: "2026-01-09T09:10:00Z"
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/conversations/{id}/team_handling_segments":
+    get:
+      summary: List team handling segments
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        required: true
+        description: The identifier for the conversation as given by Intercom.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: listTeamHandlingSegments
+      description: |
+        List the periods teammates actively handled a conversation, attributed to the team assigned to the conversation at the time. A period is split where the team changes. Teammate identity is not included; join with List handling events by time to recover it.
+
+        Periods with no team assigned are returned with `team` set to `null`. `ended_at` is `null` while a period is still open.
+
+        Requires the `read_conversations` OAuth scope, and the caller must be able to access the conversation.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/team_handling_segment_list"
+              examples:
+                Successful response:
+                  value:
+                    team_handling_segments:
+                    - team:
+                        type: team
+                        id: '111'
+                        name: Billing
+                      started_at: "2026-01-20T13:10:05Z"
+                      ended_at: "2026-01-20T13:20:00Z"
+                      start_reason:
+                      end_reason: team_change
+                    - team:
+                        type: team
+                        id: '113'
+                        name: Refunds
+                      started_at: "2026-01-20T13:20:00Z"
+                      ended_at: "2026-01-20T13:31:44Z"
+                      start_reason: team_change
+                      end_reason: assignment
+        '400':
+          description: Intercom-Version is not Preview
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: The teammate cannot access the conversation
           content:
             application/json:
               schema:
@@ -26617,7 +26716,7 @@ paths:
         `reply` and `ask` actions.
 
         {% admonition type="warning" %}
-        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
         {% /admonition %}
       responses:
         '200':
@@ -26750,7 +26849,7 @@ paths:
         ends with a `complete` status — there is no `awaiting_user_reply` cycle.
 
         {% admonition type="warning" %}
-        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
         {% /admonition %}
       responses:
         '200':
@@ -26933,7 +27032,7 @@ paths:
         response so Fin can continue.
 
         {% admonition type="warning" %}
-        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
         {% /admonition %}
       responses:
         '200':
@@ -27122,7 +27221,7 @@ paths:
         send the user's response with [`/fin/reply`](/docs/references/preview/rest-api/api.intercom.io/fin-agent/replytofin).
 
         {% admonition type="warning" %}
-        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
         {% /admonition %}
       responses:
         '200':
@@ -27360,7 +27459,7 @@ paths:
         Fin for Platforms, the conversation remains open for whoever handles it on your platform.
 
         {% admonition type="warning" %}
-        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
         {% /admonition %}
       responses:
         '200':
@@ -27498,7 +27597,7 @@ paths:
         longer be changed.
 
         {% admonition type="warning" %}
-        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
         {% /admonition %}
       responses:
         '200':
@@ -27655,7 +27754,7 @@ paths:
         Events can be received via webhooks or Server-Sent Events (SSE) using the `sse_subscription_url` in the response.
 
         {% admonition type="warning" %}
-        To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+        To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
         {% /admonition %}
       responses:
         '200':
@@ -38808,6 +38907,26 @@ components:
                       type: string
                       description: Why the one-time passcode email could not verify the contact. Treat this as a free-form string and fall back to <code>value</code> for a reason you do not recognise. <code>no_email</code> means the contact has no email address on record.
                       example: "no_email"
+    standalone_platform_handoff:
+      title: Part type - standalone_platform_handoff
+      type: object
+      description: Contains the escalation target Fin handed the conversation off to, for conversation part type <code>standalone_platform_handoff</code>. Only present for handoffs to Zendesk; for any other handoff target <code>event_details</code> is an empty object.
+      properties:
+        handoff:
+          type: object
+          description: The escalation Fin attempted. Omitted when the handoff target is not Zendesk.
+          properties:
+            type:
+              type: string
+              description: Where Fin handed the conversation off to. <code>zendesk_ticket</code> means a Zendesk ticket was created, and <code>zendesk_agent</code> means the conversation was handed over to a Zendesk agent for live chat.
+              enum:
+              - zendesk_ticket
+              - zendesk_agent
+              example: zendesk_ticket
+            success:
+              type: boolean
+              description: Whether the handoff completed. A handoff that did not complete falls back to a live agent, which is reported in a separate successful part.
+              example: true
     event_details:
       title: Event details of Workflow & actions
       type: object
@@ -38829,6 +38948,7 @@ components:
         - "$ref": "#/components/schemas/conversation_sla_removed"
         - "$ref": "#/components/schemas/call_summary"
         - "$ref": "#/components/schemas/ai_agent_event_otp_email_verification_failed"
+        - "$ref": "#/components/schemas/standalone_platform_handoff"
     email_setting:
       type: object
       title: Email Setting
@@ -42198,6 +42318,74 @@ components:
           nullable: true
           description: Describes how assignments are distributed among the team members
           example: "round_robin"
+    team_handling_segment:
+      title: Team Handling Segment
+      type: object
+      description: A period one teammate actively handled the conversation, attributed
+        to the team assigned to it at the time. Teammate identity is not included.
+      required:
+      - team
+      - started_at
+      - ended_at
+      properties:
+        team:
+          type: object
+          nullable: true
+          description: The team assigned when the period ran, or null if no team was assigned
+          required:
+          - type
+          - id
+          - name
+          properties:
+            type:
+              type: string
+              enum:
+              - team
+              example: team
+            id:
+              type: string
+              example: '814865'
+            name:
+              type: string
+              example: Billing
+        started_at:
+          type: string
+          format: date-time
+          example: "2026-09-28T10:10:00Z"
+        ended_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Null while the period is still open
+          example: "2026-09-28T10:20:00Z"
+        start_reason:
+          type: string
+          nullable: true
+          description: team_change when the period starts at a team reassignment
+          example: team_change
+        end_reason:
+          type: string
+          nullable: true
+          description: Why the period ended (assignment, snooze, close, away, auto_away,
+            session_drop, team_change)
+          example: assignment
+    team_handling_segment_list:
+      title: Team Handling Segment List
+      type: object
+      properties:
+        team_handling_segments:
+          type: array
+          items:
+            "$ref": "#/components/schemas/team_handling_segment"
+          example:
+          - team:
+              type: team
+              id: '814865'
+              name: Billing
+            started_at: "2026-09-28T10:10:00Z"
+            ended_at: "2026-09-28T10:20:00Z"
+            start_reason:
+            end_reason: team_change
     team_list:
       title: Team List
       type: object
@@ -44615,7 +44803,7 @@ tags:
     &nbsp;
 
     {% admonition type="warning" %}
-    To request access to the Fin Agent API, please [fill out this form](https://forms.gle/osy4uyiqyomRCsL2A).
+    To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
     {% /admonition %}
 
     &nbsp;
