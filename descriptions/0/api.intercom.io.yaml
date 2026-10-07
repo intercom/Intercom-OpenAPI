@@ -34573,7 +34573,24 @@ components:
         contact:
           "$ref": "#/components/schemas/contact_reference"
         teammate:
-          "$ref": "#/components/schemas/reference"
+          title: Conversation Rating Teammate
+          type: object
+          nullable: true
+          description: The teammate, bot or workflow the rating is attributed to.
+          properties:
+            type:
+              type: string
+              enum:
+              - admin
+              - team
+              - bot
+              - workflow
+              description: The type of the rated actor. `workflow` when a workflow requested the rating and no teammate took part.
+              example: admin
+            id:
+              type: string
+              description: The unique identifier for the rated actor.
+              example: '123'
     conversation_response_time:
       title: Conversation response time
       type: object
