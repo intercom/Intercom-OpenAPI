@@ -15411,7 +15411,9 @@ paths:
       - Conversations
       operationId: listTeamHandlingSegments
       description: |
-        List the periods teammates actively handled a conversation, attributed to the team assigned to the conversation at the time. A period is split where the team changes. Teammate identity is not included; join with List handling events by time to recover it.
+        Shows the time teammates spent actively working on a conversation, and which team the conversation was assigned to while they did. Each period covers a single team assignment, and never continues across a team change. `team` is `null` for time when no team was assigned. The response doesn't say which teammate did the work.
+
+        Moving a conversation to another team usually unassigns the teammate as well. Their period then ends with an `end_reason` of `assignment`, and the next period starts, with a `start_reason` of `null`, when a teammate picks the conversation up again. You'll only see `team_change` when the team changes and the same teammate keeps working without a break, for example when round robin assigns the conversation back to the teammate who already had it.
 
         Periods with no team assigned are returned with `team` set to `null`. `ended_at` is `null` while a period is still open.
 
@@ -15434,15 +15436,15 @@ paths:
                       started_at: "2026-01-20T13:10:05Z"
                       ended_at: "2026-01-20T13:20:00Z"
                       start_reason:
-                      end_reason: team_change
+                      end_reason: assignment
                     - team:
                         type: team
                         id: '113'
                         name: Refunds
-                      started_at: "2026-01-20T13:20:00Z"
+                      started_at: "2026-01-20T13:24:30Z"
                       ended_at: "2026-01-20T13:31:44Z"
-                      start_reason: team_change
-                      end_reason: assignment
+                      start_reason:
+                      end_reason: close
         '400':
           description: Intercom-Version is not Preview
           content:
@@ -42203,13 +42205,15 @@ components:
         start_reason:
           type: string
           nullable: true
-          description: team_change when the period starts at a team reassignment
+          description: team_change when the team changed while the teammate kept
+            handling without a break, otherwise null
           example: team_change
         end_reason:
           type: string
           nullable: true
-          description: Why the period ended (assignment, snooze, close, away, auto_away,
-            session_drop, team_change)
+          description: Why the period ended (switch, assignment, reassign, snooze,
+            close, away, auto_away, session_drop, team_change). Null while the period
+            is still open.
           example: assignment
     team_handling_segment_list:
       title: Team Handling Segment List
@@ -42227,7 +42231,7 @@ components:
             started_at: "2026-09-28T10:10:00Z"
             ended_at: "2026-09-28T10:20:00Z"
             start_reason:
-            end_reason: team_change
+            end_reason: assignment
     team_list:
       title: Team List
       type: object
