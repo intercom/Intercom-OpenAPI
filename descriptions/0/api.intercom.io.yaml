@@ -17974,7 +17974,6 @@ paths:
                   request_header_key: Authorization
                   token_prefix: Bearer
                   description: Used by the order status connector
-                  domain: api.fulfilment.example.com
         required: true
       responses:
         '201':
@@ -18008,13 +18007,6 @@ paths:
                     errors:
                     - code: parameter_not_found
                       message: name parameter is required
-                Rejected field value:
-                  value:
-                    type: error.list
-                    request_id: test-uuid-replacement
-                    errors:
-                    - code: parameter_invalid
-                      message: domain must be a valid domain
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -18131,7 +18123,7 @@ paths:
       - Auth Tokens
       operationId: updateAuthToken
       description: |
-        Updates the metadata of a stored third-party credential. A field you omit keeps its current value. The credential value itself cannot be changed here and is never returned. Only credentials with a `token_type` of `text` can be updated; any other type responds with `400`. A credential the list endpoint does not return is also not updatable, and responds with `404`.
+        Updates the metadata of a stored third-party credential. A field you omit keeps its current value. The credential value itself cannot be changed here and is never returned. The `domain` is read-only, and `request_header_key` cannot be changed on a credential that has a domain. Only credentials with a `token_type` of `text` can be updated; any other type responds with `400`. A credential the list endpoint does not return is also not updatable, and responds with `404`.
       requestBody:
         content:
           application/json:
@@ -30460,10 +30452,6 @@ components:
           type: string
           description: An optional description of what the credential is used for.
           example: Used by the order status connector
-        domain:
-          type: string
-          description: An optional domain to scope the credential to.
-          example: api.fulfilment.example.com
       required:
       - name
       - token_value
@@ -30492,10 +30480,6 @@ components:
           type: string
           description: An optional description of what the credential is used for.
           example: Used by the order status connector
-        domain:
-          type: string
-          description: An optional domain to scope the credential to.
-          example: api.fulfilment.example.com
     auth_token_list:
       title: Auth Token List
       type: object
