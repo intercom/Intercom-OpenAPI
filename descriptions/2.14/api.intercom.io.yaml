@@ -194,7 +194,7 @@ paths:
         in: query
         required: true
         description: The start date that you request data for. It must be formatted
-          as a UNIX timestamp.
+          as a Unix timestamp.
         example: '1677253093'
         schema:
           type: string
@@ -202,7 +202,7 @@ paths:
         in: query
         required: false
         description: The end date that you request data for. It must be formatted
-          as a UNIX timestamp.
+          as a Unix timestamp.
         example: '1677861493'
         schema:
           type: string
@@ -1831,6 +1831,10 @@ paths:
         Once Fin is initialized, it progresses through a series of statuses such as *thinking*, *awaiting_user_reply*, or *resolved* before ending with a status of *complete*.
 
         During this workflow, the client should allow Fin to continue uninterrupted until a final *complete* status is returned via webhook, at which point control of the conversation passes back to the client.
+
+        **Pricing**
+
+        Conversations you start with `/fin/start` are billed on **outcomes**: you're charged at most once per conversation, and only when Fin reaches a billable outcome such as a resolution. See [Understanding Fin outcomes](https://www.intercom.com/help/en/articles/13513868-understanding-fin-outcomes).
       responses:
         '200':
           description: Fin conversation started successfully
@@ -5215,19 +5219,16 @@ paths:
               successful_response:
                 summary: Successful response
                 value:
-                  contact_id: 6762f0ad1bb69f9f2193bb62
                   admin_id: 991267583
                   body: Hello
               admin_not_found:
                 summary: Admin not found
                 value:
-                  contact_id: 6762f0af1bb69f9f2193bb63
                   admin_id: 123
                   body: Hello
               contact_not_found:
                 summary: Contact not found
                 value:
-                  contact_id: 123
                   admin_id: 991267585
                   body: Hello
   "/contacts/{contact_id}/segments":
@@ -6511,14 +6512,14 @@ paths:
         | email_domain                       | String                         |
         | phone                              | String                         |
         | external_id                        | String                         |
-        | created_at                         | Date (UNIX Timestamp)          |
-        | signed_up_at                       | Date (UNIX Timestamp)          |
-        | updated_at                         | Date (UNIX Timestamp)          |
-        | last_seen_at                       | Date (UNIX Timestamp)          |
-        | last_contacted_at                  | Date (UNIX Timestamp)          |
-        | last_replied_at                    | Date (UNIX Timestamp)          |
-        | last_email_opened_at               | Date (UNIX Timestamp)          |
-        | last_email_clicked_at              | Date (UNIX Timestamp)          |
+        | created_at                         | Date (Unix timestamp in seconds)          |
+        | signed_up_at                       | Date (Unix timestamp in seconds)          |
+        | updated_at                         | Date (Unix timestamp in seconds)          |
+        | last_seen_at                       | Date (Unix timestamp in seconds)          |
+        | last_contacted_at                  | Date (Unix timestamp in seconds)          |
+        | last_replied_at                    | Date (Unix timestamp in seconds)          |
+        | last_email_opened_at               | Date (Unix timestamp in seconds)          |
+        | last_email_clicked_at              | Date (Unix timestamp in seconds)          |
         | language_override                  | String                         |
         | browser                            | String                         |
         | browser_language                   | String                         |
@@ -6529,14 +6530,14 @@ paths:
         | unsubscribed_from_emails           | Boolean                        |
         | marked_email_as_spam               | Boolean                        |
         | has_hard_bounced                   | Boolean                        |
-        | ios_last_seen_at                   | Date (UNIX Timestamp)          |
+        | ios_last_seen_at                   | Date (Unix timestamp in seconds)          |
         | ios_app_version                    | String                         |
         | ios_device                         | String                         |
         | ios_app_device                     | String                         |
         | ios_os_version                     | String                         |
         | ios_app_name                       | String                         |
         | ios_sdk_version                    | String                         |
-        | android_last_seen_at               | Date (UNIX Timestamp)          |
+        | android_last_seen_at               | Date (Unix timestamp in seconds)          |
         | android_app_version                | String                         |
         | android_device                     | String                         |
         | android_app_name                   | String                         |
@@ -8099,8 +8100,8 @@ paths:
         | Field                                     | Type                                                                                                                                                   |
         | :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
         | id                                        | String                                                                                                                                                 |
-        | created_at                                | Date (UNIX timestamp)                                                                                                                                  |
-        | updated_at                                | Date (UNIX timestamp)                                                                                                                                  |
+        | created_at                                | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | updated_at                                | Date (Unix timestamp in seconds)                                                                                                                                  |
         | source.type                               | String<br>Accepted fields are `conversation`, `email`, `facebook`, `instagram`, `phone_call`, `phone_switch`, `push`, `sms`, `twitter` and `whatsapp`. |
         | source.id                                 | String                                                                                                                                                 |
         | source.delivered_as                       | String                                                                                                                                                 |
@@ -8119,8 +8120,8 @@ paths:
         | open                                      | Boolean                                                                                                                                                |
         | read                                      | Boolean                                                                                                                                                |
         | state                                     | String                                                                                                                                                 |
-        | waiting_since                             | Date (UNIX timestamp)                                                                                                                                  |
-        | snoozed_until                             | Date (UNIX timestamp)                                                                                                                                  |
+        | waiting_since                             | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | snoozed_until                             | Date (Unix timestamp in seconds)                                                                                                                                  |
         | tag_ids                                   | String                                                                                                                                                 |
         | priority                                  | String                                                                                                                                                 |
         | statistics.time_to_assignment             | Integer                                                                                                                                                |
@@ -8128,21 +8129,21 @@ paths:
         | statistics.time_to_first_close            | Integer                                                                                                                                                |
         | statistics.time_to_last_close             | Integer                                                                                                                                                |
         | statistics.median_time_to_reply           | Integer                                                                                                                                                |
-        | statistics.first_contact_reply_at         | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.first_assignment_at            | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.first_admin_reply_at           | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.first_close_at                 | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_assignment_at             | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_assignment_admin_reply_at | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_contact_reply_at          | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_admin_reply_at            | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_close_at                  | Date (UNIX timestamp)                                                                                                                                  |
+        | statistics.first_contact_reply_at         | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.first_assignment_at            | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.first_admin_reply_at           | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.first_close_at                 | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_assignment_at             | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_assignment_admin_reply_at | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_contact_reply_at          | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_admin_reply_at            | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_close_at                  | Date (Unix timestamp in seconds)                                                                                                                                  |
         | statistics.last_closed_by_id              | String                                                                                                                                                 |
         | statistics.count_reopens                  | Integer                                                                                                                                                |
         | statistics.count_assignments              | Integer                                                                                                                                                |
         | statistics.count_conversation_parts       | Integer                                                                                                                                                |
-        | conversation_rating.requested_at          | Date (UNIX timestamp)                                                                                                                                  |
-        | conversation_rating.replied_at            | Date (UNIX timestamp)                                                                                                                                  |
+        | conversation_rating.requested_at          | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | conversation_rating.replied_at            | Date (Unix timestamp in seconds)                                                                                                                                  |
         | conversation_rating.score                 | Integer                                                                                                                                                |
         | conversation_rating.remark                | String                                                                                                                                                 |
         | conversation_rating.contact_id            | String                                                                                                                                                 |
@@ -8165,8 +8166,8 @@ paths:
         | !=       | All                            | Doesn't Equal                                                |
         | IN       | All                            | In  Shortcut for `OR` queries  Values most be in Array       |
         | NIN      | All                            | Not In  Shortcut for `OR !` queries  Values must be in Array |
-        | >        | Integer  Date (UNIX Timestamp) | Greater (or equal) than                                      |
-        | <       | Integer  Date (UNIX Timestamp) | Lower (or equal) than                                        |
+        | >        | Integer  Date (Unix timestamp in seconds) | Greater (or equal) than                                      |
+        | <       | Integer  Date (Unix timestamp in seconds) | Lower (or equal) than                                        |
         | ~        | String                         | Contains                                                     |
         | !~       | String                         | Doesn't Contain                                              |
         | ^        | String                         | Starts With                                                  |
@@ -10986,7 +10987,7 @@ paths:
                     type: user
                     id: 6762f2341bb69f9f2193bc17
                   body: heyy
-                  referer: https://twitter.com/bob
+                  referer: https://example.com/bob
               lead_message_created:
                 summary: lead message created
                 value:
@@ -10994,7 +10995,7 @@ paths:
                     type: lead
                     id: 6762f2371bb69f9f2193bc18
                   body: heyy
-                  referer: https://twitter.com/bob
+                  referer: https://example.com/bob
               admin_message_created:
                 summary: admin message created
                 value:
@@ -14754,8 +14755,8 @@ paths:
         | Field                                     | Type                                                                                     |
         | :---------------------------------------- | :--------------------------------------------------------------------------------------- |
         | id                                        | String                                                                                   |
-        | created_at                                | Date (UNIX timestamp)                                                                    |
-        | updated_at                                | Date (UNIX timestamp)                                                                    |
+        | created_at                                | Date (Unix timestamp in seconds)                                                                    |
+        | updated_at                                | Date (Unix timestamp in seconds)                                                                    |
         | title                           | String                                                                                   |
         | description                     | String                                                                                   |
         | category                                  | String                                                                                   |
@@ -14766,8 +14767,8 @@ paths:
         | team_assignee_id                          | String                                                                                   |
         | open                                      | Boolean                                                                                  |
         | state                                     | String                                                                                   |
-        | snoozed_until                             | Date (UNIX timestamp)                                                                    |
-        | ticket_attribute.{id}                     | String or Boolean or Date (UNIX timestamp) or Float or Integer                           |
+        | snoozed_until                             | Date (Unix timestamp in seconds)                                                                    |
+        | ticket_attribute.{id}                     | String or Boolean or Date (Unix timestamp in seconds) or Float or Integer                           |
 
         {% admonition type="info" name="Searching by Category" %}
         When searching for tickets by the **`category`** field, specific terms must be used instead of the category names:
@@ -14790,8 +14791,8 @@ paths:
         | !=       | All                            | Doesn't Equal                                                |
         | IN       | All                            | In  Shortcut for `OR` queries  Values most be in Array       |
         | NIN      | All                            | Not In  Shortcut for `OR !` queries  Values must be in Array |
-        | >        | Integer  Date (UNIX Timestamp) | Greater (or equal) than                                      |
-        | <       | Integer  Date (UNIX Timestamp) | Lower (or equal) than                                        |
+        | >        | Integer  Date (Unix timestamp in seconds) | Greater (or equal) than                                      |
+        | <       | Integer  Date (Unix timestamp in seconds) | Lower (or equal) than                                        |
         | ~        | String                         | Contains                                                     |
         | !~       | String                         | Doesn't Contain                                              |
         | ^        | String                         | Starts With                                                  |
@@ -15290,7 +15291,7 @@ components:
           description: A date and time following the ISO8601 notation.
         - title: integer
           type: integer
-          description: A date and time as UNIX timestamp notation.
+          description: A date and time as Unix timestamp notation.
     activity_log:
       title: Activity Log
       type: object
@@ -15516,13 +15517,16 @@ components:
         previous_state:
           type: string
           nullable: true
-          description: The state before the change. `idle` or `occupied`, and null
-            when the Admin had not been classified yet.
+          description: The state before the change. `idle` or `occupied` for an
+            occupancy change, and null when the Admin had not been classified
+            yet; `enabled` or `disabled` for an IP allowlist change.
           example: idle
         new_state:
           type: string
           nullable: true
-          description: The state after the change. `idle` or `occupied`.
+          description: The state after the change. `idle` or `occupied` for an
+            occupancy change; `enabled` or `disabled` for an IP allowlist
+            change.
           example: occupied
         threshold_minutes:
           type: integer
@@ -22466,7 +22470,7 @@ components:
           type: string
           format: uri
           description: The name of the Social media profile
-          example: http://twitter.com/th1sland
+          example: http://example.com/th1sland
     starting_after_paging:
       title: 'Pagination: Starting After'
       type: object
@@ -22710,7 +22714,7 @@ components:
         assignment_limit:
           type: integer
           nullable: true
-          description: The assignment limit for the team. This field is only present when the team's distribution type is load balanced.
+          description: The assignment limit for the team. This field is only present when the team's distribution method is load balanced.
           example: 10
         distribution_method:
           type: string
@@ -24373,6 +24377,8 @@ tags:
   description: Everything about your Articles
 - name: Away Status Reasons
   description: Everything about your Away Status Reasons
+- name: Calls
+  description: Everything about Calls
 - name: Companies
   description: Everything about your Companies
 - name: Contacts
@@ -24406,7 +24412,19 @@ tags:
 
     &nbsp;
 
+    {% admonition type="warning" %}
+    Server-Sent Events (SSE) is available by application only. Contact your account team or Customer Support to request access.
+    {% /admonition %}
+
+    &nbsp;
+
     Integration centres on the Fin Agent API endpoints — start a conversation with `/fin/start` and continue it with `/fin/reply`, or drive Fin from your own agent with `/fin/capabilities`, `/fin/ask`, `/fin/procedures/{procedure_id}/run`, and `/fin/escalate` — plus a set of events that notify your application of Fin's status and responses. Events can be delivered via webhooks or Server-Sent Events (SSE). You can also record a customer satisfaction rating with `/fin/csat`.
+
+    &nbsp;
+
+    **Pricing**
+
+    Conversations you start with `/fin/start` are billed on **outcomes**: you're charged at most once per conversation, and only when Fin reaches a billable outcome such as a resolution. See [Understanding Fin outcomes](https://www.intercom.com/help/en/articles/13513868-understanding-fin-outcomes).
 
     &nbsp;
 
