@@ -13524,6 +13524,7 @@ paths:
                           handoff:
                             type: zendesk_ticket
                             success: true
+                            data: {}
                         app_package_code: null
                       total_count: 7
                 email conversation with history found:
@@ -39684,23 +39685,42 @@ components:
     standalone_platform_handoff:
       title: Part type - standalone_platform_handoff
       type: object
-      description: Contains the escalation target Fin handed the conversation off to, for conversation part type <code>standalone_platform_handoff</code>. Only present for handoffs to Zendesk; for any other handoff target <code>event_details</code> is an empty object.
+      description: Contains the handoff Fin attempted to an external platform, for conversation part type <code>standalone_platform_handoff</code>.
       properties:
         handoff:
           type: object
-          description: The escalation Fin attempted. Omitted when the handoff target is not Zendesk.
+          description: The handoff Fin attempted.
           properties:
             type:
               type: string
-              description: Where Fin handed the conversation off to. <code>zendesk_ticket</code> means a Zendesk ticket was created, and <code>zendesk_agent</code> means the conversation was handed over to a Zendesk agent for live chat.
-              enum:
-              - zendesk_ticket
-              - zendesk_agent
-              example: zendesk_ticket
+              description: The handoff type. One of <code>zendesk_ticket</code>, <code>zendesk_agent</code>, <code>salesforce_case</code>, <code>salesforce_in_app_messaging</code>, <code>salesforce_team</code>, <code>external_agent</code> or <code>external_ticket</code>. Older parts can also return <code>salesforce_chat</code>.
+              example: salesforce_case
             success:
               type: boolean
-              description: Whether the handoff completed. A handoff that did not complete falls back to a live agent, which is reported in a separate successful part.
+              nullable: true
+              description: <code>true</code> when the handoff completed and <code>false</code> when it failed. <code>null</code> means no outcome was recorded on this part, for example a Salesforce in-app messaging handoff that was only initiated.
               example: true
+            data:
+              type: object
+              description: Details of the handoff. Always present. For a successful <code>salesforce_case</code> handoff it holds the created Case's <code>case_id</code> and <code>case_number</code>; otherwise it is an empty object.
+              properties:
+                case_id:
+                  type: string
+                  description: The ID of the Salesforce Case created by the handoff.
+                  example: '500XX0000001'
+                case_number:
+                  type: string
+                  description: The number of the Salesforce Case created by the handoff.
+                  example: '00001234'
+              example:
+                case_id: '500XX0000001'
+                case_number: '00001234'
+          example:
+            type: salesforce_case
+            success: true
+            data:
+              case_id: '500XX0000001'
+              case_number: '00001234'
     event_details:
       title: Event details of Workflow & actions
       type: object
