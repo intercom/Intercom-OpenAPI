@@ -830,6 +830,7 @@ paths:
                     - help_center_settings_change
                     - inbound_conversations_change
                     - inbox_access_change
+                    - inbox_bulk_action
                     - message_deletion
                     - message_state_change
                     - messenger_look_and_feel_change
@@ -22751,6 +22752,12 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ai_call_response"
         '401':
           description: Unauthorized
           content:
@@ -23267,6 +23274,7 @@ components:
           - help_center_settings_change
           - inbound_conversations_change
           - inbox_access_change
+          - inbox_bulk_action
           - macro_creation
           - macro_deletion
           - macro_update
@@ -24034,6 +24042,12 @@ components:
           items:
             type: object
           example: []
+        data:
+          type: object
+          description: The metadata object supplied when the call was registered, returned verbatim. Empty object when none was supplied.
+          example:
+            masterContactID: 'abc123'
+            DNIS: '+18005551212'
     app:
       title: App
       type: object
@@ -36618,6 +36632,12 @@ tags:
 
     {% admonition type="warning" %}
     To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
+    {% /admonition %}
+
+    &nbsp;
+
+    {% admonition type="warning" %}
+    Server-Sent Events (SSE) is available by application only. Contact your account team or Customer Support to request access.
     {% /admonition %}
 
     &nbsp;
