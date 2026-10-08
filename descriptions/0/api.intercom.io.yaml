@@ -12154,6 +12154,516 @@ paths:
                 "$ref": "#/components/schemas/error"
         '401':
           "$ref": "#/components/responses/Unauthorized"
+  "/dynamic_contents":
+    get:
+      summary: List all dynamic content
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch.
+        schema:
+          type: integer
+          example: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Max value of 50.
+        schema:
+          type: integer
+          example: 20
+      tags:
+      - Dynamic Content
+      operationId: listDynamicContents
+      description: You can fetch a list of all dynamic content for a workspace, most
+        recently updated first. Requires the `read_dynamic_content` scope.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: list
+                    data:
+                    - type: dynamic_content
+                      id: '123'
+                      name: Support phone number
+                      key: support-phone-number
+                      content_type: inline
+                      default_locale: en
+                      variations:
+                      - type: dynamic_content_variation
+                        id: '456'
+                        locale: en
+                        brand_id:
+                        text_content: "+1-555-0100"
+                        json_blocks:
+                        intentionally_empty: false
+                        created_at: 1663597223
+                        updated_at: 1663597223
+                      created_at: 1663597223
+                      updated_at: 1663597223
+                    total_count: 1
+                    page: 1
+                    per_page: 50
+                    total_pages: 1
+              schema:
+                "$ref": "#/components/schemas/dynamic_content_list"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: Dynamic content is not enabled
+          content:
+            application/json:
+              examples:
+                Dynamic content is not enabled:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Dynamic content is not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create dynamic content
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Dynamic Content
+      operationId: createDynamicContent
+      description: You can create dynamic content. Requires the `read_write_dynamic_content`
+        scope.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/dynamic_content_create_request"
+            examples:
+              Create inline dynamic content:
+                value:
+                  name: Support phone number
+                  content_type: inline
+                  default_locale: en
+                  variations:
+                  - locale: en
+                    text_content: "+1-555-0100"
+                  - locale: fr
+                    text_content: "+33 1 23 45 67 89"
+              Create inline dynamic content with a brand override:
+                value:
+                  name: Support phone number
+                  content_type: inline
+                  default_locale: en
+                  variations:
+                  - locale: en
+                    text_content: "+1-555-0100"
+                  - locale: en
+                    brand_id: '42'
+                    text_content: "+44 20 7946 0000"
+              Create block dynamic content:
+                value:
+                  name: Refund policy
+                  content_type: block
+                  default_locale: en
+                  variations:
+                  - locale: en
+                    body: "<p>You can request a refund within 30 days of purchase.</p>"
+      responses:
+        '201':
+          description: Dynamic content created
+          content:
+            application/json:
+              examples:
+                Dynamic content created:
+                  value:
+                    type: dynamic_content
+                    id: '123'
+                    name: Support phone number
+                    key: support-phone-number
+                    content_type: inline
+                    default_locale: en
+                    variations:
+                    - type: dynamic_content_variation
+                      id: '456'
+                      locale: en
+                      brand_id:
+                      text_content: "+1-555-0100"
+                      json_blocks:
+                      intentionally_empty: false
+                      created_at: 1663597223
+                      updated_at: 1663597223
+                    - type: dynamic_content_variation
+                      id: '457'
+                      locale: fr
+                      brand_id:
+                      text_content: "+33 1 23 45 67 89"
+                      json_blocks:
+                      intentionally_empty: false
+                      created_at: 1663597223
+                      updated_at: 1663597223
+                    created_at: 1663597223
+                    updated_at: 1663597223
+              schema:
+                "$ref": "#/components/schemas/dynamic_content"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: Dynamic content is not enabled
+          content:
+            application/json:
+              examples:
+                Dynamic content is not enabled:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Dynamic content is not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Name already in use:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: validation_error
+                      message: A dynamic content named 'Support phone number' already
+                        exists
+                Missing default locale variation:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: validation_error
+                      message: Variations must include a brand-agnostic variation for
+                        the default locale 'en'
+                Missing text content:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: validation_error
+                      message: Inline-type variations require text_content
+                Unknown brand:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: validation_error
+                      message: Variations must reference a brand in the same workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/dynamic_contents/{id}":
+    get:
+      summary: Retrieve dynamic content
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the dynamic content.
+        schema:
+          type: string
+          example: '123'
+      tags:
+      - Dynamic Content
+      operationId: getDynamicContent
+      description: You can fetch a single dynamic content by its id. Requires the
+        `read_dynamic_content` scope.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: dynamic_content
+                    id: '124'
+                    name: Refund policy
+                    key: refund-policy
+                    content_type: block
+                    default_locale: en
+                    variations:
+                    - type: dynamic_content_variation
+                      id: '458'
+                      locale: en
+                      brand_id:
+                      text_content:
+                      json_blocks:
+                      - type: paragraph
+                        text: You can request a refund within 30 days of purchase.
+                      intentionally_empty: false
+                      created_at: 1663597223
+                      updated_at: 1663597223
+                    - type: dynamic_content_variation
+                      id: '459'
+                      locale: en
+                      brand_id: '42'
+                      text_content:
+                      json_blocks:
+                      - type: paragraph
+                        text: You can request a refund within 60 days of purchase.
+                      intentionally_empty: false
+                      created_at: 1663597223
+                      updated_at: 1663597223
+                    created_at: 1663597223
+                    updated_at: 1663597223
+              schema:
+                "$ref": "#/components/schemas/dynamic_content"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: Dynamic content is not enabled
+          content:
+            application/json:
+              examples:
+                Dynamic content is not enabled:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Dynamic content is not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Dynamic content not found
+          content:
+            application/json:
+              examples:
+                Dynamic content not found:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: not_found
+                      message: Dynamic content not found
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update dynamic content
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the dynamic content.
+        schema:
+          type: string
+          example: '123'
+      tags:
+      - Dynamic Content
+      operationId: updateDynamicContent
+      description: You can update existing dynamic content. Only the fields you provide
+        are changed. Requires the `read_write_dynamic_content` scope.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/dynamic_content_update_request"
+            examples:
+              Update dynamic content:
+                value:
+                  variations:
+                  - locale: en
+                    text_content: "+1-555-0199"
+                  - locale: fr
+                    text_content: "+33 1 23 45 67 89"
+      responses:
+        '200':
+          description: Dynamic content updated
+          content:
+            application/json:
+              examples:
+                Dynamic content updated:
+                  value:
+                    type: dynamic_content
+                    id: '123'
+                    name: Support phone number
+                    key: support-phone-number
+                    content_type: inline
+                    default_locale: en
+                    variations:
+                    - type: dynamic_content_variation
+                      id: '456'
+                      locale: en
+                      brand_id:
+                      text_content: "+1-555-0199"
+                      json_blocks:
+                      intentionally_empty: false
+                      created_at: 1663597223
+                      updated_at: 1663597300
+                    - type: dynamic_content_variation
+                      id: '457'
+                      locale: fr
+                      brand_id:
+                      text_content: "+33 1 23 45 67 89"
+                      json_blocks:
+                      intentionally_empty: false
+                      created_at: 1663597223
+                      updated_at: 1663597223
+                    created_at: 1663597223
+                    updated_at: 1663597300
+              schema:
+                "$ref": "#/components/schemas/dynamic_content"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: Dynamic content is not enabled
+          content:
+            application/json:
+              examples:
+                Dynamic content is not enabled:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Dynamic content is not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Dynamic content not found
+          content:
+            application/json:
+              examples:
+                Dynamic content not found:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: not_found
+                      message: Dynamic content not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Content type cannot change:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: validation_error
+                      message: content_type is immutable after creation
+                Key cannot change:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: validation_error
+                      message: key is immutable after creation
+                Empty variations:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: validation_error
+                      message: At least one variation is required
+                Missing default locale variation:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: validation_error
+                      message: Variations must include a brand-agnostic variation for
+                        the default locale 'en'
+              schema:
+                "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete dynamic content
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the dynamic content.
+        schema:
+          type: string
+          example: '123'
+      tags:
+      - Dynamic Content
+      operationId: deleteDynamicContent
+      description: You can delete a single dynamic content by its id. Dynamic content
+        that is still used in an article can't be deleted. Requires the `read_write_dynamic_content`
+        scope.
+      responses:
+        '204':
+          description: Dynamic content deleted
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: Dynamic content is not enabled
+          content:
+            application/json:
+              examples:
+                Dynamic content is not enabled:
+                  value:
+                    type: error.list
+                    request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b9
+                    errors:
+                    - code: api_plan_restricted
+                      message: Dynamic content is not enabled for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Dynamic content not found
+          content:
+            application/json:
+              examples:
+                Dynamic content not found:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: not_found
+                      message: Dynamic content not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Dynamic content is still in use
+          content:
+            application/json:
+              examples:
+                Dynamic content is still in use:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: validation_error
+                      message: Cannot delete 'Support phone number' because it is
+                        still used in 2 articles
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/{conversation_id}/tags":
     post:
       summary: Add tag to a conversation
@@ -33497,6 +34007,252 @@ components:
           description: Whether the content snippet should be available for AI Sales
             Agent.
           example: true
+    dynamic_content:
+      title: Dynamic Content
+      type: object
+      x-tags:
+      - Dynamic Content
+      description: Dynamic content is a reusable piece of content that you can insert
+        into Help Center articles. It holds one variation per locale, and optionally
+        per brand.
+      nullable: false
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `dynamic_content`.
+          example: dynamic_content
+        id:
+          type: string
+          description: The unique identifier for the dynamic content.
+          example: '123'
+        name:
+          type: string
+          description: The name of the dynamic content.
+          example: Support phone number
+        key:
+          type: string
+          description: The identifier that articles use to reference the dynamic content.
+            Derived from the name when the dynamic content is created, and never changes.
+          example: support-phone-number
+        content_type:
+          type: string
+          description: Whether the dynamic content is a short inline value (`inline`)
+            or one or more blocks of content (`block`).
+          enum:
+          - inline
+          - block
+          example: inline
+        default_locale:
+          type: string
+          description: The locale whose variation is used when there's no variation
+            for the requested locale.
+          example: en
+        variations:
+          type: array
+          description: The variations of the dynamic content.
+          items:
+            "$ref": "#/components/schemas/dynamic_content_variation"
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the dynamic content was created as a Unix timestamp.
+          example: 1663597223
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time the dynamic content was last updated as a Unix timestamp.
+          example: 1663597223
+    dynamic_content_variation:
+      title: Dynamic Content Variation
+      type: object
+      x-tags:
+      - Dynamic Content
+      description: The value of a dynamic content for one locale, and optionally one
+        brand.
+      nullable: false
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value
+            `dynamic_content_variation`.
+          example: dynamic_content_variation
+        id:
+          type: string
+          description: The unique identifier for the variation.
+          example: '456'
+        locale:
+          type: string
+          description: The locale of the variation.
+          example: en
+        brand_id:
+          type: string
+          nullable: true
+          description: The unique identifier for the brand the variation applies to.
+            `null` for a variation that applies to all brands.
+          example: '42'
+        text_content:
+          type: string
+          nullable: true
+          description: The value of an inline variation. `null` for block dynamic content.
+          example: "+1-555-0100"
+        json_blocks:
+          type: array
+          nullable: true
+          description: The content blocks of a block variation. `null` for inline dynamic
+            content.
+          items:
+            type: object
+          example:
+          - type: paragraph
+            text: You can request a refund within 30 days of purchase.
+        intentionally_empty:
+          type: boolean
+          description: Whether the variation is intentionally empty. An intentionally
+            empty variation shows nothing instead of falling back to the default
+            content, and has an empty `text_content` or `json_blocks`.
+          example: false
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the variation was created as a Unix timestamp.
+          example: 1663597223
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time the variation was last updated as a Unix timestamp.
+          example: 1663597223
+    dynamic_content_list:
+      title: Dynamic Content List
+      type: object
+      description: A paginated list of dynamic content.
+      nullable: false
+      properties:
+        type:
+          type: string
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of dynamic content objects.
+          items:
+            "$ref": "#/components/schemas/dynamic_content"
+        total_count:
+          type: integer
+          description: The total number of dynamic content.
+          example: 1
+        page:
+          type: integer
+          description: The current page number.
+          example: 1
+        per_page:
+          type: integer
+          description: The number of results per page.
+          example: 50
+        total_pages:
+          type: integer
+          description: The total number of pages.
+          example: 1
+    dynamic_content_variation_request:
+      title: Dynamic Content Variation Request
+      type: object
+      description: A variation of a dynamic content. Provide `text_content` for inline
+        dynamic content, or `body` for block dynamic content.
+      nullable: false
+      required:
+      - locale
+      properties:
+        locale:
+          type: string
+          description: The locale of the variation. Each locale can appear once per
+            brand.
+          example: en
+        brand_id:
+          type: string
+          nullable: true
+          description: The unique identifier for the brand the variation applies to.
+            Omit for a variation that applies to all brands.
+          example: '42'
+        text_content:
+          type: string
+          description: The value of an inline variation.
+          example: "+1-555-0100"
+        body:
+          type: string
+          description: The content of a block variation in HTML.
+          example: "<p>You can request a refund within 30 days of purchase.</p>"
+        intentionally_empty:
+          type: boolean
+          description: Set to `true` to make the variation show nothing instead of
+            falling back to the default content. Any `text_content` or `body` sent
+            with it is ignored.
+          default: false
+          example: false
+    dynamic_content_create_request:
+      title: Create Dynamic Content Request
+      type: object
+      description: The request payload for creating dynamic content.
+      nullable: false
+      required:
+      - name
+      - content_type
+      - default_locale
+      - variations
+      properties:
+        name:
+          type: string
+          description: The name of the dynamic content. Must be unique in the workspace.
+          maxLength: 255
+          example: Support phone number
+        content_type:
+          type: string
+          description: Whether the dynamic content is a short inline value (`inline`)
+            or one or more blocks of content (`block`). Can't be changed later.
+          enum:
+          - inline
+          - block
+          example: inline
+        default_locale:
+          type: string
+          description: The locale whose variation is used when there's no variation
+            for the requested locale. `variations` must include a variation for this
+            locale that applies to all brands.
+          example: en
+        variations:
+          type: array
+          description: The variations of the dynamic content, one per locale and optionally
+            per brand. Set `brand_id` on a variation to override the all-brands value
+            for that brand. At least one is required.
+          minItems: 1
+          items:
+            "$ref": "#/components/schemas/dynamic_content_variation_request"
+    dynamic_content_update_request:
+      title: Update Dynamic Content Request
+      type: object
+      description: The request payload for updating dynamic content. All fields are
+        optional — only provided fields are updated.
+      nullable: false
+      properties:
+        name:
+          type: string
+          description: The name of the dynamic content. Must be unique in the workspace.
+            Renaming doesn't change the `key`.
+          maxLength: 255
+          example: Support phone number
+        default_locale:
+          type: string
+          description: The locale whose variation is used when there's no variation
+            for the requested locale. The dynamic content must have a variation for
+            this locale that applies to all brands.
+          example: en
+        variations:
+          type: array
+          description: The full set of variations. Existing variations that aren't
+            included are deleted.
+          minItems: 1
+          items:
+            "$ref": "#/components/schemas/dynamic_content_variation_request"
     conversation_list_item:
       title: Conversation List Item
       type: object
@@ -44785,6 +45541,8 @@ tags:
   description: |
     Upload and manage product catalogs via ecommerce connectors. Supports single-file
     uploads (up to 99 MB) and multipart uploads for larger catalogs.
+- name: Dynamic Content
+  description: Everything about your Dynamic Content
 - name: Emails
   description: Everything about your Emails
 - name: Fin Agent
