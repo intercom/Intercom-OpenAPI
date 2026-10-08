@@ -12260,6 +12260,17 @@ paths:
                     text_content: "+1-555-0100"
                   - locale: fr
                     text_content: "+33 1 23 45 67 89"
+              Create inline dynamic content with a brand override:
+                value:
+                  name: Support phone number
+                  content_type: inline
+                  default_locale: en
+                  variations:
+                  - locale: en
+                    text_content: "+1-555-0100"
+                  - locale: en
+                    brand_id: '42'
+                    text_content: "+44 20 7946 0000"
               Create block dynamic content:
                 value:
                   name: Refund policy
@@ -34134,7 +34145,9 @@ components:
           example: en
         variations:
           type: array
-          description: The variations of the dynamic content. At least one is required.
+          description: The variations of the dynamic content, one per locale and optionally
+            per brand. Set `brand_id` on a variation to override the all-brands value
+            for that brand. At least one is required.
           minItems: 1
           items:
             "$ref": "#/components/schemas/dynamic_content_variation_request"
