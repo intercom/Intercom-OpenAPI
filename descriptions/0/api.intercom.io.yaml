@@ -27162,8 +27162,6 @@ paths:
                   maxItems: 10
                   items:
                     "$ref": "#/components/schemas/fin_agent_attachment"
-                settings:
-                  "$ref": "#/components/schemas/fin_agent_settings"
               required:
               - conversation_id
               - message
@@ -27180,20 +27178,6 @@ paths:
                     id: '123456'
                     name: John Doe
                     email: john.doe@example.com
-              Reply with settings:
-                value:
-                  conversation_id: ext-123
-                  message:
-                    author: user
-                    body: Thanks, here is my order number.
-                    timestamp: '2025-01-24T09:01:00.000Z'
-                  user:
-                    id: '123456'
-                    name: Jane Smith
-                    email: jane.smith@example.com
-                  settings:
-                    follow_up_questions: false
-                    email: true
               Reply with attachments:
                 value:
                   conversation_id: ext-123
@@ -27390,16 +27374,6 @@ paths:
                       additionalProperties: true
                       example:
                         order_id: '98765'
-                settings:
-                  type: object
-                  description: Optional settings to control Fin's behaviour for this procedure run.
-                  properties:
-                    email:
-                      type: boolean
-                      default: false
-                      description: |
-                        When `true`, Fin formats its replies as email-style responses. Defaults to `false` (chat-style).
-                      example: true
               required:
               - conversation_id
               - user
@@ -27424,8 +27398,6 @@ paths:
                   conversation_metadata:
                     attributes:
                       order_id: '98765'
-                  settings:
-                    email: true
   "/fin/escalate":
     post:
       summary: Escalate to a human
@@ -27889,8 +27861,6 @@ paths:
                     "$ref": "#/components/schemas/fin_agent_attachment"
                 conversation_metadata:
                   "$ref": "#/components/schemas/fin_agent_conversation_metadata"
-                settings:
-                  "$ref": "#/components/schemas/fin_agent_settings"
               required:
               - conversation_id
               - message
@@ -27907,20 +27877,6 @@ paths:
                     id: '123456'
                     name: John Doe
                     email: john.doe@example.com
-              Request with settings:
-                value:
-                  conversation_id: ext-123
-                  message:
-                    author: user
-                    body: How can I resolve my outstanding invoice?
-                    timestamp: '2025-01-24T10:01:20.000Z'
-                  user:
-                    id: '123456'
-                    name: Jane Smith
-                    email: jane.smith@example.com
-                  settings:
-                    follow_up_questions: false
-                    email: true
               Request with conversation history:
                 value:
                   conversation_id: ext-123
@@ -39412,35 +39368,6 @@ components:
                 type: string
               example:
                 bad_attr: Conversation attribute 'bad_attr' does not exist
-    fin_agent_settings:
-      title: Fin Agent Settings
-      type: object
-      description: Optional settings to control Fin's behaviour for this request.
-      x-tags:
-      - Fin Agent
-      properties:
-        follow_up_questions:
-          type: boolean
-          default: true
-          description: |
-            When `true` (default), Fin may ask clarifying questions and escalate to a human agent
-            as needed.
-
-            When `false`, Fin operates in non-conversational mode: it will not ask follow-up
-            questions and will not escalate to a human agent. Use this when you want Fin to respond
-            with a single, self-contained answer — for example, in asynchronous channels where
-            back-and-forth conversation is not practical.
-          example: true
-        email:
-          type: boolean
-          default: false
-          description: |
-            When `true`, Fin formats its replies as email-style responses, suitable for sending
-            directly to users via email. This adjusts tone and structure to match email conventions
-            rather than chat.
-
-            Defaults to `false`, which produces chat-style responses.
-          example: true
     fin_agent_status_updated_event:
       title: Fin Agent Status Updated Event
       type: object
