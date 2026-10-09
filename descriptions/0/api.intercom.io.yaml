@@ -17862,7 +17862,7 @@ paths:
                     token_type: text
                     request_header_key: Authorization
                     token_prefix: Bearer
-                    domain: api.fulfilment.example.com
+                    domain: null
                     created_at: '2025-11-15T09:30:00Z'
                     updated_at: '2025-11-15T09:30:00Z'
                 OAuth credential:
@@ -17874,6 +17874,7 @@ paths:
                     token_type: oauth
                     request_header_key: Authorization
                     token_prefix: Bearer
+                    domain: null
                     created_at: '2025-11-15T09:30:00Z'
                     updated_at: '2025-11-15T09:30:00Z'
               schema:
@@ -17932,6 +17933,20 @@ paths:
                     errors:
                     - code: forbidden
                       message: Writing an auth token requires an access token associated with a teammate
+              schema:
+                "$ref": "#/components/schemas/error"
+        '429':
+          description: Too many OAuth credentials created for this workspace in the last minute
+          content:
+            application/json:
+              examples:
+                Rate limited:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: rate_limit_exceeded
+                      message: Exceeded rate limit of 10 OAuth auth token creations per minute
               schema:
                 "$ref": "#/components/schemas/error"
   "/auth_tokens/{id}":
