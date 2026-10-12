@@ -13392,7 +13392,7 @@ paths:
               successful_response:
                 summary: Successful response
                 value:
-                  ticket_type_id: 88
+                  ticket_type_id: 1
                   contacts:
                   - id: 6762f2d81bb69f9f2193bc54
                   ticket_attributes:
@@ -13426,7 +13426,7 @@ paths:
               successful_response:
                 summary: Successful response
                 value:
-                  ticket_type_id: 88
+                  ticket_type_id: 1
                   contacts:
                   - id: 6762f2d81bb69f9f2193bc54
                   ticket_attributes:
@@ -13912,7 +13912,7 @@ paths:
                       has_more: false
                     category: Back-office
                     is_shared: false
-                    channel: email
+                    channel: messenger
               schema:
                 "$ref": "#/components/schemas/ticket"
         '401':
@@ -23797,10 +23797,8 @@ components:
           example: Customer
         channel:
           type: string
-          description: The channel for the ticket. Only supported for customer ticket types.
-          enum:
-          - email
-          - messenger
+          nullable: true
+          description: The channel the ticket was created through. Defaults to messenger when no channel is specified at creation.
           example: messenger
         ticket_attributes:
           "$ref": "#/components/schemas/ticket_custom_attributes"
