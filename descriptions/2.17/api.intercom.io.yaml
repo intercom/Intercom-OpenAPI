@@ -830,6 +830,7 @@ paths:
                     - help_center_settings_change
                     - inbound_conversations_change
                     - inbox_access_change
+                    - inbox_bulk_action
                     - message_deletion
                     - message_state_change
                     - messenger_look_and_feel_change
@@ -6608,7 +6609,6 @@ paths:
         schema:
           type: integer
           example: 50
-          maximum: 150
       - name: parent_folder_id
         in: query
         required: false
@@ -6659,7 +6659,7 @@ paths:
                     description: Total number of folders
                     example: 2
                   pages:
-                    "$ref": "#/components/schemas/cursor_pages"
+                    "$ref": "#/components/schemas/pages_link"
         '401':
           description: Unauthorized
           content:
@@ -6895,7 +6895,7 @@ paths:
           content:
             application/json:
               example:
-                id: 6
+                id: '6'
                 object: folder
                 deleted: true
               schema:
@@ -10028,6 +10028,7 @@ paths:
         | `mailing_list` | Contacts created from a mailing list can't be merged. |
         | `whatsapp_data_cannot_be_merged` | The WhatsApp number on the source contact can't be reassigned to the destination. |
         | `telegram_data_cannot_be_merged` | The Telegram sender on the source contact can't be reassigned to the destination. |
+        | `ms_teams_data_cannot_be_merged` | The destination contact already has a Microsoft Teams sender for the same team as the source contact, so the source's sender can't be reassigned to it. |
         | `phone_data_cannot_be_merged` | The phone data on the source contact can't be reassigned to the destination. |
       responses:
         '200':
@@ -23644,6 +23645,7 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
+                  channel: email
   "/tickets/enqueue":
     post:
       summary: Enqueue create ticket
@@ -23677,6 +23679,7 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
+                  channel: email
       responses:
         '200':
           description: Successful response
@@ -24156,6 +24159,7 @@ paths:
                       has_more: false
                     category: Back-office
                     is_shared: false
+                    channel: messenger
               schema:
                 "$ref": "#/components/schemas/ticket"
         '401':
@@ -25332,6 +25336,12 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ai_call_response"
         '401':
           description: Unauthorized
           content:
@@ -25848,6 +25858,7 @@ components:
           - help_center_settings_change
           - inbound_conversations_change
           - inbox_access_change
+          - inbox_bulk_action
           - macro_creation
           - macro_deletion
           - macro_update
@@ -25997,13 +26008,16 @@ components:
         previous_state:
           type: string
           nullable: true
-          description: The state before the change. `idle` or `occupied`, and null
-            when the Admin had not been classified yet.
+          description: The state before the change. `idle` or `occupied` for an
+            occupancy change, and null when the Admin had not been classified
+            yet; `enabled` or `disabled` for an IP allowlist change.
           example: idle
         new_state:
           type: string
           nullable: true
-          description: The state after the change. `idle` or `occupied`.
+          description: The state after the change. `idle` or `occupied` for an
+            occupancy change; `enabled` or `disabled` for an IP allowlist
+            change.
           example: occupied
         threshold_minutes:
           type: integer
@@ -26615,6 +26629,12 @@ components:
           items:
             type: object
           example: []
+        data:
+          type: object
+          description: The metadata object supplied when the call was registered, returned verbatim. Empty object when none was supplied.
+          example:
+            masterContactID: 'abc123'
+            DNIS: '+18005551212'
     app:
       title: App
       type: object
@@ -26957,9 +26977,9 @@ components:
       description: Response returned when a folder is deleted
       properties:
         id:
-          type: integer
+          type: string
           description: The unique identifier for the deleted folder
-          example: 6
+          example: '6'
         object:
           type: string
           description: The type of object - `folder`.
@@ -33331,6 +33351,12 @@ components:
               description: The ID of the team to which the ticket is assigned.
                 If not provided, the ticket will be unassigned.
               example: '8'
+        channel:
+          type: string
+          description: The channel for the ticket. Only supported for customer ticket types. Defaults to messenger if not provided.
+          enum:
+          - email
+          example: email
       required:
       - ticket_type_id
       - contacts
@@ -37630,6 +37656,7 @@ components:
           - mailing_list
           - whatsapp_data_cannot_be_merged
           - telegram_data_cannot_be_merged
+          - ms_teams_data_cannot_be_merged
           - phone_data_cannot_be_merged
         message:
           type: string
@@ -39101,6 +39128,11 @@ components:
           - Back-office
           - Tracker
           example: Customer
+        channel:
+          type: string
+          nullable: true
+          description: The channel the ticket was created through. Defaults to messenger when no channel is specified at creation.
+          example: messenger
         ticket_attributes:
           "$ref": "#/components/schemas/ticket_custom_attributes"
         ticket_state:
@@ -41089,6 +41121,12 @@ tags:
 
     {% admonition type="warning" %}
     To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
+    {% /admonition %}
+
+    &nbsp;
+
+    {% admonition type="warning" %}
+    Server-Sent Events (SSE) is available by application only. Contact your account team or Customer Support to request access.
     {% /admonition %}
 
     &nbsp;
