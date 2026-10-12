@@ -5317,7 +5317,6 @@ paths:
         schema:
           type: integer
           example: 50
-          maximum: 150
       - name: parent_folder_id
         in: query
         required: false
@@ -5368,7 +5367,7 @@ paths:
                     description: Total number of folders
                     example: 2
                   pages:
-                    "$ref": "#/components/schemas/cursor_pages"
+                    "$ref": "#/components/schemas/pages_link"
         '401':
           description: Unauthorized
           content:
@@ -5604,7 +5603,7 @@ paths:
           content:
             application/json:
               example:
-                id: 6
+                id: '6'
                 object: folder
                 deleted: true
               schema:
@@ -9562,6 +9561,7 @@ paths:
         | `user_to_lead` | `into` is a lead or visitor. A user can only be merged into another user. |
         | `whatsapp_data_cannot_be_merged` | The WhatsApp number on the source contact can't be reassigned to the destination. |
         | `telegram_data_cannot_be_merged` | The Telegram sender on the source contact can't be reassigned to the destination. |
+        | `ms_teams_data_cannot_be_merged` | The destination contact already has a Microsoft Teams sender for the same team as the source contact, so the source's sender can't be reassigned to it. |
         | `source_has_telegram_data` | The source contact has Telegram data, which user-into-user merges don't yet support moving. |
         | `phone_data_cannot_be_merged` | The phone data on the source contact can't be reassigned to the destination. |
       responses:
@@ -30509,9 +30509,9 @@ components:
       description: Response returned when a folder is deleted
       properties:
         id:
-          type: integer
+          type: string
           description: The unique identifier for the deleted folder
-          example: 6
+          example: '6'
         object:
           type: string
           description: The type of object - `folder`.
@@ -42280,6 +42280,7 @@ components:
           - user_to_lead
           - whatsapp_data_cannot_be_merged
           - telegram_data_cannot_be_merged
+          - ms_teams_data_cannot_be_merged
           - source_has_telegram_data
           - phone_data_cannot_be_merged
         message:
