@@ -830,6 +830,7 @@ paths:
                     - help_center_settings_change
                     - inbound_conversations_change
                     - inbox_access_change
+                    - inbox_bulk_action
                     - message_deletion
                     - message_state_change
                     - messenger_look_and_feel_change
@@ -21076,6 +21077,7 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
+                  channel: email
   "/tickets/enqueue":
     post:
       summary: Enqueue create ticket
@@ -21109,6 +21111,7 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
+                  channel: email
       responses:
         '200':
           description: Successful response
@@ -21588,6 +21591,7 @@ paths:
                       has_more: false
                     category: Back-office
                     is_shared: false
+                    channel: messenger
               schema:
                 "$ref": "#/components/schemas/ticket"
         '401':
@@ -22763,6 +22767,12 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ai_call_response"
         '401':
           description: Unauthorized
           content:
@@ -23279,6 +23289,7 @@ components:
           - help_center_settings_change
           - inbound_conversations_change
           - inbox_access_change
+          - inbox_bulk_action
           - macro_creation
           - macro_deletion
           - macro_update
@@ -23428,13 +23439,16 @@ components:
         previous_state:
           type: string
           nullable: true
-          description: The state before the change. `idle` or `occupied`, and null
-            when the Admin had not been classified yet.
+          description: The state before the change. `idle` or `occupied` for an
+            occupancy change, and null when the Admin had not been classified
+            yet; `enabled` or `disabled` for an IP allowlist change.
           example: idle
         new_state:
           type: string
           nullable: true
-          description: The state after the change. `idle` or `occupied`.
+          description: The state after the change. `idle` or `occupied` for an
+            occupancy change; `enabled` or `disabled` for an IP allowlist
+            change.
           example: occupied
         threshold_minutes:
           type: integer
@@ -24046,6 +24060,12 @@ components:
           items:
             type: object
           example: []
+        data:
+          type: object
+          description: The metadata object supplied when the call was registered, returned verbatim. Empty object when none was supplied.
+          example:
+            masterContactID: 'abc123'
+            DNIS: '+18005551212'
     app:
       title: App
       type: object
@@ -29649,6 +29669,12 @@ components:
               description: The ID of the team to which the ticket is assigned.
                 If not provided, the ticket will be unassigned.
               example: '8'
+        channel:
+          type: string
+          description: The channel for the ticket. Only supported for customer ticket types. Defaults to messenger if not provided.
+          enum:
+          - email
+          example: email
       required:
       - ticket_type_id
       - contacts
@@ -34674,6 +34700,11 @@ components:
           - Back-office
           - Tracker
           example: Customer
+        channel:
+          type: string
+          nullable: true
+          description: The channel the ticket was created through. Defaults to messenger when no channel is specified at creation.
+          example: messenger
         ticket_attributes:
           "$ref": "#/components/schemas/ticket_custom_attributes"
         ticket_state:
@@ -36630,6 +36661,12 @@ tags:
 
     {% admonition type="warning" %}
     To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
+    {% /admonition %}
+
+    &nbsp;
+
+    {% admonition type="warning" %}
+    Server-Sent Events (SSE) is available by application only. Contact your account team or Customer Support to request access.
     {% /admonition %}
 
     &nbsp;
