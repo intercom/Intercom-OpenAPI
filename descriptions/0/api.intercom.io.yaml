@@ -19723,7 +19723,7 @@ paths:
       - name: per_page
         in: query
         required: false
-        description: The number of results per page (1-50, default 20). Values outside this range are clamped.
+        description: The number of results per page (1-50, default 20). Values outside this range are clamped, so values below 1 are treated as 1. A non-integer value falls back to the default of 20.
         schema:
           type: integer
           default: 20
@@ -19741,7 +19741,7 @@ paths:
       description: |
         Retrieve the version history of a data connector, newest first. Each entry is a point-in-time snapshot of the connector's configuration, with the status it has today and an optional note.
 
-        Results are paginated. `pages.next` is omitted on the last page.
+        Results are paginated. `pages.next` is omitted on the last page. A data connector that has never been published returns an empty `data` list.
 
         Requires the `read_data_connector_versions` or `read_write_data_connector_versions` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
@@ -39392,7 +39392,8 @@ components:
       properties:
         note:
           type: string
-          description: The new note for the version. An empty string clears the note.
+          nullable: true
+          description: The new note for the version. Sending `null`, an empty string, or a whitespace-only string clears the note.
           example: Switched to the v2 orders endpoint
     deleted_data_connector_object:
       title: Deleted Data Connector Object
