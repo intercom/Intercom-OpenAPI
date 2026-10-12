@@ -19705,6 +19705,447 @@ paths:
                       message: Execution result not found
               schema:
                 "$ref": "#/components/schemas/error"
+  "/data_connectors/{id}/versions":
+    get:
+      summary: List versions of a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the data connector.
+        schema:
+          type: string
+          example: '12345'
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results per page (1-50, default 20). Values outside this range are clamped, so values below 1 are treated as 1. A non-integer value falls back to the default of 20.
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 50
+      - name: starting_after
+        in: query
+        required: false
+        description: Cursor for pagination. Use the value from `pages.next.starting_after` in a previous response.
+        schema:
+          type: string
+      tags:
+      - Data Connectors
+      operationId: listDataConnectorVersions
+      description: |
+        Retrieve the version history of a data connector, newest first. Each entry is a point-in-time snapshot of the connector's configuration, with the status it has today and an optional note.
+
+        Results are paginated. `pages.next` is omitted on the last page. A data connector that has never been published returns an empty `data` list.
+
+        Requires the `read_data_connector_versions` or `read_write_data_connector_versions` OAuth scope. Set `Intercom-Version: Preview`.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: data_connector_version
+                      status: live
+                      note: Switched to the v2 orders endpoint
+                      author:
+                        id: 456
+                        name: Alice Admin
+                      created_at: '2026-09-14T10:02:11Z'
+                      entity_version_id: 9821
+                      definition:
+                        name: Order Status Service
+                        description: Fetches order status from external fulfillment API
+                        internal_description: Fetches order status from external fulfillment API
+                        state: live
+                        url: "https://api.example.com/v2/orders/{{order_id}}/status"
+                        body: ''
+                        headers:
+                        - name: Authorization
+                          value: "****"
+                        http_method: get
+                        direct_fin_usage: false
+                        audiences:
+                        - users
+                        execution_type: server_side
+                        configuration_response_type: test_response_type
+                        data_transformation_type: full_access
+                        client_function_name:
+                        client_function_timeout_ms:
+                        data_inputs:
+                        - name: order_id
+                          type: string
+                          description: The order to look up
+                          required: true
+                          default_value:
+                        response_fields:
+                        - path: status
+                          type: string
+                          example_value: shipped
+                          redacted: false
+                        object_mappings: []
+                        token_ids: []
+                        customer_authentication: false
+                        bypass_authentication: false
+                        enforce_auth: false
+                        validate_missing_attributes: false
+                    - type: data_connector_version
+                      status: previously_live
+                      note:
+                      author:
+                        id: 456
+                        name: Alice Admin
+                      created_at: '2026-08-02T08:40:05Z'
+                      entity_version_id: 9710
+                      definition:
+                    pages:
+                      type: pages
+                      per_page: 20
+                      next:
+                        starting_after: WzQ0MDksNDQwOSxudWxsXQ==
+              schema:
+                "$ref": "#/components/schemas/data_connector_version_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Invalid cursor:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: client_error
+                      message: Invalid starting_after param. Please try again using a starting_after value from a paginated response
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Data connector not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/data_connectors/{id}/versions/{version_id}":
+    get:
+      summary: Retrieve a version of a data connector
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the data connector.
+        schema:
+          type: string
+          example: '12345'
+      - name: version_id
+        in: path
+        required: true
+        description: The `entity_version_id` of the version, as returned by [List versions of a data connector](/docs/references/preview/rest-api/api.intercom.io/data-connectors/listdataconnectorversions).
+        schema:
+          type: integer
+          example: 9821
+      tags:
+      - Data Connectors
+      operationId: retrieveDataConnectorVersion
+      description: |
+        Retrieve a single version of a data connector, including the connector configuration as it was at that version.
+
+        Requires the `read_data_connector_versions` or `read_write_data_connector_versions` OAuth scope. Set `Intercom-Version: Preview`.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: data_connector_version
+                    status: live
+                    note: Switched to the v2 orders endpoint
+                    author:
+                      id: 456
+                      name: Alice Admin
+                    created_at: '2026-09-14T10:02:11Z'
+                    entity_version_id: 9821
+                    definition:
+                      name: Order Status Service
+                      description: Fetches order status from external fulfillment API
+                      internal_description: Fetches order status from external fulfillment API
+                      state: live
+                      url: "https://api.example.com/v2/orders/{{order_id}}/status"
+                      body: ''
+                      headers:
+                      - name: Authorization
+                        value: "****"
+                      http_method: get
+                      direct_fin_usage: false
+                      audiences:
+                      - users
+                      execution_type: server_side
+                      configuration_response_type: test_response_type
+                      data_transformation_type: full_access
+                      client_function_name:
+                      client_function_timeout_ms:
+                      data_inputs:
+                      - name: order_id
+                        type: string
+                        description: The order to look up
+                        required: true
+                        default_value:
+                      response_fields:
+                      - path: status
+                        type: string
+                        example_value: shipped
+                        redacted: false
+                      object_mappings: []
+                      token_ids: []
+                      customer_authentication: false
+                      bypass_authentication: false
+                      enforce_auth: false
+                      validate_missing_attributes: false
+              schema:
+                "$ref": "#/components/schemas/data_connector_version"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Data connector or version not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+                Version not found:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+    patch:
+      summary: Update the note on a data connector version
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the data connector.
+        schema:
+          type: string
+          example: '12345'
+      - name: version_id
+        in: path
+        required: true
+        description: The `entity_version_id` of the version, as returned by [List versions of a data connector](/docs/references/preview/rest-api/api.intercom.io/data-connectors/listdataconnectorversions).
+        schema:
+          type: integer
+          example: 9821
+      tags:
+      - Data Connectors
+      operationId: updateDataConnectorVersion
+      description: |
+        Update the note on a data connector version. The note is the only field that can be changed. This does not publish the version or roll the connector back to it.
+
+        Send an empty string to clear the note.
+
+        Requires the `read_write_data_connector_versions` OAuth scope. Set `Intercom-Version: Preview`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_data_connector_version_request"
+            examples:
+              Set a note:
+                summary: Annotate a version
+                value:
+                  note: Switched to the v2 orders endpoint
+      responses:
+        '200':
+          description: Version updated
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: data_connector_version
+                    status: live
+                    note: Switched to the v2 orders endpoint
+                    author:
+                      id: 456
+                      name: Alice Admin
+                    created_at: '2026-09-14T10:02:11Z'
+                    entity_version_id: 9821
+                    definition:
+                      name: Order Status Service
+                      description: Fetches order status from external fulfillment API
+                      internal_description: Fetches order status from external fulfillment API
+                      state: live
+                      url: "https://api.example.com/v2/orders/{{order_id}}/status"
+                      body: ''
+                      headers:
+                      - name: Authorization
+                        value: "****"
+                      http_method: get
+                      direct_fin_usage: false
+                      audiences:
+                      - users
+                      execution_type: server_side
+                      configuration_response_type: test_response_type
+                      data_transformation_type: full_access
+                      client_function_name:
+                      client_function_timeout_ms:
+                      data_inputs:
+                      - name: order_id
+                        type: string
+                        description: The order to look up
+                        required: true
+                        default_value:
+                      response_fields:
+                      - path: status
+                        type: string
+                        example_value: shipped
+                        redacted: false
+                      object_mappings: []
+                      token_ids: []
+                      customer_authentication: false
+                      bypass_authentication: false
+                      enforce_auth: false
+                      validate_missing_attributes: false
+              schema:
+                "$ref": "#/components/schemas/data_connector_version"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Note missing:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: parameter_not_found
+                      message: note parameter is required
+                Note has the wrong type:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: parameter_invalid
+                      message: note must be a string
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Data connector or version not found
+          content:
+            application/json:
+              examples:
+                Data connector not found:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: data_connector_not_found
+                      message: Data connector not found
+                Version not found:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/ecommerce/connectors/{id}/catalog":
     post:
       summary: Upload a product catalog
@@ -38704,6 +39145,256 @@ components:
                   type: string
                   description: The cursor value to use for the next page.
                   example: WzE3MDc1OTQ3MTUuMCwxMjM0NV0=
+    data_connector_version_list:
+      title: Data Connector Version List
+      type: object
+      description: A paginated list of data connector versions, newest first.
+      properties:
+        type:
+          type: string
+          description: The type of object - `list`.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: An array of data connector version objects.
+          items:
+            "$ref": "#/components/schemas/data_connector_version"
+        pages:
+          type: object
+          description: Pagination information. `next` is omitted on the last page.
+          properties:
+            type:
+              type: string
+              example: pages
+              enum:
+              - pages
+            per_page:
+              type: integer
+              description: The number of results per page.
+              example: 20
+            next:
+              type: object
+              description: Cursor for the next page of results.
+              properties:
+                starting_after:
+                  type: string
+                  description: The cursor value to use for the next page.
+                  example: WzQ0MDksNDQwOSxudWxsXQ==
+    data_connector_version:
+      title: Data Connector Version
+      type: object
+      x-tags:
+      - Data Connectors
+      description: A point-in-time snapshot of a data connector's configuration, with the version's status and an optional note.
+      properties:
+        type:
+          type: string
+          description: The type of object - `data_connector_version`.
+          enum:
+          - data_connector_version
+          example: data_connector_version
+        status:
+          type: string
+          description: The status of this version today.
+          enum:
+          - live
+          - paused
+          - draft
+          - previously_live
+          example: live
+        note:
+          type: string
+          nullable: true
+          description: A note describing this version, if one has been set.
+          example: Switched to the v2 orders endpoint
+        author:
+          type: object
+          nullable: true
+          description: The teammate who created this version.
+          properties:
+            id:
+              type: integer
+              description: The unique identifier of the teammate.
+              example: 456
+            name:
+              type: string
+              description: The name of the teammate.
+              example: Alice Admin
+        created_at:
+          type: string
+          format: date-time
+          description: The time this version was created.
+          example: '2026-09-14T10:02:11Z'
+        entity_version_id:
+          type: integer
+          description: The identifier of this version. Use it as `version_id` when retrieving or updating a version.
+          example: 9821
+        definition:
+          type: object
+          nullable: true
+          description: The data connector's configuration at this version. `null` if the snapshot is no longer available. Mirrors the response of [Retrieve a data connector](/docs/references/preview/rest-api/api.intercom.io/data-connectors/retrievedataconnector), without `id`, `type`, `created_by_admin_id`, `updated_by_admin_id`, `created_at`, `updated_at`, `execution_results_url` and `transform_code_block`.
+          properties:
+            name:
+              type: string
+              description: The name of the data connector.
+              example: Order Status Service
+            description:
+              type: string
+              nullable: true
+              description: A description of what this data connector does.
+            internal_description:
+              type: string
+              nullable: true
+              description: The internal description of the data connector.
+            state:
+              type: string
+              description: The state of the data connector at this version.
+              example: live
+            url:
+              type: string
+              nullable: true
+              description: The URL of the external API endpoint. Supports template variables like `{{order_id}}`.
+            body:
+              type: string
+              nullable: true
+              description: The request body template. Supports template variables.
+            headers:
+              type: array
+              description: HTTP headers for the request. Header values are always redacted as `"****"`.
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: Authorization
+                  value:
+                    type: string
+                    description: Always `"****"` in responses.
+                    example: "****"
+            http_method:
+              type: string
+              description: The HTTP method used by the data connector.
+              example: get
+            direct_fin_usage:
+              type: boolean
+              description: Whether this connector is used directly by Fin.
+            audiences:
+              type: array
+              description: The audience types this connector targets.
+              items:
+                type: string
+            execution_type:
+              type: string
+              nullable: true
+              description: How the connector executes, for example `server_side` or `client_side`.
+            configuration_response_type:
+              type: string
+              nullable: true
+              description: The expected response format from the connector.
+            data_transformation_type:
+              type: string
+              nullable: true
+              description: The type of data transformation applied to the response.
+            client_function_name:
+              type: string
+              nullable: true
+              description: The name of the client-side function, if applicable.
+            client_function_timeout_ms:
+              type: integer
+              nullable: true
+              description: Timeout in milliseconds for the client function, if applicable.
+            data_inputs:
+              type: array
+              description: The input parameters accepted by this data connector.
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  type:
+                    type: string
+                  description:
+                    type: string
+                    nullable: true
+                  required:
+                    type: boolean
+                  default_value: {}
+            response_fields:
+              type: array
+              description: The fields returned in the connector response.
+              items:
+                type: object
+                properties:
+                  path:
+                    type: string
+                  type:
+                    type: string
+                  example_value: {}
+                  redacted:
+                    type: boolean
+            object_mappings:
+              type: array
+              description: Mappings from connector response objects to Intercom objects.
+              items:
+                type: object
+                properties:
+                  response_object_path:
+                    type: string
+                  intercom_object_type:
+                    type: string
+                  attribute_mappings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        response_attribute_path:
+                          type: string
+                        intercom_attribute_identifier:
+                          type: string
+                        mapping_type:
+                          type: string
+                  reference_mappings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        intercom_object_type:
+                          type: string
+                        intercom_attribute_identifier:
+                          type: string
+            token_ids:
+              type: array
+              description: IDs of authentication tokens associated with this connector.
+              items:
+                type: string
+            customer_authentication:
+              type: boolean
+              description: Whether OTP authentication is enabled for this connector.
+            bypass_authentication:
+              type: boolean
+              description: Whether authentication is bypassed for this connector.
+            enforce_auth:
+              type: boolean
+              nullable: true
+              description: Whether authentication is enforced for this connector.
+            validate_missing_attributes:
+              type: boolean
+              nullable: true
+              description: Whether to validate missing attributes before execution.
+    update_data_connector_version_request:
+      title: Update Data Connector Version Request
+      type: object
+      description: Payload for updating a data connector version.
+      required:
+      - note
+      properties:
+        note:
+          type: string
+          nullable: true
+          description: The new note for the version. Sending `null`, an empty string, or a whitespace-only string clears the note.
+          example: Switched to the v2 orders endpoint
     deleted_data_connector_object:
       title: Deleted Data Connector Object
       type: object
