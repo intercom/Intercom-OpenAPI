@@ -22858,6 +22858,7 @@ paths:
                       supports_ios: false
                       supports_web: true
                       created_at: 1734537243
+                      environment_id:
               schema:
                 "$ref": "#/components/schemas/identity_verification_secret_list"
         '401':
@@ -22906,6 +22907,7 @@ paths:
                     supports_ios: false
                     supports_web: true
                     created_at: 1734537500
+                    environment_id:
               schema:
                 "$ref": "#/components/schemas/identity_verification_secret_with_material"
         '422':
@@ -22920,6 +22922,20 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: name is required
+                Unknown environment:
+                  value:
+                    type: error.list
+                    request_id: 7c3e9a41-0b5d-4f62-9e18-4d2a6b8c1f03
+                    errors:
+                    - code: parameter_invalid
+                      message: environment_id must reference an environment in this workspace
+                Environments not available:
+                  value:
+                    type: error.list
+                    request_id: 0e4b7d92-3c1a-4a85-b6f0-9d2e5c7a8b14
+                    errors:
+                    - code: parameter_invalid
+                      message: environment_id is not supported for this workspace
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -22954,6 +22970,12 @@ paths:
                   supports_web: true
                   supports_ios: true
                   supports_android: true
+              single_environment:
+                summary: Create a web secret for one environment
+                value:
+                  name: Sandbox Web
+                  supports_web: true
+                  environment_id: k3x9q2m7pa
   "/secure_mode_secrets/{id}":
     delete:
       summary: Delete an identity verification secret
@@ -41939,6 +41961,11 @@ components:
           type: integer
           description: The time the secret was created, as a Unix timestamp
           example: 1734537243
+        environment_id:
+          type: string
+          nullable: true
+          description: The `messenger_environment` value of the environment the secret is limited to, or `null` if the secret works in every environment
+          example: k3x9q2m7pa
     identity_verification_secret_with_material:
       title: Identity Verification Secret (with material)
       type: object
@@ -41990,6 +42017,10 @@ components:
           type: boolean
           description: Enable this secret for the Messenger on web.
           example: true
+        environment_id:
+          type: string
+          description: Limit this secret to one environment, using the `messenger_environment` value from your Messenger installation code. Omit it for a secret that works in every environment.
+          example: k3x9q2m7pa
       required:
       - name
     intercom_version:
