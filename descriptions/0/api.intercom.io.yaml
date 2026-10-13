@@ -194,7 +194,7 @@ paths:
         in: query
         required: true
         description: The start date that you request data for. It must be formatted
-          as a UNIX timestamp.
+          as a Unix timestamp.
         example: '1677253093'
         schema:
           type: string
@@ -202,7 +202,7 @@ paths:
         in: query
         required: false
         description: The end date that you request data for. It must be formatted
-          as a UNIX timestamp.
+          as a Unix timestamp.
         example: '1677861493'
         schema:
           type: string
@@ -300,13 +300,13 @@ paths:
                   type: integer
                   format: date-time
                   description: The start date that you request data for. It must
-                    be formatted as a UNIX timestamp.
+                    be formatted as a Unix timestamp.
                   example: 1677253093
                 created_at_before:
                   type: integer
                   format: date-time
                   description: The end date that you request data for. It must
-                    be formatted as a UNIX timestamp.
+                    be formatted as a Unix timestamp.
                   example: 1677861493
                 event_types:
                   type: array
@@ -28727,14 +28727,7 @@ paths:
       tags:
       - Fin Agent
       operationId: startFinConversation
-      x-badges:
-      - name: Legacy
-        color: '#6B7280'
       description: |
-        {% admonition type="info" name="Legacy — conversational mode" %}
-        `/fin/start` powers the conversational model, where your own UI drives a back-and-forth with Fin. This endpoint is no longer actively developed and is maintained only for existing integrations — new functionality lands on the orchestration endpoints.
-        {% /admonition %}
-
         Initialize Fin by passing it the user's message along with conversation history and user details.
 
         These additional pieces of context will be used by Fin to provide a better and more contextual answer to the user.
@@ -28744,6 +28737,10 @@ paths:
         During this workflow, the client should allow Fin to continue uninterrupted until a final *complete* status is returned, at which point control of the conversation passes back to the client.
 
         Events can be received via webhooks or Server-Sent Events (SSE) using the `sse_subscription_url` in the response.
+
+        **Pricing**
+
+        Conversations you start with `/fin/start` are billed on **outcomes**: you're charged at most once per conversation, and only when Fin reaches a billable outcome such as a resolution. See [Understanding Fin outcomes](https://www.intercom.com/help/en/articles/13513868-understanding-fin-outcomes).
 
         {% admonition type="warning" %}
         To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
@@ -29328,7 +29325,7 @@ components:
           description: A date and time following the ISO8601 notation.
         - title: integer
           type: integer
-          description: A date and time as UNIX timestamp notation.
+          description: A date and time as Unix timestamp notation.
     activity_log:
       title: Activity Log
       type: object
@@ -40997,13 +40994,19 @@ components:
           description: |
             Optional. A human-readable explanation of why the conversation was escalated.
             Only present when status is 'escalated'.
-            Possible values include:
+
+            When you escalate deterministically with `/fin/escalate`, the reason is always
+            "Escalation requested via API".
+
+            The following reasons apply to Fin-decided escalations when Fin owns the
+            conversation (`/fin/start`, and `/fin/reply` on a conversation that was
+            started that way):
             - "Escalation requested by user"
             - "Escalation rule: {rule_name}"
             - "Escalation rule matched"
             - "Routed to team"
             - "Conversation finished without resolution"
-          example: Escalation requested by user
+          example: Escalation requested via API
         created_at_ms:
           type: string
           format: date-time
@@ -46353,8 +46356,7 @@ tags:
 - name: Contacts
   description: Everything about your contacts
 - name: Content
-  description: Search and operations over Knowledge Hub content (Preview) — articles,
-    snippets, external pages, uploaded files, and internal articles.
+  description: Search and bulk operations over Knowledge Hub content (Preview)
 - name: Content Snippets
   description: Everything about your Content Snippets
 - name: Conversations
@@ -46402,11 +46404,23 @@ tags:
 
     &nbsp;
 
-    Orchestrate Fin from your own agent: discover what Fin can do with `/fin/capabilities`, ask a one-shot question with `/fin/ask`, run a specific procedure with `/fin/procedures/{procedure_id}/run`, continue a conversation with `/fin/reply`, escalate to a human with `/fin/escalate`, and record a satisfaction rating with `/fin/csat`. Fin notifies your application of its status and responses through a set of events, delivered via webhooks or Server-Sent Events (SSE).
+    {% admonition type="warning" %}
+    Server-Sent Events (SSE) is available by application only. Contact your account team or Customer Support to request access.
+    {% /admonition %}
 
     &nbsp;
 
-    Starting a standalone conversation with `/fin/start` remains available for existing conversational integrations and is documented below.
+    Use the Fin Agent API as a tool: your agent stays in control and calls Fin capabilities as needed — discover what Fin can do with `/fin/capabilities`, ask a one-shot question with `/fin/ask`, run a specific procedure with `/fin/procedures/{procedure_id}/run`, continue a conversation with `/fin/reply`, escalate to a human with `/fin/escalate`, and record a satisfaction rating with `/fin/csat`. Fin notifies your application of its status and responses through a set of events, delivered via webhooks or Server-Sent Events (SSE).
+
+    &nbsp;
+
+    You can also start a standalone conversation with `/fin/start`, where Fin owns the conversation and passes control back when it's done.
+
+    &nbsp;
+
+    **Pricing**
+
+    Fin Agent API conversations are billed on **outcomes**: you're charged at most once per conversation, and only when Fin reaches a billable outcome such as a resolution. Pricing for the orchestration endpoints is being finalised while they're in Preview. See [Understanding Fin outcomes](https://www.intercom.com/help/en/articles/13513868-understanding-fin-outcomes).
 
     &nbsp;
 
