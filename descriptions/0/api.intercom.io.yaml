@@ -20502,6 +20502,236 @@ paths:
                       message: Failed to store catalog
               schema:
                 "$ref": "#/components/schemas/error"
+  "/ecommerce/connectors/{id}/events":
+    post:
+      summary: Submit a product event
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the ecommerce connector.
+        schema:
+          type: string
+          example: '42939'
+      tags:
+      - Ecommerce Connectors
+      operationId: submitEcommerceProductEvent
+      description: |
+        Send a single product change to an ecommerce connector. Use product events to keep
+        Fin's product knowledge current between full catalog uploads. Each request carries
+        one event.
+
+        A full catalog must be uploaded with
+        [Upload a product catalog](/docs/references/preview/rest-api/api.intercom.io/ecommerce-connectors/uploadecommercecatalog)
+        before you send events. Until then, this endpoint returns `409 Conflict`.
+
+        ## Event types
+
+        | `type` | `data` | Effect |
+        |---|---|---|
+        | `product.created` | `product` | Adds the product, or updates it if a product with the same `id` already exists. |
+        | `product.updated` | `product` | Updates the product with the same `id`, or adds it if it does not exist yet. |
+        | `product.deleted` | `product_id` | Removes the product from Fin's knowledge. |
+
+        For `product.created` and `product.updated`, send the full product object, not only the
+        fields that changed. It uses the same fields as a catalog product
+        ([`ecommerce_catalog_product`](/docs/references/preview/rest-api/api.intercom.io/models/ecommerce_catalog_product)),
+        plus a required `updated_at` timestamp. The product is matched by `id`. The serialized
+        product must be 60 KB or smaller.
+
+        For `product.deleted`, send only `data.product_id`.
+
+        `occurred_at` is required on every event and must be an ISO 8601 timestamp.
+
+        ## Ordering
+
+        Events can arrive out of order. The newest version of a product wins:
+
+        - If the stored product has a newer `updated_at` than the product in a
+          `product.created` or `product.updated` event, the event is ignored.
+        - If the stored product has a newer `updated_at` than a `product.deleted` event's
+          `occurred_at`, the delete is ignored.
+        - Once a product is deleted, an update with an older `updated_at` than the delete's
+          `occurred_at` does not bring it back.
+        - Events sent while a full catalog upload is running are kept.
+
+        ## Processing
+
+        The endpoint returns `202 Accepted` with an `event_id` once the event is queued.
+        Processing is asynchronous, so the change may take a short time to reach Fin.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ecommerce_product_event_request"
+            examples:
+              product_created:
+                summary: Product created
+                value:
+                  type: product.created
+                  occurred_at: '2026-10-14T09:30:00Z'
+                  data:
+                    product:
+                      id: 'tent-2p-ultralight'
+                      title: 'Ridgeline 2-Person Ultralight Tent'
+                      url: 'https://example.com/products/ridgeline-2p-tent'
+                      description: 'A freestanding two-person backpacking tent that weighs under 1.5 kg.'
+                      featured_image_url: 'https://cdn.example.com/images/ridgeline-2p.jpg'
+                      price_min: 349.0
+                      price_max: 379.0
+                      currency: 'USD'
+                      in_stock: true
+                      category_path:
+                      - 'Camping'
+                      - 'Tents'
+                      collections:
+                      - 'Backpacking'
+                      tags:
+                      - 'ultralight'
+                      - 'freestanding'
+                      available_options:
+                      - name: 'Color'
+                        values:
+                        - 'Green'
+                        - 'Orange'
+                      variants:
+                      - id: 'tent-2p-ultralight-green'
+                        title: 'Green'
+                        price: 349.0
+                        in_stock: true
+                        selected_options:
+                        - name: 'Color'
+                          value: 'Green'
+                      - id: 'tent-2p-ultralight-orange'
+                        title: 'Orange'
+                        price: 379.0
+                        in_stock: true
+                        selected_options:
+                        - name: 'Color'
+                          value: 'Orange'
+                      created_at: '2026-10-14T09:30:00Z'
+                      updated_at: '2026-10-14T09:30:00Z'
+              product_updated:
+                summary: Product updated
+                value:
+                  type: product.updated
+                  occurred_at: '2026-10-15T14:05:00Z'
+                  data:
+                    product:
+                      id: 'tent-2p-ultralight'
+                      title: 'Ridgeline 2-Person Ultralight Tent'
+                      url: 'https://example.com/products/ridgeline-2p-tent'
+                      description: 'A freestanding two-person backpacking tent that weighs under 1.5 kg.'
+                      featured_image_url: 'https://cdn.example.com/images/ridgeline-2p.jpg'
+                      price_min: 299.0
+                      price_max: 379.0
+                      currency: 'USD'
+                      in_stock: true
+                      category_path:
+                      - 'Camping'
+                      - 'Tents'
+                      collections:
+                      - 'Backpacking'
+                      - 'Sale'
+                      tags:
+                      - 'ultralight'
+                      - 'freestanding'
+                      available_options:
+                      - name: 'Color'
+                        values:
+                        - 'Green'
+                        - 'Orange'
+                      variants:
+                      - id: 'tent-2p-ultralight-green'
+                        title: 'Green'
+                        price: 299.0
+                        compare_at_price: 349.0
+                        in_stock: true
+                        selected_options:
+                        - name: 'Color'
+                          value: 'Green'
+                      - id: 'tent-2p-ultralight-orange'
+                        title: 'Orange'
+                        price: 379.0
+                        in_stock: false
+                        selected_options:
+                        - name: 'Color'
+                          value: 'Orange'
+                      created_at: '2026-10-14T09:30:00Z'
+                      updated_at: '2026-10-15T14:05:00Z'
+              product_deleted:
+                summary: Product deleted
+                value:
+                  type: product.deleted
+                  occurred_at: '2026-10-20T08:00:00Z'
+                  data:
+                    product_id: 'tent-2p-ultralight'
+      responses:
+        '202':
+          description: Event accepted and queued for processing.
+          content:
+            application/json:
+              examples:
+                Event accepted:
+                  value:
+                    event_id: 81273
+              schema:
+                "$ref": "#/components/schemas/ecommerce_product_event_response"
+        '400':
+          description: The event is invalid. All validation errors are returned in `message`, separated by `; `.
+          content:
+            application/json:
+              examples:
+                Invalid type:
+                  value:
+                    type: invalid_event
+                    message: type must be one of product.created, product.updated, product.deleted
+                Invalid product:
+                  value:
+                    type: invalid_event
+                    message: data.product.title is required; data.product.updated_at must be an ISO 8601 timestamp
+                Missing product id on delete:
+                  value:
+                    type: invalid_event
+                    message: data.product_id is required
+                Product too large:
+                  value:
+                    type: invalid_event
+                    message: data.product exceeds 60KB
+              schema:
+                "$ref": "#/components/schemas/ecommerce_product_event_error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              examples:
+                Connector not found:
+                  value:
+                    type: import_source_not_found
+                    message: No connector found with the provided import_source_id.
+                Feature not available:
+                  value:
+                    type: not_found
+                    message: The events API is not available for this workspace.
+              schema:
+                "$ref": "#/components/schemas/ecommerce_product_event_error"
+        '409':
+          description: No full catalog has been uploaded to this connector yet.
+          content:
+            application/json:
+              examples:
+                Catalog not uploaded:
+                  value:
+                    type: catalog_not_uploaded
+                    message: Upload a full catalog before sending product events.
+              schema:
+                "$ref": "#/components/schemas/ecommerce_product_event_error"
   "/events":
     post:
       summary: Submit a data event
@@ -40144,6 +40374,88 @@ components:
             sku: 'TSHIRT-BLU-L'
             vendor: 'Acme Apparel'
           nullable: true
+    ecommerce_product_event_error:
+      title: Ecommerce Product Event Error
+      type: object
+      description: Returned when a product event is rejected.
+      properties:
+        type:
+          type: string
+          description: The error code.
+          enum:
+          - invalid_event
+          - import_source_not_found
+          - not_found
+          - catalog_not_uploaded
+          example: invalid_event
+        message:
+          type: string
+          description: A human-readable description of the error. For `invalid_event`, every validation error is listed, separated by `; `.
+          example: data.product.id is required
+    ecommerce_product_event_product:
+      title: Ecommerce Product Event Product
+      description: |
+        The full product sent in a `product.created` or `product.updated` event. It uses the same
+        fields as `ecommerce_catalog_product`, plus `updated_at`, which is required. The serialized
+        product must be 60 KB or smaller.
+      allOf:
+      - "$ref": "#/components/schemas/ecommerce_catalog_product"
+      - type: object
+        required:
+        - updated_at
+        properties:
+          created_at:
+            type: string
+            format: date-time
+            description: When the product was created in your store, as an ISO 8601 timestamp.
+            example: '2026-10-14T09:30:00Z'
+            nullable: true
+          updated_at:
+            type: string
+            format: date-time
+            description: When the product was last changed in your store, as an ISO 8601 timestamp. Used to order events, so an older version never overwrites a newer one.
+            example: '2026-10-15T14:05:00Z'
+    ecommerce_product_event_request:
+      title: Ecommerce Product Event Request
+      type: object
+      description: A single product event.
+      required:
+      - type
+      - occurred_at
+      - data
+      properties:
+        type:
+          type: string
+          description: The kind of product change.
+          enum:
+          - product.created
+          - product.updated
+          - product.deleted
+          example: product.updated
+        occurred_at:
+          type: string
+          format: date-time
+          description: When the change happened, as an ISO 8601 timestamp. For `product.deleted`, this is compared with the stored product's `updated_at` to decide whether the delete applies.
+          example: '2026-10-15T14:05:00Z'
+        data:
+          type: object
+          description: The event payload. Send `product` for `product.created` and `product.updated`, and `product_id` for `product.deleted`.
+          properties:
+            product:
+              "$ref": "#/components/schemas/ecommerce_product_event_product"
+            product_id:
+              type: string
+              description: The `id` of the product to delete. Required for `product.deleted`.
+              example: 'tent-2p-ultralight'
+    ecommerce_product_event_response:
+      title: Ecommerce Product Event Response
+      type: object
+      description: Returned when a product event is accepted and queued.
+      properties:
+        event_id:
+          type: integer
+          description: The unique identifier for the queued event.
+          example: 81273
     email_address_header:
       title: Email Address Header
       type: object
