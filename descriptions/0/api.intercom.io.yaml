@@ -1426,10 +1426,18 @@ paths:
                       state: published
                       created_at: 1734537283
                       updated_at: 1734537283
+                      has_unpublished_changes: false
+                      draft_updated_at: null
                       url: http://help-center.test/myapp-64/en/articles/39-this-is-the-article-title
                       ai_chatbot_availability: true
                       ai_copilot_availability: true
                       ai_sales_agent_availability: true
+                      created_by_id: 5017691
+                      updated_by_id: 5017691
+                      exclude_from_article_suggestions: false
+                      help_center_audience: everyone
+                      scheduled_publish_at: null
+                      scheduled_unpublish_at: null
               schema:
                 "$ref": "#/components/schemas/article_list"
         '401':
@@ -1480,6 +1488,9 @@ paths:
                       happy_reaction_percentage: 0
                       neutral_reaction_percentage: 0
                       sad_reaction_percentage: 0
+                      fin_involvements: 0
+                      fin_resolutions: 0
+                      fin_resolution_rate: 0
                     tags:
                       type: tag.list
                       tags: []
@@ -1491,10 +1502,18 @@ paths:
                     state: published
                     created_at: 1734537288
                     updated_at: 1734537288
+                    has_unpublished_changes: false
+                    draft_updated_at: null
                     url: http://help-center.test/myapp-68/en/articles/42-thanks-for-everything
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
+                    created_by_id: 5017691
+                    updated_by_id: 5017691
+                    exclude_from_article_suggestions: false
+                    help_center_audience: everyone
+                    scheduled_publish_at: null
+                    scheduled_unpublish_at: null
               schema:
                 "$ref": "#/components/schemas/article"
         '400':
@@ -1613,6 +1632,9 @@ paths:
                       happy_reaction_percentage: 0
                       neutral_reaction_percentage: 0
                       sad_reaction_percentage: 0
+                      fin_involvements: 0
+                      fin_resolutions: 0
+                      fin_resolution_rate: 0
                     tags:
                       type: tag.list
                       tags: []
@@ -1624,10 +1646,18 @@ paths:
                     state: published
                     created_at: 1734537292
                     updated_at: 1734537292
+                    has_unpublished_changes: false
+                    draft_updated_at: null
                     url: http://help-center.test/myapp-74/en/articles/45-this-is-the-article-title
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
+                    created_by_id: 5017691
+                    updated_by_id: 5017691
+                    exclude_from_article_suggestions: false
+                    help_center_audience: everyone
+                    scheduled_publish_at: null
+                    scheduled_unpublish_at: null
               schema:
                 "$ref": "#/components/schemas/article"
         '404':
@@ -1700,6 +1730,9 @@ paths:
                       happy_reaction_percentage: 0
                       neutral_reaction_percentage: 0
                       sad_reaction_percentage: 0
+                      fin_involvements: 0
+                      fin_resolutions: 0
+                      fin_resolution_rate: 0
                     tags:
                       type: tag.list
                       tags: []
@@ -1711,10 +1744,18 @@ paths:
                     state: published
                     created_at: 1734537297
                     updated_at: 1734537298
+                    has_unpublished_changes: false
+                    draft_updated_at: null
                     url: http://help-center.test/myapp-80/en/articles/48-christmas-is-here
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
+                    created_by_id: 5017691
+                    updated_by_id: 5017691
+                    exclude_from_article_suggestions: false
+                    help_center_audience: everyone
+                    scheduled_publish_at: null
+                    scheduled_unpublish_at: null
               schema:
                 "$ref": "#/components/schemas/article"
         '400':
@@ -2558,6 +2599,12 @@ paths:
                         ai_chatbot_availability: true
                         ai_copilot_availability: true
                         ai_sales_agent_availability: true
+                        created_by_id: 5017691
+                        updated_by_id: 5017691
+                        exclude_from_article_suggestions: false
+                        help_center_audience: everyone
+                        scheduled_publish_at: null
+                        scheduled_unpublish_at: null
                       highlights: []
                     pages:
                       type: pages
@@ -36588,13 +36635,12 @@ components:
           description: >-
             ISO 8601 timestamp at which to schedule a future publish of the article.
             When set together with `state: "published"`, the article is scheduled
-            instead of published immediately. Setting `null` cancels a pending
-            publish schedule. Timestamps in the past or equal to the current time
-            are rejected with 400 `parameter_invalid` — the value must be strictly
-            in the future. Combining with `state: "draft"` returns 400
-            `parameter_invalid`. Sending in the same request as
-            `scheduled_unpublish_at` returns 400 — only one pending schedule per
-            article. Empty string returns 400 `parameter_invalid`.
+            instead of published immediately. The value must be strictly in the future —
+            timestamps in the past or equal to the current time are rejected with 400
+            `parameter_invalid`. Setting `null` cancels a pending publish schedule.
+            Combining with `state: "draft"` returns 400 `parameter_invalid`. Sending in
+            the same request as `scheduled_unpublish_at` returns 400 — only one pending
+            schedule per article. Empty string returns 400 `parameter_invalid`.
           example: '2026-12-31T09:00:00Z'
         scheduled_unpublish_at:
           type: string
@@ -36602,13 +36648,12 @@ components:
           nullable: true
           description: >-
             ISO 8601 timestamp at which to schedule a future unpublish of the article.
-            Setting `null` cancels a pending unpublish schedule. Timestamps in the
-            past or equal to the current time are rejected with 400
-            `parameter_invalid` — the value must be strictly in the future. Rejected
-            with 400 `parameter_invalid` if the article has never been published.
-            Sending in the same request as `scheduled_publish_at` returns 400 — only
-            one pending schedule per article. Empty string returns 400
-            `parameter_invalid`.
+            The value must be strictly in the future — timestamps in the past or equal to
+            the current time are rejected with 400 `parameter_invalid`. Setting `null`
+            cancels a pending unpublish schedule. Rejected with 400 `parameter_invalid`
+            if the article has never been published. Sending in the same request as
+            `scheduled_publish_at` returns 400 — only one pending schedule per article.
+            Empty string returns 400 `parameter_invalid`.
           example: '2026-12-31T17:00:00Z'
       required:
       - title
@@ -45600,13 +45645,12 @@ components:
           description: >-
             ISO 8601 timestamp at which to schedule a future publish of the article.
             When set together with `state: "published"`, the article is scheduled
-            instead of published immediately. Setting `null` cancels a pending
-            publish schedule. Timestamps in the past or equal to the current time
-            are rejected with 400 `parameter_invalid` — the value must be strictly
-            in the future. Combining with `state: "draft"` returns 400
-            `parameter_invalid`. Sending in the same request as
-            `scheduled_unpublish_at` returns 400 — only one pending schedule per
-            article. Empty string returns 400 `parameter_invalid`.
+            instead of published immediately. The value must be strictly in the future —
+            timestamps in the past or equal to the current time are rejected with 400
+            `parameter_invalid`. Setting `null` cancels a pending publish schedule.
+            Combining with `state: "draft"` returns 400 `parameter_invalid`. Sending in
+            the same request as `scheduled_unpublish_at` returns 400 — only one pending
+            schedule per article. Empty string returns 400 `parameter_invalid`.
           example: '2026-12-31T09:00:00Z'
         scheduled_unpublish_at:
           type: string
@@ -45614,13 +45658,12 @@ components:
           nullable: true
           description: >-
             ISO 8601 timestamp at which to schedule a future unpublish of the article.
-            Setting `null` cancels a pending unpublish schedule. Timestamps in the
-            past or equal to the current time are rejected with 400
-            `parameter_invalid` — the value must be strictly in the future. Rejected
-            with 400 `parameter_invalid` if the article has never been published.
-            Sending in the same request as `scheduled_publish_at` returns 400 — only
-            one pending schedule per article. Empty string returns 400
-            `parameter_invalid`.
+            The value must be strictly in the future — timestamps in the past or equal to
+            the current time are rejected with 400 `parameter_invalid`. Setting `null`
+            cancels a pending unpublish schedule. Rejected with 400 `parameter_invalid`
+            if the article has never been published. Sending in the same request as
+            `scheduled_publish_at` returns 400 — only one pending schedule per article.
+            Empty string returns 400 `parameter_invalid`.
           example: '2026-12-31T17:00:00Z'
     update_internal_article_request:
       description: You can Update an Internal Article
