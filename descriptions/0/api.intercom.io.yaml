@@ -20601,18 +20601,6 @@ paths:
 
         `occurred_at` is required on every event and must be an ISO 8601 timestamp.
 
-        ## Ordering
-
-        Events can arrive out of order. The newest version of a product wins:
-
-        - If the stored product has a newer `updated_at` than the product in a
-          `product.created` or `product.updated` event, the event is ignored.
-        - If the stored product has a newer `updated_at` than a `product.deleted` event's
-          `occurred_at`, the delete is ignored.
-        - Once a product is deleted, an update with an older `updated_at` than the delete's
-          `occurred_at` does not bring it back.
-        - Events sent while a full catalog upload is running are kept.
-
         ## Processing
 
         The endpoint returns `202 Accepted` with an `event_id` once the event is queued.
@@ -40473,7 +40461,7 @@ components:
           updated_at:
             type: string
             format: date-time
-            description: When the product was last changed in your store, as an ISO 8601 timestamp. Used to order events, so an older version never overwrites a newer one.
+            description: When the product was last changed in your store, as an ISO 8601 timestamp.
             example: '2026-10-15T14:05:00Z'
     ecommerce_product_event_request:
       title: Ecommerce Product Event Request
@@ -40495,7 +40483,7 @@ components:
         occurred_at:
           type: string
           format: date-time
-          description: When the change happened, as an ISO 8601 timestamp. For `product.deleted`, this is compared with the stored product's `updated_at` to decide whether the delete applies.
+          description: When the change happened, as an ISO 8601 timestamp.
           example: '2026-10-15T14:05:00Z'
         data:
           type: object
