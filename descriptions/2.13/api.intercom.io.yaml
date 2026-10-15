@@ -169,7 +169,7 @@ paths:
         in: query
         required: true
         description: The start date that you request data for. It must be formatted
-          as a UNIX timestamp.
+          as a Unix timestamp.
         example: '1677253093'
         schema:
           type: string
@@ -177,7 +177,7 @@ paths:
         in: query
         required: false
         description: The end date that you request data for. It must be formatted
-          as a UNIX timestamp.
+          as a Unix timestamp.
         example: '1677861493'
         schema:
           type: string
@@ -231,6 +231,37 @@ paths:
                       activity_description: Ciaran5 Lee changed your Initial message
                         title message from Initial message title to Eventual message
                         title.
+                    - id: 9eedfb5c-b5c2-4105-bf17-a9acedf29e8d
+                      performed_by:
+                        type: admin
+                        id: '991266219'
+                        email: admin5@email.com
+                        ip: unknown
+                      metadata:
+                        previous_state: idle
+                        new_state: occupied
+                        threshold_minutes: 15
+                        last_activity_at: 1736201340
+                        auto: true
+                      created_at: 1736201398
+                      activity_type: admin_occupancy_state_change
+                      activity_description: Ciaran5 Lee changed from idle to occupied.
+                    - id: 25023ca3-acbd-43ca-a3b5-ff30a516d017
+                      performed_by:
+                        type: admin
+                        id: '991266219'
+                        email: admin5@email.com
+                        ip: 127.0.0.1
+                      metadata:
+                        setting_type: teammate_occupancy
+                        changes:
+                          occupancy_window_minutes:
+                            before: 15
+                            after: 30
+                      created_at: 1736201398
+                      activity_type: admin_occupancy_setting_change
+                      activity_description: Ciaran5 Lee updated the occupancy window
+                        to 30 minutes.
               schema:
                 "$ref": "#/components/schemas/activity_log_list"
         '401':
@@ -4841,14 +4872,14 @@ paths:
         | email_domain                       | String                         |
         | phone                              | String                         |
         | external_id                        | String                         |
-        | created_at                         | Date (UNIX Timestamp)          |
-        | signed_up_at                       | Date (UNIX Timestamp)          |
-        | updated_at                         | Date (UNIX Timestamp)          |
-        | last_seen_at                       | Date (UNIX Timestamp)          |
-        | last_contacted_at                  | Date (UNIX Timestamp)          |
-        | last_replied_at                    | Date (UNIX Timestamp)          |
-        | last_email_opened_at               | Date (UNIX Timestamp)          |
-        | last_email_clicked_at              | Date (UNIX Timestamp)          |
+        | created_at                         | Date (Unix timestamp in seconds)          |
+        | signed_up_at                       | Date (Unix timestamp in seconds)          |
+        | updated_at                         | Date (Unix timestamp in seconds)          |
+        | last_seen_at                       | Date (Unix timestamp in seconds)          |
+        | last_contacted_at                  | Date (Unix timestamp in seconds)          |
+        | last_replied_at                    | Date (Unix timestamp in seconds)          |
+        | last_email_opened_at               | Date (Unix timestamp in seconds)          |
+        | last_email_clicked_at              | Date (Unix timestamp in seconds)          |
         | language_override                  | String                         |
         | browser                            | String                         |
         | browser_language                   | String                         |
@@ -4859,14 +4890,14 @@ paths:
         | unsubscribed_from_emails           | Boolean                        |
         | marked_email_as_spam               | Boolean                        |
         | has_hard_bounced                   | Boolean                        |
-        | ios_last_seen_at                   | Date (UNIX Timestamp)          |
+        | ios_last_seen_at                   | Date (Unix timestamp in seconds)          |
         | ios_app_version                    | String                         |
         | ios_device                         | String                         |
         | ios_app_device                     | String                         |
         | ios_os_version                     | String                         |
         | ios_app_name                       | String                         |
         | ios_sdk_version                    | String                         |
-        | android_last_seen_at               | Date (UNIX Timestamp)          |
+        | android_last_seen_at               | Date (Unix timestamp in seconds)          |
         | android_app_version                | String                         |
         | android_device                     | String                         |
         | android_app_name                   | String                         |
@@ -6422,8 +6453,8 @@ paths:
         | Field                                     | Type                                                                                                                                                   |
         | :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
         | id                                        | String                                                                                                                                                 |
-        | created_at                                | Date (UNIX timestamp)                                                                                                                                  |
-        | updated_at                                | Date (UNIX timestamp)                                                                                                                                  |
+        | created_at                                | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | updated_at                                | Date (Unix timestamp in seconds)                                                                                                                                  |
         | source.type                               | String<br>Accepted fields are `conversation`, `email`, `facebook`, `instagram`, `phone_call`, `phone_switch`, `push`, `sms`, `twitter` and `whatsapp`. |
         | source.id                                 | String                                                                                                                                                 |
         | source.delivered_as                       | String                                                                                                                                                 |
@@ -6442,8 +6473,8 @@ paths:
         | open                                      | Boolean                                                                                                                                                |
         | read                                      | Boolean                                                                                                                                                |
         | state                                     | String                                                                                                                                                 |
-        | waiting_since                             | Date (UNIX timestamp)                                                                                                                                  |
-        | snoozed_until                             | Date (UNIX timestamp)                                                                                                                                  |
+        | waiting_since                             | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | snoozed_until                             | Date (Unix timestamp in seconds)                                                                                                                                  |
         | tag_ids                                   | String                                                                                                                                                 |
         | priority                                  | String                                                                                                                                                 |
         | statistics.time_to_assignment             | Integer                                                                                                                                                |
@@ -6451,21 +6482,21 @@ paths:
         | statistics.time_to_first_close            | Integer                                                                                                                                                |
         | statistics.time_to_last_close             | Integer                                                                                                                                                |
         | statistics.median_time_to_reply           | Integer                                                                                                                                                |
-        | statistics.first_contact_reply_at         | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.first_assignment_at            | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.first_admin_reply_at           | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.first_close_at                 | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_assignment_at             | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_assignment_admin_reply_at | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_contact_reply_at          | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_admin_reply_at            | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_close_at                  | Date (UNIX timestamp)                                                                                                                                  |
+        | statistics.first_contact_reply_at         | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.first_assignment_at            | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.first_admin_reply_at           | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.first_close_at                 | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_assignment_at             | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_assignment_admin_reply_at | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_contact_reply_at          | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_admin_reply_at            | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_close_at                  | Date (Unix timestamp in seconds)                                                                                                                                  |
         | statistics.last_closed_by_id              | String                                                                                                                                                 |
         | statistics.count_reopens                  | Integer                                                                                                                                                |
         | statistics.count_assignments              | Integer                                                                                                                                                |
         | statistics.count_conversation_parts       | Integer                                                                                                                                                |
-        | conversation_rating.requested_at          | Date (UNIX timestamp)                                                                                                                                  |
-        | conversation_rating.replied_at            | Date (UNIX timestamp)                                                                                                                                  |
+        | conversation_rating.requested_at          | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | conversation_rating.replied_at            | Date (Unix timestamp in seconds)                                                                                                                                  |
         | conversation_rating.score                 | Integer                                                                                                                                                |
         | conversation_rating.remark                | String                                                                                                                                                 |
         | conversation_rating.contact_id            | String                                                                                                                                                 |
@@ -6488,8 +6519,8 @@ paths:
         | !=       | All                            | Doesn't Equal                                                |
         | IN       | All                            | In  Shortcut for `OR` queries  Values most be in Array       |
         | NIN      | All                            | Not In  Shortcut for `OR !` queries  Values must be in Array |
-        | >        | Integer  Date (UNIX Timestamp) | Greater (or equal) than                                      |
-        | <       | Integer  Date (UNIX Timestamp) | Lower (or equal) than                                        |
+        | >        | Integer  Date (Unix timestamp in seconds) | Greater (or equal) than                                      |
+        | <       | Integer  Date (Unix timestamp in seconds) | Lower (or equal) than                                        |
         | ~        | String                         | Contains                                                     |
         | !~       | String                         | Doesn't Contain                                              |
         | ^        | String                         | Starts With                                                  |
@@ -8081,7 +8112,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
-      operationId: deleteCustomObjectInstancesById
+      operationId: deleteCustomObjectInstancesByExternalId
       description: Delete a single Custom Object instance by external_id.
       responses:
         '200':
@@ -8166,7 +8197,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
-      operationId: deleteCustomObjectInstancesByExternalId
+      operationId: deleteCustomObjectInstancesById
       description: Delete a single Custom Object instance using the Intercom defined
         id.
       responses:
@@ -9233,7 +9264,7 @@ paths:
                     type: user
                     id: 677c56646abd011ad17ff584
                   body: heyy
-                  referer: https://twitter.com/bob
+                  referer: https://example.com/bob
               lead_message_created:
                 summary: lead message created
                 value:
@@ -9241,7 +9272,7 @@ paths:
                     type: lead
                     id: 677c56666abd011ad17ff585
                   body: heyy
-                  referer: https://twitter.com/bob
+                  referer: https://example.com/bob
               admin_message_created:
                 summary: admin message created
                 value:
@@ -12542,8 +12573,8 @@ paths:
         | Field                                     | Type                                                                                     |
         | :---------------------------------------- | :--------------------------------------------------------------------------------------- |
         | id                                        | String                                                                                   |
-        | created_at                                | Date (UNIX timestamp)                                                                    |
-        | updated_at                                | Date (UNIX timestamp)                                                                    |
+        | created_at                                | Date (Unix timestamp in seconds)                                                                    |
+        | updated_at                                | Date (Unix timestamp in seconds)                                                                    |
         | title                           | String                                                                                   |
         | description                     | String                                                                                   |
         | category                                  | String                                                                                   |
@@ -12554,8 +12585,8 @@ paths:
         | team_assignee_id                          | String                                                                                   |
         | open                                      | Boolean                                                                                  |
         | state                                     | String                                                                                   |
-        | snoozed_until                             | Date (UNIX timestamp)                                                                    |
-        | ticket_attribute.{id}                     | String or Boolean or Date (UNIX timestamp) or Float or Integer                           |
+        | snoozed_until                             | Date (Unix timestamp in seconds)                                                                    |
+        | ticket_attribute.{id}                     | String or Boolean or Date (Unix timestamp in seconds) or Float or Integer                           |
 
         ### Accepted Operators
 
@@ -12571,8 +12602,8 @@ paths:
         | !=       | All                            | Doesn't Equal                                                |
         | IN       | All                            | In  Shortcut for `OR` queries  Values most be in Array       |
         | NIN      | All                            | Not In  Shortcut for `OR !` queries  Values must be in Array |
-        | >        | Integer  Date (UNIX Timestamp) | Greater (or equal) than                                      |
-        | <       | Integer  Date (UNIX Timestamp) | Lower (or equal) than                                        |
+        | >        | Integer  Date (Unix timestamp in seconds) | Greater (or equal) than                                      |
+        | <       | Integer  Date (Unix timestamp in seconds) | Lower (or equal) than                                        |
         | ~        | String                         | Contains                                                     |
         | !~       | String                         | Doesn't Contain                                              |
         | ^        | String                         | Starts With                                                  |
@@ -13254,13 +13285,16 @@ components:
         previous_state:
           type: string
           nullable: true
-          description: The state before the change. `idle` or `occupied`, and null
-            when the Admin had not been classified yet.
+          description: The state before the change. `idle` or `occupied` for an
+            occupancy change, and null when the Admin had not been classified
+            yet; `enabled` or `disabled` for an IP allowlist change.
           example: idle
         new_state:
           type: string
           nullable: true
-          description: The state after the change. `idle` or `occupied`.
+          description: The state after the change. `idle` or `occupied` for an
+            occupancy change; `enabled` or `disabled` for an IP allowlist
+            change.
           example: occupied
         threshold_minutes:
           type: integer
@@ -13295,9 +13329,15 @@ components:
             type: object
             properties:
               before:
-                description: The value before the change.
+                description: The value before the change. It has the setting's
+                  own type, such as an integer for `occupancy_window_minutes` or
+                  a boolean for `occupancy_window_active`.
+                example: 15
               after:
-                description: The value after the change.
+                description: The value after the change. It has the setting's
+                  own type, such as an integer for `occupancy_window_minutes` or
+                  a boolean for `occupancy_window_active`.
+                example: 30
           example:
             occupancy_window_minutes:
               before: 15
@@ -16500,30 +16540,10 @@ components:
           - contact
           - company
           example: contact
-        data_type:
-          type: string
-          description: The type of data stored for this attribute.
-          enum:
-          - string
-          - integer
-          - float
-          - boolean
-          - datetime
-          - date
-          example: string
         description:
           type: string
           description: The readable description you see in the UI for the attribute.
           example: My Data Attribute Description
-        options:
-          type: array
-          description: To create list attributes. Provide a set of hashes with `value`
-            as the key of the options you want to make. `data_type` must be `string`.
-          items:
-            type: string
-          example:
-          - option1
-          - option2
         messenger_writable:
           type: boolean
           description: Can this attribute be updated by the Messenger
@@ -16532,6 +16552,38 @@ components:
       - name
       - model
       - data_type
+      oneOf:
+        - properties:
+            data_type:
+              enum:
+                - options
+            options:
+              type: array
+              description: Array of objects representing the options of the list, with `value` as the key and the option as the value. At least
+                two options are required.
+              items:
+                type: object
+                properties:
+                  value:
+                    type: string
+              example:
+                - value:
+                    1-10
+                - value:
+                    11-50
+          required:
+            - options
+          title: 'list attribute'
+        - properties:
+            data_type:
+              enum:
+                - string
+                - integer
+                - float
+                - boolean
+                - datetime
+                - date
+          title: 'other type'
     create_data_event_request:
       description: ''
       type: object
@@ -19066,7 +19118,7 @@ components:
           type: string
           format: uri
           description: The name of the Social media profile
-          example: http://twitter.com/th1sland
+          example: http://example.com/th1sland
     starting_after_paging:
       title: 'Pagination: Starting After'
       type: object
@@ -20327,19 +20379,30 @@ components:
           type: string
           description: The readable description you see in the UI for the attribute.
           example: My Data Attribute Description
-        options:
-          type: array
-          description: To create list attributes. Provide a set of hashes with `value`
-            as the key of the options you want to make. `data_type` must be `string`.
-          items:
-            type: string
-          example:
-          - option1
-          - option2
         messenger_writable:
           type: boolean
           description: Can this attribute be updated by the Messenger
           example: false
+      oneOf:
+        - properties:
+            options:
+              type: array
+              description: Array of objects representing the options of the list, with `value` as the key and the option as the value. At least
+                two options are required.
+              items:
+                type: object
+                properties:
+                  value:
+                    type: string
+              example:
+                - value:
+                    1-10
+                - value:
+                    11-50
+          required:
+            - options
+          title: 'list attribute'
+        - title: 'other type'
     update_external_page_request:
       title: Update External Page Payload
       type: object
