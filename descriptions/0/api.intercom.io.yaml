@@ -23446,6 +23446,8 @@ paths:
         You can fetch a list of all SLA rules for the workspace.
 
         The list is not paginated and is ordered by `id`, lowest first. It includes archived SLA rules; deleted SLA rules are not returned.
+
+        Requires the `read_conversations` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -23522,7 +23524,10 @@ paths:
       tags:
       - SLA Rules
       operationId: getSlaRule
-      description: You can fetch the details of a single SLA rule, including archived SLA rules.
+      description: |
+        You can fetch the details of a single SLA rule, including archived SLA rules.
+
+        Requires the `read_conversations` OAuth scope.
       responses:
         '200':
           description: SLA rule found
@@ -44239,8 +44244,8 @@ components:
         next_reply_time_in_seconds:
           type: integer
           nullable: true
-          description: The target time in seconds for each subsequent reply, or `null`
-            if no target is set.
+          description: The target time in seconds for a teammate to reply to each
+            subsequent customer message, or `null` if no target is set.
           example: 7200
         time_to_close_in_seconds:
           type: integer
@@ -44251,14 +44256,14 @@ components:
         resolution_time_in_seconds:
           type: integer
           nullable: true
-          description: The target time in seconds for resolving the conversation,
-            or `null` if no target is set.
+          description: The target time in seconds for a ticket to be resolved, or
+            `null` if no target is set.
           example: 86400
         speed_of_answer_in_seconds:
           type: integer
           nullable: true
-          description: The target speed of answer in seconds, or `null` if no target
-            is set.
+          description: The target time in seconds to answer an inbound phone call,
+            or `null` if no target is set. This timer does not pause.
           example: 120
         office_hours_schedule_id:
           type: string
