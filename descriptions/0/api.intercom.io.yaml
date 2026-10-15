@@ -23419,6 +23419,158 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/sla_rules":
+    get:
+      summary: List all SLA rules
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      tags:
+      - SLA Rules
+      operationId: listSlaRules
+      description: |
+        You can fetch a list of all SLA rules for the workspace.
+
+        The list is not paginated and is ordered by `id`, lowest first. It includes archived SLA rules; deleted SLA rules are not returned.
+
+        Requires the `read_conversations` OAuth scope.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    type: sla_rule.list
+                    data:
+                    - type: sla_rule
+                      id: '12'
+                      name: VIP customers
+                      created_at: 1717200000
+                      updated_at: 1719800000
+                      archived: false
+                      archived_at:
+                      first_reply_time_in_seconds: 3600
+                      next_reply_time_in_seconds:
+                      time_to_close_in_seconds:
+                      resolution_time_in_seconds: 86400
+                      speed_of_answer_in_seconds:
+                      office_hours_schedule_id: '123'
+                      pause_on_waiting_on_customer: true
+                      pause_on_snooze: false
+                    - type: sla_rule
+                      id: '15'
+                      name: Priority billing
+                      created_at: 1718000000
+                      updated_at: 1721000000
+                      archived: true
+                      archived_at: 1721000000
+                      first_reply_time_in_seconds: 1800
+                      next_reply_time_in_seconds: 3600
+                      time_to_close_in_seconds:
+                      resolution_time_in_seconds:
+                      speed_of_answer_in_seconds:
+                      office_hours_schedule_id:
+                      pause_on_waiting_on_customer: false
+                      pause_on_snooze: false
+              schema:
+                "$ref": "#/components/schemas/sla_rule_list"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: SLA rules are not available on the workspace's plan
+          content:
+            application/json:
+              examples:
+                SLA rules are not available on the workspace's plan:
+                  value:
+                    type: error.list
+                    request_id: 7c1e5a9d-3b42-4f68-9d05-e2a8b4c6f713
+                    errors:
+                    - code: api_plan_restricted
+                      message: SLA rules are not available on your current plan.
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/sla_rules/{id}":
+    get:
+      summary: Retrieve an SLA rule
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the SLA rule.
+        example: '12'
+        schema:
+          type: string
+      tags:
+      - SLA Rules
+      operationId: getSlaRule
+      description: |
+        You can fetch the details of a single SLA rule, including archived SLA rules.
+
+        Requires the `read_conversations` OAuth scope.
+      responses:
+        '200':
+          description: SLA rule found
+          content:
+            application/json:
+              examples:
+                SLA rule found:
+                  value:
+                    type: sla_rule
+                    id: '12'
+                    name: VIP customers
+                    created_at: 1717200000
+                    updated_at: 1719800000
+                    archived: false
+                    archived_at:
+                    first_reply_time_in_seconds: 3600
+                    next_reply_time_in_seconds:
+                    time_to_close_in_seconds:
+                    resolution_time_in_seconds: 86400
+                    speed_of_answer_in_seconds:
+                    office_hours_schedule_id: '123'
+                    pause_on_waiting_on_customer: true
+                    pause_on_snooze: false
+              schema:
+                "$ref": "#/components/schemas/sla_rule"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: SLA rules are not available on the workspace's plan
+          content:
+            application/json:
+              examples:
+                SLA rules are not available on the workspace's plan:
+                  value:
+                    type: error.list
+                    request_id: 5a2f8c14-9e63-4b07-a1d9-0c7e3b5f2a86
+                    errors:
+                    - code: api_plan_restricted
+                      message: SLA rules are not available on your current plan.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: SLA rule not found
+          content:
+            application/json:
+              examples:
+                SLA rule not found:
+                  value:
+                    type: error.list
+                    request_id: 9e4d1b72-6c35-4a80-8f29-b3d7a0e5c164
+                    errors:
+                    - code: sla_rule_not_found
+                      message: SLA rule not found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/subscription_types":
     get:
       summary: List subscription types
@@ -44033,6 +44185,108 @@ components:
                         - `missed`: If there are any missed sla_events for the conversation and no canceled events. If there’s even a single missed sla event, the status will always be missed. A missed status is not applied when the SLA expires, only the next time a teammate replies.
                         - `active`: An SLA has been applied to a conversation, but has not yet been fulfilled. SLA status is active only if there are no “hit, “missed”, or “canceled” events.
           example: hit
+    sla_rule:
+      title: SLA Rule
+      type: object
+      x-tags:
+      - SLA Rules
+      description: An SLA rule is a workspace's service-level agreement definition.
+        It sets the response-time targets a conversation is measured against.
+      properties:
+        type:
+          type: string
+          description: The type of the object - always `sla_rule`.
+          example: sla_rule
+        id:
+          type: string
+          description: The unique identifier for the SLA rule.
+          example: '12'
+        name:
+          type: string
+          description: The name of the SLA rule. It is unique within the workspace.
+          example: VIP customers
+        created_at:
+          type: integer
+          description: The time the SLA rule was created as a Unix timestamp.
+          example: 1717200000
+        updated_at:
+          type: integer
+          description: The time the SLA rule was last updated as a Unix timestamp.
+          example: 1719800000
+        archived:
+          type: boolean
+          description: Whether the SLA rule is archived.
+          example: false
+        archived_at:
+          type: integer
+          nullable: true
+          description: The time the SLA rule was archived as a Unix timestamp, or
+            `null` if it is not archived.
+          example: 1721000000
+        first_reply_time_in_seconds:
+          type: integer
+          nullable: true
+          description: The target time in seconds for the first reply, or `null`
+            if no target is set.
+          example: 3600
+        next_reply_time_in_seconds:
+          type: integer
+          nullable: true
+          description: The target time in seconds for a teammate to reply to each
+            subsequent customer message, or `null` if no target is set.
+          example: 7200
+        time_to_close_in_seconds:
+          type: integer
+          nullable: true
+          description: The target time in seconds for closing the conversation, or
+            `null` if no target is set.
+          example: 172800
+        resolution_time_in_seconds:
+          type: integer
+          nullable: true
+          description: The target time in seconds for a ticket to be resolved, or
+            `null` if no target is set.
+          example: 86400
+        speed_of_answer_in_seconds:
+          type: integer
+          nullable: true
+          description: The target time in seconds to answer an inbound phone call,
+            or `null` if no target is set. This timer does not pause.
+          example: 120
+        office_hours_schedule_id:
+          type: string
+          nullable: true
+          description: The unique identifier for the [office hours schedule](/docs/references/preview/rest-api/api.intercom.io/office-hours/getofficehoursschedule)
+            the SLA rule's timers count against. This is the SLA rule's own schedule
+            if it has one, otherwise the workspace's default schedule. It is `null`
+            if neither exists.
+          example: '123'
+        pause_on_waiting_on_customer:
+          type: boolean
+          description: Whether the SLA rule's timers pause while the conversation
+            is waiting on the customer.
+          example: true
+        pause_on_snooze:
+          type: boolean
+          description: Whether the SLA rule's timers pause while the conversation
+            is snoozed.
+          example: false
+    sla_rule_list:
+      title: SLA Rule List
+      type: object
+      x-tags:
+      - SLA Rules
+      description: A list of SLA rules for the workspace.
+      properties:
+        type:
+          type: string
+          description: The type of the object - always `sla_rule.list`.
+          example: sla_rule.list
+        data:
+          type: array
+          description: An array of SLA rules.
+          items:
+            "$ref": "#/components/schemas/sla_rule"
     snooze_conversation_request:
       title: Snooze Conversation Request
       type: object
@@ -46930,6 +47184,9 @@ tags:
   description: Everything about your Roles
 - name: Segments
   description: Everything about your Segments
+- name: SLA Rules
+  description: |
+    Read the SLA rules defined in your workspace. An SLA rule is a service-level agreement definition: the response-time targets a conversation is measured against.
 - name: Subscription Types
   description: Everything about subscription types
 - name: Switch
