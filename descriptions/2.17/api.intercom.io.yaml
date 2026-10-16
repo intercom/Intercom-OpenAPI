@@ -621,6 +621,37 @@ paths:
                       activity_description: Ciaran5 Lee changed your Initial message
                         title message from Initial message title to Eventual message
                         title.
+                    - id: 9eedfb5c-b5c2-4105-bf17-a9acedf29e8d
+                      performed_by:
+                        type: admin
+                        id: '991267464'
+                        email: admin5@email.com
+                        ip: unknown
+                      metadata:
+                        previous_state: idle
+                        new_state: occupied
+                        threshold_minutes: 15
+                        last_activity_at: 1734537195
+                        auto: true
+                      created_at: 1734537253
+                      activity_type: admin_occupancy_state_change
+                      activity_description: Ciaran5 Lee changed from idle to occupied.
+                    - id: 25023ca3-acbd-43ca-a3b5-ff30a516d017
+                      performed_by:
+                        type: admin
+                        id: '991267464'
+                        email: admin5@email.com
+                        ip: 127.0.0.1
+                      metadata:
+                        setting_type: teammate_occupancy
+                        changes:
+                          occupancy_window_minutes:
+                            before: 15
+                            after: 30
+                      created_at: 1734537253
+                      activity_type: admin_occupancy_setting_change
+                      activity_description: Ciaran5 Lee updated the occupancy window
+                        to 30 minutes.
               schema:
                 "$ref": "#/components/schemas/activity_log_list"
         '401':
@@ -739,6 +770,37 @@ paths:
                       activity_type: app_name_change
                       activity_description: Ciaran5 Lee changed your app name
                         from before to after.
+                    - id: 9eedfb5c-b5c2-4105-bf17-a9acedf29e8d
+                      performed_by:
+                        type: admin
+                        id: '991267464'
+                        email: admin5@email.com
+                        ip: unknown
+                      metadata:
+                        previous_state: idle
+                        new_state: occupied
+                        threshold_minutes: 15
+                        last_activity_at: 1734537195
+                        auto: true
+                      created_at: 1734537253
+                      activity_type: admin_occupancy_state_change
+                      activity_description: Ciaran5 Lee changed from idle to occupied.
+                    - id: 25023ca3-acbd-43ca-a3b5-ff30a516d017
+                      performed_by:
+                        type: admin
+                        id: '991267464'
+                        email: admin5@email.com
+                        ip: 127.0.0.1
+                      metadata:
+                        setting_type: teammate_occupancy
+                        changes:
+                          occupancy_window_minutes:
+                            before: 15
+                            after: 30
+                      created_at: 1734537253
+                      activity_type: admin_occupancy_setting_change
+                      activity_description: Ciaran5 Lee updated the occupancy window
+                        to 30 minutes.
               schema:
                 "$ref": "#/components/schemas/activity_log_list"
         '401':
@@ -26053,9 +26115,15 @@ components:
             type: object
             properties:
               before:
-                description: The value before the change.
+                description: The value before the change. It has the setting's
+                  own type, such as an integer for `occupancy_window_minutes` or
+                  a boolean for `occupancy_window_active`.
+                example: 15
               after:
-                description: The value after the change.
+                description: The value after the change. It has the setting's
+                  own type, such as an integer for `occupancy_window_minutes` or
+                  a boolean for `occupancy_window_active`.
+                example: 30
           example:
             occupancy_window_minutes:
               before: 15
