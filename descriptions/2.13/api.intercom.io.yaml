@@ -169,7 +169,7 @@ paths:
         in: query
         required: true
         description: The start date that you request data for. It must be formatted
-          as a UNIX timestamp.
+          as a Unix timestamp.
         example: '1677253093'
         schema:
           type: string
@@ -177,7 +177,7 @@ paths:
         in: query
         required: false
         description: The end date that you request data for. It must be formatted
-          as a UNIX timestamp.
+          as a Unix timestamp.
         example: '1677861493'
         schema:
           type: string
@@ -231,6 +231,37 @@ paths:
                       activity_description: Ciaran5 Lee changed your Initial message
                         title message from Initial message title to Eventual message
                         title.
+                    - id: 9eedfb5c-b5c2-4105-bf17-a9acedf29e8d
+                      performed_by:
+                        type: admin
+                        id: '991266219'
+                        email: admin5@email.com
+                        ip: unknown
+                      metadata:
+                        previous_state: idle
+                        new_state: occupied
+                        threshold_minutes: 15
+                        last_activity_at: 1736201340
+                        auto: true
+                      created_at: 1736201398
+                      activity_type: admin_occupancy_state_change
+                      activity_description: Ciaran5 Lee changed from idle to occupied.
+                    - id: 25023ca3-acbd-43ca-a3b5-ff30a516d017
+                      performed_by:
+                        type: admin
+                        id: '991266219'
+                        email: admin5@email.com
+                        ip: 127.0.0.1
+                      metadata:
+                        setting_type: teammate_occupancy
+                        changes:
+                          occupancy_window_minutes:
+                            before: 15
+                            after: 30
+                      created_at: 1736201398
+                      activity_type: admin_occupancy_setting_change
+                      activity_description: Ciaran5 Lee updated the occupancy window
+                        to 30 minutes.
               schema:
                 "$ref": "#/components/schemas/activity_log_list"
         '401':
@@ -2716,9 +2747,7 @@ paths:
       description: |
         Delete a single company.
 
-        This endpoint does not permanently remove the company. It archives the company record and detaches any contacts attached to it; the contacts themselves are not deleted. A `company.deleted` webhook is sent once archival completes.
-
-        The endpoint returns `200` with `"deleted": true` as soon as the request is accepted — archival is processed asynchronously.
+        The company record is kept in your workspace, but all contacts are detached. The contacts themselves are not deleted. Detaching contacts is permanent and can't be reversed. A `company.deleted` webhook is sent when the company is deleted. These changes may take some time to be reflected in your workspace.
 
         {% admonition type="warning" %}
         Third-party integrations that sync companies into Intercom (for example, Salesforce or Chargebee) will recreate any company deleted through this endpoint on their next sync. To prevent recreation, remove or filter the company at the source integration before deleting it via the API.
@@ -4843,14 +4872,14 @@ paths:
         | email_domain                       | String                         |
         | phone                              | String                         |
         | external_id                        | String                         |
-        | created_at                         | Date (UNIX Timestamp)          |
-        | signed_up_at                       | Date (UNIX Timestamp)          |
-        | updated_at                         | Date (UNIX Timestamp)          |
-        | last_seen_at                       | Date (UNIX Timestamp)          |
-        | last_contacted_at                  | Date (UNIX Timestamp)          |
-        | last_replied_at                    | Date (UNIX Timestamp)          |
-        | last_email_opened_at               | Date (UNIX Timestamp)          |
-        | last_email_clicked_at              | Date (UNIX Timestamp)          |
+        | created_at                         | Date (Unix timestamp in seconds)          |
+        | signed_up_at                       | Date (Unix timestamp in seconds)          |
+        | updated_at                         | Date (Unix timestamp in seconds)          |
+        | last_seen_at                       | Date (Unix timestamp in seconds)          |
+        | last_contacted_at                  | Date (Unix timestamp in seconds)          |
+        | last_replied_at                    | Date (Unix timestamp in seconds)          |
+        | last_email_opened_at               | Date (Unix timestamp in seconds)          |
+        | last_email_clicked_at              | Date (Unix timestamp in seconds)          |
         | language_override                  | String                         |
         | browser                            | String                         |
         | browser_language                   | String                         |
@@ -4861,14 +4890,14 @@ paths:
         | unsubscribed_from_emails           | Boolean                        |
         | marked_email_as_spam               | Boolean                        |
         | has_hard_bounced                   | Boolean                        |
-        | ios_last_seen_at                   | Date (UNIX Timestamp)          |
+        | ios_last_seen_at                   | Date (Unix timestamp in seconds)          |
         | ios_app_version                    | String                         |
         | ios_device                         | String                         |
         | ios_app_device                     | String                         |
         | ios_os_version                     | String                         |
         | ios_app_name                       | String                         |
         | ios_sdk_version                    | String                         |
-        | android_last_seen_at               | Date (UNIX Timestamp)          |
+        | android_last_seen_at               | Date (Unix timestamp in seconds)          |
         | android_app_version                | String                         |
         | android_device                     | String                         |
         | android_app_name                   | String                         |
@@ -5901,8 +5930,6 @@ paths:
                         updated_at: 1663597260
                         notified_at: 1663597260
                         assigned_to:
-                          type: contact
-                          id: '1a2b3c'
                         author:
                           type: admin
                           id: '274'
@@ -6426,8 +6453,8 @@ paths:
         | Field                                     | Type                                                                                                                                                   |
         | :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
         | id                                        | String                                                                                                                                                 |
-        | created_at                                | Date (UNIX timestamp)                                                                                                                                  |
-        | updated_at                                | Date (UNIX timestamp)                                                                                                                                  |
+        | created_at                                | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | updated_at                                | Date (Unix timestamp in seconds)                                                                                                                                  |
         | source.type                               | String<br>Accepted fields are `conversation`, `email`, `facebook`, `instagram`, `phone_call`, `phone_switch`, `push`, `sms`, `twitter` and `whatsapp`. |
         | source.id                                 | String                                                                                                                                                 |
         | source.delivered_as                       | String                                                                                                                                                 |
@@ -6446,8 +6473,8 @@ paths:
         | open                                      | Boolean                                                                                                                                                |
         | read                                      | Boolean                                                                                                                                                |
         | state                                     | String                                                                                                                                                 |
-        | waiting_since                             | Date (UNIX timestamp)                                                                                                                                  |
-        | snoozed_until                             | Date (UNIX timestamp)                                                                                                                                  |
+        | waiting_since                             | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | snoozed_until                             | Date (Unix timestamp in seconds)                                                                                                                                  |
         | tag_ids                                   | String                                                                                                                                                 |
         | priority                                  | String                                                                                                                                                 |
         | statistics.time_to_assignment             | Integer                                                                                                                                                |
@@ -6455,21 +6482,21 @@ paths:
         | statistics.time_to_first_close            | Integer                                                                                                                                                |
         | statistics.time_to_last_close             | Integer                                                                                                                                                |
         | statistics.median_time_to_reply           | Integer                                                                                                                                                |
-        | statistics.first_contact_reply_at         | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.first_assignment_at            | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.first_admin_reply_at           | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.first_close_at                 | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_assignment_at             | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_assignment_admin_reply_at | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_contact_reply_at          | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_admin_reply_at            | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_close_at                  | Date (UNIX timestamp)                                                                                                                                  |
+        | statistics.first_contact_reply_at         | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.first_assignment_at            | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.first_admin_reply_at           | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.first_close_at                 | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_assignment_at             | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_assignment_admin_reply_at | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_contact_reply_at          | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_admin_reply_at            | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | statistics.last_close_at                  | Date (Unix timestamp in seconds)                                                                                                                                  |
         | statistics.last_closed_by_id              | String                                                                                                                                                 |
         | statistics.count_reopens                  | Integer                                                                                                                                                |
         | statistics.count_assignments              | Integer                                                                                                                                                |
         | statistics.count_conversation_parts       | Integer                                                                                                                                                |
-        | conversation_rating.requested_at          | Date (UNIX timestamp)                                                                                                                                  |
-        | conversation_rating.replied_at            | Date (UNIX timestamp)                                                                                                                                  |
+        | conversation_rating.requested_at          | Date (Unix timestamp in seconds)                                                                                                                                  |
+        | conversation_rating.replied_at            | Date (Unix timestamp in seconds)                                                                                                                                  |
         | conversation_rating.score                 | Integer                                                                                                                                                |
         | conversation_rating.remark                | String                                                                                                                                                 |
         | conversation_rating.contact_id            | String                                                                                                                                                 |
@@ -6492,8 +6519,8 @@ paths:
         | !=       | All                            | Doesn't Equal                                                |
         | IN       | All                            | In  Shortcut for `OR` queries  Values most be in Array       |
         | NIN      | All                            | Not In  Shortcut for `OR !` queries  Values must be in Array |
-        | >        | Integer  Date (UNIX Timestamp) | Greater (or equal) than                                      |
-        | <       | Integer  Date (UNIX Timestamp) | Lower (or equal) than                                        |
+        | >        | Integer  Date (Unix timestamp in seconds) | Greater (or equal) than                                      |
+        | <       | Integer  Date (Unix timestamp in seconds) | Lower (or equal) than                                        |
         | ~        | String                         | Contains                                                     |
         | !~       | String                         | Doesn't Contain                                              |
         | ^        | String                         | Starts With                                                  |
@@ -7478,7 +7505,7 @@ paths:
                     - type: user
                       id: 677c55ef6abd011ad17ff541
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_participants_response"
         '404':
           description: Not found
           content:
@@ -7583,7 +7610,7 @@ paths:
                     - type: user
                       id: 677c56016abd011ad17ff54d
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_participants_response"
         '404':
           description: Contact not found
           content:
@@ -7657,26 +7684,18 @@ paths:
                 summary: Detach a contact from a group conversation
                 value:
                   admin_id: 991266492
-                  customer:
-                    intercom_user_id: 677c55f76abd011ad17ff545
               conversation_not_found:
                 summary: Conversation not found
                 value:
                   admin_id: 991266495
-                  customer:
-                    intercom_user_id: 677c56026abd011ad17ff54e
               contact_not_found:
                 summary: Contact not found
                 value:
                   admin_id: 991266498
-                  customer:
-                    intercom_user_id: 677c560c6abd011ad17ff556
               last_customer:
                 summary: Last customer
                 value:
                   admin_id: 991266501
-                  customer:
-                    intercom_user_id: 677c56176abd011ad17ff55e
   "/conversations/redact":
     post:
       summary: Redact a conversation part
@@ -8093,7 +8112,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
-      operationId: deleteCustomObjectInstancesById
+      operationId: deleteCustomObjectInstancesByExternalId
       description: Delete a single Custom Object instance by external_id.
       responses:
         '200':
@@ -8178,7 +8197,7 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
-      operationId: deleteCustomObjectInstancesByExternalId
+      operationId: deleteCustomObjectInstancesById
       description: Delete a single Custom Object instance using the Intercom defined
         id.
       responses:
@@ -9129,7 +9148,7 @@ paths:
         the Message model that has been created.\n\n> \U0001F6A7 Retrieving Associated
         Conversations\n>\n> As this is a message, there will be no conversation present
         until the contact responds. Once they do, you will have to search for a contact's
-        conversations with the id of the message.\n"
+        conversations with the id of the message.\n\n{% admonition type=\"warning\" name=\"Messages from contacts\" %}\n`from` should be an admin. A request with a user or lead as `from` is not rejected: it creates a conversation initiated by that contact, as the Create a conversation endpoint (`POST /conversations`) does, and the `to`, `cc` and `bcc` fields are ignored. To create a conversation initiated by a contact, use `POST /conversations`.\n{% /admonition %}\n"
       responses:
         '200':
           description: admin message created
@@ -9245,7 +9264,7 @@ paths:
                     type: user
                     id: 677c56646abd011ad17ff584
                   body: heyy
-                  referer: https://twitter.com/bob
+                  referer: https://example.com/bob
               lead_message_created:
                 summary: lead message created
                 value:
@@ -9253,7 +9272,7 @@ paths:
                     type: lead
                     id: 677c56666abd011ad17ff585
                   body: heyy
-                  referer: https://twitter.com/bob
+                  referer: https://example.com/bob
               admin_message_created:
                 summary: admin message created
                 value:
@@ -11485,7 +11504,7 @@ paths:
       - Tickets
       responses:
         '400':
-          description: User reply
+          description: Bad Request
           content:
             application/json:
               examples:
@@ -11496,6 +11515,21 @@ paths:
                     errors:
                     - code: parameter_mismatch
                       message: User replies are not allowed on Backoffice tickets
+                Admin comment on a back-office ticket:
+                  value:
+                    type: error.list
+                    request_id: 7a1c9f02-5d3e-4b8a-9c21-6f0d84e5b713
+                    errors:
+                    - code: parameter_mismatch
+                      message: Comments are not allowed on Backoffice tickets not
+                        shared with user
+                Admin comment on a tracker ticket:
+                  value:
+                    type: error.list
+                    request_id: c4e2a980-31bf-4d76-8a05-2e9cb17f4d6a
+                    errors:
+                    - code: parameter_mismatch
+                      message: Comments are not allowed on Tracker tickets
               schema:
                 "$ref": "#/components/schemas/error"
         '200':
@@ -12539,8 +12573,8 @@ paths:
         | Field                                     | Type                                                                                     |
         | :---------------------------------------- | :--------------------------------------------------------------------------------------- |
         | id                                        | String                                                                                   |
-        | created_at                                | Date (UNIX timestamp)                                                                    |
-        | updated_at                                | Date (UNIX timestamp)                                                                    |
+        | created_at                                | Date (Unix timestamp in seconds)                                                                    |
+        | updated_at                                | Date (Unix timestamp in seconds)                                                                    |
         | title                           | String                                                                                   |
         | description                     | String                                                                                   |
         | category                                  | String                                                                                   |
@@ -12551,8 +12585,8 @@ paths:
         | team_assignee_id                          | String                                                                                   |
         | open                                      | Boolean                                                                                  |
         | state                                     | String                                                                                   |
-        | snoozed_until                             | Date (UNIX timestamp)                                                                    |
-        | ticket_attribute.{id}                     | String or Boolean or Date (UNIX timestamp) or Float or Integer                           |
+        | snoozed_until                             | Date (Unix timestamp in seconds)                                                                    |
+        | ticket_attribute.{id}                     | String or Boolean or Date (Unix timestamp in seconds) or Float or Integer                           |
 
         ### Accepted Operators
 
@@ -12568,8 +12602,8 @@ paths:
         | !=       | All                            | Doesn't Equal                                                |
         | IN       | All                            | In  Shortcut for `OR` queries  Values most be in Array       |
         | NIN      | All                            | Not In  Shortcut for `OR !` queries  Values must be in Array |
-        | >        | Integer  Date (UNIX Timestamp) | Greater (or equal) than                                      |
-        | <       | Integer  Date (UNIX Timestamp) | Lower (or equal) than                                        |
+        | >        | Integer  Date (Unix timestamp in seconds) | Greater (or equal) than                                      |
+        | <       | Integer  Date (Unix timestamp in seconds) | Lower (or equal) than                                        |
         | ~        | String                         | Contains                                                     |
         | !~       | String                         | Doesn't Contain                                              |
         | ^        | String                         | Starts With                                                  |
@@ -13251,13 +13285,16 @@ components:
         previous_state:
           type: string
           nullable: true
-          description: The state before the change. `idle` or `occupied`, and null
-            when the Admin had not been classified yet.
+          description: The state before the change. `idle` or `occupied` for an
+            occupancy change, and null when the Admin had not been classified
+            yet; `enabled` or `disabled` for an IP allowlist change.
           example: idle
         new_state:
           type: string
           nullable: true
-          description: The state after the change. `idle` or `occupied`.
+          description: The state after the change. `idle` or `occupied` for an
+            occupancy change; `enabled` or `disabled` for an IP allowlist
+            change.
           example: occupied
         threshold_minutes:
           type: integer
@@ -13292,9 +13329,15 @@ components:
             type: object
             properties:
               before:
-                description: The value before the change.
+                description: The value before the change. It has the setting's
+                  own type, such as an integer for `occupancy_window_minutes` or
+                  a boolean for `occupancy_window_active`.
+                example: 15
               after:
-                description: The value after the change.
+                description: The value after the change. It has the setting's
+                  own type, such as an integer for `occupancy_window_minutes` or
+                  a boolean for `occupancy_window_active`.
+                example: 30
           example:
             occupancy_window_minutes:
               before: 15
@@ -13469,6 +13512,9 @@ components:
       properties:
         message_type:
           type: string
+          description: The type of reply. Tracker tickets and back-office tickets
+            that are not shared with the customer do not support `comment`; use
+            `note` instead.
           enum:
           - comment
           - note
@@ -14304,6 +14350,34 @@ components:
                 "$ref": "#/components/schemas/customer_request"
             required:
             - email
+    conversation_participants_response:
+      title: Conversation Participants Response
+      type: object
+      description: The participants of the conversation, returned after attaching
+        or detaching a contact
+      properties:
+        customers:
+          type: array
+          description: The conversation participants after the change
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: The role of the participant. Can be "user" or "lead"
+                example: 'user'
+              id:
+                type: string
+                description: The unique identifier for the participant
+                example: '6762f1a61bb69f9f2193bbd8'
+            required:
+            - type
+            - id
+          example:
+          - type: user
+            id: '6762f1a61bb69f9f2193bbd8'
+      required:
+      - customers
     close_conversation_request:
       title: Close Conversation Request
       type: object
@@ -15801,8 +15875,10 @@ components:
         assigned_to:
           "$ref": "#/components/schemas/reference"
           nullable: true
-          description: The id of the admin that was assigned the conversation by this
-            conversation_part (null if there has been no change in assignment.)
+          description: The assignee this conversation_part assigned the conversation to, as
+            a reference whose `type` is `admin`, `team` or `bot`. When the part unassigned
+            the conversation, `type` is `nobody_admin` and `id` is `null`. Null when the
+            part did not change the assignment, or when the assignee has since been deleted.
         author:
           "$ref": "#/components/schemas/conversation_part_author"
         attachments:
@@ -15863,12 +15939,13 @@ components:
         name:
           type: string
           nullable: true
-          description: The name of the author
+          description: The name of the author. `null` if the author is a contact that has since been archived or deleted.
           example: Operator
         email:
           type: string
           format: email
-          description: The email of the author
+          nullable: true
+          description: The email of the author. `null` if the author is a contact that has since been archived or deleted.
           example: operator+abcd1234@intercom.io
     conversation_parts:
       title: Conversation Parts
@@ -16463,30 +16540,10 @@ components:
           - contact
           - company
           example: contact
-        data_type:
-          type: string
-          description: The type of data stored for this attribute.
-          enum:
-          - string
-          - integer
-          - float
-          - boolean
-          - datetime
-          - date
-          example: string
         description:
           type: string
           description: The readable description you see in the UI for the attribute.
           example: My Data Attribute Description
-        options:
-          type: array
-          description: To create list attributes. Provide a set of hashes with `value`
-            as the key of the options you want to make. `data_type` must be `string`.
-          items:
-            type: string
-          example:
-          - option1
-          - option2
         messenger_writable:
           type: boolean
           description: Can this attribute be updated by the Messenger
@@ -16495,6 +16552,38 @@ components:
       - name
       - model
       - data_type
+      oneOf:
+        - properties:
+            data_type:
+              enum:
+                - options
+            options:
+              type: array
+              description: Array of objects representing the options of the list, with `value` as the key and the option as the value. At least
+                two options are required.
+              items:
+                type: object
+                properties:
+                  value:
+                    type: string
+              example:
+                - value:
+                    1-10
+                - value:
+                    11-50
+          required:
+            - options
+          title: 'list attribute'
+        - properties:
+            data_type:
+              enum:
+                - string
+                - integer
+                - float
+                - boolean
+                - datetime
+                - date
+          title: 'other type'
     create_data_event_request:
       description: ''
       type: object
@@ -19029,7 +19118,7 @@ components:
           type: string
           format: uri
           description: The name of the Social media profile
-          example: http://twitter.com/th1sland
+          example: http://example.com/th1sland
     starting_after_paging:
       title: 'Pagination: Starting After'
       type: object
@@ -19516,8 +19605,10 @@ components:
         assigned_to:
           "$ref": "#/components/schemas/reference"
           nullable: true
-          description: The id of the admin that was assigned the ticket by this ticket_part
-            (null if there has been no change in assignment.)
+          description: The assignee this ticket_part assigned the ticket to, as a reference
+            whose `type` is `admin`, `team` or `bot`. When the part unassigned the ticket,
+            `type` is `nobody_admin` and `id` is `null`. Null when the part did not change
+            the assignment, or when the assignee has since been deleted.
         author:
           "$ref": "#/components/schemas/ticket_part_author"
         attachments:
@@ -20288,19 +20379,30 @@ components:
           type: string
           description: The readable description you see in the UI for the attribute.
           example: My Data Attribute Description
-        options:
-          type: array
-          description: To create list attributes. Provide a set of hashes with `value`
-            as the key of the options you want to make. `data_type` must be `string`.
-          items:
-            type: string
-          example:
-          - option1
-          - option2
         messenger_writable:
           type: boolean
           description: Can this attribute be updated by the Messenger
           example: false
+      oneOf:
+        - properties:
+            options:
+              type: array
+              description: Array of objects representing the options of the list, with `value` as the key and the option as the value. At least
+                two options are required.
+              items:
+                type: object
+                properties:
+                  value:
+                    type: string
+              example:
+                - value:
+                    1-10
+                - value:
+                    11-50
+          required:
+            - options
+          title: 'list attribute'
+        - title: 'other type'
     update_external_page_request:
       title: Update External Page Payload
       type: object
