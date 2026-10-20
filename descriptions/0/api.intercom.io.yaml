@@ -1084,6 +1084,9 @@ paths:
                       created_at: 1734537269
                       updated_at: 1734537269
                       last_ingested_at: 1734537269
+                      audience_ids:
+                      - 1
+                      - 2
                     - id: '18'
                       type: external_page
                       title: My External Content
@@ -1173,6 +1176,9 @@ paths:
                     created_at: 1734537273
                     updated_at: 1734537274
                     last_ingested_at: 1734537274
+                    audience_ids:
+                    - 1
+                    - 2
               schema:
                 "$ref": "#/components/schemas/external_page"
         '401':
@@ -1187,6 +1193,19 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Unknown audience IDs
+          content:
+            application/json:
+              examples:
+                Unknown audience IDs:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: parameter_invalid
+                      message: 'audience_ids contains unknown audience IDs: 999'
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -1204,6 +1223,9 @@ paths:
                   source_id: 44
                   title: Test
                   url: https://www.example.com
+                  audience_ids:
+                  - 1
+                  - 2
   "/ai/external_pages/{id}":
     parameters:
     - name: id
@@ -1247,6 +1269,9 @@ paths:
                     created_at: 1734537276
                     updated_at: 1734537276
                     last_ingested_at: 1734537276
+                    audience_ids:
+                    - 1
+                    - 2
               schema:
                 "$ref": "#/components/schemas/external_page"
         '401':
@@ -1297,6 +1322,9 @@ paths:
                     created_at: 1734537278
                     updated_at: 1734537278
                     last_ingested_at: 1734537278
+                    audience_ids:
+                    - 1
+                    - 2
               schema:
                 "$ref": "#/components/schemas/external_page"
         '401':
@@ -1348,6 +1376,9 @@ paths:
                     created_at: 1734537280
                     updated_at: 1734537281
                     last_ingested_at: 1734537281
+                    audience_ids:
+                    - 1
+                    - 2
               schema:
                 "$ref": "#/components/schemas/external_page"
         '401':
@@ -1362,6 +1393,19 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Unknown audience IDs
+          content:
+            application/json:
+              examples:
+                Unknown audience IDs:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: parameter_invalid
+                      message: 'audience_ids contains unknown audience IDs: 999'
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -1379,6 +1423,9 @@ paths:
                   source_id: 47
                   title: Test
                   url: https://www.example.com
+                  audience_ids:
+                  - 1
+                  - 2
   "/articles":
     get:
       summary: List all articles
@@ -4743,7 +4790,7 @@ paths:
                       total_pages: 1
                     total_count: 1
                     data:
-                    - id: '39'
+                    - id: 39
                       title: Thanks for everything
                       body: Body of the Article
                       body_markdown: "Body of the Article\n"
@@ -4791,7 +4838,7 @@ paths:
               examples:
                 internal article created:
                   value:
-                    id: '42'
+                    id: 42
                     title: Thanks for everything
                     body: Body of the Article
                     body_markdown: "Body of the Article\n"
@@ -4898,7 +4945,7 @@ paths:
               examples:
                 Internal article found:
                   value:
-                    id: '45'
+                    id: 45
                     body: Body of the Article
                     body_markdown: "Body of the Article\n"
                     owner_id: 991266252
@@ -4967,7 +5014,7 @@ paths:
               examples:
                 successful:
                   value:
-                    id: '48'
+                    id: 48
                     body: Body of the Article
                     body_markdown: "Body of the Article\n"
                     owner_id: 991266252
@@ -5315,14 +5362,13 @@ paths:
                   value:
                     type: list
                     total_count: 1
-                    data:
-                      internal_articles:
-                      - id: '55'
-                        body: Body of the Article
-                        owner_id: 991266252
-                        author_id: 991266252
-                        locale: en
-                        folder_id: 123
+                    internal_articles:
+                    - id: 55
+                      body: Body of the Article
+                      owner_id: 991266252
+                      author_id: 991266252
+                      locale: en
+                      folder_id: 123
                     pages:
                       type: pages
                       page: 1
@@ -5673,6 +5719,119 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/ip_allowlist":
+    get:
+      summary: Get IP allowlist settings
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - IP Allowlist
+      operationId: getIpAllowlist
+      description: Retrieve the current IP allowlist configuration for the workspace.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful:
+                  value:
+                    type: ip_allowlist
+                    enabled: true
+                    ip_allowlist:
+                    - "192.168.1.0/24"
+                    - "10.0.0.1"
+              schema:
+                "$ref": "#/components/schemas/ip_allowlist"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update IP allowlist settings
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - IP Allowlist
+      operationId: updateIpAllowlist
+      description: |
+        Update the IP allowlist configuration for the workspace.
+
+        {% admonition type="warning" name="Lockout Protection" %}
+          The API will reject updates that would lock out the caller's IP address. Ensure your current IP is included in the allowlist when enabling the feature.
+        {% /admonition %}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              examples:
+                Successful:
+                  value:
+                    type: ip_allowlist
+                    enabled: true
+                    ip_allowlist:
+                    - "192.168.1.0/24"
+                    - "10.0.0.1"
+              schema:
+                "$ref": "#/components/schemas/ip_allowlist"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Lockout Protection:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: parameter_invalid
+                      message: Your IP (1.2.3.4) is not on the allowlist. Saving would lock you out of this workspace.
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ip_allowlist"
+            examples:
+              successful:
+                summary: Enable IP allowlist
+                value:
+                  enabled: true
+                  ip_allowlist:
+                  - "192.168.1.0/24"
+                  - "10.0.0.1"
   "/companies":
     post:
       summary: Create or Update a company
@@ -5844,7 +6003,7 @@ paths:
           content:
             application/json:
               examples:
-                Successful:
+                List of companies:
                   value:
                     type: list
                     data:
@@ -5880,8 +6039,37 @@ paths:
                       per_page: 15
                       total_pages: 1
                     total_count: 1
+                Single company (company_id or name):
+                  value:
+                    type: company
+                    company_id: '1'
+                    id: 6762f07f1bb69f9f2193baf5
+                    app_id: this_is_an_id159_that_should_be_at_least_
+                    name: company1
+                    remote_created_at: 1734537343
+                    created_at: 1734537343
+                    updated_at: 1734537343
+                    monthly_spend: 0
+                    session_count: 0
+                    user_count: 1
+                    tags:
+                      type: tag.list
+                      tags: []
+                    segments:
+                      type: segment.list
+                      segments: []
+                    notes:
+                      type: note.list
+                      data: []
+                      url: "/companies/6762f0761bb69f9f2193bae2/notes"
+                      total_count: 0
+                      has_more: false
+                    plan: {}
+                    custom_attributes: {}
               schema:
-                "$ref": "#/components/schemas/company_list"
+                oneOf:
+                - "$ref": "#/components/schemas/company"
+                - "$ref": "#/components/schemas/company_list"
         '404':
           description: Company Not Found
           content:
@@ -6015,6 +6203,17 @@ paths:
         {% admonition type="warning" name="Using `company_id`" %}
           When updating a company it is not possible to update `company_id`. This can only be set once upon creation of the company.
         {% /admonition %}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_company_request"
+            examples:
+              successful:
+                summary: Successful
+                value:
+                  name: my company
+                  website: http://www.mycompany.com/
       responses:
         '200':
           description: Successful
@@ -8938,6 +9137,7 @@ paths:
                     email_verified: false
                     phone:
                     formatted_phone:
+                    whatsapp_number:
                     name: joe bloggs
                     avatar:
                     owner_id:
@@ -9028,6 +9228,7 @@ paths:
                     email_verified: false
                     phone:
                     formatted_phone:
+                    whatsapp_number:
                     name: joe bloggs
                     avatar:
                     owner_id:
@@ -9223,6 +9424,7 @@ paths:
                     email_verified: false
                     phone:
                     formatted_phone:
+                    whatsapp_number:
                     name: Joe Bloggs
                     avatar:
                     owner_id:
@@ -9438,6 +9640,7 @@ paths:
                     email_verified: false
                     phone:
                     formatted_phone:
+                    whatsapp_number:
                     name: Joe Bloggs
                     avatar:
                     owner_id:
@@ -10079,6 +10282,7 @@ paths:
                     email_verified: false
                     phone:
                     formatted_phone:
+                    whatsapp_number:
                     name:
                     avatar:
                     owner_id:
@@ -10241,6 +10445,7 @@ paths:
                     email_verified: false
                     phone:
                     formatted_phone:
+                    whatsapp_number:
                     name: Joe Bloggs
                     avatar:
                     owner_id:
@@ -11717,8 +11922,8 @@ paths:
                       - type: paragraph
                         text: Navigate to Settings > Security > Reset password.
                       body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
-                      chatbot_availability: 1
-                      copilot_availability: 1
+                      chatbot_availability: 2
+                      copilot_availability: 2
                       ai_chatbot_availability: true
                       ai_copilot_availability: true
                       ai_sales_agent_availability: true
@@ -11777,8 +11982,8 @@ paths:
                     - type: paragraph
                       text: Navigate to Settings > Security > Reset password.
                     body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
-                    chatbot_availability: 1
-                    copilot_availability: 1
+                    chatbot_availability: 2
+                    copilot_availability: 2
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
@@ -11850,8 +12055,8 @@ paths:
                     - type: paragraph
                       text: Navigate to Settings > Security > Reset password.
                     body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
-                    chatbot_availability: 1
-                    copilot_availability: 1
+                    chatbot_availability: 2
+                    copilot_availability: 2
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
@@ -11925,8 +12130,8 @@ paths:
                     - type: paragraph
                       text: Go to Settings > Security > Reset password and follow the steps.
                     body_markdown: "# How to reset your password (updated)\n\nGo to Settings > Security > Reset password and follow the steps.\n"
-                    chatbot_availability: 1
-                    copilot_availability: 1
+                    chatbot_availability: 2
+                    copilot_availability: 2
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
@@ -13034,7 +13239,6 @@ paths:
                         data: []
                         total_count: 0
                         has_more: false
-                      ai_topics:
                       ai_agent:
                       ai_agent_participated: false
                       channel:
@@ -13397,7 +13601,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     channel:
@@ -13656,7 +13859,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     channel:
@@ -14060,7 +14262,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     channel:
@@ -14170,7 +14371,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     channel:
@@ -14529,7 +14729,6 @@ paths:
                         data: []
                         total_count: 0
                         has_more: false
-                      ai_topics:
                       ai_agent:
                       ai_agent_participated: false
                       channel:
@@ -14713,7 +14912,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     channel:
@@ -14793,7 +14991,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     channel:
@@ -14885,7 +15082,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     channel:
@@ -14968,7 +15164,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     channel:
@@ -15176,7 +15371,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     channel:
@@ -15256,7 +15450,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     channel:
@@ -15336,7 +15529,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     channel:
@@ -15416,7 +15608,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     channel:
@@ -16335,7 +16526,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     channel:
@@ -16497,7 +16687,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     conversation_parts:
@@ -17815,7 +18004,7 @@ paths:
       description: Fetch a Custom Object Instance by id.
       responses:
         '200':
-          description: successful
+          description: "successful. If the custom object type exists but no instance matches, the response is still `200` with `found: false`."
           content:
             application/json:
               examples:
@@ -17831,12 +18020,26 @@ paths:
                     external_updated_at:
                     created_at: 1734537750
                     updated_at: 1734537750
+                not_found_instance:
+                  summary: Instance not found
+                  value:
+                    id: '999999'
+                    type: Order
+                    custom_attributes: {}
+                    external_id:
+                    external_created_at:
+                    external_updated_at:
+                    created_at:
+                    updated_at:
+                    found: false
               schema:
-                "$ref": "#/components/schemas/custom_object_instance"
+                oneOf:
+                - "$ref": "#/components/schemas/custom_object_instance"
+                - "$ref": "#/components/schemas/custom_object_instance_not_found"
         '401':
           $ref: "#/components/responses/Unauthorized"
         '404':
-          $ref: "#/components/responses/ObjectNotFound"
+          $ref: "#/components/responses/TypeNotFound"
     delete:
       summary: Delete a Custom Object Instance by ID
       parameters:
@@ -20895,7 +21098,7 @@ paths:
       - name: summary
         in: query
         required: false
-        description: summary flag
+        description: Set to `true` (or `1`) to return an event summary (`event.summary`) instead of the list of events. Omit for the paginated event list (`event.list`).
         schema:
           type: boolean
       tags:
@@ -20919,17 +21122,32 @@ paths:
           content:
             application/json:
               examples:
-                Successful response:
+                Summary (summary=true):
                   value:
                     type: event.summary
                     events: []
-                    pages:
-                      next: http://api.intercom.test/events?next page
                     email: user26@email.com
                     intercom_user_id: 6762f22b1bb69f9f2193bc12
                     user_id: 3ecf64d0-9ed1-4e9f-88e1-da7d6e6782f3
+                Event list (default):
+                  value:
+                    type: event.list
+                    events:
+                    - type: event
+                      id: 2fc69404-91a6-11e7-be05-4fc6091e296e
+                      created_at: 1389913941
+                      event_name: invited-friend
+                      user_id: '314159'
+                      email: frodo.baggins@example.com
+                      intercom_user_id: 63a0979a5eeebeaf28dd56ba
+                      metadata: {}
+                    pages:
+                      next: https://api.intercom.io/events?per_page=1&before=1389913941064&intercom_user_id=63a0979a5eeebeaf28dd56ba&type=user
+                      since: https://api.intercom.io/events?intercom_user_id=63a0979a5eeebeaf28dd56ba&type=user&since=1389913941065
               schema:
-                "$ref": "#/components/schemas/data_event_summary"
+                oneOf:
+                - "$ref": "#/components/schemas/data_event_list"
+                - "$ref": "#/components/schemas/data_event_summary"
         '401':
           description: Unauthorized
           content:
@@ -27720,6 +27938,7 @@ paths:
                     email_verified: false
                     phone:
                     formatted_phone:
+                    whatsapp_number:
                     name:
                     avatar:
                     owner_id:
@@ -30634,57 +30853,6 @@ components:
           example:
             email: user@example.com
             company.name: Acme Inc
-    ai_subtopic:
-      title: AI Subtopic
-      type: object
-      description: An AI-generated subtopic under a topic.
-      properties:
-        type:
-          type: string
-          description: Always ai_subtopic.
-          example: ai_subtopic
-        name:
-          type: string
-          description: The name of the subtopic.
-          example: Payment Issues
-        id:
-          type: integer
-          description: The ID of the subtopic.
-          example: 42
-    ai_topic:
-      title: AI Topic
-      type: object
-      description: An AI-generated topic assigned to the conversation.
-      properties:
-        type:
-          type: string
-          description: Always ai_topic.
-          example: ai_topic
-        topic_name:
-          type: string
-          description: The name of the AI-generated topic.
-          example: Billing
-        subtopics:
-          type: array
-          description: The subtopics under this topic.
-          items:
-            $ref: '#/components/schemas/ai_subtopic'
-    ai_topics:
-      title: AI Topics
-      type: object
-      x-tags:
-      - AI Topics
-      description: AI-generated topics and subtopics for the conversation.
-      properties:
-        type:
-          type: string
-          description: Always ai_topics.
-          example: ai_topics
-        topics:
-          type: array
-          description: The list of AI-generated topics for this conversation.
-          items:
-            $ref: '#/components/schemas/ai_topic'
     app:
       title: App
       type: object
@@ -31260,17 +31428,10 @@ components:
       - Internal Articles
       description: The data returned about your internal articles when you list them.
       properties:
-        type:
-          type: string
-          description: The type of object - `internal_article`.
-          enum:
-          - internal_article
-          default: internal_article
-          example: internal_article
         id:
-          type: string
+          type: integer
           description: The unique identifier for the article which is given by Intercom.
-          example: '6871119'
+          example: 6871119
         title:
           type: string
           description: The title of the article.
@@ -31438,15 +31599,11 @@ components:
           type: integer
           description: The total number of Internal Articles matching the search query
           example: 5
-        data:
-          type: object
-          description: An object containing the results of the search.
-          properties:
-            internal_articles:
-              type: array
-              description: An array of Internal Article objects
-              items:
-                "$ref": "#/components/schemas/internal_article"
+        internal_articles:
+          type: array
+          description: An array of Internal Article objects
+          items:
+            "$ref": "#/components/schemas/internal_article"
         pages:
           "$ref": "#/components/schemas/cursor_pages"
     article_statistics:
@@ -32178,14 +32335,15 @@ components:
           type: boolean
           description: "Whether the status reason has been soft deleted"
           example: false
-        created_at:
-          type: integer
-          description: "The Unix timestamp when the status reason was created"
-          example: 1734537243
-        updated_at:
-          type: integer
-          description: "The Unix timestamp when the status reason was last updated"
-          example: 1734537243
+        associated_to_phone_status:
+          type: string
+          nullable: true
+          description: "The phone status this away status reason is configured for, or null if it is not associated with one."
+          enum:
+          - wrap_up
+          - on_a_call
+          - coaching
+          example: wrap_up
     away_status_reason_list:
       title: Away Status Reasons
       type: object
@@ -33302,6 +33460,11 @@ components:
           nullable: true
           description: The contacts phone number normalized to the E164 format
           example: "+1123456789"
+        whatsapp_number:
+          type: string
+          nullable: true
+          description: The contact's WhatsApp number. It is read-only; sending it when creating or updating a contact has no effect.
+          example: "+34666666666"
         name:
           type: string
           nullable: true
@@ -34874,15 +35037,13 @@ components:
         chatbot_availability:
           type: integer
           deprecated: true
-          description: Deprecated. Use ai_chatbot_availability instead. Whether this
-            snippet is available for Fin (1 = on, 0 = off).
-          example: 1
+          description: Deprecated. Use ai_chatbot_availability instead.
+          example: 2
         copilot_availability:
           type: integer
           deprecated: true
-          description: Deprecated. Use ai_copilot_availability instead. Whether this
-            snippet is available for Copilot (1 = on, 0 = off).
-          example: 1
+          description: Deprecated. Use ai_copilot_availability instead.
+          example: 2
         ai_chatbot_availability:
           type: boolean
           description: Whether the content snippet is available for AI Chatbot (Fin).
@@ -34996,20 +35157,20 @@ components:
         ai_chatbot_availability:
           type: boolean
           description: Whether the content snippet should be available for AI Chatbot
-            (Fin). Defaults to false.
-          default: false
+            (Fin). Defaults to true.
+          default: true
           example: true
         ai_copilot_availability:
           type: boolean
           description: Whether the content snippet should be available for AI Copilot.
-            Defaults to false.
-          default: false
+            Defaults to true.
+          default: true
           example: true
         ai_sales_agent_availability:
           type: boolean
           description: Whether the content snippet should be available for AI Sales
-            Agent. Defaults to false.
-          default: false
+            Agent. Defaults to true.
+          default: true
           example: true
     content_snippet_update_request:
       title: Update Content Snippet Request
@@ -35575,8 +35736,6 @@ components:
           "$ref": "#/components/schemas/conversation_parts"
         linked_objects:
           "$ref": "#/components/schemas/linked_object_list"
-        ai_topics:
-          "$ref": "#/components/schemas/ai_topics"
         ai_agent_participated:
           type: boolean
           description: Indicates whether the AI Agent participated in the conversation.
@@ -36629,7 +36788,7 @@ components:
           type: string
           description: The type of the object - `admin.list`.
           example: admin.list
-        teammates:
+        admins:
           type: array
           description: The list of teammates who participated in the conversation
             (wrote at least one conversation part).
@@ -37278,33 +37437,50 @@ components:
           type: string
           description: Your identifier for the user.
           example: '314159'
+        id:
+          type: string
+          description: The Intercom defined id of the user. Takes precedence over `user_id` and `email`.
+          example: 63a0979a5eeebeaf28dd56ba
+        email:
+          type: string
+          description: The user's email address. Only used when neither `id` nor `user_id` is supplied.
+          example: frodo.baggins@example.com
         event_summaries:
-          type: object
+          type: array
           description: A list of event summaries for the user. Each event summary
             should contain the event name, the time the event occurred, and the number
             of times the event occurred. The event name should be a past tense 'verb-noun'
             combination, to improve readability, for example `updated-plan`.
-          properties:
-            event_name:
-              type: string
-              description: The name of the event that occurred. A good event name
-                is typically a past tense 'verb-noun' combination, to improve readability,
-                for example `updated-plan`.
-              example: invited-friend
-            count:
-              type: integer
-              description: The number of times the event occurred.
-              example: 1
-            first:
-              type: integer
-              format: date-time
-              description: The first time the event was sent
-              example: 1671028894
-            last:
-              type: integer
-              format: date-time
-              description: The last time the event was sent
-              example: 1671028894
+          items:
+            type: object
+            required:
+            - event_name
+            - count
+            - first
+            - last
+            properties:
+              event_name:
+                type: string
+                description: The name of the event that occurred. A good event name
+                  is typically a past tense 'verb-noun' combination, to improve readability,
+                  for example `updated-plan`.
+                example: invited-friend
+              count:
+                type: integer
+                description: The number of times the event occurred.
+                example: 1
+              first:
+                type: integer
+                format: date-time
+                description: The first time the event was sent
+                example: 1671028894
+              last:
+                type: integer
+                format: date-time
+                description: The last time the event was sent
+                example: 1671028894
+      required:
+      - event_summaries
     create_data_exports_request:
       description: Request for creating a data export
       type: object
@@ -37382,6 +37558,20 @@ components:
           description: The identifier for the external page which was given by the
             source. Must be unique for the source.
           example: '5678'
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to target this external page to for Fin AI Agent.
+            Omitting the field preserves any default audience segments inherited from the parent content import source.
+            Pass an explicit array to override inherited defaults with the given set.
+            Pass `[]` to clear all audience memberships (even if the source has defaults).
+            Unknown audience IDs return a `404` error with no partial commit.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
       required:
       - title
       - html
@@ -37569,6 +37759,54 @@ components:
           type: integer
           description: The time the company was created by you.
           example: 1394531169
+        monthly_spend:
+          type: integer
+          description: How much revenue the company generates for your business. Note
+            that this will truncate floats. i.e. it only allow for whole integers,
+            155.98 will be truncated to 155. Note that this has an upper limit of
+            2**31-1 or 2147483647..
+          example: 1000
+        update_last_request_at:
+          type: boolean
+          description: Set to true to update the company's last seen time to now.
+          example: true
+    update_company_request:
+      type: object
+      title: Update Company Request Payload
+      description: You can update a Company
+      nullable: true
+      properties:
+        name:
+          type: string
+          description: The name of the Company
+          example: Intercom
+        plan:
+          type: string
+          description: The name of the plan you have associated with the company.
+          example: Enterprise
+        size:
+          type: integer
+          description: The number of employees in this company.
+          example: '100'
+        website:
+          type: string
+          description: The URL for this company's website. Please note that the value
+            specified here is not validated. Accepts any string.
+          example: https://www.example.com
+        industry:
+          type: string
+          description: The industry that this company operates in.
+          example: Manufacturing
+        custom_attributes:
+          type: object
+          description: A hash of key/value pairs containing any other data about the
+            company you want Intercom to store.
+          additionalProperties:
+            type: string
+          example:
+            paid_subscriber: true
+            monthly_spend: 155.5
+            team_mates: 9
         monthly_spend:
           type: integer
           description: How much revenue the company generates for your business. Note
@@ -38263,6 +38501,44 @@ components:
             reference attribute on the parent object.
           items:
             "$ref": "#/components/schemas/custom_object_instance"
+    custom_object_instance_not_found:
+      title: Custom Object Instance Not Found
+      type: object
+      description: Returned with HTTP 200 (not 404) when the custom object type exists but no instance matches the requested id or external_id.
+      required:
+      - found
+      properties:
+        found:
+          type: boolean
+          description: Always `false`. Only present on this response.
+          example: false
+        id:
+          type: string
+          nullable: true
+          description: The requested id, echoed back. Null when looked up by `external_id`.
+        external_id:
+          type: string
+          nullable: true
+          description: The requested external_id, echoed back. Null when looked up by `id`.
+        type:
+          type: string
+          description: The identifier of the custom object type that was queried.
+          example: Order
+        custom_attributes:
+          type: object
+          description: Always an empty object.
+        external_created_at:
+          type: integer
+          nullable: true
+        external_updated_at:
+          type: integer
+          nullable: true
+        created_at:
+          type: integer
+          nullable: true
+        updated_at:
+          type: integer
+          nullable: true
     custom_object_instances_paginated_list:
       title: Custom Object Instances
       type: object
@@ -41434,6 +41710,17 @@ components:
           format: date-time
           description: The time when the external page was last ingested.
           example: 1672928610
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs this external page is targeted to for Fin AI Agent.
+            Empty array means no audience targeting is set.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
       required:
       - id
       - type
@@ -42685,6 +42972,31 @@ components:
           example: k3x9q2m7pa
       required:
       - name
+    ip_allowlist:
+      title: IP Allowlist
+      type: object
+      description: IP allowlist settings for the workspace.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `ip_allowlist`.
+          example: ip_allowlist
+        enabled:
+          type: boolean
+          description: Whether the IP allowlist is enabled for the workspace.
+          example: true
+        ip_allowlist:
+          type: array
+          description: |
+            List of allowed IP addresses and/or IP ranges in CIDR notation.
+            Examples:
+            - Single IP: `192.168.0.1`
+            - IP range: `192.168.0.1/24` (allows 192.168.0.0 - 192.168.0.255)
+          items:
+            type: string
+          example:
+          - "192.168.1.0/24"
+          - "10.0.0.1"
     intercom_version:
       description: Intercom API version.</br>By default, it's equal to the version
         set in the app package.
@@ -43410,6 +43722,13 @@ components:
           format: timestamp
           description: Timestamp for when the news item was last updated.
           example: 1610589632
+        published_at:
+          type: integer
+          format: timestamp
+          nullable: true
+          description: Timestamp for when the news item last went live. Null if the
+            news item has never been live.
+          example: 1610589632
     news_item_request:
       description: A News Item is a content type in Intercom enabling you to announce
         product updates, company news, promotions, events and more with your customers.
@@ -43900,11 +44219,10 @@ components:
           - phone_call_redirect
           default: phone_call_redirect
           example: phone_call_redirect
-        phone:
+        url:
           type: string
-          description: Phone number in E.164 format, that has received the SMS to
-            continue the conversation in the Messenger.
-          example: "+1 1234567890"
+          description: The Messenger link for the phone call redirect, which is also the link sent by SMS to the phone number.
+          example: http://via.intercom.io/msgr/1add3dd1-a75e-4a96-96fd-984d16aba059
     quick_reply_option:
       title: Quick Reply Option
       type: object
@@ -44249,7 +44567,7 @@ components:
           enum:
           - hit
           - missed
-          - cancelled
+          - canceled
           - active
           description: |-
             SLA statuses:
@@ -45601,8 +45919,9 @@ components:
         type:
           type: string
           description: String representing the object's type. Always has the value
-            `ticket_type_attributes.list`.
-        ticket_type_attributes:
+            `list`.
+          example: list
+        data:
           type: array
           description: A list of ticket type attributes associated with a given ticket
             type.
@@ -46315,6 +46634,19 @@ components:
           description: The identifier for the external page which was given by the
             source. Must be unique for the source.
           example: '5678'
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs to target this external page to for Fin AI Agent.
+            Omitting the field leaves existing audience memberships unchanged (PATCH semantics).
+            Pass `[]` to clear all audience memberships.
+            Unknown audience IDs return a `404` error with no partial commit.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
       required:
       - title
       - html
@@ -47219,6 +47551,15 @@ tags:
   description: Manage HMAC signing secrets for Messenger identity verification — list, create, and rotate out. Signing material is returned only once, at creation time.
 - name: Internal Articles
   description: Everything about your Internal Articles
+- name: IP Allowlist
+  description: |
+    Manage IP allowlist settings for your workspace.
+
+    The IP Allowlist API allows you to configure which IP addresses are allowed to access the Intercom API and web application for your workspace. This is useful for restricting access to your Intercom workspace to specific corporate networks or VPNs.
+
+    {% admonition type="info" name="Authentication" %}
+      This endpoint requires the `manage_ip_allowlist` OAuth scope.
+    {% /admonition %}
 - name: Jobs
   description: Everything about jobs
 - name: Macros

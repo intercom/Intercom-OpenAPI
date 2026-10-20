@@ -6041,7 +6041,7 @@ paths:
                       total_pages: 1
                     total_count: 1
                     data:
-                    - id: '39'
+                    - id: 39
                       title: Thanks for everything
                       body: Body of the Article
                       owner_id: 991266252
@@ -6082,7 +6082,7 @@ paths:
               examples:
                 internal article created:
                   value:
-                    id: '42'
+                    id: 42
                     title: Thanks for everything
                     body: Body of the Article
                     owner_id: 991266252
@@ -6166,7 +6166,7 @@ paths:
               examples:
                 Internal article found:
                   value:
-                    id: '45'
+                    id: 45
                     body: Body of the Article
                     owner_id: 991266252
                     author_id: 991266252
@@ -6228,7 +6228,7 @@ paths:
               examples:
                 successful:
                   value:
-                    id: '48'
+                    id: 48
                     body: Body of the Article
                     owner_id: 991266252
                     author_id: 991266252
@@ -6560,14 +6560,13 @@ paths:
                   value:
                     type: list
                     total_count: 1
-                    data:
-                      internal_articles:
-                      - id: '55'
-                        body: Body of the Article
-                        owner_id: 991266252
-                        author_id: 991266252
-                        locale: en
-                        folder_id: 123
+                    internal_articles:
+                    - id: 55
+                      body: Body of the Article
+                      owner_id: 991266252
+                      author_id: 991266252
+                      locale: en
+                      folder_id: 123
                     pages:
                       type: pages
                       page: 1
@@ -7196,7 +7195,7 @@ paths:
           content:
             application/json:
               examples:
-                Successful:
+                List of companies:
                   value:
                     type: list
                     data:
@@ -7226,8 +7225,31 @@ paths:
                       per_page: 15
                       total_pages: 1
                     total_count: 1
+                Single company (company_id or name):
+                  value:
+                    type: company
+                    company_id: '1'
+                    id: 6762f07f1bb69f9f2193baf5
+                    app_id: this_is_an_id159_that_should_be_at_least_
+                    name: company1
+                    remote_created_at: 1734537343
+                    created_at: 1734537343
+                    updated_at: 1734537343
+                    monthly_spend: 0
+                    session_count: 0
+                    user_count: 1
+                    tags:
+                      type: tag.list
+                      tags: []
+                    segments:
+                      type: segment.list
+                      segments: []
+                    plan: {}
+                    custom_attributes: {}
               schema:
-                "$ref": "#/components/schemas/company_list"
+                oneOf:
+                - "$ref": "#/components/schemas/company"
+                - "$ref": "#/components/schemas/company_list"
         '404':
           description: Company Not Found
           content:
@@ -12126,8 +12148,8 @@ paths:
                       - type: paragraph
                         text: Navigate to Settings > Security > Reset password.
                       body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
-                      chatbot_availability: 1
-                      copilot_availability: 1
+                      chatbot_availability: 2
+                      copilot_availability: 2
                       ai_chatbot_availability: true
                       ai_copilot_availability: true
                       ai_sales_agent_availability: true
@@ -12186,8 +12208,8 @@ paths:
                     - type: paragraph
                       text: Navigate to Settings > Security > Reset password.
                     body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
-                    chatbot_availability: 1
-                    copilot_availability: 1
+                    chatbot_availability: 2
+                    copilot_availability: 2
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
@@ -12259,8 +12281,8 @@ paths:
                     - type: paragraph
                       text: Navigate to Settings > Security > Reset password.
                     body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
-                    chatbot_availability: 1
-                    copilot_availability: 1
+                    chatbot_availability: 2
+                    copilot_availability: 2
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
@@ -12334,8 +12356,8 @@ paths:
                     - type: paragraph
                       text: Go to Settings > Security > Reset password and follow the steps.
                     body_markdown: "# How to reset your password (updated)\n\nGo to Settings > Security > Reset password and follow the steps.\n"
-                    chatbot_availability: 1
-                    copilot_availability: 1
+                    chatbot_availability: 2
+                    copilot_availability: 2
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
@@ -16051,7 +16073,6 @@ paths:
                       data: []
                       total_count: 0
                       has_more: false
-                    ai_topics:
                     ai_agent:
                     ai_agent_participated: false
                     conversation_parts:
@@ -17368,7 +17389,7 @@ paths:
       description: Fetch a Custom Object Instance by id.
       responses:
         '200':
-          description: successful
+          description: "successful. If the custom object type exists but no instance matches, the response is still `200` with `found: false`."
           content:
             application/json:
               examples:
@@ -17384,12 +17405,26 @@ paths:
                     external_updated_at:
                     created_at: 1734537750
                     updated_at: 1734537750
+                not_found_instance:
+                  summary: Instance not found
+                  value:
+                    id: '999999'
+                    type: Order
+                    custom_attributes: {}
+                    external_id:
+                    external_created_at:
+                    external_updated_at:
+                    created_at:
+                    updated_at:
+                    found: false
               schema:
-                "$ref": "#/components/schemas/custom_object_instance"
+                oneOf:
+                - "$ref": "#/components/schemas/custom_object_instance"
+                - "$ref": "#/components/schemas/custom_object_instance_not_found"
         '401':
           $ref: "#/components/responses/Unauthorized"
         '404':
-          $ref: "#/components/responses/ObjectNotFound"
+          $ref: "#/components/responses/TypeNotFound"
     delete:
       summary: Delete a Custom Object Instance by ID
       parameters:
@@ -19392,7 +19427,7 @@ paths:
       - name: summary
         in: query
         required: false
-        description: summary flag
+        description: Set to `true` (or `1`) to return an event summary (`event.summary`) instead of the list of events. Omit for the paginated event list (`event.list`).
         schema:
           type: boolean
       tags:
@@ -19416,17 +19451,32 @@ paths:
           content:
             application/json:
               examples:
-                Successful response:
+                Summary (summary=true):
                   value:
                     type: event.summary
                     events: []
-                    pages:
-                      next: http://api.intercom.test/events?next page
                     email: user26@email.com
                     intercom_user_id: 6762f22b1bb69f9f2193bc12
                     user_id: 3ecf64d0-9ed1-4e9f-88e1-da7d6e6782f3
+                Event list (default):
+                  value:
+                    type: event.list
+                    events:
+                    - type: event
+                      id: 2fc69404-91a6-11e7-be05-4fc6091e296e
+                      created_at: 1389913941
+                      event_name: invited-friend
+                      user_id: '314159'
+                      email: frodo.baggins@example.com
+                      intercom_user_id: 63a0979a5eeebeaf28dd56ba
+                      metadata: {}
+                    pages:
+                      next: https://api.intercom.io/events?per_page=1&before=1389913941064&intercom_user_id=63a0979a5eeebeaf28dd56ba&type=user
+                      since: https://api.intercom.io/events?intercom_user_id=63a0979a5eeebeaf28dd56ba&type=user&since=1389913941065
               schema:
-                "$ref": "#/components/schemas/data_event_summary"
+                oneOf:
+                - "$ref": "#/components/schemas/data_event_list"
+                - "$ref": "#/components/schemas/data_event_summary"
         '401':
           description: Unauthorized
           content:
@@ -21353,7 +21403,7 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
-  "/calls/{call_id}/transcript":
+  "/calls/{id}/transcript":
     get:
       summary: Get call transcript by call id
       parameters:
@@ -21361,7 +21411,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
-      - name: call_id
+      - name: id
         in: path
         required: true
         description: The id of the call
@@ -21371,33 +21421,33 @@ paths:
       - Calls
       operationId: showCallTranscript
       description: |
-        Returns the transcript for the specified call as a downloadable text file.
+        Returns the transcript for the specified call as a JSON array of turns.
       responses:
         '200':
           description: successful
-          headers:
-            Content-Disposition:
-              description: File attachment directive and suggested filename for the transcript
-              schema:
-                type: string
-                example: "attachment; filename=transcription_data-2025-07-17.txt"
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                description: Transcript text
+                type: array
+                items:
+                  "$ref": "#/components/schemas/call_transcript_turn"
               examples:
-                transcript_txt:
-                  value: |-
-                    [00:00:03] Teammate 1: "Hello, thanks for calling. How can I help today?"
-                    [00:00:09] User: "I need help recovering access to my account."
-                    [00:00:15] Teammate 1: "I can help with that. For security, I’ll ask a few generic verification questions."
-                    [00:00:22] User: "Okay."
-                    [00:00:28] Teammate 1: "Please confirm general details on the account (no sensitive data over this call)."
-                    [00:00:35] User: "I can provide non-sensitive info."
-                    [00:00:41] Teammate 1: "Thank you. I’ll initiate a standard account recovery process and send the next steps."
-                    [00:00:48] User: "Great, thanks."
-                    [00:00:53] Teammate 1: "You should receive a message shortly with instructions to complete recovery."
+                transcript:
+                  value:
+                  - start_time: "0.0"
+                    end_time: "3.00"
+                    speaker_label: "Teammate 1"
+                    speaker: "Teammate 1"
+                    content: "Hello, thanks for calling. How can I help today?"
+                    speaker_type: admin
+                    speaker_id: "789"
+                  - start_time: "3.00"
+                    end_time: "9.00"
+                    speaker_label: User
+                    speaker: User
+                    content: I need help recovering access to my account.
+                    speaker_type: user
+                    speaker_id: "6762f0dd1bb69f9f2193bb83"
         '404':
           description: Not Found
           content:
@@ -27270,17 +27320,10 @@ components:
       - Internal Articles
       description: The data returned about your internal articles when you list them.
       properties:
-        type:
-          type: string
-          description: The type of object - `internal_article`.
-          enum:
-          - internal_article
-          default: internal_article
-          example: internal_article
         id:
-          type: string
+          type: integer
           description: The unique identifier for the article which is given by Intercom.
-          example: '6871119'
+          example: 6871119
         title:
           type: string
           description: The title of the article.
@@ -27445,15 +27488,11 @@ components:
           type: integer
           description: The total number of Internal Articles matching the search query
           example: 5
-        data:
-          type: object
-          description: An object containing the results of the search.
-          properties:
-            internal_articles:
-              type: array
-              description: An array of Internal Article objects
-              items:
-                "$ref": "#/components/schemas/internal_article"
+        internal_articles:
+          type: array
+          description: An array of Internal Article objects
+          items:
+            "$ref": "#/components/schemas/internal_article"
         pages:
           "$ref": "#/components/schemas/cursor_pages"
     article_statistics:
@@ -28041,14 +28080,15 @@ components:
           type: boolean
           description: "Whether the status reason has been soft deleted"
           example: false
-        created_at:
-          type: integer
-          description: "The Unix timestamp when the status reason was created"
-          example: 1734537243
-        updated_at:
-          type: integer
-          description: "The Unix timestamp when the status reason was last updated"
-          example: 1734537243
+        associated_to_phone_status:
+          type: string
+          nullable: true
+          description: "The phone status this away status reason is configured for, or null if it is not associated with one."
+          enum:
+          - wrap_up
+          - on_a_call
+          - coaching
+          example: wrap_up
     away_status_reason_list:
       title: Away Status Reasons
       type: object
@@ -30355,15 +30395,13 @@ components:
         chatbot_availability:
           type: integer
           deprecated: true
-          description: Deprecated. Use ai_chatbot_availability instead. Whether this
-            snippet is available for Fin (1 = on, 0 = off).
-          example: 1
+          description: Deprecated. Use ai_chatbot_availability instead.
+          example: 2
         copilot_availability:
           type: integer
           deprecated: true
-          description: Deprecated. Use ai_copilot_availability instead. Whether this
-            snippet is available for Copilot (1 = on, 0 = off).
-          example: 1
+          description: Deprecated. Use ai_copilot_availability instead.
+          example: 2
         ai_chatbot_availability:
           type: boolean
           description: Whether the content snippet is available for AI Chatbot (Fin).
@@ -30477,20 +30515,20 @@ components:
         ai_chatbot_availability:
           type: boolean
           description: Whether the content snippet should be available for AI Chatbot
-            (Fin). Defaults to false.
-          default: false
+            (Fin). Defaults to true.
+          default: true
           example: true
         ai_copilot_availability:
           type: boolean
           description: Whether the content snippet should be available for AI Copilot.
-            Defaults to false.
-          default: false
+            Defaults to true.
+          default: true
           example: true
         ai_sales_agent_availability:
           type: boolean
           description: Whether the content snippet should be available for AI Sales
-            Agent. Defaults to false.
-          default: false
+            Agent. Defaults to true.
+          default: true
           example: true
     content_snippet_update_request:
       title: Update Content Snippet Request
@@ -32293,7 +32331,7 @@ components:
           type: string
           description: The type of the object - `admin.list`.
           example: admin.list
-        teammates:
+        admins:
           type: array
           description: The list of teammates who participated in the conversation
             (wrote at least one conversation part).
@@ -32460,6 +32498,16 @@ components:
           type: string
           description: The type of parent, which can either be a `collection` or `section`.
           example: collection
+        parent_ids:
+          type: array
+          description: The ids of the parent collections to place this article in.
+            Send an empty array to leave the article without a collection. When
+            provided, this takes precedence over `parent_id` and `parent_type`.
+          items:
+            type: integer
+          example:
+          - 18
+          - 19
         translated_content:
           "$ref": "#/components/schemas/article_translated_content"
         folder_id:
@@ -32926,33 +32974,50 @@ components:
           type: string
           description: Your identifier for the user.
           example: '314159'
+        id:
+          type: string
+          description: The Intercom defined id of the user. Takes precedence over `user_id` and `email`.
+          example: 63a0979a5eeebeaf28dd56ba
+        email:
+          type: string
+          description: The user's email address. Only used when neither `id` nor `user_id` is supplied.
+          example: frodo.baggins@example.com
         event_summaries:
-          type: object
+          type: array
           description: A list of event summaries for the user. Each event summary
             should contain the event name, the time the event occurred, and the number
             of times the event occurred. The event name should be a past tense 'verb-noun'
             combination, to improve readability, for example `updated-plan`.
-          properties:
-            event_name:
-              type: string
-              description: The name of the event that occurred. A good event name
-                is typically a past tense 'verb-noun' combination, to improve readability,
-                for example `updated-plan`.
-              example: invited-friend
-            count:
-              type: integer
-              description: The number of times the event occurred.
-              example: 1
-            first:
-              type: integer
-              format: date-time
-              description: The first time the event was sent
-              example: 1671028894
-            last:
-              type: integer
-              format: date-time
-              description: The last time the event was sent
-              example: 1671028894
+          items:
+            type: object
+            required:
+            - event_name
+            - count
+            - first
+            - last
+            properties:
+              event_name:
+                type: string
+                description: The name of the event that occurred. A good event name
+                  is typically a past tense 'verb-noun' combination, to improve readability,
+                  for example `updated-plan`.
+                example: invited-friend
+              count:
+                type: integer
+                description: The number of times the event occurred.
+                example: 1
+              first:
+                type: integer
+                format: date-time
+                description: The first time the event was sent
+                example: 1671028894
+              last:
+                type: integer
+                format: date-time
+                description: The last time the event was sent
+                example: 1671028894
+      required:
+      - event_summaries
     create_data_exports_request:
       description: Request for creating a data export
       type: object
@@ -33664,6 +33729,89 @@ components:
           example: 0
         pages:
           "$ref": "#/components/schemas/cursor_pages"
+    call_transcript_turn:
+      title: Call Transcript Turn
+      type: object
+      x-tags:
+      - Calls
+      description: A single turn in a call transcript.
+      properties:
+        start_time:
+          oneOf:
+          - type: string
+          - type: number
+          description: The start time of the turn, as a seconds offset from the start of the call. A string on calls transcribed by Amazon Transcribe, a number on Fin Voice calls.
+          example: "0.0"
+        end_time:
+          oneOf:
+          - type: string
+          - type: number
+          description: The end time of the turn, as a seconds offset from the start of the call. A string on calls transcribed by Amazon Transcribe, a number on Fin Voice calls.
+          example: "3.00"
+        speaker_label:
+          type: string
+          description: The diarization label for the speaker.
+          example: "Teammate 1"
+        speaker:
+          type: string
+          description: The diarization label for the speaker. Same value as `speaker_label`.
+          example: "Teammate 1"
+        content:
+          type: string
+          description: The transcribed text spoken during this turn.
+          example: Hello, thanks for calling. How can I help today?
+        speaker_type:
+          type: string
+          description: The type of the speaker - either `admin` for a teammate or `user` for a contact. Absent on Fin Voice call transcripts and on calls transcribed before speaker attribution shipped, where only `speaker_label` identifies the speaker.
+          example: admin
+        speaker_id:
+          type: string
+          description: The id of the teammate or contact who is the speaker.
+          example: "789"
+        article_sources:
+          type: array
+          description: Sources Fin cited during this turn. Only present on Fin Voice call transcripts.
+          example:
+          - title: Password Reset Guide
+            entity_type: 120
+            entity_id: "8185560"
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+                description: The title of the cited source.
+                example: Password Reset Guide
+              entity_type:
+                type: integer
+                description: The type of the cited entity.
+                example: 120
+              entity_id:
+                type: string
+                description: The id of the cited entity.
+                example: "8185560"
+        triggered_guidance:
+          type: array
+          description: Guidance rules that Fin matched during this turn. Only present on Fin Voice call transcripts.
+          example:
+          - match_type: clarification
+            rule_id: "3"
+            rule_text: If the customer asks about pricing, ask which plan they're interested in before answering
+          items:
+            type: object
+            properties:
+              match_type:
+                type: string
+                description: How the rule was matched.
+                example: clarification
+              rule_id:
+                type: string
+                description: The id of the matched guidance rule.
+                example: "3"
+              rule_text:
+                type: string
+                description: The text of the matched guidance rule.
+                example: If the customer asks about pricing, ask which plan they're interested in before answering
     ai_topic_subtopic_list:
       title: AI Topic and Subtopic
       type: array
@@ -33850,6 +33998,44 @@ components:
             reference attribute on the parent object.
           items:
             "$ref": "#/components/schemas/custom_object_instance"
+    custom_object_instance_not_found:
+      title: Custom Object Instance Not Found
+      type: object
+      description: Returned with HTTP 200 (not 404) when the custom object type exists but no instance matches the requested id or external_id.
+      required:
+      - found
+      properties:
+        found:
+          type: boolean
+          description: Always `false`. Only present on this response.
+          example: false
+        id:
+          type: string
+          nullable: true
+          description: The requested id, echoed back. Null when looked up by `external_id`.
+        external_id:
+          type: string
+          nullable: true
+          description: The requested external_id, echoed back. Null when looked up by `id`.
+        type:
+          type: string
+          description: The identifier of the custom object type that was queried.
+          example: Order
+        custom_attributes:
+          type: object
+          description: Always an empty object.
+        external_created_at:
+          type: integer
+          nullable: true
+        external_updated_at:
+          type: integer
+          nullable: true
+        created_at:
+          type: integer
+          nullable: true
+        updated_at:
+          type: integer
+          nullable: true
     custom_object_instances_paginated_list:
       title: Custom Object Instances
       type: object
@@ -38233,6 +38419,13 @@ components:
           format: timestamp
           description: Timestamp for when the news item was last updated.
           example: 1610589632
+        published_at:
+          type: integer
+          format: timestamp
+          nullable: true
+          description: Timestamp for when the news item last went live. Null if the
+            news item has never been live.
+          example: 1610589632
     news_item_request:
       description: A News Item is a content type in Intercom enabling you to announce
         product updates, company news, promotions, events and more with your customers.
@@ -38540,11 +38733,10 @@ components:
           - phone_call_redirect
           default: phone_call_redirect
           example: phone_call_redirect
-        phone:
+        url:
           type: string
-          description: Phone number in E.164 format, that has received the SMS to
-            continue the conversation in the Messenger.
-          example: "+1 1234567890"
+          description: The Messenger link for the phone call redirect, which is also the link sent by SMS to the phone number.
+          example: http://via.intercom.io/msgr/1add3dd1-a75e-4a96-96fd-984d16aba059
     quick_reply_option:
       title: Quick Reply Option
       type: object
@@ -38835,7 +39027,7 @@ components:
           enum:
           - hit
           - missed
-          - cancelled
+          - canceled
           - active
           description: |-
             SLA statuses:
@@ -40007,8 +40199,9 @@ components:
         type:
           type: string
           description: String representing the object's type. Always has the value
-            `ticket_type_attributes.list`.
-        ticket_type_attributes:
+            `list`.
+          example: list
+        data:
           type: array
           description: A list of ticket type attributes associated with a given ticket
             type.
@@ -40183,6 +40376,16 @@ components:
           type: string
           description: The type of parent, which can either be a `collection` or `section`.
           example: collection
+        parent_ids:
+          type: array
+          description: The ids of the parent collections to place this article in.
+            Send an empty array to remove the article from all collections. When
+            provided, this takes precedence over `parent_id` and `parent_type`.
+          items:
+            type: integer
+          example:
+          - 18
+          - 19
         translated_content:
           "$ref": "#/components/schemas/article_translated_content"
         folder_id:
