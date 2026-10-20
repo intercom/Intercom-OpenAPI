@@ -10443,7 +10443,7 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/contact_blocked"
-  "/contacts/{id}/merge_history":
+  "/contacts/{id}/merge_histories":
     get:
       summary: Get contact merge history
       parameters:
@@ -23624,6 +23624,78 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/subscription_types/{id}":
+    get:
+      summary: Retrieve a subscription type
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier for the subscription type.
+        example: '123'
+        schema:
+          type: string
+      tags:
+      - Subscription Types
+      operationId: getSubscriptionType
+      description: You can fetch the details of a single subscription type by making
+        a GET request to `https://api.intercom.io/subscription_types/<id>`.
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              examples:
+                Successful:
+                  value:
+                    type: subscription
+                    id: '135'
+                    state: live
+                    consent_type: opt_out
+                    default_translation:
+                      name: Newsletters
+                      description: Lorem ipsum dolor sit amet
+                      locale: en
+                    translations:
+                    - name: Newsletters
+                      description: Lorem ipsum dolor sit amet
+                      locale: en
+                    content_types:
+                    - email
+              schema:
+                "$ref": "#/components/schemas/subscription_type"
+        '404':
+          description: Subscription type not found
+          content:
+            application/json:
+              examples:
+                Subscription type not found:
+                  value:
+                    type: error.list
+                    request_id: 5c1d8f0e-3b7a-4a52-9c21-7e6d4b8f2a10
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 06d15b1f-19b0-42cc-aff9-a9d9db39402b
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/phone_call_redirects":
     post:
       summary: Create a phone Switch
@@ -31394,7 +31466,7 @@ components:
           type: integer
           description: The number of total views the article has received.
           example: 10
-        conversions:
+        conversations:
           type: integer
           description: The number of conversations started from the article.
           example: 0
@@ -36242,7 +36314,7 @@ components:
                 nullable: true
                 description: The translations for the quick reply option.
                 example: { "en": "Hello", "fr": "Bonjour" }
-        quick_reply_uuid:
+        quick_reply_option_uuid:
           type: string
           format: uuid
           description: The unique identifier for the quick reply option that was clicked by the end user.
@@ -46078,7 +46150,7 @@ components:
             this should be set to `api`. You can not change the value to or from api.
           enum:
           - api
-          - automated
+          - automatic
           - manual
           example: api
         status:
@@ -46598,7 +46670,7 @@ components:
               type: string
               description: The timezone of the visitor.
               example: Europe/Dublin
-        las_request_at:
+        last_request_at:
           type: integer
           description: The time the Lead last recorded making a request.
           example: 1663597260
