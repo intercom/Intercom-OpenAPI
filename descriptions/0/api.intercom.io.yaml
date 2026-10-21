@@ -19470,6 +19470,8 @@ paths:
       operationId: listDataConnectors
       description: |
         Returns a paginated list of all data connectors for the workspace, ordered by most recently updated first. Data connectors allow workflows and AI agents to make HTTP requests to external APIs.
+
+        Requires the `read_workflow_connector_execution_result` or `read_write_data_connectors` OAuth scope.
       responses:
         '200':
           description: successful
@@ -19486,6 +19488,7 @@ paths:
                       description: Fetches order status from external fulfillment API
                       state: live
                       http_method: post
+                      enforce_auth: true
                       direct_fin_usage: false
                       created_by_admin_id: '128'
                       updated_by_admin_id: '128'
@@ -19496,7 +19499,7 @@ paths:
                       type: pages
                       per_page: 20
                       next:
-                        starting_after: WzE3MDc1OTQ3MTUuMCwxMjM0NV0=
+                        starting_after: WzE3Njg5MTg5MzUuMCwxMjM0NSxudWxsXQ==
               schema:
                 "$ref": "#/components/schemas/data_connector_list"
         '400':
@@ -19525,6 +19528,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
     post:
@@ -19539,6 +19549,8 @@ paths:
       operationId: createDataConnector
       description: |
         Create a new data connector. The connector is created in `draft` state. Configure its URL, headers, data inputs, and other settings, then set it to `live` when ready.
+
+        Requires the `read_write_data_connectors` OAuth scope.
       responses:
         '201':
           description: Data connector created
@@ -19552,6 +19564,10 @@ paths:
                     name: Get Order Status
                     description: Looks up order status from an external service
                     state: draft
+                    url: "https://api.example.com/orders/{{order_id}}/status"
+                    headers:
+                    - name: Content-Type
+                      value: "****"
                     http_method: get
                     direct_fin_usage: true
                     audiences:
@@ -19572,6 +19588,7 @@ paths:
                     token_ids: []
                     customer_authentication: true
                     bypass_authentication: false
+                    enforce_auth: true
                     validate_missing_attributes: true
                     created_by_admin_id: '128'
                     updated_by_admin_id: '128'
@@ -19580,6 +19597,27 @@ paths:
                     execution_results_url: "/data_connectors/125/execution_results"
               schema:
                 "$ref": "#/components/schemas/data_connector_detail"
+        '400':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Unpermitted property in headers:
+                  value:
+                    type: error.list
+                    request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
+                    errors:
+                    - code: parameter_invalid
+                      message: "found unpermitted parameter: :description"
+                Audiences is not an array:
+                  value:
+                    type: error.list
+                    request_id: f1a2b3c4-d5e6-4f70-8a9b-0c1d2e3f4a5b
+                    errors:
+                    - code: parameter_invalid
+                      message: "found unpermitted parameter: :audiences"
+              schema:
+                "$ref": "#/components/schemas/error"
         '422':
           description: Invalid parameter
           content:
@@ -19641,6 +19679,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -19716,6 +19761,8 @@ paths:
         You can retrieve the full detail of a single data connector by its ID.
 
         The response includes configuration, data inputs, response fields, and object mappings.
+
+        Requires the `read_workflow_connector_execution_result` or `read_write_data_connectors` OAuth scope.
       responses:
         '200':
           description: Data connector found
@@ -19729,6 +19776,7 @@ paths:
                     name: Order Status Service
                     description: Fetches order status from external fulfillment API
                     state: live
+                    headers: []
                     http_method: post
                     direct_fin_usage: false
                     audiences:
@@ -19744,8 +19792,6 @@ paths:
 
                         return transform(inputs['data'])
                       language: python
-                    client_function_name:
-                    client_function_timeout_ms:
                     data_inputs:
                     - name: conversation_id
                       type: string
@@ -19761,7 +19807,7 @@ paths:
                     token_ids: []
                     customer_authentication: false
                     bypass_authentication: false
-                    validate_missing_attributes:
+                    enforce_auth: true
                     created_by_admin_id: '456'
                     updated_by_admin_id: '456'
                     created_at: '2025-11-15T09:30:00Z'
@@ -19780,7 +19826,7 @@ paths:
                     request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
                     errors:
                     - code: parameter_invalid
-                      message: "Invalid state_version. Must be one of: live, draft"
+                      message: "Invalid state_version. Must be one of: draft, live"
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -19809,6 +19855,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
     delete:
@@ -19830,6 +19883,8 @@ paths:
       operationId: deleteDataConnector
       description: |
         Delete an existing data connector. The connector must be in `draft` state and must not be in use by any workflows or AI agents.
+
+        Requires the `read_write_data_connectors` OAuth scope.
       responses:
         '200':
           description: Data connector deleted
@@ -19890,6 +19945,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
     patch:
@@ -19911,6 +19973,8 @@ paths:
       operationId: updateDataConnector
       description: |
         Update an existing data connector. Only provided fields are changed. Set `state` to `live` or `draft` to change the connector's state.
+
+        Requires the `read_write_data_connectors` OAuth scope.
       requestBody:
         content:
           application/json:
@@ -19960,6 +20024,7 @@ paths:
                     name: Updated Connector Name
                     description: Updated description
                     state: draft
+                    headers: []
                     http_method: post
                     direct_fin_usage: false
                     audiences:
@@ -19967,9 +20032,6 @@ paths:
                     - leads
                     execution_type: server_side
                     configuration_response_type: test_response_type
-                    data_transformation_type:
-                    client_function_name:
-                    client_function_timeout_ms:
                     data_inputs:
                     - name: conversation_id
                       type: string
@@ -19981,6 +20043,7 @@ paths:
                     token_ids: []
                     customer_authentication: false
                     bypass_authentication: false
+                    enforce_auth: true
                     validate_missing_attributes: false
                     created_by_admin_id: '456'
                     updated_by_admin_id: '456'
@@ -20099,6 +20162,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/data_connectors/{data_connector_id}/execution_results":
@@ -20158,6 +20228,8 @@ paths:
           - non_fin_standalone_action_identity_verification_error
           - request_validation_error
           - client_side_action_error
+          - code_block_transformation_error
+          - otp_preview_not_supported_error
       - name: start_ts
         in: query
         required: false
@@ -20187,6 +20259,8 @@ paths:
         Results from the last hour are returned by default. Use `start_ts` and `end_ts` to customize the time range.
 
         Request/response bodies are excluded by default. Use `include_bodies=true` to include them.
+
+        Requires the `read_workflow_connector_execution_result` or `read_write_data_connectors` OAuth scope.
       responses:
         '200':
           description: successful
@@ -20213,7 +20287,6 @@ paths:
                       id: '99000'
                       data_connector_id: '12345'
                       success: false
-                      http_status:
                       http_method: post
                       error_type: 3rd_party_error
                       error_message: Connection refused
@@ -20223,7 +20296,7 @@ paths:
                       type: pages
                       per_page: 10
                       next:
-                        starting_after: WzE3MDc1OTQ3MTUuMCw5OTAwMF0=
+                        starting_after: WzE3NzA3NDU1MTUuMCw5OTAwMCxudWxsXQ==
               schema:
                 "$ref": "#/components/schemas/data_connector_execution_result_list"
         '401':
@@ -20238,6 +20311,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '400':
@@ -20251,7 +20331,7 @@ paths:
                     request_id: test-uuid-replacement
                     errors:
                     - code: parameter_invalid
-                      message: "Invalid error_type. Must be one of: request_configuration_error, faraday_error, 3rd_party_error, response_mapping_error, token_refresh_error, fin_action_response_formatting_error, fin_action_identity_verification_error, email_verification_error, non_fin_standalone_action_identity_verification_error, request_validation_error, client_side_action_error"
+                      message: "Invalid error_type. Must be one of: request_configuration_error, faraday_error, 3rd_party_error, response_mapping_error, token_refresh_error, fin_action_response_formatting_error, fin_action_identity_verification_error, email_verification_error, non_fin_standalone_action_identity_verification_error, request_validation_error, client_side_action_error, code_block_transformation_error, otp_preview_not_supported_error"
                 Invalid timestamp:
                   value:
                     type: error.list
@@ -20259,6 +20339,13 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: start_ts must be a Unix timestamp (integer)
+                Invalid cursor:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: client_error
+                      message: Invalid starting_after param. Please try again using a starting_after value from a paginated response
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -20303,6 +20390,8 @@ paths:
       description: |
         Retrieve details for a specific data connector execution result.
         Always includes request/response bodies and the sanitised request URL.
+
+        Requires the `read_workflow_connector_execution_result` or `read_write_data_connectors` OAuth scope.
       responses:
         '200':
           description: successful
@@ -20340,6 +20429,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -39654,6 +39750,9 @@ components:
           type: string
           description: A description of what this data connector does.
           example: Looks up order status from an external service
+        internal_description:
+          type: string
+          description: The internal description of the data connector.
         http_method:
           type: string
           description: The HTTP method used when calling the external API.
@@ -39701,6 +39800,9 @@ components:
                 type: string
                 description: The header value. Supports template variables.
                 example: application/json
+            required:
+            - name
+            - value
         data_inputs:
           type: array
           description: Input parameters accepted by the connector.
@@ -39731,6 +39833,11 @@ components:
               default_value:
                 type: string
                 description: The default value for the parameter. Defaults to an empty string if omitted.
+            required:
+            - name
+            - description
+            - type
+            - required
         customer_authentication:
           type: boolean
           description: Whether the connector requires customer authentication before executing. Defaults to false.
@@ -39739,6 +39846,9 @@ components:
           type: boolean
           description: Whether authentication is bypassed entirely (public endpoint). Defaults to false.
           example: false
+        enforce_auth:
+          type: boolean
+          description: Whether authentication is enforced for this connector.
         validate_missing_attributes:
           type: boolean
           description: Whether to validate that all required data inputs have values before executing.
@@ -39812,6 +39922,9 @@ components:
           type: string
           description: A description of what this data connector does.
           example: Updated description
+        internal_description:
+          type: string
+          description: The internal description of the data connector.
         state:
           type: string
           description: The desired state of the connector.
@@ -39865,6 +39978,9 @@ components:
                 type: string
                 description: The header value. Supports template variables.
                 example: application/json
+            required:
+            - name
+            - value
         data_inputs:
           type: array
           description: The input parameters accepted by this data connector. Replaces all existing inputs.
@@ -39895,6 +40011,11 @@ components:
               default_value:
                 type: string
                 description: The default value for this input, if any.
+            required:
+            - name
+            - description
+            - type
+            - required
         customer_authentication:
           type: boolean
           description: Whether OTP authentication is enabled for this connector.
@@ -39903,6 +40024,9 @@ components:
           type: boolean
           description: Whether authentication is bypassed for this connector.
           example: false
+        enforce_auth:
+          type: boolean
+          description: Whether authentication is enforced for this connector.
         validate_missing_attributes:
           type: boolean
           description: Whether to validate missing attributes before execution.
@@ -39987,6 +40111,9 @@ components:
           nullable: true
           description: A description of what this data connector does.
           example: Fetches order status from external fulfillment API
+        internal_description:
+          type: string
+          description: The internal description of the data connector.
         state:
           type: string
           description: The current state of the data connector.
@@ -40004,6 +40131,10 @@ components:
           - delete
           - patch
           example: post
+        enforce_auth:
+          type: boolean
+          description: Whether authentication is enforced for this connector.
+          example: true
         direct_fin_usage:
           type: boolean
           description: Whether this data connector is assigned to Fin for direct usage.
@@ -40058,6 +40189,9 @@ components:
           nullable: true
           description: A description of what this data connector does.
           example: Fetches order status from external fulfillment API
+        internal_description:
+          type: string
+          description: The internal description of the data connector.
         state:
           type: string
           description: The current state of the data connector.
@@ -40287,6 +40421,10 @@ components:
           type: boolean
           description: Whether authentication is bypassed for this connector.
           example: false
+        enforce_auth:
+          type: boolean
+          description: Whether authentication is enforced for this connector.
+          example: true
         validate_missing_attributes:
           type: boolean
           nullable: true
@@ -40371,6 +40509,8 @@ components:
           - non_fin_standalone_action_identity_verification_error
           - request_validation_error
           - client_side_action_error
+          - code_block_transformation_error
+          - otp_preview_not_supported_error
           example: 3rd_party_error
         error_message:
           type: string
@@ -40396,6 +40536,7 @@ components:
           - triggerable_custom_bot
           - inbox
           - fin
+          - synthetic_test
           example: workflow
         source_id:
           type: string
@@ -40469,7 +40610,7 @@ components:
                 starting_after:
                   type: string
                   description: The cursor value to use for the next page.
-                  example: WzE3MDc1OTQ3MTUuMCw5OTAwMF0=
+                  example: WzE3NzA3NDU1MTUuMCw5OTAwMCxudWxsXQ==
     data_connector_list:
       title: Data Connector List
       type: object
@@ -40507,7 +40648,7 @@ components:
                 starting_after:
                   type: string
                   description: The cursor value to use for the next page.
-                  example: WzE3MDc1OTQ3MTUuMCwxMjM0NV0=
+                  example: WzE3Njg5MTg5MzUuMCwxMjM0NSxudWxsXQ==
     data_connector_version_list:
       title: Data Connector Version List
       type: object
