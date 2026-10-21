@@ -13358,7 +13358,7 @@ paths:
         The conversation can be an in-app message only.
 
         {% admonition type="info" name="Sending for visitors" %}
-        You can also send a message from a visitor by specifying their `user_id` or `id` value in the `from` field, along with a `type` field value of `contact`.
+        You can also send a message from a visitor by specifying their `id` value in the `from` field, along with a `type` field value of `lead`.
         This visitor will be automatically converted to a contact with a lead role once the conversation is created.
         {% /admonition %}
 
@@ -37320,19 +37320,27 @@ components:
               enum:
               - lead
               - user
-              - contact
               description: The role associated to the contact - user or lead.
               example: user
             id:
               type: string
               description: The identifier for the contact which is given by Intercom.
+                Provide one of `id`, `user_id` or `email`.
               format: uuid
               minLength: 24
               maxLength: 24
               example: 536e564f316c83104c000020
+            user_id:
+              type: string
+              description: The external identifier you gave the contact. Provide one of
+                `id`, `user_id` or `email`.
+              example: '25'
+            email:
+              type: string
+              description: The contact's email. Provide one of `id`, `user_id` or `email`.
+              example: joe@example.com
           required:
           - type
-          - id
         body:
           type: string
           description: The content of the message. HTML is not supported.
