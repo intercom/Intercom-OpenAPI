@@ -2914,9 +2914,9 @@ paths:
         `body_markdown`, and `author_id`, including per-locale values in
         `translated_content`. Any other field in the request body, such as `state`,
         `parent_id`, `folder_id`, `audience_ids`, the AI availability fields or the
-        scheduling fields, is ignored and leaves the live article untouched. The
+        scheduling fields, is still validated but not applied, so the live article is left untouched. The
         scheduling, state and placement notes on the request schema's other fields
-        do not apply to this endpoint, because those fields are ignored.
+        do not apply to this endpoint, because those fields are not applied.
 
         Requires the `read_write_articles_scope` OAuth scope.
       responses:
@@ -27475,6 +27475,7 @@ components:
           nullable: true
         content_id:
           type: string
+          readOnly: true
           description: The unique identifier for the article's content in this locale.
           example: '6871120'
         title:
@@ -40972,8 +40973,9 @@ components:
         author_id:
           type: integer
           description: The id of the teammate to publish as. This is only used when the
-            access token is not associated with a teammate; otherwise the authenticating
-            teammate is used. Must be a teammate on the workspace.
+            access token is not associated with a teammate, and is then required; omitting
+            it returns 400 `parameter_not_found`. Otherwise the authenticating teammate
+            is used. Must be a teammate on the workspace.
           example: 1295
     update_article_request:
       description: You can Update an Article
@@ -41022,6 +41024,7 @@ components:
           example: draft
         parent_id:
           type: string
+          nullable: true
           description: >-
             The id of the collection or section to move the article into. Omitting this
             field or sending `null` leaves the article's parent unchanged. Send `home` to
@@ -41194,7 +41197,8 @@ components:
         help_center_id:
           type: integer
           nullable: true
-          description: The id of the Help Center the collection belongs to.
+          description: Checked against the collection's Help Center but not applied, so it
+            can't move the collection to another Help Center.
           example: 123
 
     update_contact_request:
