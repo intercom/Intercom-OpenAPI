@@ -4496,13 +4496,13 @@ paths:
           content:
             application/json:
               examples:
-                Invalid request:
+                Not available in this API version:
                   value:
                     type: error.list
                     request_id: b68959ea-6328-4f70-83cb-e7913dba1542
                     errors:
-                    - code: parameter_invalid
-                      message: conversation_id is required
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -4517,8 +4517,81 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token not authorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+                Response format not available:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: The requested response format is not available.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The request could not be processed. The response body maps each field name to its error message, or uses `base` for request-level failures.
+          content:
+            application/json:
+              examples:
+                Conversation ID missing:
+                  value:
+                    errors:
+                      conversation_id: Conversation ID is required
+                Conversation already exists:
+                  value:
+                    errors:
+                      conversation_id: Fin session already exists for this conversation. Please use /reply to continue the conversation.
+                Message timestamp missing:
+                  value:
+                    errors:
+                      message: timestamp_ms is required
+                Too many user attributes:
+                  value:
+                    errors:
+                      user: Cannot update more than 10 attributes at once. Received 11 attributes.
+                Too many history items:
+                  value:
+                    errors:
+                      conversation_metadata: Conversation history cannot contain more than 10 items
+                Invalid environment:
+                  value:
+                    errors:
+                      environment: Invalid environment
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Validation messages keyed by the field they apply to, or `base` for request-level failures. A field inside an object, such as `message` or `user`, is reported as a nested object keyed by that field.
+                    example:
+                      conversation_id: Conversation ID is required
+                    additionalProperties: true
       requestBody:
         required: true
         content:
@@ -4546,6 +4619,14 @@ paths:
                   type: string
                   description: The identifier of the environment to start the conversation in, if your Fin for Platforms workspace has environments. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment; an identifier that matches no environment is rejected.
                   example: a1b2c3d4e5
+                response_format:
+                  type: string
+                  enum:
+                  - html
+                  - markdown
+                  default: html
+                  description: The format of the `body` in Fin's replies. Defaults to `html`. Requesting `markdown` on a workspace where it is not enabled returns a 403 error.
+                  example: html
               required:
               - conversation_id
               - message
@@ -4694,13 +4775,13 @@ paths:
           content:
             application/json:
               examples:
-                Invalid request:
+                Not available in this API version:
                   value:
                     type: error.list
                     request_id: b68959ea-6328-4f70-83cb-e7913dba1542
                     errors:
-                    - code: parameter_invalid
-                      message: conversation_id is required
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -4715,8 +4796,73 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token not authorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+                Response format not available:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: The requested response format is not available.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The request could not be processed. The response body maps each field name to its error message, or uses `base` for request-level failures.
+          content:
+            application/json:
+              examples:
+                Conversation ID missing:
+                  value:
+                    errors:
+                      conversation_id: Conversation ID is required
+                Conversation not found:
+                  value:
+                    errors:
+                      conversation_id: Conversation not found for the given conversation_id
+                Message timestamp missing:
+                  value:
+                    errors:
+                      message: timestamp_ms is required
+                Too many user attributes:
+                  value:
+                    errors:
+                      user: Cannot update more than 10 attributes at once. Received 11 attributes.
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Validation messages keyed by the field they apply to, or `base` for request-level failures. A field inside an object, such as `message` or `user`, is reported as a nested object keyed by that field.
+                    example:
+                      conversation_id: Conversation ID is required
+                    additionalProperties: true
       requestBody:
         required: true
         content:
@@ -4738,6 +4884,14 @@ paths:
                   maxItems: 10
                   items:
                     "$ref": "#/components/schemas/fin_agent_attachment"
+                response_format:
+                  type: string
+                  enum:
+                  - html
+                  - markdown
+                  default: html
+                  description: The format of the `body` in Fin's replies. Defaults to `html`. Requesting `markdown` on a workspace where it is not enabled returns a 403 error.
+                  example: html
               required:
               - conversation_id
               - message
@@ -4845,6 +4999,27 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+              schema:
+                "$ref": "#/components/schemas/error"
         '422':
           description: |
             The rating could not be recorded. Common causes: no conversation exists for the given
@@ -4939,7 +5114,7 @@ paths:
 
         The response is audience-matched to the supplied user: each live, API-triggerable
         procedure is checked against that user before being included, alongside the static
-        `reply` and `ask` actions.
+        `reply`, `ask`, and `escalate` actions.
 
         {% admonition type="warning" %}
         To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
@@ -4952,22 +5127,223 @@ paths:
               examples:
                 Successful response:
                   value:
-                    version: "2.17"
-                    capabilities:
-                    - type: procedure
-                      id: '12345'
-                      name: Reset password
-                      description: Walk the user through resetting their password.
-                      endpoint: /fin/procedures/12345/run
-                      method: POST
-                    - type: reply
-                      description: Reply to an in-progress Fin conversation.
-                      endpoint: /fin/reply
-                      method: POST
-                    - type: ask
-                      description: Ask Fin a single, self-contained question.
-                      endpoint: /fin/ask
-                      method: POST
+                      version: 2.17
+                      capabilities:
+                      - name: run_procedure_reset_password_12345
+                        description: |-
+                          <untrusted-content>
+                          Walk the user through resetting their password.
+                          </untrusted-content>
+                        inputSchema:
+                          type: object
+                          properties:
+                            conversation_id:
+                              type: string
+                              description: A unique external ID for the new conversation. Must not already exist for this workspace.
+                            user:
+                              type: object
+                              description: The end user the action is performed for.
+                              properties:
+                                id:
+                                  type: string
+                                  description: The user's external ID.
+                                name:
+                                  type: string
+                                email:
+                                  type: string
+                                attributes:
+                                  type: object
+                                  description: Custom user attributes (max 10).
+                              required:
+                              - id
+                            message:
+                              type: object
+                              description: Optional trigger message posted before the procedure runs.
+                              properties:
+                                body:
+                                  type: string
+                                author:
+                                  type: string
+                                  enum:
+                                  - user
+                                  - agent
+                                  - fin
+                              required:
+                              - body
+                            conversation_metadata:
+                              type: object
+                              properties:
+                                attributes:
+                                  type: object
+                          required:
+                          - conversation_id
+                          - user
+                        endpoint: /fin/procedures/12345/run
+                        method: POST
+                      - name: reply
+                        description: Send a user reply into an existing Fin conversation and get Fin's next turn. Use this to continue any ongoing conversation — including one opened by a procedure run — whenever its status is `awaiting_user_reply`.
+                        inputSchema:
+                          type: object
+                          properties:
+                            conversation_id:
+                              type: string
+                              description: External ID of the existing conversation to reply to.
+                            message:
+                              type: object
+                              properties:
+                                author:
+                                  type: string
+                                  enum:
+                                  - user
+                                  - agent
+                                  - fin
+                                body:
+                                  type: string
+                                timestamp:
+                                  type: string
+                                timestamp_ms:
+                                  type: string
+                              required:
+                              - author
+                              - body
+                            user:
+                              type: object
+                              description: The end user the action is performed for.
+                              properties:
+                                id:
+                                  type: string
+                                  description: The user's external ID.
+                                name:
+                                  type: string
+                                email:
+                                  type: string
+                                attributes:
+                                  type: object
+                                  description: Custom user attributes (max 10).
+                              required:
+                              - id
+                            attachments:
+                              type: array
+                              description: Optional attachments to include with the message.
+                            response_format:
+                              type: string
+                              enum:
+                              - html
+                              - markdown
+                              description: Response body format. Defaults to html.
+                          required:
+                          - conversation_id
+                          - message
+                          - user
+                        endpoint: /fin/reply
+                        method: POST
+                      - name: ask
+                        description: Ask Fin a single question and get one informational answer. Fin never escalates, disambiguates, or asks follow-up questions. Use for one-shot informational lookups.
+                        inputSchema:
+                          type: object
+                          properties:
+                            conversation_id:
+                              type: string
+                              description: External ID for the conversation.
+                            message:
+                              type: object
+                              properties:
+                                author:
+                                  type: string
+                                  enum:
+                                  - user
+                                  - agent
+                                  - fin
+                                body:
+                                  type: string
+                                timestamp:
+                                  type: string
+                                timestamp_ms:
+                                  type: string
+                              required:
+                              - author
+                              - body
+                            user:
+                              type: object
+                              description: The end user the action is performed for.
+                              properties:
+                                id:
+                                  type: string
+                                  description: The user's external ID.
+                                name:
+                                  type: string
+                                email:
+                                  type: string
+                                attributes:
+                                  type: object
+                                  description: Custom user attributes (max 10).
+                              required:
+                              - id
+                            conversation_metadata:
+                              type: object
+                              properties:
+                                history:
+                                  type: array
+                                attributes:
+                                  type: object
+                            attachments:
+                              type: array
+                              description: Optional attachments to include with the message.
+                            response_format:
+                              type: string
+                              enum:
+                              - html
+                              - markdown
+                              description: Response body format. Defaults to html.
+                          required:
+                          - conversation_id
+                          - message
+                          - user
+                        endpoint: /fin/ask
+                        method: POST
+                      - name: escalate
+                        description: Hand off to a human team. Summarises the conversation into a new human-facing support conversation routed to the inbox, leaving this one untouched, and notifies you when the handoff completes. Use when the user asks for a human or when you decide Fin can't resolve the request.
+                        inputSchema:
+                          type: object
+                          description: Escalate an existing conversation (conversation_id) or a new one (user) — not both.
+                          oneOf:
+                          - properties:
+                              conversation_id:
+                                type: string
+                                description: External ID of the conversation to escalate.
+                              context:
+                                type: string
+                                maxLength: 10000
+                                description: Background for the teammate who picks up the handoff. Never shown to the end user.
+                            required:
+                            - conversation_id
+                            additionalProperties: false
+                          - properties:
+                              user:
+                                type: object
+                                description: The end user the action is performed for.
+                                properties:
+                                  id:
+                                    type: string
+                                    description: The user's external ID.
+                                  name:
+                                    type: string
+                                  email:
+                                    type: string
+                                  attributes:
+                                    type: object
+                                    description: Custom user attributes (max 10).
+                                required:
+                                - id
+                              context:
+                                type: string
+                                maxLength: 10000
+                                description: Background for the teammate who picks up the handoff. Never shown to the end user.
+                            required:
+                            - user
+                            additionalProperties: false
+                        endpoint: /fin/escalate
+                        method: POST
               schema:
                 type: object
                 properties:
@@ -4977,26 +5353,23 @@ paths:
                     example: "2.17"
                   capabilities:
                     type: array
-                    description: The list of capabilities available to this user.
+                    description: The list of capabilities available to this user, as tool definitions.
                     items:
                       type: object
                       properties:
-                        type:
-                          type: string
-                          description: The kind of capability — `procedure` for a runnable procedure, or a static action such as `reply`, `ask`, or `escalate`.
-                          example: procedure
-                        id:
-                          type: string
-                          description: The procedure ID. Present only when `type` is `procedure`.
-                          example: '12345'
                         name:
                           type: string
-                          description: The procedure name. Present only when `type` is `procedure`.
-                          example: Reset password
+                          description: The capability name. Procedures are named `run_procedure_<title>_<id>`; the static actions are named `reply`, `ask`, and `escalate`.
+                          example: run_procedure_reset_password_12345
                         description:
                           type: string
-                          description: A human-readable description of the capability.
-                          example: Walk the user through resetting their password.
+                          nullable: true
+                          description: A description of the capability. For a procedure, the text is wrapped in `<untrusted-content>` tags, and is null when the procedure has no description.
+                          example: Reply to an in-progress Fin conversation.
+                        inputSchema:
+                          type: object
+                          description: A JSON Schema describing the request body to send to the capability's endpoint.
+                          additionalProperties: true
                         endpoint:
                           type: string
                           description: The endpoint path to call to use this capability.
@@ -5005,18 +5378,20 @@ paths:
                           type: string
                           description: The HTTP method to use.
                           example: POST
+                  errors:
+                    "$ref": "#/components/schemas/fin_agent_attribute_errors"
         '400':
           description: Bad Request
           content:
             application/json:
               examples:
-                Too many attributes:
+                Not available in this API version:
                   value:
                     type: error.list
                     request_id: b68959ea-6328-4f70-83cb-e7913dba1542
                     errors:
-                    - code: parameter_invalid
-                      message: Cannot update more than 10 attributes at once.
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -5031,8 +5406,54 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token not authorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The request could not be processed. The response body maps each field name to its error message, or uses `base` for request-level failures.
+          content:
+            application/json:
+              examples:
+                Too many user attributes:
+                  value:
+                    errors:
+                      user: Cannot update more than 10 attributes at once. Received 11 attributes.
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Validation messages keyed by the field they apply to, or `base` for request-level failures. A field inside an object, such as `message` or `user`, is reported as a nested object keyed by that field.
+                    example:
+                      conversation_id: Conversation ID is required
+                    additionalProperties: true
       requestBody:
         required: true
         content:
@@ -5145,27 +5566,13 @@ paths:
           content:
             application/json:
               examples:
-                Conversation ID missing:
+                Not available in this API version:
                   value:
                     type: error.list
                     request_id: b68959ea-6328-4f70-83cb-e7913dba1542
                     errors:
-                    - code: parameter_invalid
-                      message: External Conversation ID is required
-                User ID missing:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: User ID is required
-                Too many history items:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: Conversation history cannot contain more than 10 items
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -5180,8 +5587,81 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token not authorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+                Response format not available:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: The requested response format is not available.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The request could not be processed. The response body maps each field name to its error message, or uses `base` for request-level failures.
+          content:
+            application/json:
+              examples:
+                Conversation ID missing:
+                  value:
+                    errors:
+                      conversation_id: Conversation ID is required
+                Conversation already exists:
+                  value:
+                    errors:
+                      conversation_id: Fin session already exists for this conversation. Please use /reply to continue the conversation.
+                Message timestamp missing:
+                  value:
+                    errors:
+                      message: timestamp_ms is required
+                Too many user attributes:
+                  value:
+                    errors:
+                      user: Cannot update more than 10 attributes at once. Received 11 attributes.
+                Too many history items:
+                  value:
+                    errors:
+                      conversation_metadata: Conversation history cannot contain more than 10 items
+                Invalid environment:
+                  value:
+                    errors:
+                      environment: Invalid environment
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Validation messages keyed by the field they apply to, or `base` for request-level failures. A field inside an object, such as `message` or `user`, is reported as a nested object keyed by that field.
+                    example:
+                      conversation_id: Conversation ID is required
+                    additionalProperties: true
       requestBody:
         required: true
         content:
@@ -5209,6 +5689,14 @@ paths:
                   type: string
                   description: The identifier of the environment to start the conversation in, if your Fin for Platforms workspace has environments. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment; an identifier that matches no environment is rejected.
                   example: a1b2c3d4e5
+                response_format:
+                  type: string
+                  enum:
+                  - html
+                  - markdown
+                  default: html
+                  description: The format of the `body` in Fin's replies. Defaults to `html`. Requesting `markdown` on a workspace where it is not enabled returns a 403 error.
+                  example: html
               required:
               - conversation_id
               - message
@@ -5350,41 +5838,13 @@ paths:
           content:
             application/json:
               examples:
-                Procedure not found:
+                Not available in this API version:
                   value:
                     type: error.list
                     request_id: b68959ea-6328-4f70-83cb-e7913dba1542
                     errors:
-                    - code: parameter_invalid
-                      message: Procedure not found
-                Procedure not live:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: Procedure is not live
-                Procedure has no API trigger:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: Procedure does not have an API trigger
-                No Fin profile:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: No Fin profile is configured to handle this conversation. Configure a Fin profile and retry.
-                Conversation already exists:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: Fin session already exists for this conversation. Please use /reply to continue the conversation.
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -5399,8 +5859,82 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token not authorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The request could not be processed. The response body maps each field name to its error message, or uses `base` for request-level failures.
+          content:
+            application/json:
+              examples:
+                Conversation ID missing:
+                  value:
+                    errors:
+                      conversation_id: Conversation ID is required
+                Procedure not found:
+                  value:
+                    errors:
+                      procedure_id: Procedure not found
+                Procedure not live:
+                  value:
+                    errors:
+                      procedure_id: Procedure is not live
+                Procedure not available on the Fin Agent API channel:
+                  value:
+                    errors:
+                      procedure_id: Procedure is not available on the Fin Agent API channel
+                Procedure not available for this user:
+                  value:
+                    errors:
+                      procedure_id: Procedure is not available for this user
+                No Fin profile:
+                  value:
+                    errors:
+                      base: No Fin profile is configured to handle this conversation. Configure a Fin profile and retry.
+                Conversation already exists:
+                  value:
+                    errors:
+                      conversation_id: Fin session already exists for this conversation. Please use /reply to continue the conversation.
+                Invalid environment:
+                  value:
+                    errors:
+                      environment: Invalid environment
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Validation messages keyed by the field they apply to, or `base` for request-level failures. A field inside an object, such as `message` or `user`, is reported as a nested object keyed by that field.
+                    example:
+                      conversation_id: Conversation ID is required
+                    additionalProperties: true
       requestBody:
         required: true
         content:
@@ -5415,7 +5949,23 @@ paths:
                 user:
                   "$ref": "#/components/schemas/fin_agent_user"
                 message:
-                  "$ref": "#/components/schemas/fin_agent_message"
+                  type: object
+                  description: Optional message posted to the conversation before the procedure runs. Only `body` is required.
+                  properties:
+                    body:
+                      type: string
+                      description: The body of the message.
+                      example: Starting your refund request.
+                    author:
+                      type: string
+                      enum:
+                      - user
+                      - agent
+                      - fin
+                      description: The author of the message.
+                      example: agent
+                  required:
+                  - body
                 conversation_metadata:
                   type: object
                   description: Metadata about the conversation. Only attributes are accepted (no history).
@@ -5518,6 +6068,7 @@ paths:
                     sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                 New conversation:
                   value:
+                    conversation_id: escalate-1a2b3c4d5e6f7a8b
                     intercom_conversation_id: '987654321'
                     status: escalated
               schema:
@@ -5525,7 +6076,7 @@ paths:
                 properties:
                   conversation_id:
                     type: string
-                    description: The external ID of the conversation. Returned when you escalate an existing conversation by `conversation_id` (echoed back). When you escalate a `user`, a new conversation is created and only `intercom_conversation_id` is returned.
+                    description: The external ID of the conversation. When you escalate an existing conversation by `conversation_id`, this echoes the ID you sent. When you escalate a `user`, a new conversation is created and Fin generates this ID for it.
                     example: ext-123
                   intercom_conversation_id:
                     type: string
@@ -5547,20 +6098,13 @@ paths:
           content:
             application/json:
               examples:
-                Neither identifier provided:
+                Not available in this API version:
                   value:
                     type: error.list
                     request_id: b68959ea-6328-4f70-83cb-e7913dba1542
                     errors:
-                    - code: parameter_invalid
-                      message: Either conversation_id or user must be provided
-                Conversation not found:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: Conversation not found
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -5575,8 +6119,74 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token not authorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The request could not be processed. The response body maps each field name to its error message, or uses `base` for request-level failures.
+          content:
+            application/json:
+              examples:
+                Neither identifier provided:
+                  value:
+                    errors:
+                      base: Either conversation_id or user must be provided
+                Both identifiers provided:
+                  value:
+                    errors:
+                      base: Provide either conversation_id or user, not both
+                Conversation not found:
+                  value:
+                    errors:
+                      conversation_id: Conversation not found for the given conversation_id
+                User not supported on Fin for Platforms:
+                  value:
+                    errors:
+                      user: user is not supported for Fin for platforms; only escalating an existing conversation with conversation_id is.
+                Context too long:
+                  value:
+                    errors:
+                      context: context must be 10000 characters or fewer
+                Deprecated message field:
+                  value:
+                    errors:
+                      message: message is no longer supported; provide context instead
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Validation messages keyed by the field they apply to, or `base` for request-level failures. A field inside an object, such as `message` or `user`, is reported as a nested object keyed by that field.
+                    example:
+                      conversation_id: Conversation ID is required
+                    additionalProperties: true
       requestBody:
         required: true
         content:
@@ -26085,6 +26695,20 @@ paths:
                       embedded_rules: []
               schema:
                 "$ref": "#/components/schemas/workflow_export"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Workflow not found
           content:
@@ -26096,21 +26720,21 @@ paths:
                     request_id: b3c8c472-8478-4f10-a29e-a23dbf921c46
                     errors:
                     - code: not_found
-                      message: Workflow not found
+                      message: 'Workflow not found with id: 12345'
               schema:
                 "$ref": "#/components/schemas/error"
-        '403':
-          description: Workflow export is not available for this app
+        '503':
+          description: Workflow export is currently disabled
           content:
             application/json:
               examples:
-                Feature not available:
+                Workflow export disabled:
                   value:
                     type: error.list
                     request_id: d92f7e84-5c31-4a2b-b8e6-9f4c3d2a1b0e
                     errors:
-                    - code: api_plan_restricted
-                      message: Workflow export is not available for this app
+                    - code: service_unavailable
+                      message: Workflow export is currently disabled
               schema:
                 "$ref": "#/components/schemas/error"
 components:
@@ -37248,18 +37872,18 @@ components:
             The timestamp when the message was created.
             Used to deduplicate messages sent within a 5 minute window.
             Ideally should include milliseconds for higher precision.
+            Send either `timestamp` or `timestamp_ms`. If you send both, `timestamp_ms` is used.
           example: '2025-01-24T10:01:20.000Z'
         timestamp_ms:
           type: string
           format: date-time
           description: |
             The timestamp when the message was created, with millisecond precision.
-            Only present in webhook event responses (fin_replied).
+            Accepted in place of `timestamp` when you send a message, and also present in webhook event responses (fin_replied).
           example: '2025-01-24T10:01:20.456Z'
       required:
       - author
       - body
-      - timestamp
     fin_agent_user:
       title: Fin Agent User
       type: object
