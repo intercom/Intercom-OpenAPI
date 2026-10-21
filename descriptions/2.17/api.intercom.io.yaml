@@ -32821,18 +32821,19 @@ components:
               type: string
               description: The identifier for the contact which is given by Intercom.
                 Provide one of `id`, `user_id` or `email`.
-              format: uuid
               minLength: 24
               maxLength: 24
               example: 536e564f316c83104c000020
             user_id:
               type: string
-              description: The external identifier you gave the contact. Provide one of
-                `id`, `user_id` or `email`.
+              description: The external identifier you gave the user. Matches users only;
+                for a lead, use `id` or `email`.
               example: '25'
             email:
               type: string
-              description: The contact's email. Provide one of `id`, `user_id` or `email`.
+              description: The contact's email. Matches a user or a lead, depending on
+                `type`. If several leads share the email, the request fails with `multiple_users`;
+                use `id` instead.
               example: joe@example.com
           required:
           - type
