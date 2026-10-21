@@ -2298,7 +2298,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/article"
         '400':
-          description: Bad Request. A request with an empty body returns a `400` with no response body.
+          description: Bad Request. A JSON request whose body is an empty object returns `400` with no response body.
           content:
             application/json:
               examples:
@@ -2341,7 +2341,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
-          description: Author not found
+          description: 'Not found: the author, an audience, the folder or a collection in `parent_ids` does not exist.'
           content:
             application/json:
               examples:
@@ -2411,7 +2411,6 @@ paths:
                   author_id: 991267497
                   state: published
                   parent_id: 145
-                  parent_type: collection
                   translated_content:
                     fr:
                       title: Merci pour tout
@@ -2601,7 +2600,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/article"
         '400':
-          description: Bad Request. A request with an empty body returns a `400` with no response body.
+          description: Bad Request. A JSON request whose body is an empty object returns `400` with no response body.
           content:
             application/json:
               examples:
@@ -2915,7 +2914,9 @@ paths:
         `body_markdown`, and `author_id`, including per-locale values in
         `translated_content`. Any other field in the request body, such as `state`,
         `parent_id`, `folder_id`, `audience_ids`, the AI availability fields or the
-        scheduling fields, is ignored and leaves the live article untouched.
+        scheduling fields, is ignored and leaves the live article untouched. The
+        scheduling, state and placement notes on the request schema's other fields
+        do not apply to this endpoint, because those fields are ignored.
 
         Requires the `read_write_articles_scope` OAuth scope.
       responses:
@@ -6024,8 +6025,6 @@ paths:
       operationId: listAllCollections
       description: |
         You can fetch a list of all collections by making a GET request to `https://api.intercom.io/help_center/collections`.
-
-        Collections will be returned in descending order on the `updated_at` attribute. This means if you need to iterate through results then we'll show the most recently updated collections first.
 
         Requires the `read_articles_scope` OAuth scope.
       responses:
@@ -33040,7 +33039,7 @@ components:
           type: string
           description: The title of the article. For multilingual articles, this will
             be the title of the default language's content. Required unless a title
-            is provided in `translated_content` for the default language.
+            is provided in `translated_content` under the workspace's default Help Center locale.
           example: Thanks for everything
         description:
           type: string
@@ -33063,7 +33062,7 @@ components:
           description: The id of the author of the article. For multilingual articles,
             this will be the id of the author of the default language's content. Must
             be a teammate on the help center's workspace. Required unless an `author_id`
-            is provided in `translated_content` for the default language.
+            is provided in `translated_content` under the workspace's default Help Center locale.
           example: 1295
         state:
           type: string
@@ -33079,15 +33078,11 @@ components:
           description: The id of the article's parent collection or section. An article
             without this field stands alone.
           example: 18
-        parent_type:
-          type: string
-          description: The type of parent, which can either be a `collection` or `section`.
-          example: collection
         parent_ids:
           type: array
           description: The ids of the parent collections to place this article in.
             Send an empty array to leave the article without a collection. When
-            provided, this takes precedence over `parent_id` and `parent_type`.
+            provided, this takes precedence over `parent_id`.
           items:
             type: integer
           example:
@@ -33097,8 +33092,8 @@ components:
           type: string
           description: The locale of the article's default content, for example `en`.
             Defaults to the locale of the help center that the parent collection belongs
-            to, or to the default help center's locale when no parent is given. Must be
-            a locale supported by the help center.
+            to when `parent_id` is sent, and otherwise to the default Help Center locale.
+            Must be a locale supported by the workspace's Help Center.
           example: en
         translated_content:
           description: Content for other locales, keyed by locale code. Content for the
@@ -33243,7 +33238,7 @@ components:
           type: string
           description: The name of the collection. For multilingual collections, this
             will be the name of the default language's content. Required unless a
-            name is provided in `translated_content` for the default language.
+            name is provided in `translated_content` under the workspace's default Help Center locale.
           example: collection 51
         description:
           type: string
@@ -41100,9 +41095,9 @@ components:
           nullable: true
           description: >-
             ISO 8601 timestamp at which to schedule a future unpublish of the article.
-            The article must be currently published, or be published by the same request;
-            otherwise it returns 400 `parameter_invalid`. Combining with `state: "draft"`
-            also returns 400 `parameter_invalid`. The value must be strictly in the future;
+            The article must already be published; setting `state: "published"` in the
+            same request does not count, and the request returns 400 `parameter_invalid`.
+            Combining with `state: "draft"` also returns 400 `parameter_invalid`. The value must be strictly in the future;
             timestamps in the past or equal to the current time are rejected with 400
             `parameter_invalid`. Setting `null` cancels a pending unpublish schedule.
             Sending in the same request as `scheduled_publish_at` returns 400 — only one
@@ -41199,9 +41194,7 @@ components:
         help_center_id:
           type: integer
           nullable: true
-          description: The id of the help center the collection belongs to. This does
-            not move the collection; if it does not match the collection's current help
-            center, the request returns 400.
+          description: The id of the Help Center the collection belongs to.
           example: 123
 
     update_contact_request:
