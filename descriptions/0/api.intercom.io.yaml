@@ -15204,6 +15204,10 @@ paths:
                         metadata: {}
                         email_message_metadata:
                         app_package_code: null
+                        translations:
+                          original: en
+                          en: "<p>Goodbye :)</p>"
+                          fr: "<p>Au revoir :)</p>"
                       total_count: 1
                 Snooze a conversation:
                   value:
@@ -36144,21 +36148,23 @@ components:
           type: object
           nullable: true
           description: >-
-            A map of the reply text keyed by locale code. Only present on the
-            Preview API version and backs the `conversation.admin.replied.translated`
-            webhook topic. The special `original` key holds the source locale code
-            of the reply; every other key is a locale code whose value is the reply
-            text translated into that locale, as HTML in the same format as `body`.
-            The `body` field is unchanged and always
-            stays in the original source language. Available in the Preview API version
-            only (set `Intercom-Version: Preview`). This webhook topic is not sent for
-            every translated reply: it is suppressed when the reply's `body` contains
-            any text outside an HTML block element, which includes plain-text replies
-            created through the REST API.
+            A map of the reply text keyed by locale code, with values in the
+            same format as `body` (HTML by default). Backs the
+            `conversation.admin.replied.translated` webhook topic. The special
+            `original` key holds the source locale code of the reply when it is
+            known; every other key is a locale code whose value is the reply text
+            translated into that locale. The `translations` field does not modify
+            `body`. Available from API version 2.16.
+            This webhook topic is not sent for every translated reply: it is
+            suppressed when the reply's `body` contains any text outside an HTML block
+            element, which includes plain-text replies created through the REST API.
             Wrap the body in `<p>`, `<div>`, or another supported block element to
             avoid this.
-          required:
-            - original
+          properties:
+            original:
+              type: string
+              description: The locale code identifying the language the reply was originally written in.
+              example: en
           additionalProperties:
             type: string
           example:
@@ -45044,21 +45050,23 @@ components:
           type: object
           nullable: true
           description: >-
-            A map of the reply text keyed by locale code. Only present on the
-            Preview API version and backs the `ticket.admin.replied.translated`
-            webhook topic. The special `original` key holds the source locale code
-            of the reply; every other key is a locale code whose value is the reply
-            text translated into that locale, as HTML in the same format as `body`.
-            The `body` field is unchanged and always
-            stays in the original source language. Available in the Preview API version
-            only (set `Intercom-Version: Preview`). This webhook topic is not sent for
-            every translated reply: it is suppressed when the reply's `body` contains
-            any text outside an HTML block element, which includes plain-text replies
-            created through the REST API.
+            A map of the reply text keyed by locale code, with values in the
+            same format as `body` (HTML by default). Backs the
+            `ticket.admin.replied.translated` webhook topic. The special
+            `original` key holds the source locale code of the reply when it is
+            known; every other key is a locale code whose value is the reply text
+            translated into that locale. The `translations` field does not modify
+            `body`. Available from API version 2.16.
+            This webhook topic is not sent for every translated reply: it is
+            suppressed when the reply's `body` contains any text outside an HTML block
+            element, which includes plain-text replies created through the REST API.
             Wrap the body in `<p>`, `<div>`, or another supported block element to
             avoid this.
-          required:
-            - original
+          properties:
+            original:
+              type: string
+              description: The locale code identifying the language the reply was originally written in.
+              example: en
           additionalProperties:
             type: string
           example:
@@ -45238,21 +45246,23 @@ components:
           type: object
           nullable: true
           description: >-
-            A map of the reply text keyed by locale code. Only present on the
-            Preview API version and backs the `ticket.admin.replied.translated`
-            webhook topic. The special `original` key holds the source locale code
-            of the reply; every other key is a locale code whose value is the reply
-            text translated into that locale, as HTML in the same format as `body`.
-            The `body` field is unchanged and always
-            stays in the original source language. Available in the Preview API version
-            only (set `Intercom-Version: Preview`). This webhook topic is not sent for
-            every translated reply: it is suppressed when the reply's `body` contains
-            any text outside an HTML block element, which includes plain-text replies
-            created through the REST API.
+            A map of the reply text keyed by locale code, with values in the
+            same format as `body` (HTML by default). Backs the
+            `ticket.admin.replied.translated` webhook topic. The special
+            `original` key holds the source locale code of the reply when it is
+            known; every other key is a locale code whose value is the reply text
+            translated into that locale. The `translations` field does not modify
+            `body`. Available from API version 2.16.
+            This webhook topic is not sent for every translated reply: it is
+            suppressed when the reply's `body` contains any text outside an HTML block
+            element, which includes plain-text replies created through the REST API.
             Wrap the body in `<p>`, `<div>`, or another supported block element to
             avoid this.
-          required:
-            - original
+          properties:
+            original:
+              type: string
+              description: The locale code identifying the language the reply was originally written in.
+              example: en
           additionalProperties:
             type: string
           example:
