@@ -1434,6 +1434,21 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to the first page.
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Defaults to 25. Maximum is 250.
+        example: 25
+        schema:
+          type: integer
+          maximum: 250
       tags:
       - Articles
       operationId: listArticles
@@ -1441,7 +1456,7 @@ paths:
         `https://api.intercom.io/articles`.\n\n> \U0001F4D8 How are the articles sorted
         and ordered?\n>\n> Articles will be returned in descending order on the `updated_at`
         attribute. This means if you need to iterate through results then we'll show
-        the most recently updated articles first.\n"
+        the most recently updated articles first.\n\nRequires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.\n"
       responses:
         '200':
           description: successful
@@ -1462,9 +1477,15 @@ paths:
                       type: article
                       workspace_id: this_is_an_id64_that_should_be_at_least_4
                       parent_ids: []
+                      folder_id: null
                       tags:
                         type: tag.list
                         tags: []
+                      exclude_from_article_suggestions: false
+                      help_center_audience: everyone
+                      scheduled_publish_at: null
+                      scheduled_unpublish_at: null
+                      content_id: '61'
                       title: This is the article title
                       description: ''
                       body: ''
@@ -1473,20 +1494,31 @@ paths:
                       state: published
                       created_at: 1734537283
                       updated_at: 1734537283
-                      has_unpublished_changes: false
-                      draft_updated_at: null
                       url: http://help-center.test/myapp-64/en/articles/39-this-is-the-article-title
+                      audience_ids: []
                       ai_chatbot_availability: true
                       ai_copilot_availability: true
                       ai_sales_agent_availability: true
                       created_by_id: 5017691
                       updated_by_id: 5017691
-                      exclude_from_article_suggestions: false
-                      help_center_audience: everyone
-                      scheduled_publish_at: null
-                      scheduled_unpublish_at: null
+                      has_unpublished_changes: false
+                      draft_updated_at: null
               schema:
                 "$ref": "#/components/schemas/article_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Per page too large:
+                  value:
+                    type: error.list
+                    request_id: ea1a3101-3e36-5689-ada2-68bd7a32748a
+                    errors:
+                    - code: parameter_invalid
+                      message: Per Page is too big
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -1512,9 +1544,10 @@ paths:
       - Articles
       operationId: createArticle
       description: "You can create a new article by making a POST request to `https://api.intercom.io/articles`.\n\n>
-        \U0001F4D8 Tags cannot be managed via the Articles API\n>\n> Article tags are
-        read-only in responses. To create, update, or delete tags, use the Intercom
-        UI or the Tags API endpoints.\n"
+        \U0001F4D8 Tags are managed separately\n>\n> Tags are returned in article responses
+        but cannot be set in the request body. To add or remove an article's tags,
+        use the `POST /articles/{article_id}/tags` and `DELETE /articles/{article_id}/tags/{id}`
+        endpoints.\n\nRequires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.\n"
       responses:
         '200':
           description: article created
@@ -1526,7 +1559,9 @@ paths:
                     id: '42'
                     type: article
                     workspace_id: this_is_an_id68_that_should_be_at_least_4
-                    parent_ids: []
+                    parent_ids:
+                    - 145
+                    folder_id: null
                     statistics:
                       type: article_statistics
                       views: 0
@@ -1541,6 +1576,11 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
+                    exclude_from_article_suggestions: false
+                    help_center_audience: everyone
+                    scheduled_publish_at: null
+                    scheduled_unpublish_at: null
+                    content_id: '69'
                     title: Thanks for everything
                     description: Description of the Article
                     body: <p class="no-margin">Body of the Article</p>
@@ -1549,22 +1589,19 @@ paths:
                     state: published
                     created_at: 1734537288
                     updated_at: 1734537288
-                    has_unpublished_changes: false
-                    draft_updated_at: null
                     url: http://help-center.test/myapp-68/en/articles/42-thanks-for-everything
+                    audience_ids: []
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
                     created_by_id: 5017691
                     updated_by_id: 5017691
-                    exclude_from_article_suggestions: false
-                    help_center_audience: everyone
-                    scheduled_publish_at: null
-                    scheduled_unpublish_at: null
+                    has_unpublished_changes: false
+                    draft_updated_at: null
               schema:
                 "$ref": "#/components/schemas/article"
         '400':
-          description: Bad Request
+          description: Bad Request. A JSON request whose body is an empty object returns `400` with no response body.
           content:
             application/json:
               examples:
@@ -1593,6 +1630,48 @@ paths:
                       field: scheduled_unpublish_at
                       message: Cannot set scheduled_publish_at and scheduled_unpublish_at
                         in the same request
+                Missing title:
+                  value:
+                    type: error.list
+                    request_id: b052ee5c-f602-5d9a-8356-94544cd9b12a
+                    errors:
+                    - code: parameter_not_found
+                      message: Title is a required parameter
+                Unsupported locale:
+                  value:
+                    type: error.list
+                    request_id: 00e07e24-9182-5d6a-8830-4a977fd902c9
+                    errors:
+                    - code: data_invalid
+                      message: Locale 'xx' isn't supported.
+                Collection not found:
+                  value:
+                    type: error.list
+                    request_id: 4c9f130d-bfb7-5cab-9a98-7c9fa6650ea9
+                    errors:
+                    - code: parameter_invalid
+                      message: Collection not found
+                Publish time in the past:
+                  value:
+                    type: error.list
+                    request_id: b0015de0-8628-523f-bca1-780ed3bdcc75
+                    errors:
+                    - code: parameter_invalid
+                      message: scheduled_publish_at must be in the future
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: 'Not found: the author, an audience, the folder or a collection in `parent_ids` does not exist.'
+          content:
+            application/json:
+              examples:
+                Author not found:
+                  value:
+                    type: error.list
+                    request_id: e1650d39-7d30-554f-aeb1-b4aa32837f1a
+                    errors:
+                    - code: not_found
+                      message: Admin not found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -1607,6 +1686,34 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Author not authorised:
+                  value:
+                    type: error.list
+                    request_id: 4be1f5b3-3590-5eb7-83df-6d852559f097
+                    errors:
+                    - code: action_forbidden
+                      message: author_id 991267497 is not authorised on this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                Body and body_markdown both provided:
+                  value:
+                    type: error.list
+                    request_id: a560a2a1-1b69-5178-8953-b3d8c982eb29
+                    errors:
+                    - code: parameter_invalid
+                      message: body and body_markdown are mutually exclusive - please provide only one
+                Invalid availability value:
+                  value:
+                    type: error.list
+                    request_id: 3a0b96f7-6f76-5b2e-899a-776192cb6235
+                    errors:
+                    - code: parameter_invalid
+                      message: ai_chatbot_availability must be true or false
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -1657,8 +1764,10 @@ paths:
       tags:
       - Articles
       operationId: retrieveArticle
-      description: You can fetch the details of a single article by making a GET request
-        to `https://api.intercom.io/articles/<id>`.
+      description: |
+        You can fetch the details of a single article by making a GET request to `https://api.intercom.io/articles/<id>`.
+
+        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Article found
@@ -1671,6 +1780,7 @@ paths:
                     type: article
                     workspace_id: this_is_an_id74_that_should_be_at_least_4
                     parent_ids: []
+                    folder_id: null
                     statistics:
                       type: article_statistics
                       views: 0
@@ -1685,6 +1795,11 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
+                    exclude_from_article_suggestions: false
+                    help_center_audience: everyone
+                    scheduled_publish_at: null
+                    scheduled_unpublish_at: null
+                    content_id: '73'
                     title: This is the article title
                     description: ''
                     body: ''
@@ -1693,18 +1808,15 @@ paths:
                     state: published
                     created_at: 1734537292
                     updated_at: 1734537292
-                    has_unpublished_changes: false
-                    draft_updated_at: null
                     url: http://help-center.test/myapp-74/en/articles/45-this-is-the-article-title
+                    audience_ids: []
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
                     created_by_id: 5017691
                     updated_by_id: 5017691
-                    exclude_from_article_suggestions: false
-                    help_center_audience: everyone
-                    scheduled_publish_at: null
-                    scheduled_unpublish_at: null
+                    has_unpublished_changes: false
+                    draft_updated_at: null
               schema:
                 "$ref": "#/components/schemas/article"
         '404':
@@ -1753,10 +1865,10 @@ paths:
       - Articles
       operationId: updateArticle
       description: "You can update the details of a single article by making a PUT
-        request to `https://api.intercom.io/articles/<id>`.\n\n> \U0001F4D8 Tags cannot be
-        managed via the Articles API\n>\n> Article tags are read-only in responses.
-        To create, update, or delete tags, use the Intercom UI or the Tags API
-        endpoints.\n"
+        request to `https://api.intercom.io/articles/<id>`.\n\n> \U0001F4D8 Tags are managed separately\n>\n> Tags are returned in article responses
+        but cannot be set in the request body. To add or remove an article's tags,
+        use the `POST /articles/{article_id}/tags` and `DELETE /articles/{article_id}/tags/{id}`
+        endpoints.\n\nRequires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.\n"
       responses:
         '200':
           description: successful
@@ -1769,6 +1881,7 @@ paths:
                     type: article
                     workspace_id: this_is_an_id80_that_should_be_at_least_4
                     parent_ids: []
+                    folder_id: null
                     statistics:
                       type: article_statistics
                       views: 0
@@ -1783,6 +1896,11 @@ paths:
                     tags:
                       type: tag.list
                       tags: []
+                    exclude_from_article_suggestions: false
+                    help_center_audience: everyone
+                    scheduled_publish_at: null
+                    scheduled_unpublish_at: null
+                    content_id: '79'
                     title: Christmas is here!
                     description: ''
                     body: <p class="no-margin">New gifts in store for the jolly season</p>
@@ -1791,51 +1909,57 @@ paths:
                     state: published
                     created_at: 1734537297
                     updated_at: 1734537298
-                    has_unpublished_changes: false
-                    draft_updated_at: null
                     url: http://help-center.test/myapp-80/en/articles/48-christmas-is-here
+                    audience_ids: []
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
                     created_by_id: 5017691
                     updated_by_id: 5017691
-                    exclude_from_article_suggestions: false
-                    help_center_audience: everyone
-                    scheduled_publish_at: null
-                    scheduled_unpublish_at: null
+                    has_unpublished_changes: false
+                    draft_updated_at: null
               schema:
                 "$ref": "#/components/schemas/article"
         '400':
-          description: Bad Request
+          description: Bad Request. A JSON request whose body is an empty object returns `400` with no response body.
           content:
             application/json:
               examples:
-                Scheduling conflict:
+                Publish and unpublish in the same request:
                   value:
                     type: error.list
-                    request_id: 8d11c1f4-0a55-4f7f-8e2f-4f6c1f3b2c11
+                    request_id: 884b59c8-2bae-51de-b300-e9b78dfa793c
                     errors:
                     - code: parameter_invalid
-                      field: scheduled_publish_at
-                      message: Cannot schedule a publish while setting state to draft
-                Conflicting pending schedules:
+                      message: Cannot schedule a publish and unpublish in the same request
+                Publish time in the past:
                   value:
                     type: error.list
-                    request_id: 0a82a3a4-94f1-4f1a-bea1-aaf41a8d3c22
+                    request_id: 9936f252-ad05-5bf2-b681-c94d83904f71
                     errors:
                     - code: parameter_invalid
-                      field: scheduled_unpublish_at
-                      message: Cannot set scheduled_publish_at and scheduled_unpublish_at
-                        in the same request
-                Unpublish before publish:
+                      message: scheduled_publish_at must be in the future
+                Unpublish on an article that is not published:
                   value:
                     type: error.list
-                    request_id: 11aa22bb-33cc-44dd-55ee-66ff77889900
+                    request_id: 4d09d60a-6f62-5b5e-b71a-92c949fad184
                     errors:
                     - code: parameter_invalid
-                      field: scheduled_unpublish_at
-                      message: Cannot schedule unpublish for an article that has never
-                        been published
+                      message: Cannot schedule an unpublish on an article that is not currently published
+                Unsupported locale:
+                  value:
+                    type: error.list
+                    request_id: bf534ebb-919e-5f80-91d0-35de1deffc4a
+                    errors:
+                    - code: data_invalid
+                      message: Locale 'xx' isn't supported.
+                Collection not found:
+                  value:
+                    type: error.list
+                    request_id: f1c380ad-c52e-50ba-a678-70a258799efe
+                    errors:
+                    - code: parameter_invalid
+                      message: Collection not found
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -1850,6 +1974,13 @@ paths:
                     errors:
                     - code: not_found
                       message: Resource Not Found
+                Author not found:
+                  value:
+                    type: error.list
+                    request_id: da7836a0-95a1-5926-969c-6bc26f5a6633
+                    errors:
+                    - code: not_found
+                      message: Admin not found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -1864,6 +1995,34 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Author not authorised:
+                  value:
+                    type: error.list
+                    request_id: f62b30e2-5b2e-561d-b1e8-01a84a380ee2
+                    errors:
+                    - code: action_forbidden
+                      message: author_id 991267508 is not authorised on this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                Body and body_markdown both provided:
+                  value:
+                    type: error.list
+                    request_id: 2ee5920d-5fd3-5adc-8a58-d3e0cf3723c1
+                    errors:
+                    - code: parameter_invalid
+                      message: body and body_markdown are mutually exclusive - please provide only one
+                Invalid availability value:
+                  value:
+                    type: error.list
+                    request_id: f504af40-1675-56e1-8d06-28eae3412526
+                    errors:
+                    - code: parameter_invalid
+                      message: ai_chatbot_availability must be true or false
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -1902,7 +2061,10 @@ paths:
       tags:
       - Articles
       operationId: deleteArticle
-      description: You can delete a single article by making a DELETE request to `https://api.intercom.io/articles/<id>`.
+      description: |
+        You can delete a single article by making a DELETE request to `https://api.intercom.io/articles/<id>`.
+
+        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: successful
@@ -1944,6 +2106,27 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                Article has dependent procedures:
+                  value:
+                    type: error.list
+                    request_id: d3212011-eabc-5be0-8011-9eb5ff048813
+                    errors:
+                    - code: content_has_procedure_dependencies
+                      message: Article has dependent procedures and cannot be deleted
+                Article is referenced elsewhere:
+                  value:
+                    type: error.list
+                    request_id: ade54c49-399e-52cd-8cc7-951307c40e06
+                    errors:
+                    - code: dependent_references_blocked
+                      message: Can't delete this public article because it is used by "Refund policy" in Main Fin. Remove those references first.
+              schema:
+                "$ref": "#/components/schemas/error"
   "/articles/{id}/draft":
     get:
       summary: Retrieve an article draft
@@ -1983,6 +2166,26 @@ paths:
                     type: article
                     workspace_id: this_is_an_id74_that_should_be_at_least_4
                     parent_ids: []
+                    folder_id: null
+                    statistics:
+                      type: article_statistics
+                      views: 0
+                      conversations: 0
+                      reactions: 0
+                      happy_reaction_percentage: 0
+                      neutral_reaction_percentage: 0
+                      sad_reaction_percentage: 0
+                      fin_involvements: 0
+                      fin_resolutions: 0
+                      fin_resolution_rate: 0
+                    tags:
+                      type: tag.list
+                      tags: []
+                    exclude_from_article_suggestions: false
+                    help_center_audience: everyone
+                    scheduled_publish_at: null
+                    scheduled_unpublish_at: null
+                    content_id: '73'
                     title: This is the draft title
                     description: ''
                     body: <p class="no-margin">Unpublished changes staged as a draft</p>
@@ -1991,12 +2194,15 @@ paths:
                     state: published
                     created_at: 1734537292
                     updated_at: 1734537292
-                    has_unpublished_changes: true
-                    draft_updated_at: 1734537292
                     url: http://help-center.test/myapp-74/en/articles/45-this-is-the-article-title
+                    audience_ids: []
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
+                    created_by_id: 5017691
+                    updated_by_id: 5017691
+                    has_unpublished_changes: true
+                    draft_updated_at: 1734537292
               schema:
                 "$ref": "#/components/schemas/article"
         '404':
@@ -2028,9 +2234,11 @@ paths:
         The article must already be published; staging a draft on an article that
         has never been published returns `422`.
 
-        Only versioned text content (such as `title` and `body`) is staged.
-        Non-versioned fields like AI availability are ignored, leaving the live
-        values untouched.
+        Only text content is staged: `title`, `description`, `body` or
+        `body_markdown`, and `author_id`, including per-locale values in
+        `translated_content`. Any other field in the request body, such as `state`,
+        `parent_id`, `folder_id`, `audience_ids`, the AI availability fields or the
+        scheduling fields, is still validated but not applied, so the live article is left untouched.
 
         Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
@@ -2045,6 +2253,26 @@ paths:
                     type: article
                     workspace_id: this_is_an_id80_that_should_be_at_least_4
                     parent_ids: []
+                    folder_id: null
+                    statistics:
+                      type: article_statistics
+                      views: 0
+                      conversations: 0
+                      reactions: 0
+                      happy_reaction_percentage: 0
+                      neutral_reaction_percentage: 0
+                      sad_reaction_percentage: 0
+                      fin_involvements: 0
+                      fin_resolutions: 0
+                      fin_resolution_rate: 0
+                    tags:
+                      type: tag.list
+                      tags: []
+                    exclude_from_article_suggestions: false
+                    help_center_audience: everyone
+                    scheduled_publish_at: null
+                    scheduled_unpublish_at: null
+                    content_id: '79'
                     title: Christmas is here!
                     description: ''
                     body: <p class="no-margin">New gifts in store for the jolly season</p>
@@ -2053,18 +2281,21 @@ paths:
                     state: published
                     created_at: 1734537297
                     updated_at: 1734537298
-                    has_unpublished_changes: true
-                    draft_updated_at: 1734537298
                     url: http://help-center.test/myapp-80/en/articles/48-christmas-is-here
+                    audience_ids: []
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
+                    created_by_id: 5017691
+                    updated_by_id: 5017691
+                    has_unpublished_changes: true
+                    draft_updated_at: 1734537298
               schema:
                 "$ref": "#/components/schemas/article"
         '404':
           "$ref": "#/components/responses/ObjectNotFound"
         '422':
-          description: Article must be published before a draft can be staged
+          description: Article is not published, or a requested locale is not published
           content:
             application/json:
               examples:
@@ -2131,6 +2362,26 @@ paths:
                     type: article
                     workspace_id: this_is_an_id80_that_should_be_at_least_4
                     parent_ids: []
+                    folder_id: null
+                    statistics:
+                      type: article_statistics
+                      views: 0
+                      conversations: 0
+                      reactions: 0
+                      happy_reaction_percentage: 0
+                      neutral_reaction_percentage: 0
+                      sad_reaction_percentage: 0
+                      fin_involvements: 0
+                      fin_resolutions: 0
+                      fin_resolution_rate: 0
+                    tags:
+                      type: tag.list
+                      tags: []
+                    exclude_from_article_suggestions: false
+                    help_center_audience: everyone
+                    scheduled_publish_at: null
+                    scheduled_unpublish_at: null
+                    content_id: '79'
                     title: Christmas is here!
                     description: ''
                     body: <p class="no-margin">New gifts in store for the jolly season</p>
@@ -2139,12 +2390,15 @@ paths:
                     state: published
                     created_at: 1734537297
                     updated_at: 1734537299
-                    has_unpublished_changes: false
-                    draft_updated_at: null
                     url: http://help-center.test/myapp-80/en/articles/48-christmas-is-here
+                    audience_ids: []
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
+                    created_by_id: 5017691
+                    updated_by_id: 5017691
+                    has_unpublished_changes: false
+                    draft_updated_at: null
               schema:
                 "$ref": "#/components/schemas/article"
         '404':
@@ -2218,15 +2472,15 @@ paths:
       - name: per_page
         in: query
         required: false
-        description: The number of results to return per page.
-        example: 25
+        description: The number of results to return per page. Defaults to 10.
+        example: 10
         schema:
           type: integer
       - name: locale
         in: query
         required: false
         description: Filter versions to a specific locale. Use the locale identifier
-          (for example `en`, `fr`). If the locale is not configured for the workspace,
+          (for example `en`, `fr`). If the article has no content in that locale,
           a `400` is returned.
         example: en
         schema:
@@ -2254,7 +2508,7 @@ paths:
                     pages:
                       type: pages
                       page: 1
-                      per_page: 25
+                      per_page: 10
                       total_pages: 1
                     total_count: 2
                     data:
@@ -2283,17 +2537,17 @@ paths:
               schema:
                 "$ref": "#/components/schemas/article_version_list"
         '400':
-          description: Unknown locale
+          description: No content for the requested locale
           content:
             application/json:
               examples:
-                Unknown locale:
+                No content for locale:
                   value:
                     type: error.list
                     request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
                     errors:
                     - code: parameter_invalid
-                      message: Unknown locale
+                      message: No content found for locale 'fr' on article 123
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -2325,8 +2579,8 @@ paths:
       - name: locale
         in: query
         required: false
-        description: Return the version's content for a specific locale. If the locale
-          is not configured for the workspace, a `400` is returned.
+        description: Return the version's content for a specific locale. If the article
+          has no content in that locale, a `400` is returned.
         example: en
         schema:
           type: string
@@ -2365,17 +2619,17 @@ paths:
               schema:
                 "$ref": "#/components/schemas/article_version"
         '400':
-          description: Unknown locale
+          description: No content for the requested locale
           content:
             application/json:
               examples:
-                Unknown locale:
+                No content for locale:
                   value:
                     type: error.list
                     request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
                     errors:
                     - code: parameter_invalid
-                      message: Unknown locale
+                      message: No content found for locale 'fr' on article 123
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -2465,7 +2719,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
-          description: Article or tag not found
+          description: Article, tag or teammate not found
           content:
             application/json:
               examples:
@@ -2483,6 +2737,13 @@ paths:
                     errors:
                     - code: tag_not_found
                       message: Tag not found
+                Admin not found:
+                  value:
+                    type: error.list
+                    request_id: 7a34a204-9fae-5335-b818-1da0df3b5234
+                    errors:
+                    - code: admin_not_found
+                      message: Admin not found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -2584,18 +2845,24 @@ paths:
       - name: phrase
         in: query
         required: false
-        description: The phrase within your articles to search for.
+        description: The phrase within your articles to search for. Maximum length is 500 characters.
         example: Getting started
         schema:
           type: string
+          maxLength: 500
       - name: state
         in: query
         required: false
         description: The state of the Articles returned. One of `published`, `draft`
-          or `all`.
+          or `all`. Defaults to `published`.
         example: published
         schema:
           type: string
+          enum:
+          - published
+          - draft
+          - all
+          default: published
       - name: help_center_id
         in: query
         required: false
@@ -2611,10 +2878,29 @@ paths:
         example: false
         schema:
           type: boolean
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to the first page.
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Defaults to 10.
+        example: 10
+        schema:
+          type: integer
       tags:
       - Articles
       operationId: searchArticles
-      description: You can search for articles by making a GET request to `https://api.intercom.io/articles/search`.
+      description: |
+        You can search for articles by making a GET request to `https://api.intercom.io/articles/search`.
+
+        If no articles match the search, `data` is an empty array rather than an object.
+
+        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Search successful
@@ -2631,9 +2917,15 @@ paths:
                         type: article
                         workspace_id: this_is_an_id92_that_should_be_at_least_4
                         parent_ids: []
+                        folder_id: null
                         tags:
                           type: tag.list
                           tags: []
+                        exclude_from_article_suggestions: false
+                        help_center_audience: everyone
+                        scheduled_publish_at: null
+                        scheduled_unpublish_at: null
+                        content_id: '91'
                         title: Title 1
                         description: ''
                         body: ''
@@ -2643,16 +2935,25 @@ paths:
                         created_at: 1734537306
                         updated_at: 1734537306
                         url:
+                        audience_ids: []
                         ai_chatbot_availability: true
                         ai_copilot_availability: true
                         ai_sales_agent_availability: true
                         created_by_id: 5017691
                         updated_by_id: 5017691
-                        exclude_from_article_suggestions: false
-                        help_center_audience: everyone
-                        scheduled_publish_at: null
-                        scheduled_unpublish_at: null
+                        has_unpublished_changes: false
+                        draft_updated_at: null
                       highlights: []
+                    pages:
+                      type: pages
+                      page: 1
+                      total_pages: 1
+                      per_page: 10
+                No results:
+                  value:
+                    type: list
+                    total_count: 0
+                    data: []
                     pages:
                       type: pages
                       page: 1
@@ -2660,6 +2961,41 @@ paths:
                       per_page: 10
               schema:
                 "$ref": "#/components/schemas/article_search_response"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Phrase too long:
+                  value:
+                    type: error.list
+                    request_id: 1bc9b60b-0786-5071-8f02-7a1774b9e60c
+                    errors:
+                    - code: parameter_invalid
+                      message: Phrase is too long
+                Invalid state:
+                  value:
+                    type: error.list
+                    request_id: 45ab1896-953a-51ff-ab2a-208ae54fd42c
+                    errors:
+                    - code: parameter_mismatch
+                      message: Article state must be one of published, draft, all
+                Invalid help center:
+                  value:
+                    type: error.list
+                    request_id: 4a19af49-61cb-5405-a03e-240ff7d4e685
+                    errors:
+                    - code: invalid_help_center_id
+                      message: Invalid Help Center ID
+                Invalid pagination:
+                  value:
+                    type: error.list
+                    request_id: a88426cc-4cdd-5084-baf4-4db7b55bd4f9
+                    errors:
+                    - code: data_invalid
+                      message: Pagination data must be a number greater than 0
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -3953,7 +4289,7 @@ paths:
       description: |
         You can fetch a list of all URL redirects for a help center by making a GET request to `https://api.intercom.io/help_center/help_centers/{help_center_id}/redirects`.
 
-        Redirects are returned in descending order on the `updated_at` attribute.
+        Redirects are returned in ascending alphabetical order of `from_url`.
 
         Requires the `read_help_center_redirects_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
@@ -4307,13 +4643,35 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to the first page.
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Defaults to 20. Maximum is 250.
+        example: 20
+        schema:
+          type: integer
+          maximum: 250
+      - name: help_center_id
+        in: query
+        required: false
+        description: Only return collections that belong to this Help Center.
+        example: 123
+        schema:
+          type: integer
       tags:
       - Help Center
       operationId: listAllCollections
       description: |
         You can fetch a list of all collections by making a GET request to `https://api.intercom.io/help_center/collections`.
 
-        Collections will be returned in descending order on the `updated_at` attribute. This means if you need to iterate through results then we'll show the most recently updated collections first.
+        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Successful
@@ -4325,9 +4683,10 @@ paths:
                     type: list
                     data:
                     - id: '159'
+                      type: collection
                       workspace_id: this_is_an_id96_that_should_be_at_least_4
                       name: English collection title
-                      url: http://help-center.test/myapp-96/collection-17
+                      url: http://help-center.test/myapp-96/en/collections/159-english-collection-title
                       order: 17
                       created_at: 1734537309
                       updated_at: 1734537309
@@ -4336,9 +4695,10 @@ paths:
                       parent_id:
                       help_center_id: 79
                     - id: '160'
+                      type: collection
                       workspace_id: this_is_an_id96_that_should_be_at_least_4
                       name: English section title
-                      url: http://help-center.test/myapp-96/section-1
+                      url: http://help-center.test/myapp-96/en/collections/160-english-section-title
                       order: 1
                       created_at: 1734537309
                       updated_at: 1734537309
@@ -4354,6 +4714,27 @@ paths:
                       total_pages: 1
               schema:
                 "$ref": "#/components/schemas/collection_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Per page too large:
+                  value:
+                    type: error.list
+                    request_id: a53bbddf-0c1f-5347-ad35-6e77920c9856
+                    errors:
+                    - code: parameter_invalid
+                      message: Per Page is too big
+                Invalid help center:
+                  value:
+                    type: error.list
+                    request_id: 806bb340-2357-544e-8fc2-8500543d72bd
+                    errors:
+                    - code: invalid_help_center_id
+                      message: Invalid help center id
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -4378,7 +4759,10 @@ paths:
       tags:
       - Help Center
       operationId: createCollection
-      description: You can create a new collection by making a POST request to `https://api.intercom.io/help_center/collections.`
+      description: |
+        You can create a new collection by making a POST request to `https://api.intercom.io/help_center/collections`.
+
+        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: collection created
@@ -4388,9 +4772,10 @@ paths:
                 collection created:
                   value:
                     id: '165'
+                    type: collection
                     workspace_id: this_is_an_id100_that_should_be_at_least_
                     name: Thanks for everything
-                    url: http://help-center.test/myapp-100/
+                    url: http://help-center.test/myapp-100/en/collections/165-thanks-for-everything
                     order: 1
                     created_at: 1734537312
                     updated_at: 1734537312
@@ -4412,6 +4797,20 @@ paths:
                     errors:
                     - code: parameter_not_found
                       message: Name is a required parameter.
+                Invalid help center:
+                  value:
+                    type: error.list
+                    request_id: 68bc842d-927f-5ac0-a16c-27cfa23c2f2f
+                    errors:
+                    - code: invalid_help_center_id
+                      message: Invalid help center id
+                Parent collection not found:
+                  value:
+                    type: error.list
+                    request_id: aefba0b8-1416-5186-9b13-2d2ea4c4eedd
+                    errors:
+                    - code: parameter_invalid
+                      message: Parent collection doesn't exist
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -4460,8 +4859,10 @@ paths:
       tags:
       - Help Center
       operationId: retrieveCollection
-      description: You can fetch the details of a single collection by making a GET
-        request to `https://api.intercom.io/help_center/collections/<id>`.
+      description: |
+        You can fetch the details of a single collection by making a GET request to `https://api.intercom.io/help_center/collections/<id>`.
+
+        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Collection found
@@ -4471,9 +4872,10 @@ paths:
                 Collection found:
                   value:
                     id: '170'
+                    type: collection
                     workspace_id: this_is_an_id106_that_should_be_at_least_
                     name: English collection title
-                    url: http://help-center.test/myapp-106/collection-22
+                    url: http://help-center.test/myapp-106/en/collections/170-english-collection-title
                     order: 22
                     created_at: 1734537315
                     updated_at: 1734537315
@@ -4528,8 +4930,10 @@ paths:
       tags:
       - Help Center
       operationId: updateCollection
-      description: You can update the details of a single collection by making a PUT
-        request to `https://api.intercom.io/collections/<id>`.
+      description: |
+        You can update the details of a single collection by making a PUT request to `https://api.intercom.io/help_center/collections/<id>`.
+
+        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: successful
@@ -4539,9 +4943,10 @@ paths:
                 successful:
                   value:
                     id: '176'
+                    type: collection
                     workspace_id: this_is_an_id112_that_should_be_at_least_
                     name: Update collection name
-                    url: http://help-center.test/myapp-112/collection-25
+                    url: http://help-center.test/myapp-112/en/collections/176-update-collection-name
                     order: 25
                     created_at: 1734537318
                     updated_at: 1734537319
@@ -4551,6 +4956,34 @@ paths:
                     help_center_id: 87
               schema:
                 "$ref": "#/components/schemas/collection"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Help center mismatch:
+                  value:
+                    type: error.list
+                    request_id: 9bd76817-9f0d-5cc1-9ea0-bba489c1469c
+                    errors:
+                    - code: invalid_help_center_id
+                      message: Supplied help center id doesn't match the collection's help center id.
+                Parent collection not found:
+                  value:
+                    type: error.list
+                    request_id: 9a35a830-4e68-528c-bf1b-7f1d3c689edf
+                    errors:
+                    - code: parameter_invalid
+                      message: Parent collection doesn't exist
+                Unsupported locale:
+                  value:
+                    type: error.list
+                    request_id: 0ff611e4-cde8-52c8-8665-1f307615e359
+                    errors:
+                    - code: data_invalid
+                      message: Locale 'xx' isn't supported.
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Collection Not Found
           content:
@@ -4610,8 +5043,10 @@ paths:
       tags:
       - Help Center
       operationId: deleteCollection
-      description: You can delete a single collection by making a DELETE request to
-        `https://api.intercom.io/collections/<id>`.
+      description: |
+        You can delete a single collection by making a DELETE request to `https://api.intercom.io/help_center/collections/<id>`.
+
+        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: successful
@@ -4664,22 +5099,24 @@ paths:
       - name: id
         in: path
         required: true
-        description: The unique identifier for the collection which is given by Intercom.
+        description: The unique identifier for the Help Center which is given by Intercom.
         example: 123
         schema:
           type: integer
       tags:
       - Help Center
       operationId: retrieveHelpCenter
-      description: You can fetch the details of a single Help Center by making a GET
-        request to `https://api.intercom.io/help_center/help_center/<id>`.
+      description: |
+        You can fetch the details of a single Help Center by making a GET request to `https://api.intercom.io/help_center/help_centers/<id>`.
+
+        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
-          description: Collection found
+          description: Help Center found
           content:
             application/json:
               examples:
-                Collection found:
+                Help Center found:
                   value:
                     id: '93'
                     workspace_id: this_is_an_id124_that_should_be_at_least_
@@ -4696,11 +5133,11 @@ paths:
               schema:
                 "$ref": "#/components/schemas/help_center"
         '404':
-          description: Collection not found
+          description: Help Center not found
           content:
             application/json:
               examples:
-                Collection not found:
+                Help Center not found:
                   value:
                     type: error.list
                     request_id: bbd5de60-49c4-4850-afff-1226cdaa0beb
@@ -4734,7 +5171,10 @@ paths:
       tags:
       - Help Center
       operationId: listHelpCenters
-      description: You can list all Help Centers by making a GET request to `https://api.intercom.io/help_center/help_centers`.
+      description: |
+        You can list all Help Centers by making a GET request to `https://api.intercom.io/help_center/help_centers`.
+
+        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Help Centers found
@@ -31067,6 +31507,11 @@ components:
           - article_content
           example: article_content
           nullable: true
+        content_id:
+          type: string
+          readOnly: true
+          description: The unique identifier for the article's content in this locale.
+          example: '6871120'
         title:
           type: string
           description: The title of the article.
@@ -31289,6 +31734,11 @@ components:
           type: string
           description: The id of the workspace which the article belongs to.
           example: hfi1bx4l
+        content_id:
+          type: string
+          description: The unique identifier for the article's content. For multilingual articles,
+            this will be the identifier of the default language's content.
+          example: '6871120'
         title:
           type: string
           description: The title of the article. For multilingual articles, this will
@@ -31371,6 +31821,19 @@ components:
           example:
           - 18
           - 19
+        audience_ids:
+          type: array
+          nullable: true
+          description: >-
+            The list of audience IDs this article is targeted to for Fin AI Agent.
+            This field is only returned for single-language help centers. For
+            multilingual help centers it appears per locale inside `translated_content`.
+            Empty array means no audience targeting is set.
+          items:
+            type: integer
+          example:
+          - 1
+          - 2
         default_locale:
           type: string
           description: The default locale of the help center. This field is only returned
@@ -31602,7 +32065,8 @@ components:
           example: 5
         data:
           type: object
-          description: An object containing the results of the search.
+          description: An object containing the results of the search. When no articles
+            match, this is an empty array instead.
           properties:
             articles:
               type: array
@@ -31892,8 +32356,9 @@ components:
           example: '300'
         state:
           type: string
-          description: Whether this version is the currently published version of
-            the article (`published`) or an earlier non-live version (`draft`).
+          description: '`published` if this is the version that is currently live;
+            `draft` for every other version, including earlier versions that are
+            no longer live and staged changes that have not been published.'
           enum:
           - published
           - draft
@@ -31985,8 +32450,9 @@ components:
           example: '300'
         state:
           type: string
-          description: Whether this version is the currently published version of
-            the article (`published`) or an earlier non-live version (`draft`).
+          description: '`published` if this is the version that is currently live;
+            `draft` for every other version, including earlier versions that are
+            no longer live and staged changes that have not been published.'
           enum:
           - published
           - draft
@@ -32456,6 +32922,12 @@ components:
       description: Collections are top level containers for Articles within the Help
         Center.
       properties:
+        type:
+          type: string
+          description: The type of object - `collection`.
+          enum:
+          - collection
+          example: collection
         id:
           type: string
           description: The unique identifier for the collection which is given by
@@ -32548,8 +33020,9 @@ components:
           example: help_center_redirect
         from_url:
           type: string
-          description: The source URL that is redirected. An absolute URL within the
-            help center's URL space.
+          description: The source URL that is redirected. This is an absolute URL within
+            the help center's URL space, or a relative path such as `/old-page` for
+            some existing redirects.
           example: http://help-center.test/lovelyhelpcenter/old-page
         locale:
           type: string
@@ -36960,8 +37433,9 @@ components:
       properties:
         title:
           type: string
-          description: The title of the article.For multilingual articles, this will
-            be the title of the default language's content.
+          description: The title of the article. For multilingual articles, this will
+            be the title of the default language's content. Required unless a title
+            is provided in `translated_content` under the workspace's default Help Center locale.
           example: Thanks for everything
         description:
           type: string
@@ -36983,7 +37457,8 @@ components:
           type: integer
           description: The id of the author of the article. For multilingual articles,
             this will be the id of the author of the default language's content. Must
-            be a teammate on the help center's workspace.
+            be a teammate on the help center's workspace. Required unless an `author_id`
+            is provided in `translated_content` under the workspace's default Help Center locale.
           example: 1295
         state:
           type: string
@@ -36999,21 +37474,27 @@ components:
           description: The id of the article's parent collection or section. An article
             without this field stands alone.
           example: 18
-        parent_type:
-          type: string
-          description: The type of parent, which can either be a `collection` or `section`.
-          example: collection
         parent_ids:
           type: array
           description: The ids of the parent collections to place this article in.
             Send an empty array to leave the article without a collection. When
-            provided, this takes precedence over `parent_id` and `parent_type`.
+            provided, this takes precedence over `parent_id`.
           items:
             type: integer
           example:
           - 18
           - 19
+        locale:
+          type: string
+          description: The locale of the article's default content, for example `en`.
+            Defaults to the locale of the help center that the parent collection belongs
+            to when `parent_id` is sent, and otherwise to the default Help Center locale.
+            Must be a locale supported by the workspace's Help Center.
+          example: en
         translated_content:
+          description: Content for other locales, keyed by locale code. Content for the
+            article's default locale can also be given here instead of at the top level.
+            If it is given in both places, the values must match.
           "$ref": "#/components/schemas/article_translated_content"
         folder_id:
           type: integer
@@ -37069,16 +37550,14 @@ components:
           nullable: true
           description: >-
             ISO 8601 timestamp at which to schedule a future unpublish of the article.
-            The value must be strictly in the future — timestamps in the past or equal to
-            the current time are rejected with 400 `parameter_invalid`. Setting `null`
-            cancels a pending unpublish schedule. Rejected with 400 `parameter_invalid`
-            if the article has never been published. Sending in the same request as
-            `scheduled_publish_at` returns 400 — only one pending schedule per article.
-            Empty string returns 400 `parameter_invalid`.
+            The same request must also publish the article (`state: "published"`),
+            otherwise it returns 400 `parameter_invalid`. The value must be strictly in
+            the future; timestamps in the past or equal to the current time are rejected
+            with 400 `parameter_invalid`. Setting `null` cancels a pending unpublish
+            schedule. Sending in the same request as `scheduled_publish_at` returns 400
+            — only one pending schedule per article. Empty string returns 400
+            `parameter_invalid`.
           example: '2026-12-31T17:00:00Z'
-      required:
-      - title
-      - author_id
     create_internal_article_request:
       description: You can create an Internal Article
       type: object
@@ -37153,13 +37632,19 @@ components:
         name:
           type: string
           description: The name of the collection. For multilingual collections, this
-            will be the name of the default language's content.
+            will be the name of the default language's content. Required unless a
+            name is provided in `translated_content` under the workspace's default Help Center locale.
           example: collection 51
         description:
           type: string
           description: The description of the collection. For multilingual collections,
             this will be the description of the default language's content.
           example: English description
+        icon:
+          type: string
+          description: The icon of the collection, for example `book-bookmark`. Defaults
+            to `book-bookmark`.
+          example: book-bookmark
         translated_content:
           nullable: true
           "$ref": "#/components/schemas/group_translated_content"
@@ -37175,8 +37660,6 @@ components:
           description: The id of the help center where the collection will be created.
             If `null` then it will be created in the default help center.
           example: '123'
-      required:
-      - name
     create_contact_request:
       description: Payload to create a contact
       type: object
@@ -46150,137 +46633,51 @@ components:
           example:
           - en
           - fr
+        author_id:
+          type: integer
+          description: The id of the teammate to publish as. This is only used when the
+            access token is not associated with a teammate, and is then required; omitting
+            it returns 400 `parameter_not_found`. Otherwise the authenticating teammate
+            is used. Must be a teammate on the workspace.
+          example: 1295
     stage_article_draft_request_body:
-      description: You can Stage a Draft for an Article
+      description: You can stage a draft for a published article. Only the fields below
+        are staged; any other field in the request body is validated but not applied.
       type: object
       title: Stage Article Draft Request Payload
       nullable: true
       properties:
         title:
           type: string
-          description: The title of the article.For multilingual articles, this will
+          description: The title of the draft. For multilingual articles, this will
             be the title of the default language's content.
           example: Thanks for everything
         description:
           type: string
-          description: The description of the article. For multilingual articles,
+          description: The description of the draft. For multilingual articles,
             this will be the description of the default language's content.
           example: Description of the Article
         body:
           type: string
-          description: The content of the article in HTML. For multilingual articles, this
+          description: The content of the draft in HTML. For multilingual articles, this
             will be the body of the default language's content. Mutually exclusive with `body_markdown`.
           example: "<p>This is the body in html</p>"
         body_markdown:
           type: string
-          description: The content of the article in markdown. For multilingual articles, this
-            will be the body of the default language's content. An alternative to `body` — you
-            can provide content as markdown instead of HTML. Mutually exclusive with `body`.
+          description: The content of the draft in markdown. For multilingual articles, this
+            will be the body of the default language's content. Mutually exclusive with `body`.
           example: "## Updated heading\n\nNew content.\n"
         author_id:
           type: integer
-          description: The id of the author of the article. For multilingual articles,
+          description: The id of the author of the draft. For multilingual articles,
             this will be the id of the author of the default language's content. Must
             be a teammate on the help center's workspace.
           example: 1295
-        state:
-          type: string
-          description: Whether the article will be `published` or will be a `draft`.
-            Omitting this field leaves the publish state unchanged, so a draft stays
-            a draft and an edit to a published article goes live immediately unless
-            that article already has a pending draft or a scheduled publish time is
-            set in the same request. The `PUT /articles/{id}/draft` endpoint ignores
-            this field and always stages a draft. For multilingual articles, this
-            will be the state of the default language's content.
-          enum:
-          - published
-          - draft
-          example: draft
-        parent_id:
-          type: string
-          description: The id of the article's parent collection or section. An article
-            without this field stands alone.
-          example: '18'
-        parent_type:
-          type: string
-          description: The type of parent, which can either be a `collection` or `section`.
-          example: collection
-        parent_ids:
-          type: array
-          description: The ids of the parent collections to place this article in.
-            Send an empty array to remove the article from all collections. When
-            provided, this takes precedence over `parent_id` and `parent_type`.
-          items:
-            type: integer
-          example:
-          - 18
-          - 19
         translated_content:
+          description: Draft content for other locales, keyed by locale code. Each locale
+            must already be published on the article.
           "$ref": "#/components/schemas/article_translated_content"
-        folder_id:
-          type: integer
-          nullable: true
-          description: The ID of the folder to place this article in, or null to remove it from its folder.
-          example: 6
-        audience_ids:
-          type: array
-          nullable: true
-          description: >-
-            The list of audience IDs to assign to this article for Fin AI Agent targeting.
-            Sending a top-level `audience_ids` broadcasts the same set to every locale.
-            Sending `audience_ids: []` clears all audience memberships from every locale.
-            For per-locale targeting, use `translated_content.<locale>.audience_ids` instead.
-            Sending both top-level and per-locale in the same request causes top-level to win.
-            Unknown audience IDs return a 404 error. No partial commit occurs.
-          items:
-            type: integer
-          example:
-          - 1
-          - 2
-        ai_chatbot_availability:
-          type: boolean
-          description: Whether the article should be available for AI Chatbot (Fin).
-            For multilingual articles, this sets the default language's availability.
-          example: true
-        ai_copilot_availability:
-          type: boolean
-          description: Whether the article should be available for AI Copilot. For
-            multilingual articles, this sets the default language's availability.
-          example: true
-        ai_sales_agent_availability:
-          type: boolean
-          description: Whether the article should be available for AI Sales Agent.
-            For multilingual articles, this sets the default language's availability.
-          example: true
-        scheduled_publish_at:
-          type: string
-          format: date-time
-          nullable: true
-          description: >-
-            ISO 8601 timestamp at which to schedule a future publish of the article.
-            When set together with `state: "published"`, the article is scheduled
-            instead of published immediately. Setting `null` cancels a pending
-            publish schedule. Timestamps in the past or equal to the current time
-            are rejected with 400 `parameter_invalid` — the value must be strictly
-            in the future. Combining with `state: "draft"` returns 400
-            `parameter_invalid`. Sending in the same request as
-            `scheduled_unpublish_at` returns 400 — only one pending schedule per
-            article. Empty string returns 400 `parameter_invalid`.
-          example: '2026-12-31T09:00:00Z'
-        scheduled_unpublish_at:
-          type: string
-          format: date-time
-          nullable: true
-          description: >-
-            ISO 8601 timestamp at which to schedule a future unpublish of the article.
-            Setting `null` cancels a pending unpublish schedule. Timestamps in the
-            past or equal to the current time are rejected with 400
-            `parameter_invalid` — the value must be strictly in the future. Rejected
-            with 400 `parameter_invalid` if the article has never been published.
-            Sending in the same request as `scheduled_publish_at` returns 400 — only
-            one pending schedule per article. Empty string returns 400
-            `parameter_invalid`.
-          example: '2026-12-31T17:00:00Z'
+
     update_article_request:
       description: You can Update an Article
       type: object
@@ -46289,7 +46686,7 @@ components:
       properties:
         title:
           type: string
-          description: The title of the article.For multilingual articles, this will
+          description: The title of the article. For multilingual articles, this will
             be the title of the default language's content.
           example: Thanks for everything
         description:
@@ -46320,27 +46717,25 @@ components:
             Omitting this field leaves the publish state unchanged, so a draft stays
             a draft and an edit to a published article goes live immediately unless
             that article already has a pending draft or a scheduled publish time is
-            set in the same request. The `PUT /articles/{id}/draft` endpoint ignores
-            this field and always stages a draft. For multilingual articles, this
-            will be the state of the default language's content.
+            set in the same request. For multilingual articles, this will be the state
+            of the default language's content.
           enum:
           - published
           - draft
           example: draft
         parent_id:
           type: string
-          description: The id of the article's parent collection or section. An article
-            without this field stands alone.
+          nullable: true
+          description: >-
+            The id of the collection or section to move the article into. Omitting this
+            field or sending `null` leaves the article's parent unchanged. Send `home` to
+            remove the article from its collection so that it stands alone.
           example: '18'
-        parent_type:
-          type: string
-          description: The type of parent, which can either be a `collection` or `section`.
-          example: collection
         parent_ids:
           type: array
           description: The ids of the parent collections to place this article in.
             Send an empty array to remove the article from all collections. When
-            provided, this takes precedence over `parent_id` and `parent_type`.
+            provided, this takes precedence over `parent_id`.
           items:
             type: integer
           example:
@@ -46403,12 +46798,13 @@ components:
           nullable: true
           description: >-
             ISO 8601 timestamp at which to schedule a future unpublish of the article.
-            The value must be strictly in the future — timestamps in the past or equal to
-            the current time are rejected with 400 `parameter_invalid`. Setting `null`
-            cancels a pending unpublish schedule. Rejected with 400 `parameter_invalid`
-            if the article has never been published. Sending in the same request as
-            `scheduled_publish_at` returns 400 — only one pending schedule per article.
-            Empty string returns 400 `parameter_invalid`.
+            The article must already be published; setting `state: "published"` in the
+            same request does not count, and the request returns 400 `parameter_invalid`.
+            Combining with `state: "draft"` also returns 400 `parameter_invalid`. The value must be strictly in the future;
+            timestamps in the past or equal to the current time are rejected with 400
+            `parameter_invalid`. Setting `null` cancels a pending unpublish schedule.
+            Sending in the same request as `scheduled_publish_at` returns 400 — only one
+            pending schedule per article. Empty string returns 400 `parameter_invalid`.
           example: '2026-12-31T17:00:00Z'
     update_internal_article_request:
       description: You can Update an Internal Article
@@ -46483,15 +46879,28 @@ components:
           description: The description of the collection. For multilingual collections,
             this will be the description of the default language's content.
           example: English description
+        icon:
+          type: string
+          description: The icon of the collection, for example `book-bookmark`.
+          example: book-bookmark
         translated_content:
           nullable: true
           "$ref": "#/components/schemas/group_translated_content"
         parent_id:
           type: string
           nullable: true
-          description: The id of the parent collection. If `null` then it will be
-            updated as the first level collection.
+          description: >-
+            The id of the parent collection to move the collection into. Omitting this
+            field or sending `null` leaves the collection where it is. Send `home` to move
+            it to the first level.
           example: '6871118'
+        help_center_id:
+          type: integer
+          nullable: true
+          description: Checked against the collection's Help Center but not applied, so it
+            can't move the collection to another Help Center.
+          example: 123
+
     update_contact_request:
       description: You can update a contact
       type: object
