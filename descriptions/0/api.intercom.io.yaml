@@ -27528,7 +27528,7 @@ paths:
         {% admonition type="warning" name="Optimizing search queries" %}
           Search queries can be complex, so optimizing them can help the performance of your search.
           Use the `AND` and `OR` operators to combine multiple filters to get the exact results you need and utilize
-          pagination to limit the number of results returned. The default is `20` results per page.
+          pagination to limit the number of results returned. The default is `20` results per page and maximum is `150`.
           See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#example-search-conversations-request) for more details on how to use the `starting_after` param.
         {% /admonition %}
 
@@ -27542,19 +27542,18 @@ paths:
         ### Accepted Fields
 
         Most keys listed as part of the Ticket model are searchable, whether writeable or not. The value you search for has to match the accepted type, otherwise the query will fail (ie. as `created_at` accepts a date, the `value` cannot be a string such as `"foobar"`).
-        The `source.body` field is unique as the search will not be performed against the entire value, but instead against every element of the value separately. For example, when searching for a conversation with a `"I need support"` body - the query should contain a `=` operator with the value `"support"` for such conversation to be returned. A query with a `=` operator and a `"need support"` value will not yield a result.
+        Fields not in the table below, such as `source.body`, are rejected with a `400` error.
 
         | Field                                     | Type                                                                                     |
         | :---------------------------------------- | :--------------------------------------------------------------------------------------- |
-        | id                                        | String                                                                                   |
+        | id                                        | Integer                                                                                  |
         | created_at                                | Date (Unix timestamp in seconds)                                                                    |
         | updated_at                                | Date (Unix timestamp in seconds)                                                                    |
         | title                           | String                                                                                   |
         | description                     | String                                                                                   |
         | category                                  | String                                                                                   |
-        | ticket_type_id                            | String                                                                                   |
+        | ticket_type_id                            | Integer                                                                                  |
         | contact_ids                               | String                                                                                   |
-        | teammate_ids                              | String                                                                                   |
         | admin_assignee_id                         | Integer                                                                                  |
         | team_assignee_id                          | Integer                                                                                  |
         | open                                      | Boolean                                                                                  |
@@ -27568,6 +27567,10 @@ paths:
         * For **Back-office** category tickets, use the term `task`.
         * For **Tracker** category tickets, use the term `tracker`.
         {% /admonition %}
+
+        ### Sorting
+
+        You can sort the results with a `sort` object, for example `{"field": "created_at", "order": "ascending"}`. `field` must be one of the fields in the table above, other than `ticket_attribute.{id}`. `order` is `ascending` or `descending`, and any other value is treated as `descending`. Without `sort`, results are sorted by `updated_at`, newest first.
 
         ### Accepted Operators
 
