@@ -27031,7 +27031,7 @@ components:
           - list
           example: list
         pages:
-          "$ref": "#/components/schemas/cursor_pages"
+          "$ref": "#/components/schemas/pages_link"
         total_count:
           type: integer
           description: A count of the total number of internal articles.
@@ -27116,7 +27116,7 @@ components:
           - list
           example: list
         pages:
-          "$ref": "#/components/schemas/cursor_pages"
+          "$ref": "#/components/schemas/pages_link"
         total_count:
           type: integer
           description: A count of the total number of articles.
@@ -27470,7 +27470,7 @@ components:
               items:
                 "$ref": "#/components/schemas/article_search_highlights"
         pages:
-          "$ref": "#/components/schemas/cursor_pages"
+          "$ref": "#/components/schemas/pages_link"
     internal_article_search_response:
       title: Internal Article Search Response
       type: object
@@ -27494,7 +27494,7 @@ components:
           items:
             "$ref": "#/components/schemas/internal_article"
         pages:
-          "$ref": "#/components/schemas/cursor_pages"
+          "$ref": "#/components/schemas/pages_link"
     article_statistics:
       title: Article Statistics
       type: object
@@ -27773,7 +27773,7 @@ components:
           - list
           example: list
         pages:
-          "$ref": "#/components/schemas/cursor_pages"
+          "$ref": "#/components/schemas/pages_link"
         total_count:
           type: integer
           description: A count of the total number of versions.
@@ -28445,7 +28445,7 @@ components:
           - list
           example: list
         pages:
-          "$ref": "#/components/schemas/cursor_pages"
+          "$ref": "#/components/schemas/pages_link"
         total_count:
           type: integer
           description: A count of the total number of redirects.
@@ -28519,7 +28519,7 @@ components:
           - list
           example: list
         pages:
-          "$ref": "#/components/schemas/cursor_pages"
+          "$ref": "#/components/schemas/pages_link"
         total_count:
           type: integer
           description: A count of the total number of collections.
@@ -33638,7 +33638,20 @@ components:
           description: The current page
           example: 1
         next:
-          "$ref": "#/components/schemas/starting_after_paging"
+          type: object
+          nullable: true
+          description: Fetch the next page by sending this `starting_after` cursor.
+            Omitted on the last page.
+          properties:
+            page:
+              type: integer
+              description: The number of the next page
+              example: 2
+            starting_after:
+              type: string
+              description: The cursor to send in the next request to get the next
+                page of results.
+              example: your-cursor-from-response
         per_page:
           type: integer
           description: Number of results per page
@@ -36454,12 +36467,15 @@ components:
                 nullable: true
                 description: Optional. Human readable description of the error.
                 example: Access Token Invalid
-              field:
-                type: string
+              data:
+                type: object
                 nullable: true
-                description: Optional. Used to identify a particular field or query
-                  parameter that was in error.
-                example: email
+                additionalProperties: true
+                description: Optional. Extra detail about the error, for example
+                  `required_permissions` on a 403 `action_forbidden` error.
+                example:
+                  required_permissions:
+                  - read_conversations
             required:
             - code
       required:
@@ -37694,11 +37710,10 @@ components:
           - "192.168.1.0/24"
           - "10.0.0.1"
     intercom_version:
-      description: Intercom API version.</br>By default, it's equal to the version
-        set in the app package.
+      description: Intercom API version.</br>If you omit the header, the API uses the
+        version set in your app package, and 1.0 if none is set.
       type: string
       example: '2.17'
-      default: '2.17'
       enum:
       - '1.0'
       - '1.1'
@@ -38694,8 +38709,15 @@ components:
         next:
           type: string
           format: uri
-          description: A link to the next page of results. A response that does not
-            contain a next link does not have further data to fetch.
+          description: A link to the next page of results. Omitted on the last page.
+            Some lists never include `next` or `prev`, so compare `page` with `total_pages`
+            to tell whether more pages remain.
+          nullable: true
+        prev:
+          type: string
+          format: uri
+          description: A link to the previous page of results. Omitted on the first
+            page.
           nullable: true
         per_page:
           type: integer
@@ -41392,7 +41414,7 @@ components:
                 type: error.list
                 request_id: 12a938a3-314e-4939-b773-5cd45738bd21
                 errors:
-                  - code: data_invalid
+                  - code: not_found
                     message: Integration not found
           schema:
             "$ref": "#/components/schemas/error"
@@ -41406,7 +41428,7 @@ components:
                 type: error.list
                 request_id: 12a938a3-314e-4939-b773-5cd45738bd21
                 errors:
-                  - code: data_invalid
+                  - code: parameter_invalid
                     message: Invalid or duplicated record reference
           schema:
             "$ref": "#/components/schemas/error"
@@ -41420,8 +41442,8 @@ components:
                 type: error.list
                 request_id: 12a938a3-314e-4939-b773-5cd45738bd21
                 errors:
-                  - code: data_invalid
-                    message: Contact not found or could not be created
+                  - code: parameter_invalid
+                    message: Parameter invalid
           schema:
             "$ref": "#/components/schemas/error"
 servers:
