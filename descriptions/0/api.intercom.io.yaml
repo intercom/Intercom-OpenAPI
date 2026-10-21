@@ -792,10 +792,30 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: The page of results to fetch. Defaults to the first page.
+        example: 1
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 150
+          default: 50
+        description: The number of results to return per page. Maximum 150.
+        example: 50
       tags:
       - AI Content
       operationId: listContentImportSources
-      description: You can retrieve a list of all content import sources for a workspace.
+      description: |
+        You can retrieve a list of all content import sources for a workspace.
+
+        Requires the `read_write_ai_content` OAuth scope.
       responses:
         '200':
           description: successful
@@ -853,6 +873,34 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Invalid page:
+                  value:
+                    type: error.list
+                    request_id: 6c1f2a54-8d0b-4e0e-9a43-0f5b1d7a2c11
+                    errors:
+                    - code: parameter_invalid
+                      message: Page must be greater than or equal to 1
+                Page size too large:
+                  value:
+                    type: error.list
+                    request_id: b7d94e0a-3f52-4c58-8a1e-52c0e9d36f27
+                    errors:
+                    - code: parameter_invalid
+                      message: Page size must be less than or equal to 150
               schema:
                 "$ref": "#/components/schemas/error"
     post:
@@ -865,8 +913,10 @@ paths:
       tags:
       - AI Content
       operationId: createContentImportSource
-      description: You can create a new content import source by sending a POST request
-        to this endpoint.
+      description: |
+        You can create a new content import source by sending a POST request to this endpoint.
+
+        Requires the `read_write_ai_content` OAuth scope.
       responses:
         '200':
           description: successful
@@ -898,6 +948,48 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing parameter:
+                  value:
+                    type: error.list
+                    request_id: 0a7e5c31-9b24-4d86-b3f1-6e8d2c4a9f15
+                    errors:
+                    - code: parameter_not_found
+                      message: sync_behavior is a required parameter
+                Invalid URL:
+                  value:
+                    type: error.list
+                    request_id: 73d1b8e6-4c0a-4f59-82d7-a5e91c3b0f48
+                    errors:
+                    - code: parameter_invalid
+                      message: URL must be a valid URI with a http or https protocol
+                Sync behavior must be api:
+                  value:
+                    type: error.list
+                    request_id: c5f09a27-3e81-4b6d-9a42-d8b17e6c0a93
+                    errors:
+                    - code: parameter_invalid
+                      message: Sync behavior must be api
+                Invalid audience IDs:
+                  value:
+                    type: error.list
+                    request_id: 1e6b3d98-a2c7-4f05-8b91-47d0c5e2a6f3
+                    errors:
+                    - code: parameter_invalid
+                      message: audience_ids contains invalid audience references
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -923,9 +1015,10 @@ paths:
     delete:
       summary: Delete a content import source
       operationId: deleteContentImportSource
-      description: You can delete a content import source by making a DELETE request
-        this endpoint. This will also delete all external pages that were imported
-        from this source.
+      description: |
+        You can delete a content import source by making a DELETE request this endpoint. This will also delete all external pages that were imported from this source.
+
+        Requires the `read_write_ai_content` OAuth scope.
       parameters:
       - name: Intercom-Version
         in: header
@@ -948,11 +1041,36 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Content import source not found
+          content:
+            application/json:
+              examples:
+                Content import source not found:
+                  value:
+                    type: error.list
+                    request_id: 2f8a6d13-5b7c-4e49-b0d2-9e1c4a7f3b58
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
     get:
       summary: Retrieve a content import source
       operationId: getContentImportSource
+      description: |
+        You can retrieve a content import source.
+
+        Requires the `read_write_ai_content` OAuth scope.
       parameters:
       - name: Intercom-Version
         in: header
@@ -991,6 +1109,27 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Content import source not found
+          content:
+            application/json:
+              examples:
+                Content import source not found:
+                  value:
+                    type: error.list
+                    request_id: 2f8a6d13-5b7c-4e49-b0d2-9e1c4a7f3b58
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
     put:
@@ -1003,7 +1142,10 @@ paths:
       tags:
       - AI Content
       operationId: updateContentImportSource
-      description: You can update an existing content import source.
+      description: |
+        You can update an existing content import source.
+
+        Requires the `read_write_ai_content` OAuth scope.
       responses:
         '200':
           description: successful
@@ -1035,6 +1177,55 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing parameter:
+                  value:
+                    type: error.list
+                    request_id: 9d3a1f60-5e27-4c84-a0b6-2f7c8e1d4b59
+                    errors:
+                    - code: parameter_not_found
+                      message: url is a required parameter
+                Sync behavior must be api:
+                  value:
+                    type: error.list
+                    request_id: 4b8e2c75-0d19-4a63-95f8-e3a1b7c60d24
+                    errors:
+                    - code: parameter_invalid
+                      message: Sync behavior must be api
+                Invalid audience IDs:
+                  value:
+                    type: error.list
+                    request_id: f2c75a09-6b3e-4d18-b4a7-80e9d1c35f62
+                    errors:
+                    - code: parameter_invalid
+                      message: audience_ids contains invalid audience references
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Content import source not found
+          content:
+            application/json:
+              examples:
+                Content import source not found:
+                  value:
+                    type: error.list
+                    request_id: 2f8a6d13-5b7c-4e49-b0d2-9e1c4a7f3b58
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -1056,10 +1247,30 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: The page of results to fetch. Defaults to the first page.
+        example: 1
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 150
+          default: 50
+        description: The number of results to return per page. Maximum 150.
+        example: 50
       tags:
       - AI Content
       operationId: listExternalPages
-      description: You can retrieve a list of all external pages for a workspace.
+      description: |
+        You can retrieve a list of all external pages for a workspace.
+
+        Requires the `read_write_ai_content` OAuth scope.
       responses:
         '200':
           description: successful
@@ -1081,6 +1292,9 @@ paths:
                       locale: en
                       source_id: 42
                       external_id: '3'
+                      tags:
+                        type: tag.list
+                        tags: []
                       created_at: 1734537269
                       updated_at: 1734537269
                       last_ingested_at: 1734537269
@@ -1099,6 +1313,9 @@ paths:
                       locale: en
                       source_id: 41
                       external_id: '2'
+                      tags:
+                        type: tag.list
+                        tags: []
                       created_at: 1734537269
                       updated_at: 1734537269
                       last_ingested_at: 1734537269
@@ -1114,6 +1331,9 @@ paths:
                       locale: en
                       source_id: 40
                       external_id: '1'
+                      tags:
+                        type: tag.list
+                        tags: []
                       created_at: 1734537269
                       updated_at: 1734537269
                       last_ingested_at: 1734537269
@@ -1138,6 +1358,34 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Invalid page:
+                  value:
+                    type: error.list
+                    request_id: 6c1f2a54-8d0b-4e0e-9a43-0f5b1d7a2c11
+                    errors:
+                    - code: parameter_invalid
+                      message: Page must be greater than or equal to 1
+                Page size too large:
+                  value:
+                    type: error.list
+                    request_id: b7d94e0a-3f52-4c58-8a1e-52c0e9d36f27
+                    errors:
+                    - code: parameter_invalid
+                      message: Page size must be less than or equal to 150
               schema:
                 "$ref": "#/components/schemas/error"
     post:
@@ -1150,9 +1398,10 @@ paths:
       tags:
       - AI Content
       operationId: createExternalPage
-      description: You can create a new external page by sending a POST request to
-        this endpoint. If an external page already exists with the specified source_id
-        and external_id, it will be updated instead.
+      description: |
+        You can create a new external page by sending a POST request to this endpoint. If an external page already exists with the specified source_id and external_id, it will be updated instead.
+
+        Requires the `read_write_ai_content` OAuth scope.
       responses:
         '200':
           description: successful
@@ -1173,6 +1422,9 @@ paths:
                     locale: en
                     source_id: 44
                     external_id: abc1234
+                    tags:
+                      type: tag.list
+                      tags: []
                     created_at: 1734537273
                     updated_at: 1734537274
                     last_ingested_at: 1734537274
@@ -1181,6 +1433,34 @@ paths:
                     - 2
               schema:
                 "$ref": "#/components/schemas/external_page"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing parameter:
+                  value:
+                    type: error.list
+                    request_id: 3a9d6e21-8f04-4b7c-a5d3-1c0e7b92f846
+                    errors:
+                    - code: parameter_not_found
+                      message: external_id is a required parameter
+                Unsupported locale:
+                  value:
+                    type: error.list
+                    request_id: a8e14c63-2d75-4f09-b1a8-6d3f90c5e7b2
+                    errors:
+                    - code: parameter_invalid
+                      message: Locale must be supported
+                Source is not an API source:
+                  value:
+                    type: error.list
+                    request_id: 5f0b9d84-1a36-4e72-8c4d-b27e5a1f0c69
+                    errors:
+                    - code: parameter_invalid
+                      message: Content Import Source must have API sync behaviour
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -1193,6 +1473,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -1244,8 +1531,10 @@ paths:
       tags:
       - AI Content
       operationId: deleteExternalPage
-      description: Sending a DELETE request for an external page will remove it from
-        the content library UI and from being used for AI answers.
+      description: |
+        Sending a DELETE request for an external page will remove it from the content library UI and from being used for AI answers.
+
+        Requires the `read_write_ai_content` OAuth scope.
       responses:
         '200':
           description: successful
@@ -1266,6 +1555,9 @@ paths:
                     locale: en
                     source_id: 45
                     external_id: '4'
+                    tags:
+                      type: tag.list
+                      tags: []
                     created_at: 1734537276
                     updated_at: 1734537276
                     last_ingested_at: 1734537276
@@ -1286,6 +1578,27 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: External page not found
+          content:
+            application/json:
+              examples:
+                External page not found:
+                  value:
+                    type: error.list
+                    request_id: d41b7e92-6a03-4f8c-91e5-3c2a8b0f6d74
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
     get:
@@ -1298,7 +1611,10 @@ paths:
       tags:
       - AI Content
       operationId: getExternalPage
-      description: You can retrieve an external page.
+      description: |
+        You can retrieve an external page.
+
+        Requires the `read_write_ai_content` OAuth scope.
       responses:
         '200':
           description: successful
@@ -1319,6 +1635,9 @@ paths:
                     locale: en
                     source_id: 46
                     external_id: '5'
+                    tags:
+                      type: tag.list
+                      tags: []
                     created_at: 1734537278
                     updated_at: 1734537278
                     last_ingested_at: 1734537278
@@ -1339,6 +1658,27 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: External page not found
+          content:
+            application/json:
+              examples:
+                External page not found:
+                  value:
+                    type: error.list
+                    request_id: d41b7e92-6a03-4f8c-91e5-3c2a8b0f6d74
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
     put:
@@ -1351,8 +1691,10 @@ paths:
       tags:
       - AI Content
       operationId: updateExternalPage
-      description: You can update an existing external page (if it was created via
-        the API).
+      description: |
+        You can update an existing external page (if it was created via the API).
+
+        Requires the `read_write_ai_content` OAuth scope.
       responses:
         '200':
           description: successful
@@ -1373,6 +1715,9 @@ paths:
                     locale: en
                     source_id: 47
                     external_id: '5678'
+                    tags:
+                      type: tag.list
+                      tags: []
                     created_at: 1734537280
                     updated_at: 1734537281
                     last_ingested_at: 1734537281
@@ -1381,6 +1726,34 @@ paths:
                     - 2
               schema:
                 "$ref": "#/components/schemas/external_page"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing parameter:
+                  value:
+                    type: error.list
+                    request_id: e07c4a15-9b62-4d38-a1f5-c3d8b6e20a74
+                    errors:
+                    - code: parameter_not_found
+                      message: html is a required parameter
+                Source cannot be changed:
+                  value:
+                    type: error.list
+                    request_id: 2d9f6b30-7a58-4c14-93e6-0b4a1d8c5f27
+                    errors:
+                    - code: parameter_invalid
+                      message: You can't update source_id
+                Unsupported locale:
+                  value:
+                    type: error.list
+                    request_id: b61a3e97-4c08-4f25-8d70-9e5c2a1b7d43
+                    errors:
+                    - code: parameter_invalid
+                      message: Locale must be supported
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -1393,6 +1766,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -34780,10 +35160,12 @@ components:
           example: api
         status:
           type: string
-          description: The status of the content import source.
+          description: The status of the content import source. A source that is being
+            deleted has the status `deletion_in_progress`.
           enum:
           - active
           - deactivated
+          - deletion_in_progress
           default: active
           example: active
         url:
@@ -37290,7 +37672,8 @@ components:
           example: active
         url:
           type: string
-          description: The URL of the content import source.
+          description: The URL of the content import source. It must be an http or https
+            URL on a publicly reachable domain.
           example: https://help.example.com
         audience_ids:
           nullable: true
@@ -37586,10 +37969,8 @@ components:
           example: true
         locale:
           type: string
-          description: Always en
-          enum:
-          - en
-          default: en
+          description: The language code of the external page, for example `en`
+            or `fr`. It must be a language supported by the workspace.
           example: en
         source_id:
           type: integer
@@ -41774,10 +42155,8 @@ components:
           example: true
         locale:
           type: string
-          description: Always en
-          enum:
-          - en
-          default: en
+          description: The language code of the external page, for example `en`
+            or `fr`.
           example: en
         source_id:
           type: integer
@@ -41793,6 +42172,8 @@ components:
           description: The identifier for the external page which was given by the
             source. Must be unique for the source.
           example: '5678'
+        tags:
+          "$ref": "#/components/schemas/tags"
         created_at:
           type: integer
           format: date-time
@@ -46590,8 +46971,9 @@ components:
           example: active
         url:
           type: string
-          description: The URL of the content import source. This may only be different
-            from the existing value if the sync behavior is API.
+          description: The URL of the content import source. It must be an http or https
+            URL on a publicly reachable domain. This may only be different from the
+            existing value if the sync behavior is API.
           example: https://help.example.com
         audience_ids:
           nullable: true
@@ -46716,17 +47098,10 @@ components:
           description: Whether the external page should be used to answer questions
             by AI Sales Agent.
           example: true
-        fin_availability:
-          type: boolean
-          description: Deprecated. Use ai_agent_availability, ai_copilot_availability,
-            and ai_sales_agent_availability instead.
-          example: true
         locale:
           type: string
-          description: Always en
-          enum:
-          - en
-          default: en
+          description: The language code of the external page, for example `en`
+            or `fr`. It must be a language supported by the workspace.
           example: en
         source_id:
           type: integer
@@ -46758,9 +47133,9 @@ components:
       required:
       - title
       - html
-      - url
       - locale
       - source_id
+      - external_id
     update_team_members_request:
       description: |
         The request payload for updating a team's membership.
