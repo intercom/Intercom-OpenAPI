@@ -28528,7 +28528,9 @@ paths:
       operationId: listBrands
       description: |
         Retrieves all brands for the workspace, including the default brand.
-        The default brand id always matches the workspace
+        The default brand id always matches the workspace id.
+
+        Requires the `read_brands` OAuth scope.
       parameters:
         - name: Intercom-Version
           in: header
@@ -28566,6 +28568,21 @@ paths:
           description: Unauthorized
           content:
             application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                      - code: unauthorized
+                        message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                      - code: token_unauthorized
+                        message: Not authorized to access resource
               schema:
                 $ref: "#/components/schemas/error"
   "/brands/{id}":
@@ -28574,7 +28591,10 @@ paths:
       tags:
         - Brands
       operationId: retrieveBrand
-      description: Fetches a specific brand by its unique identifier
+      description: |
+        Fetches a specific brand by its unique identifier
+
+        Requires the `read_brands` OAuth scope.
       parameters:
         - name: Intercom-Version
           in: header
@@ -28608,6 +28628,21 @@ paths:
           description: Unauthorized
           content:
             application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                      - code: unauthorized
+                        message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                      - code: token_unauthorized
+                        message: Not authorized to access resource
               schema:
                 $ref: "#/components/schemas/error"
         '404':
@@ -28622,7 +28657,7 @@ paths:
                     type: error.list
                     request_id: "req_12345"
                     errors:
-                      - code: not_found
+                      - code: brand_not_found
                         message: Brand not found
   "/emails":
     get:
