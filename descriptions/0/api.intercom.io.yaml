@@ -32343,6 +32343,7 @@ components:
           - wrap_up
           - on_a_call
           - coaching
+          - null
           example: wrap_up
     away_status_reason_list:
       title: Away Status Reasons
@@ -33273,7 +33274,12 @@ components:
           type: object
           description: The custom attributes you have set on the company.
           additionalProperties:
-            type: string
+            anyOf:
+            - type: string
+              nullable: true
+            - type: integer
+            - type: number
+            - type: boolean
           example:
             paid_subscriber: true
             monthly_spend: 155.5
@@ -37735,7 +37741,7 @@ components:
         size:
           type: integer
           description: The number of employees in this company.
-          example: '100'
+          example: 100
         website:
           type: string
           description: The URL for this company's website. Please note that the value
@@ -37747,10 +37753,16 @@ components:
           example: Manufacturing
         custom_attributes:
           type: object
-          description: A hash of key/value pairs containing any other data about the
-            company you want Intercom to store.
+          description: Values for custom attributes that already exist in your workspace.
+            Each value can be a string, integer, number, boolean or null. Arrays and
+            objects aren't accepted.
           additionalProperties:
-            type: string
+            anyOf:
+            - type: string
+              nullable: true
+            - type: integer
+            - type: number
+            - type: boolean
           example:
             paid_subscriber: true
             monthly_spend: 155.5
@@ -37787,7 +37799,7 @@ components:
         size:
           type: integer
           description: The number of employees in this company.
-          example: '100'
+          example: 100
         website:
           type: string
           description: The URL for this company's website. Please note that the value
@@ -37799,14 +37811,24 @@ components:
           example: Manufacturing
         custom_attributes:
           type: object
-          description: A hash of key/value pairs containing any other data about the
-            company you want Intercom to store.
+          description: Values for custom attributes that already exist in your workspace.
+            Each value can be a string, integer, number, boolean or null. Arrays and
+            objects aren't accepted.
           additionalProperties:
-            type: string
+            anyOf:
+            - type: string
+              nullable: true
+            - type: integer
+            - type: number
+            - type: boolean
           example:
             paid_subscriber: true
             monthly_spend: 155.5
             team_mates: 9
+        remote_created_at:
+          type: integer
+          description: The time the company was created by you.
+          example: 1394531169
         monthly_spend:
           type: integer
           description: How much revenue the company generates for your business. Note
