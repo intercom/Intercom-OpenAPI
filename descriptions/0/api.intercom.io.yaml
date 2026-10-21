@@ -28321,7 +28321,6 @@ paths:
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
@@ -28329,7 +28328,6 @@ paths:
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                     errors:
                       user:
                         attributes:
@@ -28366,11 +28364,6 @@ paths:
                     example: '2025-01-24T10:00:00.123Z'
                   errors:
                     "$ref": "#/components/schemas/fin_agent_attribute_errors"
-                  sse_subscription_url:
-                    type: string
-                    description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires.
-                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
         '400':
           description: Bad Request
           content:
@@ -28508,7 +28501,6 @@ paths:
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
@@ -28516,7 +28508,6 @@ paths:
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
                     errors:
                       user:
                         attributes:
@@ -28555,11 +28546,6 @@ paths:
                     example: '2025-01-24T10:00:00.123Z'
                   errors:
                     "$ref": "#/components/schemas/fin_agent_attribute_errors"
-                  sse_subscription_url:
-                    type: string
-                    description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires.
-                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
         '400':
           description: Bad Request
           content:
@@ -28661,7 +28647,7 @@ paths:
         Deterministically run a specific procedure on a new conversation. Calling this endpoint
         guarantees that the named procedure runs — there is no non-deterministic routing.
 
-        Fin's progress is delivered asynchronously via events or Server-Sent Events. If the
+        Fin's progress is delivered asynchronously via events. If the
         procedure pauses for user input, the conversation status becomes `awaiting_user_reply` —
         send the user's response with [`/fin/reply`](/docs/references/preview/rest-api/api.intercom.io/fin-agent/replytofin).
 
@@ -28682,7 +28668,6 @@ paths:
                     procedure_id: '12345'
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
@@ -28691,7 +28676,6 @@ paths:
                     procedure_id: '12345'
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                     errors:
                       user:
                         attributes:
@@ -28734,11 +28718,6 @@ paths:
                     example: '2025-01-24T10:00:00.123Z'
                   errors:
                     "$ref": "#/components/schemas/fin_agent_attribute_errors"
-                  sse_subscription_url:
-                    type: string
-                    description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires.
-                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
         '400':
           description: Bad Request
           content:
@@ -28891,7 +28870,7 @@ paths:
         Helpdesk conversation for a teammate. `context` is not surfaced, and the conversation is
         left open for your platform to hand off and continue driving.
 
-        You are notified over the existing webhook or SSE channel with an `escalated` status
+        You are notified via webhooks with an `escalated` status
         followed by `complete`. The `complete` status signals that Fin is done; it does not close
         the conversation. On the Intercom Helpdesk, the new human conversation remains open; on
         Fin for Platforms, the conversation remains open for whoever handles it on your platform.
@@ -28909,7 +28888,6 @@ paths:
                   value:
                     conversation_id: ext-123
                     status: escalated
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                 New conversation:
                   value:
                     intercom_conversation_id: '987654321'
@@ -28925,11 +28903,6 @@ paths:
                     type: string
                     description: The internal Intercom conversation ID. Returned when a new conversation was created for the escalation.
                     example: '987654321'
-                  sse_subscription_url:
-                    type: string
-                    description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires. Includes a `rewind` window so a subscriber that connects after the escalation is processed can still receive the `escalated` and `complete` events.
-                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                   status:
                     type: string
                     enum:
@@ -29024,8 +28997,8 @@ paths:
         remark.
 
         Fin decides *when* to ask for a rating — this reuses the CSAT settings on your Fin
-        workflow, not this API. When Fin asks, it fires a `csat_requested` event over webhooks or
-        SSE carrying the rating options to show the user. Present those options, then submit the
+        workflow, not this API. When Fin asks, it fires a `csat_requested` event over webhooks
+        carrying the rating options to show the user. Present those options, then submit the
         user's choice here.
 
         Submitting the same rating again, with no new remark, is a no-op and stays successful,
@@ -29189,8 +29162,6 @@ paths:
 
         During this workflow, the client should allow Fin to continue uninterrupted until a final *complete* status is returned, at which point control of the conversation passes back to the client.
 
-        Events can be received via webhooks or Server-Sent Events (SSE) using the `sse_subscription_url` in the response.
-
         {% admonition type="warning" %}
         To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
         {% /admonition %}
@@ -29207,7 +29178,6 @@ paths:
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
@@ -29215,7 +29185,6 @@ paths:
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                     errors:
                       user:
                         attributes:
@@ -29257,11 +29226,6 @@ paths:
                     example: '2025-01-24T10:00:00.123Z'
                   errors:
                     "$ref": "#/components/schemas/fin_agent_attribute_errors"
-                  sse_subscription_url:
-                    type: string
-                    description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires.
-                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
         '400':
           description: Bad Request
           content:
@@ -41621,7 +41585,7 @@ components:
             - awaiting_user_reply: Fin has finished replying and is waiting for the user to respond
             - escalated: The conversation has been escalated to a human
             - resolved: The user's query has been resolved
-            - complete: Fin has completed its workflow. When CSAT is enabled a csat_requested event may follow, in which case the SSE stream is held open past complete until it is delivered or the token expires
+            - complete: Fin has completed its workflow. When CSAT is enabled a csat_requested event may follow
           example: escalated
         reason:
           type: string
@@ -41739,13 +41703,6 @@ components:
             - replying: Intermediate reply part; more parts may follow
             - awaiting_user_reply: Legacy status; instead use the fin_status_updated event with 'awaiting_user_reply', which fires once Fin's reply is done
           example: replying
-        stream_id:
-          type: string
-          description: |
-            Optional. Present when the reply was generated via streaming.
-            Correlates this event with the fin_reply_chunk events that preceded it.
-            Use this to know when to replace streamed chunk_text with the final message body.
-          example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
         created_at_ms:
           type: string
           format: date-time
@@ -41758,73 +41715,14 @@ components:
       - message
       - status
       - created_at_ms
-    fin_agent_reply_chunk_event:
-      title: Fin Agent Reply Chunk Event
-      type: object
-      description: |
-        SSE-only event fired during streaming reply generation.
-        Each chunk contains the full accumulated plain text of Fin's answer so far (cumulative, not a delta).
-        Only delivered over SSE when streaming is enabled. Not available via webhooks.
-        When the fin_replied event arrives with the same stream_id, replace streamed text with the final HTML body.
-      x-tags:
-      - Fin Agent
-      properties:
-        event_name:
-          type: string
-          enum:
-          - fin_reply_chunk
-          description: The name of the event.
-          example: fin_reply_chunk
-        conversation_id:
-          type: string
-          description: The ID of the conversation.
-          example: '123456'
-        stream_id:
-          type: string
-          description: |
-            A unique identifier for this streaming response.
-            Correlates chunks with each other and with the eventual fin_replied event.
-          example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
-        chunk_index:
-          type: integer
-          description: |
-            0-based counter for this chunk within the stream. Contiguous.
-          example: 3
-        chunk_text:
-          type: string
-          description: |
-            The full accumulated plain text of Fin's answer so far.
-            Each chunk supersedes the previous — replace rather than append.
-          example: You can see your account details by clicking
-        status:
-          type: string
-          enum:
-          - replying
-          description: Fin's current status (always 'replying' for this event).
-          example: replying
-        created_at_ms:
-          type: string
-          format: date-time
-          description: The timestamp the event was created at, with millisecond precision.
-          example: '2025-01-24T10:00:00.123Z'
-      required:
-      - event_name
-      - conversation_id
-      - stream_id
-      - chunk_index
-      - chunk_text
-      - created_at_ms
     fin_agent_csat_requested_event:
       title: Fin Agent CSAT Requested Event
       type: object
       description: |
         Event fired when Fin asks the user to rate the conversation.
-        Delivered via webhooks or SSE. Carries the rating options to present to the user; submit
+        Delivered via webhooks. Carries the rating options to present to the user; submit
         the user's choice with POST /fin/csat. Unlike the reply events it has no message — a
         rating survey is a set of options to choose from, not readable text.
-        Over SSE this event arrives after Fin reaches 'complete'. Because a survey is expected,
-        'complete' does not close the stream: the connection is held open so this event can be
-        delivered, and the token is revoked once it is sent.
       x-tags:
       - Fin Agent
       properties:
@@ -47142,7 +47040,7 @@ tags:
 
     &nbsp;
 
-    Orchestrate Fin from your own agent: discover what Fin can do with `/fin/capabilities`, ask a one-shot question with `/fin/ask`, run a specific procedure with `/fin/procedures/{procedure_id}/run`, continue a conversation with `/fin/reply`, escalate to a human with `/fin/escalate`, and record a satisfaction rating with `/fin/csat`. Fin notifies your application of its status and responses through a set of events, delivered via webhooks or Server-Sent Events (SSE).
+    Orchestrate Fin from your own agent: discover what Fin can do with `/fin/capabilities`, ask a one-shot question with `/fin/ask`, run a specific procedure with `/fin/procedures/{procedure_id}/run`, continue a conversation with `/fin/reply`, escalate to a human with `/fin/escalate`, and record a satisfaction rating with `/fin/csat`. Fin notifies your application of its status and responses through a set of events, delivered via webhooks.
 
     &nbsp;
 
@@ -47152,11 +47050,10 @@ tags:
 
     **Events**
 
-    Configure a webhook endpoint in the Fin Agent API settings to receive events, or use the `sse_subscription_url` from the API response to subscribe via SSE. See the [setup guide](/docs/guides/fin-agent-api/setup) for configuration details.
+    Configure a webhook endpoint in the Fin Agent API settings to receive events. See the [setup guide](/docs/guides/fin-agent-api/setup) for configuration details.
 
     - `fin_status_updated` - Fired when Fin's status changes (awaiting_user_reply, escalated, resolved, complete)
     - `fin_replied` - Fired when Fin sends a reply to the user
-    - `fin_reply_chunk` - SSE-only streaming event fired during reply generation (requires streaming enabled)
     - `csat_requested` - Fired when Fin asks the user to rate the conversation (submit the choice with `POST /fin/csat`)
 
     All webhook requests include an `X-Fin-Agent-API-Webhook-Signature` header for request validation.
