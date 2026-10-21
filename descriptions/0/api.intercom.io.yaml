@@ -5713,11 +5713,27 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to 1.
+        schema:
+          type: integer
+          example: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Defaults to 50.
+        schema:
+          type: integer
+          example: 50
       tags:
       - Internal Articles
       operationId: listInternalArticles
-      description: "You can fetch a list of all internal articles by making a GET request to
-        `https://api.intercom.io/internal_articles`."
+      description: |
+        You can fetch a list of all internal articles by making a GET request to `https://api.intercom.io/internal_articles`.
+
+        Requires the `read_articles_scope` or `read_write_articles_scope` OAuth scope.
       responses:
         '200':
           description: successful
@@ -5730,7 +5746,7 @@ paths:
                     pages:
                       type: pages
                       page: 1
-                      per_page: 25
+                      per_page: 50
                       total_pages: 1
                     total_count: 1
                     data:
@@ -5773,7 +5789,10 @@ paths:
       tags:
       - Internal Articles
       operationId: createInternalArticle
-      description: You can create a new internal article by making a POST request to `https://api.intercom.io/internal_articles`.
+      description: |
+        You can create a new internal article by making a POST request to `https://api.intercom.io/internal_articles`.
+
+        Requires the `read_write_articles_scope` OAuth scope.
       responses:
         '200':
           description: internal article created
@@ -5798,31 +5817,54 @@ paths:
               schema:
                 "$ref": "#/components/schemas/internal_article"
         '400':
-          description: Bad Request
+          description: Bad request. The request body is empty.
+        '404':
+          description: Teammate, folder or audience ID not found
           content:
             application/json:
               examples:
-                Bad Request:
+                Teammate not found:
                   value:
                     type: error.list
-                    request_id: e522ca8a-cd15-404e-84b3-7f7536003d4a
+                    request_id: null
                     errors:
-                    - code: parameter_not_found
-                      message: author_id must be in the main body or default locale
-                        translated_content object
-              schema:
-                "$ref": "#/components/schemas/error"
-        '404':
-          description: Unknown audience IDs
-          content:
-            application/json:
-              examples:
+                    - code: parameter_invalid
+                      message: Admin with ID 999999 not found
+                Folder not found:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: Folder with ID 123 not found
                 Unknown audience IDs:
                   value:
                     type: error.list
+                    request_id: null
                     errors:
                     - code: parameter_invalid
                       message: 'audience_ids contains unknown audience IDs: 999'
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Missing required parameters, or body_markdown sent with body or json_blocks
+          content:
+            application/json:
+              examples:
+                Missing required parameters:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: 'Missing required parameters: owner_id, author_id'
+                Body and JSON blocks both provided:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: body_markdown is mutually exclusive with body and json_blocks - please provide only one
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -5856,8 +5898,8 @@ paths:
                   audience_ids:
                   - 1
                   - 2
-              bad_request:
-                summary: Bad Request
+              missing_required_parameters:
+                summary: Missing required parameters
                 value:
                   title: Thanks for everything
                   body: Body of the Internal Article
@@ -5879,8 +5921,10 @@ paths:
       tags:
       - Internal Articles
       operationId: retrieveInternalArticle
-      description: You can fetch the details of a single internal article by making a GET request
-        to `https://api.intercom.io/internal_articles/<id>`.
+      description: |
+        You can fetch the details of a single internal article by making a GET request to `https://api.intercom.io/internal_articles/<id>`.
+
+        Requires the `read_articles_scope` or `read_write_articles_scope` OAuth scope.
       responses:
         '200':
           description: Internal article found
@@ -5911,10 +5955,24 @@ paths:
                 Internal article not found:
                   value:
                     type: error.list
-                    request_id: 79abd27a-1bfb-42ec-a404-5728c76ba773
+                    request_id: null
                     errors:
                     - code: not_found
-                      message: Resource Not Found
+                      message: Resource not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Invalid article ID
+          content:
+            application/json:
+              examples:
+                Invalid article ID:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: id must be an integer
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -5948,8 +6006,12 @@ paths:
       tags:
       - Internal Articles
       operationId: updateInternalArticle
-      description: You can update the details of a single internal article by making a PUT
-        request to `https://api.intercom.io/internal_articles/<id>`.
+      description: |
+        You can update the details of a single internal article by making a PUT request to `https://api.intercom.io/internal_articles/<id>`.
+
+        Fields you leave out keep their current values.
+
+        Requires the `read_write_articles_scope` OAuth scope.
       responses:
         '200':
           description: successful
@@ -5959,37 +6021,75 @@ paths:
                 successful:
                   value:
                     id: 48
+                    title: Thanks for everything
                     body: Body of the Article
                     body_markdown: "Body of the Article\n"
                     owner_id: 991266252
                     author_id: 991266252
                     locale: en
+                    folder_id: null
                     audience_ids:
                     - 1
                     - 2
                     ai_chatbot_availability: true
                     ai_copilot_availability: true
                     ai_sales_agent_availability: true
+                    created_at: 1672928359
+                    updated_at: 1672928610
+                    tags:
+                      type: tag.list
+                      tags: []
               schema:
                 "$ref": "#/components/schemas/internal_article"
+        '400':
+          description: Bad request. The request body is empty.
         '404':
-          description: Internal article or audience ID not found
+          description: Internal article, folder or audience ID not found
           content:
             application/json:
               examples:
                 Internal article not found:
                   value:
                     type: error.list
-                    request_id: f9adccb2-9fca-4b87-bbb7-65f2af5e1d78
+                    request_id: null
                     errors:
                     - code: not_found
-                      message: Resource Not Found
+                      message: Resource not found
+                Folder not found:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: Folder with ID 123 not found
                 Unknown audience IDs:
                   value:
                     type: error.list
+                    request_id: null
                     errors:
                     - code: parameter_invalid
                       message: 'audience_ids contains unknown audience IDs: 999'
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: body_markdown sent with body or json_blocks, or the article is in a release running a live experiment
+          content:
+            application/json:
+              examples:
+                Body and JSON blocks both provided:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: body_markdown is mutually exclusive with body and json_blocks - please provide only one
+                Release live experiment conflict:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: release_live_experiment_conflict
+                      message: Can't update this internal article while release "Q3 launch" is running a live experiment on it. Complete or stop the experiment first.
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -6042,7 +6142,10 @@ paths:
       tags:
       - Internal Articles
       operationId: deleteInternalArticle
-      description: You can delete a single internal article by making a DELETE request to `https://api.intercom.io/internal_articles/<id>`.
+      description: |
+        You can delete a single internal article by making a DELETE request to `https://api.intercom.io/internal_articles/<id>`.
+
+        Requires the `read_write_articles_scope` OAuth scope.
       responses:
         '200':
           description: successful
@@ -6064,10 +6167,31 @@ paths:
                 Internal article not found:
                   value:
                     type: error.list
-                    request_id: afe37506-cc48-4727-8068-ae7ff0e7b0e3
+                    request_id: null
                     errors:
                     - code: not_found
-                      message: Resource Not Found
+                      message: Resource not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Invalid article ID, or the article is in a release running a live experiment
+          content:
+            application/json:
+              examples:
+                Invalid article ID:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: id must be an integer
+                Release live experiment conflict:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: release_live_experiment_conflict
+                      message: Can't delete this internal article while release "Q3 launch" is running a live experiment on it. Complete or stop the experiment first.
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -6168,7 +6292,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
-          description: Internal article or tag not found
+          description: Internal article, tag or teammate not found
           content:
             application/json:
               examples:
@@ -6186,6 +6310,13 @@ paths:
                     errors:
                     - code: tag_not_found
                       message: Tag not found
+                Teammate not found:
+                  value:
+                    type: error.list
+                    request_id: 5d1f0c6e-7b7a-4c9d-8f3e-2a4b6c8d0e1f
+                    errors:
+                    - code: admin_not_found
+                      message: Admin not found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -6214,6 +6345,14 @@ paths:
         required: true
         description: The unique identifier of the tag to remove, as given by Intercom.
         example: '7522907'
+        schema:
+          type: string
+      - name: admin_id
+        in: query
+        required: false
+        description: Optional id of the teammate to attribute the removal to. Defaults
+          to the authenticating teammate.
+        example: '1234'
         schema:
           type: string
       operationId: detachTagFromInternalArticle
@@ -6255,7 +6394,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
-          description: Internal article or tag not found
+          description: Internal article, tag or teammate not found
           content:
             application/json:
               examples:
@@ -6273,6 +6412,13 @@ paths:
                     errors:
                     - code: tag_not_found
                       message: Tag not found
+                Teammate not found:
+                  value:
+                    type: error.list
+                    request_id: 5d1f0c6e-7b7a-4c9d-8f3e-2a4b6c8d0e1f
+                    errors:
+                    - code: admin_not_found
+                      message: Admin not found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -6288,14 +6434,31 @@ paths:
       - name: folder_id
         in: query
         required: false
-        description: The ID of the folder to search in. Results will include articles from this folder and all its descendant folders.
+        description: The ID of the folder to search in. Results will include articles from this folder and all its descendant folders. If omitted or blank, the response is an empty list.
         example: 123
         schema:
           type: integer
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Defaults to 1.
+        schema:
+          type: integer
+          example: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results to return per page. Defaults to 10.
+        schema:
+          type: integer
+          example: 10
       tags:
       - Internal Articles
       operationId: searchInternalArticles
-      description: You can search for internal articles by making a GET request to `https://api.intercom.io/internal_articles/search`.
+      description: |
+        You can search for internal articles by making a GET request to `https://api.intercom.io/internal_articles/search`.
+
+        Requires the `read_write_articles_scope` OAuth scope.
       responses:
         '200':
           description: Search successful
@@ -6308,11 +6471,31 @@ paths:
                     total_count: 1
                     internal_articles:
                     - id: 55
+                      title: Thanks for everything
                       body: Body of the Article
+                      body_markdown: "Body of the Article\n"
                       owner_id: 991266252
                       author_id: 991266252
                       locale: en
                       folder_id: 123
+                      audience_ids:
+                      - 1
+                      - 2
+                      ai_chatbot_availability: true
+                      ai_copilot_availability: true
+                      ai_sales_agent_availability: true
+                      created_at: 1672928359
+                      updated_at: 1672928610
+                      tags:
+                        type: tag.list
+                        tags:
+                        - type: tag
+                          id: '7522907'
+                          name: Independent
+                          applied_at: 1663597223
+                          applied_by:
+                            type: admin
+                            id: '991266252'
                     pages:
                       type: pages
                       page: 1
@@ -6320,6 +6503,20 @@ paths:
                       per_page: 10
               schema:
                 "$ref": "#/components/schemas/internal_article_search_response"
+        '404':
+          description: Folder not found
+          content:
+            application/json:
+              examples:
+                Folder not found:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: Folder with ID 123 not found
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -6364,7 +6561,10 @@ paths:
       tags:
       - Folders
       operationId: listFolders
-      description: "You can fetch a list of all folders for organizing content by making a GET request to `https://api.intercom.io/folders`."
+      description: |
+        You can fetch a list of all folders for organizing content by making a GET request to `https://api.intercom.io/folders`.
+
+        Requires the `read_articles_scope` or `read_write_articles_scope` OAuth scope.
       responses:
         '200':
           description: successful
@@ -6377,7 +6577,6 @@ paths:
                   name: Product Documentation
                   description: Internal product docs
                   emoji: "📚"
-                  parent_folder_id: null
                   content_count: 5
                   created_at: 1672928359
                   updated_at: 1672928610
@@ -6397,6 +6596,7 @@ paths:
                     example: list
                   data:
                     type: array
+                    description: The folders on this page. Unlike when you retrieve a single folder, the keys `description`, `emoji` and `parent_folder_id` are omitted when they are `null`.
                     items:
                       "$ref": "#/components/schemas/folder"
                   total_count:
@@ -6421,7 +6621,10 @@ paths:
       tags:
       - Folders
       operationId: createFolder
-      description: "You can create a new folder for organizing content by making a POST request to `https://api.intercom.io/folders`."
+      description: |
+        You can create a new folder for organizing content by making a POST request to `https://api.intercom.io/folders`.
+
+        Requires the `read_write_articles_scope` OAuth scope.
       requestBody:
         content:
           application/json:
@@ -6503,7 +6706,10 @@ paths:
       tags:
       - Folders
       operationId: retrieveFolder
-      description: "You can fetch the details of a single folder by making a GET request to `https://api.intercom.io/folders/<id>`."
+      description: |
+        You can fetch the details of a single folder by making a GET request to `https://api.intercom.io/folders/<id>`.
+
+        Requires the `read_articles_scope` or `read_write_articles_scope` OAuth scope.
       responses:
         '200':
           description: folder found
@@ -6520,6 +6726,20 @@ paths:
                 updated_at: 1672928610
               schema:
                 "$ref": "#/components/schemas/folder"
+        '400':
+          description: Invalid folder ID
+          content:
+            application/json:
+              examples:
+                Invalid folder ID:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: id must be an integer
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -6549,7 +6769,12 @@ paths:
       tags:
       - Folders
       operationId: updateFolder
-      description: "You can update a folder by making a PUT request to `https://api.intercom.io/folders/<id>`."
+      description: |
+        You can update a folder by making a PUT request to `https://api.intercom.io/folders/<id>`.
+
+        Fields you leave out keep their current values. Send `parent_folder_id` as `null` to move the folder to the top level. Folder names longer than 191 characters are truncated.
+
+        Requires the `read_write_articles_scope` OAuth scope.
       requestBody:
         content:
           application/json:
@@ -6576,7 +6801,7 @@ paths:
                     parent_folder_id:
                       type: integer
                       nullable: true
-                      description: The ID of the parent folder
+                      description: The ID of the parent folder. Send `null` to move the folder to the top level. If omitted, the parent folder is unchanged.
                       example: null
             example:
               folder:
@@ -6611,9 +6836,17 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '400':
-          description: Bad request
+          description: Bad request, for example an invalid folder ID
           content:
             application/json:
+              examples:
+                Invalid folder ID:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: id must be an integer
               schema:
                 "$ref": "#/components/schemas/error"
     delete:
@@ -6633,7 +6866,10 @@ paths:
       tags:
       - Folders
       operationId: deleteFolder
-      description: "You can delete a folder (if it contains no content) by making a DELETE request to `https://api.intercom.io/folders/<id>`."
+      description: |
+        You can delete a folder (if it contains no content) by making a DELETE request to `https://api.intercom.io/folders/<id>`.
+
+        Requires the `read_write_articles_scope` OAuth scope.
       responses:
         '200':
           description: folder deleted
@@ -6645,6 +6881,27 @@ paths:
                 deleted: true
               schema:
                 "$ref": "#/components/schemas/deleted_folder_object"
+        '400':
+          description: Invalid folder ID, or the folder is synced from an external source and cannot be deleted
+          content:
+            application/json:
+              examples:
+                Invalid folder ID:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: id must be an integer
+                Synced folder:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: Cannot delete synced folders
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -13790,23 +14047,24 @@ paths:
               schema:
                 "$ref": "#/components/schemas/content_bulk_action_response"
         '401':
-          description: Unauthorized
+          description: Unauthorized. The token is invalid or is missing the `write_content` OAuth scope
           content:
             application/json:
               examples:
                 Unauthorized:
                   value:
                     type: error.list
-                    request_id: 2e760b85-9020-471b-89dc-f579ec8a0104
+                    request_id: 12a938a3-314e-4939-b773-5cd45738bd21
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
-        '403':
-          description: Forbidden — token is missing the `write_content` OAuth scope
-          content:
-            application/json:
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
@@ -14136,8 +14394,6 @@ paths:
                       page: 1
                       per_page: 10
                       total_pages: 1
-                      next:
-                      prev:
                     data:
                     - type: content_snippet
                       id: '123'
@@ -14165,10 +14421,35 @@ paths:
                         locale: fr
               schema:
                 "$ref": "#/components/schemas/content_search_response"
+        '400':
+          description: Page number too high. `page` multiplied by `per_page` must not exceed 10,000, and `page` must not exceed 5001
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           $ref: "#/components/responses/Unauthorized"
         '422':
-          $ref: "#/components/responses/ValidationError"
+          description: Invalid filter value
+          content:
+            application/json:
+              examples:
+                Invalid states value:
+                  value:
+                    type: error.list
+                    request_id: f0c3b8a5-1d62-4e97-a4b1-8c7e2d5a9f30
+                    errors:
+                    - code: parameter_invalid
+                      message: 'invalid value for states: "foo"; must be one of published, draft'
+                Incomplete folder filter:
+                  value:
+                    type: error.list
+                    request_id: 1a5e7c9d-3b84-4f20-96d1-e2b8a4c6f503
+                    errors:
+                    - code: parameter_invalid
+                      message: folder_ids and folder_entity_type must be provided together
+              schema:
+                "$ref": "#/components/schemas/error"
   "/content_snippets":
     get:
       summary: List all content snippets
@@ -14194,7 +14475,10 @@ paths:
       tags:
       - Content Snippets
       operationId: listContentSnippets
-      description: You can fetch a list of all content snippets for a workspace.
+      description: |
+        You can fetch a list of all content snippets for a workspace.
+
+        Requires the `read_content_snippets` or `read_write_content_snippets` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -14212,7 +14496,7 @@ paths:
                       json_blocks:
                       - type: paragraph
                         text: Navigate to Settings > Security > Reset password.
-                      body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
+                      body_markdown: "Navigate to Settings \\> Security \\> Reset password.\n"
                       chatbot_availability: 2
                       copilot_availability: 2
                       ai_chatbot_availability: true
@@ -14229,6 +14513,27 @@ paths:
                     total_pages: 1
               schema:
                 "$ref": "#/components/schemas/content_snippet_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
     post:
       summary: Create a content snippet
       parameters:
@@ -14239,7 +14544,10 @@ paths:
       tags:
       - Content Snippets
       operationId: createContentSnippet
-      description: You can create a new content snippet.
+      description: |
+        You can create a new content snippet.
+
+        Requires the `read_write_content_snippets` OAuth scope.
       requestBody:
         required: true
         content:
@@ -14272,7 +14580,7 @@ paths:
                     json_blocks:
                     - type: paragraph
                       text: Navigate to Settings > Security > Reset password.
-                    body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
+                    body_markdown: "Navigate to Settings \\> Security \\> Reset password.\n"
                     chatbot_availability: 2
                     copilot_availability: 2
                     ai_chatbot_availability: true
@@ -14285,6 +14593,46 @@ paths:
                     - 2
               schema:
                 "$ref": "#/components/schemas/content_snippet"
+        '400':
+          description: Invalid availability flag or audience_ids
+          content:
+            application/json:
+              examples:
+                Invalid availability flag:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: parameter_invalid
+                      message: ai_chatbot_availability must be a boolean
+                Malformed audience_ids:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: data_invalid
+                      message: audience_ids must be an array
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Unknown audience IDs
           content:
@@ -14299,16 +14647,23 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
-          description: Validation error
+          description: Validation error, or body_markdown sent with json_blocks
           content:
             application/json:
               examples:
                 Validation error:
                   value:
                     type: error.list
+                    request_id: null
                     errors:
                     - code: validation_error
                       message: The language is not currently supported for Fin
+                Body and JSON blocks both provided:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: parameter_invalid
+                      message: body_markdown and json_blocks are mutually exclusive - please provide only one
               schema:
                 "$ref": "#/components/schemas/error"
   "/content_snippets/{id}":
@@ -14329,7 +14684,10 @@ paths:
       tags:
       - Content Snippets
       operationId: getContentSnippet
-      description: You can fetch a single content snippet by its id.
+      description: |
+        You can fetch a single content snippet by its id.
+
+        Requires the `read_content_snippets` or `read_write_content_snippets` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -14345,7 +14703,7 @@ paths:
                     json_blocks:
                     - type: paragraph
                       text: Navigate to Settings > Security > Reset password.
-                    body_markdown: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
+                    body_markdown: "Navigate to Settings \\> Security \\> Reset password.\n"
                     chatbot_availability: 2
                     copilot_availability: 2
                     ai_chatbot_availability: true
@@ -14358,6 +14716,27 @@ paths:
                     - 2
               schema:
                 "$ref": "#/components/schemas/content_snippet"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Content snippet not found
           content:
@@ -14366,6 +14745,7 @@ paths:
                 Content snippet not found:
                   value:
                     type: error.list
+                    request_id: null
                     errors:
                     - code: not_found
                       message: Content snippet not found
@@ -14388,7 +14768,10 @@ paths:
       tags:
       - Content Snippets
       operationId: updateContentSnippet
-      description: You can update an existing content snippet.
+      description: |
+        You can update an existing content snippet.
+
+        Requires the `read_write_content_snippets` OAuth scope.
       requestBody:
         required: true
         content:
@@ -14420,7 +14803,7 @@ paths:
                     json_blocks:
                     - type: paragraph
                       text: Go to Settings > Security > Reset password and follow the steps.
-                    body_markdown: "# How to reset your password (updated)\n\nGo to Settings > Security > Reset password and follow the steps.\n"
+                    body_markdown: "Go to Settings \\> Security \\> Reset password and follow the steps.\n"
                     chatbot_availability: 2
                     copilot_availability: 2
                     ai_chatbot_availability: true
@@ -14433,6 +14816,46 @@ paths:
                     - 2
               schema:
                 "$ref": "#/components/schemas/content_snippet"
+        '400':
+          description: Invalid availability flag or audience_ids
+          content:
+            application/json:
+              examples:
+                Invalid availability flag:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: parameter_invalid
+                      message: ai_chatbot_availability must be a boolean
+                Malformed audience_ids:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: data_invalid
+                      message: audience_ids must be an array
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Content snippet or audience ID not found
           content:
@@ -14441,6 +14864,7 @@ paths:
                 Content snippet not found:
                   value:
                     type: error.list
+                    request_id: null
                     errors:
                     - code: not_found
                       message: Content snippet not found
@@ -14453,16 +14877,30 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
-          description: Validation error
+          description: Validation error, body_markdown sent with json_blocks, or the snippet is in a release running a live experiment
           content:
             application/json:
               examples:
                 Validation error:
                   value:
                     type: error.list
+                    request_id: null
                     errors:
                     - code: validation_error
-                      message: The language is not currently supported for Fin
+                      message: Title is too long
+                Body and JSON blocks both provided:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: parameter_invalid
+                      message: body_markdown and json_blocks are mutually exclusive - please provide only one
+                Release live experiment conflict:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: release_live_experiment_conflict
+                      message: Can't update this snippet while release "Q3 launch" is running a live experiment on it. Complete or stop the experiment first.
               schema:
                 "$ref": "#/components/schemas/error"
     delete:
@@ -14482,10 +14920,34 @@ paths:
       tags:
       - Content Snippets
       operationId: deleteContentSnippet
-      description: You can delete a single content snippet by its id.
+      description: |
+        You can delete a single content snippet by its id.
+
+        Requires the `read_write_content_snippets` OAuth scope.
       responses:
         '204':
           description: Content snippet deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Content snippet not found
           content:
@@ -14494,23 +14956,32 @@ paths:
                 Content snippet not found:
                   value:
                     type: error.list
+                    request_id: null
                     errors:
                     - code: not_found
                       message: Content snippet not found
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
-          description: Content snippet has procedure dependencies
+          description: Content snippet has procedure dependencies, or is in a release running a live experiment
           content:
             application/json:
               examples:
                 Content snippet has procedure dependencies:
                   value:
                     type: error.list
+                    request_id: null
                     errors:
                     - code: content_has_procedure_dependencies
                       message: Content snippet has dependent procedures and cannot
                         be deleted
+                Release live experiment conflict:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: release_live_experiment_conflict
+                      message: Can't delete this snippet while release "Q3 launch" is running a live experiment on it. Complete or stop the experiment first.
               schema:
                 "$ref": "#/components/schemas/error"
   "/content_snippets/{content_snippet_id}/tags":
@@ -14596,7 +15067,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
-          description: Content snippet or tag not found
+          description: Content snippet, tag or teammate not found
           content:
             application/json:
               examples:
@@ -14614,6 +15085,13 @@ paths:
                     errors:
                     - code: tag_not_found
                       message: Tag not found
+                Teammate not found:
+                  value:
+                    type: error.list
+                    request_id: 5d1f0c6e-7b7a-4c9d-8f3e-2a4b6c8d0e1f
+                    errors:
+                    - code: admin_not_found
+                      message: Admin not found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -14641,6 +15119,14 @@ paths:
         required: true
         description: The unique identifier of the tag to remove, as given by Intercom.
         example: '7522907'
+        schema:
+          type: string
+      - name: admin_id
+        in: query
+        required: false
+        description: Optional id of the teammate to attribute the removal to. Defaults
+          to the authenticating teammate.
+        example: '1234'
         schema:
           type: string
       operationId: detachTagFromContentSnippet
@@ -14682,7 +15168,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
-          description: Content snippet or tag not found
+          description: Content snippet, tag or teammate not found
           content:
             application/json:
               examples:
@@ -14700,6 +15186,13 @@ paths:
                     errors:
                     - code: tag_not_found
                       message: Tag not found
+                Teammate not found:
+                  value:
+                    type: error.list
+                    request_id: 5d1f0c6e-7b7a-4c9d-8f3e-2a4b6c8d0e1f
+                    errors:
+                    - code: admin_not_found
+                      message: Admin not found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -34611,11 +35104,11 @@ components:
         owner_id:
           type: integer
           description: The id of the owner of the article.
-          example: '5017691'
+          example: 5017691
         author_id:
           type: integer
           description: The id of the author of the article.
-          example: '5017691'
+          example: 5017691
         created_at:
           type: integer
           format: date-time
@@ -38266,17 +38759,15 @@ components:
             next:
               type: string
               format: uri
-              description: A link to the next page of results, or null when on
-                the last page.
-              nullable: true
+              description: A link to the next page of results. Omitted when on the
+                last page.
               example: https://api.intercom.io/content/search?query=billing&page=2
             prev:
               type: string
               format: uri
-              description: A link to the previous page of results, or null when
-                on the first page.
-              nullable: true
-              example:
+              description: A link to the previous page of results. Omitted when on
+                the first page.
+              example: https://api.intercom.io/content/search?query=billing&page=1
         data:
           type: array
           description: The list of matched content items. Each item's `type`
@@ -38338,7 +38829,7 @@ components:
           type: string
           nullable: true
           description: The body of the content snippet in markdown.
-          example: "# How to reset your password\n\nNavigate to Settings > Security > Reset password.\n"
+          example: "Navigate to Settings \\> Security \\> Reset password.\n"
         chatbot_availability:
           type: integer
           deprecated: true
@@ -40371,8 +40862,19 @@ components:
         body_markdown:
           type: string
           description: The content of the article in markdown. An alternative to `body` — you
-            can provide content as markdown instead of HTML. Mutually exclusive with `body`.
+            can provide content as markdown instead of HTML. Mutually exclusive with `body`
+            and `json_blocks`.
           example: "# Internal Guide\n\nSome instructions.\n"
+        json_blocks:
+          type: array
+          description: The content of the article as a list of content blocks. Used
+            only when `body` is not provided. Cannot be combined with `body_markdown`.
+          items:
+            type: object
+        locale:
+          type: string
+          description: The locale of the article. Defaults to `en`.
+          example: en
         author_id:
           type: integer
           description: The id of the author of the article.
@@ -40384,7 +40886,7 @@ components:
         folder_id:
           type: integer
           nullable: true
-          description: The ID of the folder to place this article in, or null to leave it without a folder.
+          description: The ID of the folder to place this article in. Pass `null` to leave it without a folder.
           example: 6
         audience_ids:
           type: array
@@ -48174,8 +48676,9 @@ components:
       type: object
       x-tags:
       - Tags
-      description: A tag allows you to label your contacts, companies, and conversations
-        and list them using that tag.
+      description: A tag allows you to label your contacts, companies, conversations,
+        tickets, articles, internal articles and content snippets, and list them using
+        that tag.
       properties:
         type:
           type: string
@@ -48193,12 +48696,12 @@ components:
           type: integer
           format: date-time
           nullable: true
-          description: The time when the tag was applied to the object. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet, or when it is returned as part of an external page.
+          description: The time when the tag was applied to the object. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet, when listing the tags on a contact, or when it is returned as part of an external page. `null` when the tag has just been removed from an article, internal article, content snippet or external page. Removing a tag from a contact, conversation or ticket returns the original value.
           example: 1663597223
         applied_by:
           type: object
           nullable: true
-          description: The admin who applied the tag. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet, or when it is returned as part of an external page.
+          description: The admin who applied the tag. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet, when listing the tags on a contact, or when it is returned as part of an external page. `null` when the tag has just been removed from an article, internal article, content snippet or external page. Removing a tag from a contact, conversation or ticket returns the original value. When no admin is recorded, `type` is `nobody_admin` and `id` is `null`.
           allOf:
             - "$ref": "#/components/schemas/reference"
     tag_basic:
@@ -48326,7 +48829,7 @@ components:
     tags:
       title: Tags
       type: object
-      description: A list of tags objects associated with a conversation
+      description: A list of tags objects associated with a conversation, article or internal article
       properties:
         type:
           type: string
@@ -48336,7 +48839,7 @@ components:
           example: tag.list
         tags:
           type: array
-          description: A list of tags objects associated with the conversation.
+          description: A list of tags objects associated with the object.
           items:
             "$ref": "#/components/schemas/tag"
     team:
@@ -49605,8 +50108,21 @@ components:
         body_markdown:
           type: string
           description: The content of the article in markdown. An alternative to `body` — you
-            can provide content as markdown instead of HTML. Mutually exclusive with `body`.
+            can provide content as markdown instead of HTML. Mutually exclusive with `body`
+            and `json_blocks`.
           example: "## Updated\n\nNew content.\n"
+        json_blocks:
+          type: array
+          description: The content of the article as a list of content blocks. Used
+            only when `body` is not provided. Cannot be combined with `body_markdown`.
+            If none of `body`, `body_markdown` and `json_blocks` is provided, the
+            existing content is kept.
+          items:
+            type: object
+        locale:
+          type: string
+          description: The locale of the article. If omitted, the existing locale is kept.
+          example: en
         author_id:
           type: integer
           description: The id of the author of the article.
@@ -49618,7 +50134,7 @@ components:
         folder_id:
           type: integer
           nullable: true
-          description: The ID of the folder to place this article in, or null to remove it from its folder.
+          description: The ID of the folder to place this article in. Pass `null` to remove it from its folder. If omitted, the folder is unchanged.
           example: 6
         audience_ids:
           type: array
