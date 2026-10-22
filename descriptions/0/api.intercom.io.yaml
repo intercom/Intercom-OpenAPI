@@ -6170,7 +6170,10 @@ paths:
       tags:
       - IP Allowlist
       operationId: getIpAllowlist
-      description: Retrieve the current IP allowlist configuration for the workspace.
+      description: |
+        Retrieve the current IP allowlist configuration for the workspace.
+
+        Requires the `manage_ip_allowlist` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -6198,6 +6201,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
     put:
@@ -6212,6 +6222,12 @@ paths:
       operationId: updateIpAllowlist
       description: |
         Update the IP allowlist configuration for the workspace.
+
+        Both `enabled` and `ip_allowlist` are optional. A field you omit is left unchanged, and a request with neither returns the current settings without changing anything. Sending `null` for a field is the same as omitting it.
+
+        Every non-blank `ip_allowlist` entry must be an IPv4 address or an IPv4 range in CIDR notation. Blank entries are ignored and surrounding whitespace is trimmed. Any other entry, including an IPv6 address, returns a 422 `parameter_invalid` error.
+
+        Requires the `manage_ip_allowlist` OAuth scope.
 
         {% admonition type="warning" name="Lockout Protection" %}
           The API will reject updates that would lock out the caller's IP address. Ensure your current IP is included in the allowlist when enabling the feature.
@@ -6243,6 +6259,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
@@ -7450,13 +7473,17 @@ paths:
         in: path
         required: true
         description: The unique identifier for the contact which is given by Intercom
+        example: 58a430d35458202d41b1e65b
         schema:
           type: string
       tags:
       - Companies
       - Contacts
       operationId: attachContactToACompany
-      description: You can attach a company to a single contact.
+      description: |
+        You can attach a company to a single contact.
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -7482,14 +7509,14 @@ paths:
                     segments:
                       type: segment.list
                       segments: []
+                    plan: {}
+                    custom_attributes: {}
                     notes:
                       type: note.list
                       data: []
                       url: "/companies/6762f09a1bb69f9f2193bb34/notes"
                       total_count: 0
                       has_more: false
-                    plan: {}
-                    custom_attributes: {}
               schema:
                 "$ref": "#/components/schemas/company"
         '400':
@@ -7514,7 +7541,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
-          description: Company Not Found
+          description: Company Not Found or Contact Not Found
           content:
             application/json:
               examples:
@@ -7525,6 +7552,13 @@ paths:
                     errors:
                     - code: company_not_found
                       message: Company Not Found
+                Contact Not Found:
+                  value:
+                    type: error.list
+                    request_id: 7b1f5e2c-19c8-4c7f-9f0a-6f0a6a0ad3c1
+                    errors:
+                    - code: not_found
+                      message: User Not Found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -7539,6 +7573,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 1daf6d3f-99ba-59c7-86f7-5d966270f7d3
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -7580,6 +7621,36 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch. Values below 1 are treated as 1.
+        schema:
+          type: integer
+          default: 1
+          example: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of companies to return per page. The maximum is 60; a value above
+          60 returns a `400` error with code `parameter_invalid`.
+        schema:
+          type: integer
+          default: 50
+          maximum: 60
+          example: 50
+      - name: order
+        in: query
+        required: false
+        description: The order of the companies by when they were last active (`last_request_at`).
+          The value is case-insensitive, and any value other than `asc` is treated as `desc`.
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          example: desc
       tags:
       - Contacts
       - Companies
@@ -7615,6 +7686,12 @@ paths:
                         segments: []
                       plan: {}
                       custom_attributes: {}
+                      notes:
+                        type: note.list
+                        data: []
+                        url: "/companies/6762f0a61bb69f9f2193bb55/notes"
+                        total_count: 0
+                        has_more: false
                     pages:
                       type: pages
                       next:
@@ -7624,6 +7701,20 @@ paths:
                     total_count: 1
               schema:
                 "$ref": "#/components/schemas/contact_attached_companies"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Per page too big:
+                  value:
+                    type: error.list
+                    request_id: 3f1c2b9e-6a4d-4c8e-9b7a-2d5e8f0a1c34
+                    errors:
+                    - code: parameter_invalid
+                      message: Per Page is too big
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Contact not found
           content:
@@ -7678,7 +7769,10 @@ paths:
       - Companies
       - Contacts
       operationId: detachContactFromACompany
-      description: You can detach a company from a single contact.
+      description: |
+        You can detach a company from a single contact.
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -7706,10 +7800,16 @@ paths:
                       segments: []
                     plan: {}
                     custom_attributes: {}
+                    notes:
+                      type: note.list
+                      data: []
+                      url: "/companies/6762f0a01bb69f9f2193bb44/notes"
+                      total_count: 0
+                      has_more: false
               schema:
                 "$ref": "#/components/schemas/company"
         '404':
-          description: Contact Not Found
+          description: Company Not Found or Contact Not Found
           content:
             application/json:
               examples:
@@ -7741,6 +7841,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 11900fce-9e5c-5d21-84d5-5bcf188287fd
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/contacts/{contact_id}/granted_companies":
@@ -8823,7 +8930,10 @@ paths:
       - Contacts
       - Segments
       operationId: listSegmentsForAContact
-      description: You can fetch a list of segments that are associated to a contact.
+      description: |
+        You can fetch a list of segments that are associated to a contact.
+
+        Requires the `read_users_companies` or `read_write_users` OAuth scope.
       responses:
         '200':
           description: successful
@@ -8868,6 +8978,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: ca383411-d6ac-5db4-9c4d-352b36f69c8d
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/contacts/{contact_id}/subscriptions":
@@ -8993,6 +9110,8 @@ paths:
           2.Attaching a contact to an opt-in subscription type will opt that user in to receiving messages related to that subscription type.
 
         This will return a subscription type model for the subscription type that was added to the contact.
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -9050,6 +9169,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 82051728-b8a8-5bfd-9f10-71f9a1dc3107
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -9059,7 +9185,6 @@ paths:
               type: object
               required:
               - id
-              - consent_type
               properties:
                 id:
                   type: string
@@ -9068,7 +9193,8 @@ paths:
                   example: '37846'
                 consent_type:
                   type: string
-                  description: The consent_type of a subscription, opt_out or opt_in.
+                  description: Ignored. Whether the contact is opted in or out is decided
+                    by the subscription type's own `consent_type`, not by this value.
                   example: opt_in
             examples:
               successful:
@@ -9113,9 +9239,12 @@ paths:
         schema:
           type: string
       operationId: detachSubscriptionTypeToContact
-      description: You can remove a specific subscription from a contact. This will
+      description: |
+        You can remove a specific subscription from a contact. This will
         return a subscription type model for the subscription type that was removed
         from the contact.
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -9173,6 +9302,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 9c562afa-93d0-53d2-bfa4-bb6463fa84ee
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/contacts/{contact_id}/tags":
@@ -9261,8 +9397,11 @@ paths:
         schema:
           type: string
       operationId: attachTagToContact
-      description: You can tag a specific contact. This will return a tag object for
+      description: |
+        You can tag a specific contact. This will return a tag object for
         the tag that was added to the contact.
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: successful
@@ -9313,6 +9452,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 42e197b1-6bc2-5504-915d-97e9e59f6c28
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -9332,11 +9478,11 @@ paths:
               successful:
                 summary: successful
                 value:
-                  id: 81
+                  id: '81'
               contact_not_found:
                 summary: Contact not found
                 value:
-                  id: 82
+                  id: '82'
               tag_not_found:
                 summary: Tag not found
                 value:
@@ -9367,8 +9513,11 @@ paths:
         schema:
           type: string
       operationId: detachTagFromContact
-      description: You can remove tag from a specific contact. This will return a
+      description: |
+        You can remove tag from a specific contact. This will return a
         tag object for the tag that was removed from the contact.
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: successful
@@ -9419,6 +9568,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: c6d0888c-4330-545c-8476-656828fed13d
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/contacts/deleted":
@@ -9432,7 +9588,9 @@ paths:
       - name: per_page
         in: query
         description: The number of results per page. Defaults to `10`, with a maximum
-          of `150`.
+          of `150`; larger values are treated as `150`. Only the leading digits are read,
+          so `1.5` is treated as `1`. A value that doesn't start with a positive integer,
+          such as `0` or `abc`, returns a `400` error with code `invalid_per_page`.
         required: false
         schema:
           type: integer
@@ -9447,6 +9605,14 @@ paths:
           type: integer
           minimum: 1
           default: 1
+      - name: escape_identity
+        in: query
+        description: By default, `email` values in the response are HTML-escaped (for example,
+          `&` is returned as `&amp;`). Pass `false` to return them unescaped.
+        required: false
+        schema:
+          type: boolean
+          default: true
       tags:
       - Contacts
       operationId: listDeletedContacts
@@ -9457,6 +9623,8 @@ paths:
         is inactive: `archived`, `blocked`, `merged`, `pending_deletion`, or `permanently_deleted`.
         `merged_into_id` is present only when `status` is `merged`, and `external_id` and `email`
         are `null` for `permanently_deleted` contacts.
+
+        Requires the `read_users_companies` or `read_write_users` OAuth scope.
       responses:
         '200':
           description: successful
@@ -9509,6 +9677,13 @@ paths:
                     errors:
                     - code: invalid_page
                       message: page must be a positive integer
+                Invalid per_page:
+                  value:
+                    type: error.list
+                    request_id: 7b2c3d4e-5f6a-4b8c-9d0e-1f2a3b4c5d6e
+                    errors:
+                    - code: invalid_per_page
+                      message: per_page must be a positive integer
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -9523,6 +9698,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 4cd97183-4b6b-5eb9-a020-439cc6964338
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/contacts/{id}":
@@ -9543,7 +9725,7 @@ paths:
       - name: include_merge_history
         in: query
         description: Pass `true` to include the contact's merge history in the response.
-          Only returned for contacts with a `user` role.
+          Returned for contacts of any role, with at most the 10 most recent merges.
         required: false
         schema:
           type: boolean
@@ -9560,6 +9742,8 @@ paths:
 
           See _`update a contact with an association to a custom object instance`_ in the request/response examples to see the custom object association format.
         {% /admonition %}
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: successful
@@ -9574,6 +9758,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joebloggs@intercom.io
+                    email_domain: intercom.io
                     email_verified: false
                     phone:
                     formatted_phone:
@@ -9656,6 +9841,8 @@ paths:
                     utm_source:
                     utm_term:
                     referrer:
+                    sms_consent: false
+                    unsubscribed_from_sms: false
                     enabled_push_messaging:
                 update a contact with an association to a custom object instance:
                   value:
@@ -9665,6 +9852,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joebloggs@intercom.io
+                    email_domain: intercom.io
                     email_verified: false
                     phone:
                     formatted_phone:
@@ -9758,6 +9946,8 @@ paths:
                     utm_source:
                     utm_term:
                     referrer:
+                    sms_consent: false
+                    unsubscribed_from_sms: false
                     enabled_push_messaging:
               schema:
                 allOf:
@@ -9780,6 +9970,84 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 186669b6-de99-567c-91ac-c5d9e513b0a6
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid timestamp:
+                  value:
+                    type: error.list
+                    request_id: 2d0c4b6e-8f1a-4c3d-9e5b-7a6f8d9c0b1e
+                    errors:
+                    - code: parameter_invalid
+                      message: "'signed_up_at' appears to be in milliseconds. Timestamps
+                        must be Unix timestamps in seconds."
+                Owner not a teammate:
+                  value:
+                    type: error.list
+                    request_id: 3e1d5c7f-9a2b-4d4e-8f6c-8b7a9e0d1c2f
+                    errors:
+                    - code: parameter_invalid
+                      message: The owner specified is not a member of the app
+                Custom attribute does not exist:
+                  value:
+                    type: error.list
+                    request_id: 4f2e6d8a-0b3c-4e5f-9a7d-9c8b0f1e2d3a
+                    errors:
+                    - code: parameter_invalid
+                      message: Custom attribute 'plan_tier' does not exist
+                Invalid custom attributes:
+                  value:
+                    type: error.list
+                    request_id: 5a3f7e9b-1c4d-4f6a-8b8e-0d9c1a2f3e4b
+                    errors:
+                    - code: nested_custom_attributes
+                      message: "'custom_attributes' must be an object"
+                User can't become a lead:
+                  value:
+                    type: error.list
+                    request_id: 8e4c2a6f-3b7d-4e9a-a1c5-6f0d2b8e4a37
+                    errors:
+                    - code: client_error
+                      message: Contact with user role can't be converted to a lead
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 6b4a8f0c-2d5e-4a7b-9c9f-1e0d2b3a4f5c
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                Invalid email:
+                  value:
+                    type: error.list
+                    request_id: 7c5b9a1d-3e6f-4b8c-8d0a-2f1e3c4b5a6d
+                    errors:
+                    - code: parameter_invalid
+                      message: "'email' is not a valid email address."
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -9818,11 +10086,21 @@ paths:
       - name: include_merge_history
         in: query
         description: Pass `true` to include the contact's merge history in the response.
-          Only returned for contacts with a `user` role.
+          Returned for contacts of any role, with at most the 10 most recent merges.
         required: false
         schema:
           type: boolean
           default: false
+      - name: escape_identity
+        in: query
+        description: By default, `name` and `email` values in the response, including nested
+          ones such as social profile names, are HTML-escaped (for example, `&` is returned
+          as `&amp;`). Custom attributes and tags are never escaped. Pass `false` to return
+          them unescaped.
+        required: false
+        schema:
+          type: boolean
+          default: true
       tags:
       - Contacts
       operationId: ShowContact
@@ -9847,6 +10125,8 @@ paths:
 
           The `Link` header contains the path to the final merge target, resolving multi-hop merge chains (up to 3 hops).
         {% /admonition %}
+
+        Requires the `read_single_user`, `read_users_companies` or `read_write_users` OAuth scope.
       responses:
         '200':
           description: successful
@@ -9861,6 +10141,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joe@bloggs.com
+                    email_domain: bloggs.com
                     email_verified: false
                     phone:
                     formatted_phone:
@@ -9943,6 +10224,8 @@ paths:
                     utm_source:
                     utm_term:
                     referrer:
+                    sms_consent: false
+                    unsubscribed_from_sms: false
                     enabled_push_messaging:
               schema:
                 allOf:
@@ -9965,6 +10248,27 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 4beb09b4-d430-59c9-ad44-0708cfbc1825
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 6f4e8d0a-2b5c-4e7f-9a9d-1c0b2f3e4d5a
+                    errors:
+                    - code: not_found
+                      message: User Not Found
               schema:
                 "$ref": "#/components/schemas/error"
         '410':
@@ -10005,7 +10309,10 @@ paths:
       tags:
       - Contacts
       operationId: DeleteContact
-      description: You can delete a single contact.
+      description: |
+        You can delete a single contact.
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: successful
@@ -10025,6 +10332,27 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 4631d568-2a95-5889-81c9-f779723578c9
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 8b6a0f2c-4d7e-4a9b-9c1f-3e2d4b5a6f7c
+                    errors:
+                    - code: not_found
+                      message: User Not Found
               schema:
                 "$ref": "#/components/schemas/error"
   "/contacts/merge":
@@ -10038,7 +10366,7 @@ paths:
       - name: include_merge_history
         in: query
         description: Pass `true` to include the merge history of the resulting contact
-          in the response. Only returned for contacts with a `user` role.
+          in the response, with at most the 10 most recent merges.
         required: false
         schema:
           type: boolean
@@ -10057,12 +10385,14 @@ paths:
 
         {% admonition type="warning" name="Merged contacts are not retrievable via the API" %}
           Once a merge is completed, the source contact (`from`) is permanently removed from the active contact list. This means:
-          - **GET /contacts/{id}** — Requesting the source contact by its original ID will return `410 Gone` with a `Link` header pointing to the canonical (merged-into) contact.
+          - **GET /contacts/{id}** — Requesting the source contact by its original ID returns `410 Gone` with a `Link` header pointing to the contact it was merged into. See [Get a contact](/docs/references/rest-api/api.intercom.io/contacts/showcontact).
           - **POST /contacts/search** — The source contact will not appear in search results, including queries filtered by `updated_at`.
           - **GET /contacts** — The source contact will not appear in list results.
 
           Only the target contact (`into`) remains accessible. If your application stores contact IDs, update them to use the target contact's ID after a merge.
         {% /admonition %}
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: successful
@@ -10077,6 +10407,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joe@bloggs.com
+                    email_domain: bloggs.com
                     email_verified: false
                     phone:
                     formatted_phone:
@@ -10159,6 +10490,8 @@ paths:
                     utm_source:
                     utm_term:
                     referrer:
+                    sms_consent: false
+                    unsubscribed_from_sms: false
                     enabled_push_messaging:
               schema:
                 allOf:
@@ -10196,6 +10529,42 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 3a3f8861-b1ec-52f1-856e-b1b9bb28275c
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 9c7b1a3d-5e8f-4b0c-8d2a-4f3e5c6b7a8d
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Merge in progress
+          content:
+            application/json:
+              examples:
+                Merge in progress:
+                  value:
+                    type: error.list
+                    request_id: 0d8c2b4e-6f9a-4c1d-9e3b-5a4f6d7c8b9e
+                    errors:
+                    - code: merge_in_progress
+                      message: Merge already in progress for one of these contacts.
+                        Please retry shortly.
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -10244,7 +10613,7 @@ paths:
         | --- | --- |
         | `source_same_as_target` | The source contact (`from`) and the destination contact (`into`) are the same contact. A contact can't be merged into itself. |
         | `invalid_merge_role_pair` | The `from`/`into` roles aren't mergeable. `into` must be a user. |
-        | `no_shared_identifier` | The contacts share no email or phone. Set `skip_duplicate_validation` to preview anyway. |
+        | `no_shared_identifier` | The contacts share no email or phone. The source's phone also counts as shared when it matches the destination's WhatsApp number. Set `skip_duplicate_validation` to preview anyway. |
         | `facebook_user` | Facebook contacts can't be merged. |
         | `external_lead_channel_not_allowed` | The source is an external-channel lead that isn't eligible for merging. |
         | `mailing_list` | Contacts created from a mailing list can't be merged. |
@@ -10254,6 +10623,8 @@ paths:
         | `ms_teams_data_cannot_be_merged` | The destination contact already has a Microsoft Teams sender for the same team as the source contact, so the source's sender can't be reassigned to it. |
         | `source_has_telegram_data` | The source contact has Telegram data, which user-into-user merges don't yet support moving. |
         | `phone_data_cannot_be_merged` | The phone data on the source contact can't be reassigned to the destination. |
+
+        Requires the `read_write_users` OAuth scope.
       responses:
         '200':
           description: successful
@@ -10308,7 +10679,7 @@ paths:
                     allowed: false
                     reasons:
                     - code: no_shared_identifier
-                      message: These contacts don't share a common identifier (email or phone), so they aren't recognised as duplicates. Set skip_duplicate_validation to true to preview the merge anyway.
+                      message: These contacts don't share a common identifier (email, phone, or external ID), so they aren't recognised as duplicates. Set skip_duplicate_validation to true to preview the merge anyway.
               schema:
                 "$ref": "#/components/schemas/merge_preview_response"
         '401':
@@ -10323,6 +10694,27 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 5216a8fb-f031-5110-b19d-30868b50e550
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 1e9d3c5f-7a0b-4d2e-8f4c-6b5a7e8d9c0f
+                    errors:
+                    - code: not_found
+                      message: User Not Found
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -10346,12 +10738,23 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       - name: include_merge_history
         in: query
-        description: Pass `true` to include a `merge_history` array on each contact
-          in the response. Only returned for contacts with a `user` role.
+        description: Pass `true` in the query string to include a `merge_history` array
+          on each contact in the response; a JSON boolean in the request body is ignored.
+          Returned for contacts of any role, with at most the 10 most recent merges.
         required: false
         schema:
           type: boolean
           default: false
+      - name: escape_identity
+        in: query
+        description: By default, `name` and `email` values in the response, including nested
+          ones such as social profile names, are HTML-escaped (for example, `&` is returned
+          as `&amp;`). Custom attributes and tags are never escaped. Pass `false` to return
+          them unescaped.
+        required: false
+        schema:
+          type: boolean
+          default: true
       tags:
       - Contacts
       operationId: SearchContacts
@@ -10382,6 +10785,8 @@ paths:
         There are some limitations to the amount of multiple's there can be:
         * There's a limit of max 2 nested filters
         * There's a limit of max 15 filters for each AND or OR group
+        * There's a limit of max 15 values in an `IN` or `NIN` array
+        * `pagination.per_page` must be between 1 and 150
 
         ### Searching for Timestamp Fields
 
@@ -10402,7 +10807,7 @@ paths:
         | Field                              | Type                           |
         | ---------------------------------- | ------------------------------ |
         | id                                 | String                         |
-        | role                               | String<br>Accepts user or lead |
+        | role                               | String<br>Accepts user or lead; contact is treated as lead |
         | name                               | String                         |
         | avatar                             | String                         |
         | owner_id                           | Integer                        |
@@ -10421,6 +10826,7 @@ paths:
         | last_email_clicked_at              | Datetime (Unix timestamp in seconds) |
         | language_override                  | String                         |
         | browser                            | String                         |
+        | browser_version                    | String                         |
         | browser_language                   | String                         |
         | os                                 | String                         |
         | location.country                   | String                         |
@@ -10429,44 +10835,55 @@ paths:
         | unsubscribed_from_emails           | Boolean                        |
         | marked_email_as_spam               | Boolean                        |
         | has_hard_bounced                   | Boolean                        |
+        | phone_country                      | String                         |
+        | slack_email                        | String                         |
+        | fin_qualification_status           | String                         |
+        | whatsapp_number                    | String<br>Only on workspaces with the WhatsApp integration |
         | ios_last_seen_at                   | Datetime (Unix timestamp in seconds) |
         | ios_app_version                    | String                         |
         | ios_device                         | String                         |
-        | ios_app_device                     | String                         |
         | ios_os_version                     | String                         |
         | ios_app_name                       | String                         |
         | ios_sdk_version                    | String                         |
         | android_last_seen_at               | Datetime (Unix timestamp in seconds) |
         | android_app_version                | String                         |
         | android_device                     | String                         |
+        | android_os_version                 | String                         |
         | android_app_name                   | String                         |
-        | andoid_sdk_version                 | String                         |
+        | android_sdk_version                | String                         |
+        | enabled_push_messaging             | Boolean                        |
         | segment_id                         | String                         |
         | tag_id                             | String                         |
         | custom_attributes.{attribute_name} | Matches the attribute's own type<br>(String, Integer, Float, Boolean or Date) |
 
+        The `ios_*` fields other than `ios_app_name` are searchable only once your workspace has been set up for the Intercom iOS SDK or has received a request from it, and the `android_*` fields other than `android_app_name` only once the same is true for the Android SDK. `enabled_push_messaging` needs either. Until then, they return an `invalid_field` error.
+
         ### Accepted Operators
 
         {% admonition type="warning" name="Operators not supported on Date custom attributes" %}
-          Date custom attributes do not support the `!=`, `>=`, or `<=` operators. Using them returns an error. Standard timestamp fields (`created_at`, `updated_at` etc.) do support these operators, and are filtered on the exact second.
+          Date custom attributes do not support the `!=`, `>=`, or `<=` operators. Using them returns a `422` error. Standard timestamp fields (`created_at`, `updated_at` etc.) do support these operators, and are filtered on the exact second.
         {% /admonition %}
 
-        The table below shows the operators you can use to define how you want to search for the value. The operator should be put in as a string (`"="`). Which operators are valid depends on the field's type - see the "Valid Types" column below. Searching by `tag_id` supports only the `=` and `!=` operators.
+        The table below shows the operators you can use to define how you want to search for the value. The operator should be put in as a string (`"="`). Which operators are valid depends on the field's type - see the "Valid Types" column below. Searching by `tag_id` or `segment_id` supports only the `=` and `!=` operators, with a single ID string as the value.
+
+        A `null` value is accepted only with `=` (matches Contacts with no value set) and `!=` (matches Contacts with any value set). An array value is accepted only with `IN` and `NIN`. String values must be shorter than 256 characters.
 
         | Operator | Valid Types                        | Description                                                            |
         | :------- | :---------------------------------- | :----------------------------------------------------------------------|
         | =        | All                                  | Equals                                                                  |
         | !=       | All except Date                      | Doesn't Equal<br>Also matches Contacts with no value set                |
-        | IN       | All except Date, Datetime and tag_id | In<br>Shortcut for `OR` queries<br>Values must be in Array              |
-        | NIN      | All except Date, Datetime and tag_id | Not In<br>Shortcut for `OR !` queries<br>Values must be in Array        |
-        | >        | Integer<br>Datetime<br>Date | Greater than<br>On Date custom attributes, matches from the start of the next day |
-        | <        | Integer<br>Datetime<br>Date | Lower than<br>On Date custom attributes, matches before the start of the day |
-        | >=       | Integer<br>Datetime         | Greater than or equal to<br>Not supported on Date custom attributes    |
-        | <=       | Integer<br>Datetime         | Lower than or equal to<br>Not supported on Date custom attributes      |
+        | IN       | All except Date, Datetime, tag_id and segment_id | In<br>Shortcut for `OR` queries<br>Values must be in Array              |
+        | NIN      | All except Date, Datetime, tag_id and segment_id | Not In<br>Shortcut for `OR !` queries<br>Values must be in Array        |
+        | >        | Integer<br>Float<br>Datetime<br>Date | Greater than<br>On Date custom attributes, matches from the start of the next day |
+        | <        | Integer<br>Float<br>Datetime<br>Date | Lower than<br>On Date custom attributes, matches before the start of the day |
+        | >=       | Integer<br>Float<br>Datetime         | Greater than or equal to<br>Not supported on Date custom attributes    |
+        | <=       | Integer<br>Float<br>Datetime         | Lower than or equal to<br>Not supported on Date custom attributes      |
         | ~        | String                               | Contains                                                                |
         | !~       | String                               | Doesn't Contain                                                         |
         | ^        | String                               | Starts With                                                             |
         | $        | String                               | Ends With                                                               |
+
+        Requires the `read_users_companies` or `read_write_users` OAuth scope.
       responses:
         '200':
           description: successful
@@ -10497,6 +10914,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 648d4d57-2aa4-530b-909f-aad2c59197fe
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '400':
@@ -10511,6 +10935,63 @@ paths:
                     errors:
                     - code: invalid_sort_order
                       message: "Invalid sort order 'desc'. Must be one of: ascending, descending"
+                Invalid field:
+                  value:
+                    type: error.list
+                    request_id: 3a7e2c91-5d4b-4f08-a6c3-9e1b7d2f4a60
+                    errors:
+                    - code: invalid_field
+                      message: custom_attributes.plan_tier is not a valid search field
+                Invalid operator:
+                  value:
+                    type: error.list
+                    request_id: 6b2f9d14-8e3a-4c57-b1d0-2a9c5e7f3b81
+                    errors:
+                    - code: invalid_operator
+                      message: "email does not support operator: >"
+                Invalid value:
+                  value:
+                    type: error.list
+                    request_id: 9c4a1e73-2b6d-4e98-a5f2-7d3b8c1e6a24
+                    errors:
+                    - code: invalid_value
+                      message: Number of elements in composite query is greater than 15, please
+                        try again with a smaller list
+                Invalid query:
+                  value:
+                    type: error.list
+                    request_id: 1d8b5f26-7c3e-4a19-b2e4-5f6a9d0c8b37
+                    errors:
+                    - code: invalid_query
+                      message: Query body must contain a query hash
+                Query nested too deeply:
+                  value:
+                    type: error.list
+                    request_id: 4e9c2a58-1f7b-4d36-8a0e-3b5d7c9f1e42
+                    errors:
+                    - code: invalid_values
+                      message: Value depth exceeds 2 items
+                Invalid per_page:
+                  value:
+                    type: error.list
+                    request_id: 7f3d6b09-4a2c-4e85-9b1f-8c0e2d5a7b63
+                    errors:
+                    - code: invalid_per_page
+                      message: per_page must be an integer between 0 and 150
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unsupported operator on a Date custom attribute
+          content:
+            application/json:
+              examples:
+                Unsupported date comparison:
+                  value:
+                    type: error.list
+                    request_id: 2c5e8a17-9d3f-4b60-a7c4-1e8f3b6d9a05
+                    errors:
+                    - code: data_invalid
+                      message: "Date predicate doesn't support comparison type :ne"
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -10544,7 +11025,7 @@ paths:
       - name: per_page
         in: query
         required: false
-        description: The number of results to return per page. Defaults to 50, minimum 1, maximum 150.
+        description: The number of results to return per page. Defaults to 50, minimum 1, maximum 150; larger values are treated as `150`. Only the leading digits are read, so `1.5` is treated as `1`. A value that doesn't start with a positive integer, such as `0` or `abc`, returns a `400` error with code `invalid_per_page`.
         schema:
           type: integer
           default: 50
@@ -10562,10 +11043,14 @@ paths:
       description: |
         You can fetch a list of contact activity events for your workspace, such as when contacts are created, role updated, merged, or deleted. Events are returned oldest first.
 
+        If the activity store can't be read, this endpoint returns `200` with an empty `data` array and no `pages.next`, the same response as when there are no new events.
+
         {% admonition type="warning" name="Pagination" %}
           You can use pagination to limit the number of results returned. The default is `50` results per page, with a maximum of `150`.
           See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.
         {% /admonition %}
+
+        Requires the `read_users_companies` or `read_write_users` OAuth scope.
       responses:
         '200':
           description: successful
@@ -10615,11 +11100,25 @@ paths:
                       created_at: 1717000400
                     pages:
                       type: pages
-                      per_page: 50
+                      per_page: 5
                       next:
                         starting_after: '1717000400000.0000e5'
               schema:
                 "$ref": "#/components/schemas/contact_activity_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid per_page:
+                  value:
+                    type: error.list
+                    request_id: 5a1c7e39-6b2d-4f84-9e0a-3c8d1f5b7a26
+                    errors:
+                    - code: invalid_per_page
+                      message: per_page must be a positive integer
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -10632,6 +11131,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 3aa05fbd-7443-55e1-9b80-7766454b008d
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/contacts":
@@ -10645,11 +11151,42 @@ paths:
       - name: include_merge_history
         in: query
         description: Pass `true` to include a `merge_history` array on each contact
-          in the response. Only returned for contacts with a `user` role.
+          in the response. Returned for contacts of any role, with at most the 10 most
+          recent merges.
         required: false
         schema:
           type: boolean
           default: false
+      - name: escape_identity
+        in: query
+        description: By default, `name` and `email` values in the response, including nested
+          ones such as social profile names, are HTML-escaped (for example, `&` is returned
+          as `&amp;`). Custom attributes and tags are never escaped. Pass `false` to return
+          them unescaped.
+        required: false
+        schema:
+          type: boolean
+          default: true
+      - name: per_page
+        in: query
+        description: The number of results per page. Defaults to `10`, with a maximum
+          of `150`; larger values are treated as `150`. Only the leading digits are read,
+          so `1.5` is treated as `1`. A value that doesn't start with a positive integer,
+          such as `0` or `abc`, returns a `400` error with code `invalid_per_page`.
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 10
+          maximum: 150
+      - name: starting_after
+        in: query
+        description: The cursor value from `pages.next.starting_after` in a previous
+          response. An empty value is ignored. A value that isn't a valid cursor returns
+          a `400` error with code `client_error`.
+        required: false
+        schema:
+          type: string
       tags:
       - Contacts
       operationId: ListContacts
@@ -10662,6 +11199,8 @@ paths:
           You can use pagination to limit the number of results returned. The default is `10` results per page, with a maximum of `150`.
           See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.
         {% /admonition %}
+
+        Requires the `read_users_companies` or `read_write_users` OAuth scope.
       responses:
         '200':
           description: successful
@@ -10692,6 +11231,34 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: e3b9f9b0-51d9-5926-bca5-4f5b6c9a3e5c
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid per_page:
+                  value:
+                    type: error.list
+                    request_id: 0b6e3d82-5f1a-4c97-a2d8-6e9f4b1c3a75
+                    errors:
+                    - code: invalid_per_page
+                      message: per_page must be a positive integer
+                Invalid starting_after:
+                  value:
+                    type: error.list
+                    request_id: 8e2a4c61-3d7f-4b05-9c1e-5a8b2f6d0e94
+                    errors:
+                    - code: client_error
+                      message: Invalid starting_after param. Please try again using a starting_after value from a paginated response
               schema:
                 "$ref": "#/components/schemas/error"
     post:
@@ -10704,7 +11271,10 @@ paths:
       tags:
       - Contacts
       operationId: CreateContact
-      description: You can create a new contact (ie. user or lead).
+      description: |
+        You can create a new contact (ie. user or lead).
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: successful
@@ -10719,6 +11289,7 @@ paths:
                     external_id:
                     role: user
                     email: joebloggs@intercom.io
+                    email_domain: intercom.io
                     email_verified: false
                     phone:
                     formatted_phone:
@@ -10801,6 +11372,8 @@ paths:
                     utm_source:
                     utm_term:
                     referrer:
+                    sms_consent: false
+                    unsubscribed_from_sms: false
                     enabled_push_messaging:
               schema:
                 allOf:
@@ -10823,6 +11396,101 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: ae05b405-0bc7-5a7f-b519-0bcb15655216
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid timestamp:
+                  value:
+                    type: error.list
+                    request_id: 9d3b7f15-2c8e-4a61-b4d9-0e5f2a7c1b38
+                    errors:
+                    - code: parameter_invalid
+                      message: "'signed_up_at' appears to be in milliseconds. Timestamps
+                        must be Unix timestamps in seconds."
+                Owner not a teammate:
+                  value:
+                    type: error.list
+                    request_id: 1e4c8a26-3d9f-4b72-a5e0-7f6a3b8d2c49
+                    errors:
+                    - code: parameter_invalid
+                      message: The owner specified is not a member of the app
+                Custom attribute does not exist:
+                  value:
+                    type: error.list
+                    request_id: 2f5d9b37-4e0a-4c83-b6f1-8a7b4c9e3d50
+                    errors:
+                    - code: parameter_invalid
+                      message: Custom attribute 'plan_tier' does not exist
+                Invalid custom attributes:
+                  value:
+                    type: error.list
+                    request_id: 3a6e0c48-5f1b-4d94-87a2-9b8c5d0f4e61
+                    errors:
+                    - code: nested_custom_attributes
+                      message: "'custom_attributes' must be an object"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Contact already exists
+          content:
+            application/json:
+              examples:
+                Contact already exists:
+                  value:
+                    type: error.list
+                    request_id: 4b7f1d59-6a2c-4ea5-98b3-0c9d6e1a5f72
+                    errors:
+                    - code: conflict
+                      message: A contact matching those details already exists with
+                        id=6762f0dd1bb69f9f2193bb83
+                Archived contact already exists:
+                  value:
+                    type: error.list
+                    request_id: 5c8a2e6a-7b3d-4fb6-89c4-1d0e7f2b6a83
+                    errors:
+                    - code: conflict
+                      message: An archived contact matching those details already
+                        exists with id=6762f0dd1bb69f9f2193bb83
+                Multiple matching contacts:
+                  value:
+                    type: error.list
+                    request_id: 2d7b9e41-6c3a-4f08-b5d2-9a1e7c4f0b63
+                    errors:
+                    - code: conflict
+                      message: Multiple contacts matching those details already exists
+                        with id= email=joe@example.com
+                Contact created at the same time:
+                  value:
+                    type: error.list
+                    request_id: 6f1a3c8e-9d2b-4a75-8e40-b3c6d1f9a082
+                    errors:
+                    - code: conflict
+                      message: A contact matching those details already exists
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                Invalid email:
+                  value:
+                    type: error.list
+                    request_id: 6d9b3f7b-8c4e-4ac7-9ad5-2e1f8a3c7b94
+                    errors:
+                    - code: parameter_invalid
+                      message: "'email' is not a valid email address."
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -10854,11 +11522,21 @@ paths:
       - name: include_merge_history
         in: query
         description: Pass `true` to include the contact's merge history in the response.
-          Only returned for contacts with a `user` role.
+          Returned for contacts of any role, with at most the 10 most recent merges.
         required: false
         schema:
           type: boolean
           default: false
+      - name: escape_identity
+        in: query
+        description: By default, `name` and `email` values in the response, including nested
+          ones such as social profile names, are HTML-escaped (for example, `&` is returned
+          as `&amp;`). Custom attributes and tags are never escaped. Pass `false` to return
+          them unescaped.
+        required: false
+        schema:
+          type: boolean
+          default: true
       tags:
       - Contacts
       operationId: ShowContactByExternalId
@@ -10868,6 +11546,8 @@ paths:
         {% admonition type="info" name="Merged contacts return 410 Gone" %}
           If the contact with this external ID has been merged into another contact, the API returns **HTTP 410 Gone** with a `Link` header pointing to the canonical (merged-into) contact. See `GET /contacts/{id}` for details on the response format.
         {% /admonition %}
+
+        Requires the `read_single_user`, `read_users_companies` or `read_write_users` OAuth scope.
       responses:
         '200':
           description: successful
@@ -10882,6 +11562,7 @@ paths:
                     external_id: '70'
                     role: user
                     email: joe@bloggs.com
+                    email_domain: bloggs.com
                     email_verified: false
                     phone:
                     formatted_phone:
@@ -10964,6 +11645,8 @@ paths:
                     utm_source:
                     utm_term:
                     referrer:
+                    sms_consent: false
+                    unsubscribed_from_sms: false
                     enabled_push_messaging:
               schema:
                 allOf:
@@ -10986,6 +11669,27 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: c3ae8c73-bd9a-5a00-b68c-fc7c932d59a8
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 7a5f9e1b-3c6d-4f8a-8b0e-2d1c3a4f5e6b
+                    errors:
+                    - code: not_found
+                      message: User Not Found
               schema:
                 "$ref": "#/components/schemas/error"
         '410':
@@ -11028,7 +11732,10 @@ paths:
       tags:
       - Contacts
       operationId: ArchiveContact
-      description: You can archive a single contact.
+      description: |
+        You can archive a single contact.
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: successful
@@ -11036,6 +11743,22 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/contact_archived"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 8d6c0b2e-4f7a-4c9d-9e1b-3a2f4d5c6b7e
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/contacts/{id}/unarchive":
     post:
       summary: Unarchive contact
@@ -11054,7 +11777,10 @@ paths:
       tags:
       - Contacts
       operationId: UnarchiveContact
-      description: You can unarchive a single contact.
+      description: |
+        You can unarchive a single contact.
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: successful
@@ -11062,6 +11788,60 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/contact_unarchived"
+        '400':
+          description: Contact can't be restored
+          content:
+            application/json:
+              examples:
+                Blocked contact:
+                  value:
+                    type: error.list
+                    request_id: 9e7d1c3f-5a8b-4d0e-8f2c-4b3a5e6d7c8f
+                    errors:
+                    - code: not_restorable
+                      message: User has been blocked and is not restorable. See your
+                        App blocked user list for more detail.
+                Merged contact:
+                  value:
+                    type: error.list
+                    request_id: 0f8e2d4a-6b9c-4e1f-9a3d-5c4b6f7e8d9a
+                    errors:
+                    - code: bad_request
+                      message: User has been merged and is not restorable.
+                Pending permanent deletion:
+                  value:
+                    type: error.list
+                    request_id: 1a9f3e5b-7c0d-4f2a-8b4e-6d5c7a8f9e0b
+                    errors:
+                    - code: bad_request
+                      message: User has been marked for permanent deletion and is not
+                        restorable.
+                Duplicate contact:
+                  value:
+                    type: error.list
+                    request_id: 2b0a4f6c-8d1e-4a3b-9c5f-7e6d8b9a0f1c
+                    errors:
+                    - code: unique_user_constraint
+                      message: This user is archived but cannot be restored because
+                        another user exists with this email or user_id.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 3c1b5a7d-9e2f-4b4c-8d6a-8f7e9c0b1a2d
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/contacts/{id}/block":
     post:
       summary: Block contact
@@ -11080,7 +11860,10 @@ paths:
       tags:
       - Contacts
       operationId: BlockContact
-      description: Block a single contact.<br>**Note:** conversations of the contact will also be archived during the process.<br>More details in [FAQ How do I block Inbox spam?](https://www.intercom.com/help/en/articles/8838656-inbox-faqs)
+      description: |
+        Block a single contact.<br>**Note:** conversations of the contact will also be archived during the process.<br>More details in [FAQ How do I block Inbox spam?](https://www.intercom.com/help/en/articles/8838656-inbox-faqs)
+
+        Requires the `read_write_users` OAuth scope.
       responses:
         '200':
           description: successful
@@ -11088,6 +11871,29 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/contact_blocked"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 4d2c6b8e-0f3a-4c5d-9e7b-9a8f0d1c2b3e
+                    errors:
+                    - code: parameter_invalid
+                      message: The user 63a07ddf05a32042dffac965 could not be found
+                Company email address:
+                  value:
+                    type: error.list
+                    request_id: 5e3d7c9f-1a4b-4d6e-8f8c-0b9a1e2d3c4f
+                    errors:
+                    - code: parameter_invalid
+                      message: The user 63a07ddf05a32042dffac965 has a company email address
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/contacts/{id}/merge_histories":
     get:
       summary: Get contact merge history
@@ -11112,7 +11918,8 @@ paths:
           type: string
       - name: per_page
         in: query
-        description: The number of results to return per page (default 50, max 150).
+        description: The number of results to return per page (default 50, max 150). A value
+          outside 1–150 returns a `422` error.
         required: false
         schema:
           type: integer
@@ -11121,7 +11928,8 @@ paths:
           maximum: 150
       - name: order
         in: query
-        description: The order to return results in. Defaults to descending.
+        description: The order to return results in. Defaults to descending. Any other value
+          returns a `422` error.
         required: false
         schema:
           type: string
@@ -11135,6 +11943,8 @@ paths:
         Retrieve the paginated list of contacts that have been merged into a given contact.
 
         Only available for contacts with a `user` role. Returns a `404` if the contact is not found or has a `lead` role.
+
+        Requires the `read_users_companies` or `read_write_users` OAuth scope.
       responses:
         '200':
           description: successful
@@ -11165,6 +11975,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 69c5df7c-0c2b-5596-90f6-b3b636ea51c8
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -11178,7 +11995,34 @@ paths:
                     request_id: 45b30bd1-75d2-40cc-bb39-74ac133a2836
                     errors:
                     - code: not_found
-                      message: Contact not found
+                      message: User Not Found
+                Contact is not a user:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: not_found
+                      message: Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Invalid per_page:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: parameter_invalid
+                      message: Limit is too big
+                Invalid cursor:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: parameter_invalid
+                      message: must be a valid base64-encoded JSON cursor
               schema:
                 "$ref": "#/components/schemas/error"
   "/contacts/{id}/banners":
@@ -11207,6 +12051,8 @@ paths:
         with the dismiss endpoint. A returned banner is treated as shown: requesting
         this endpoint records an impression for each banner returned, so call it at the
         point you are about to display the banners, not speculatively.
+
+        Requires the `read_users_companies` or `read_write_users` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -11230,6 +12076,8 @@ paths:
                       created_at: 1780580493
               schema:
                 "$ref": "#/components/schemas/banner_list"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
         '404':
           description: Contact not found
           content:
@@ -11275,6 +12123,8 @@ paths:
 
         The request is idempotent: dismissing an already-dismissed banner succeeds and
         returns the same response.
+
+        Requires the `read_write_users` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -11288,8 +12138,10 @@ paths:
                     dismissed: true
               schema:
                 "$ref": "#/components/schemas/banner_dismiss"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
         '404':
-          description: Banner view not found
+          description: Banner view or contact not found
           content:
             application/json:
               examples:
@@ -11300,6 +12152,13 @@ paths:
                     errors:
                     - code: not_found
                       message: Resource Not Found
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 8a2d6f0e-4b7c-4e19-9f3a-1c5e8b2d7f46
+                    errors:
+                    - code: not_found
+                      message: User Not Found
               schema:
                 "$ref": "#/components/schemas/error"
   "/contacts/bulk":
@@ -11331,6 +12190,8 @@ paths:
           - You can append tasks to an existing job by including `job.id` in the request body.
           - Tag application is best-effort and processed asynchronously: unknown tag IDs are skipped, and per-tag results are not returned in the job status.
         {% /admonition %}
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       requestBody:
         content:
           application/json:
@@ -11425,6 +12286,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 941c4b1b-d76e-5cd5-a1bb-6d69ad1905ed
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '403':
@@ -11512,6 +12380,8 @@ paths:
           - You can append tasks to an existing job by including `job.id` in the request body.
           - Tag application is best-effort and processed asynchronously: unknown tag IDs are skipped, and per-tag results are not returned in the job status.
         {% /admonition %}
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       requestBody:
         content:
           application/json:
@@ -11613,6 +12483,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 1a6d2e20-cdad-5c98-a063-26454d9eb71d
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '403':
@@ -11709,6 +12586,8 @@ paths:
           - Maximum of 100 contacts per request.
           - You can append tasks to an existing job by including `job.id` in the request body.
         {% /admonition %}
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       requestBody:
         content:
           application/json:
@@ -11764,6 +12643,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a4abbb6a-8868-585e-be5b-b068a3dd5fd0
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '403':
@@ -11855,7 +12741,9 @@ paths:
       - Contacts
       operationId: ShowBulkUpdateContactsJob
       description: |
-        You can check the status of a bulk contact update job. The `state` field indicates the overall job progress: `pending`, `running`, `completed`, or `completed_with_errors`.
+        You can check the status of a bulk contact update job. The `state` field indicates the overall job progress: `running`, `completed`, or `completed_with_errors`.
+
+        Requires the `read_users_companies` or `read_write_users` OAuth scope.
       responses:
         '200':
           description: successful
@@ -11892,6 +12780,27 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: e4462db2-6098-589c-b6b4-3f6c6e8f2250
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              examples:
+                Job not found:
+                  value:
+                    type: error.list
+                    request_id: 7e0c4a8d-9d5f-4bd8-8be6-3f2a9b4d8c05
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
   "/content/bulk_actions":
@@ -26320,14 +27229,16 @@ paths:
                     errors:
                     - code: parameter_mismatch
                       message: Comments are not allowed on Backoffice tickets not
-                        shared with user
+                        shared with user. Use message_type 'note' instead, or share the
+                        ticket with the customer
                 Admin comment on a tracker ticket:
                   value:
                     type: error.list
                     request_id: c4e2a980-31bf-4d76-8a05-2e9cb17f4d6a
                     errors:
                     - code: parameter_mismatch
-                      message: Comments are not allowed on Tracker tickets
+                      message: Comments are not allowed on Tracker tickets. Use message_type 'note'
+                        instead
               schema:
                 "$ref": "#/components/schemas/error"
         '200':
@@ -28407,6 +29318,7 @@ paths:
                     external_id:
                     role: user
                     email: foo@bar.com
+                    email_domain: bar.com
                     email_verified: false
                     phone:
                     formatted_phone:
@@ -28489,6 +29401,8 @@ paths:
                     utm_source:
                     utm_term:
                     referrer:
+                    sms_consent: false
+                    unsubscribed_from_sms: false
                     enabled_push_messaging:
               schema:
                 "$ref": "#/components/schemas/contact"
@@ -28528,7 +29442,9 @@ paths:
       operationId: listBrands
       description: |
         Retrieves all brands for the workspace, including the default brand.
-        The default brand id always matches the workspace
+        The default brand id always matches the workspace id.
+
+        Requires the `read_brands` OAuth scope.
       parameters:
         - name: Intercom-Version
           in: header
@@ -28566,6 +29482,21 @@ paths:
           description: Unauthorized
           content:
             application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                      - code: unauthorized
+                        message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                      - code: token_unauthorized
+                        message: Not authorized to access resource
               schema:
                 $ref: "#/components/schemas/error"
   "/brands/{id}":
@@ -28574,7 +29505,10 @@ paths:
       tags:
         - Brands
       operationId: retrieveBrand
-      description: Fetches a specific brand by its unique identifier
+      description: |
+        Fetches a specific brand by its unique identifier
+
+        Requires the `read_brands` OAuth scope.
       parameters:
         - name: Intercom-Version
           in: header
@@ -28608,6 +29542,21 @@ paths:
           description: Unauthorized
           content:
             application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                      - code: unauthorized
+                        message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                      - code: token_unauthorized
+                        message: Not authorized to access resource
               schema:
                 $ref: "#/components/schemas/error"
         '404':
@@ -28622,7 +29571,7 @@ paths:
                     type: error.list
                     request_id: "req_12345"
                     errors:
-                      - code: not_found
+                      - code: brand_not_found
                         message: Brand not found
   "/emails":
     get:
@@ -29090,7 +30039,6 @@ paths:
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
@@ -29098,7 +30046,6 @@ paths:
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                     errors:
                       user:
                         attributes:
@@ -29135,11 +30082,6 @@ paths:
                     example: '2025-01-24T10:00:00.123Z'
                   errors:
                     "$ref": "#/components/schemas/fin_agent_attribute_errors"
-                  sse_subscription_url:
-                    type: string
-                    description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires.
-                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
         '400':
           description: Bad Request
           content:
@@ -29277,7 +30219,6 @@ paths:
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
@@ -29285,7 +30226,6 @@ paths:
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
                     errors:
                       user:
                         attributes:
@@ -29324,11 +30264,6 @@ paths:
                     example: '2025-01-24T10:00:00.123Z'
                   errors:
                     "$ref": "#/components/schemas/fin_agent_attribute_errors"
-                  sse_subscription_url:
-                    type: string
-                    description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires.
-                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...'
         '400':
           description: Bad Request
           content:
@@ -29430,7 +30365,7 @@ paths:
         Deterministically run a specific procedure on a new conversation. Calling this endpoint
         guarantees that the named procedure runs — there is no non-deterministic routing.
 
-        Fin's progress is delivered asynchronously via events or Server-Sent Events. If the
+        Fin's progress is delivered asynchronously via events. If the
         procedure pauses for user input, the conversation status becomes `awaiting_user_reply` —
         send the user's response with [`/fin/reply`](/docs/references/preview/rest-api/api.intercom.io/fin-agent/replytofin).
 
@@ -29451,7 +30386,6 @@ paths:
                     procedure_id: '12345'
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
@@ -29460,7 +30394,6 @@ paths:
                     procedure_id: '12345'
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                     errors:
                       user:
                         attributes:
@@ -29503,11 +30436,6 @@ paths:
                     example: '2025-01-24T10:00:00.123Z'
                   errors:
                     "$ref": "#/components/schemas/fin_agent_attribute_errors"
-                  sse_subscription_url:
-                    type: string
-                    description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires.
-                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
         '400':
           description: Bad Request
           content:
@@ -29660,7 +30588,7 @@ paths:
         Helpdesk conversation for a teammate. `context` is not surfaced, and the conversation is
         left open for your platform to hand off and continue driving.
 
-        You are notified over the existing webhook or SSE channel with an `escalated` status
+        You are notified via webhooks with an `escalated` status
         followed by `complete`. The `complete` status signals that Fin is done; it does not close
         the conversation. On the Intercom Helpdesk, the new human conversation remains open; on
         Fin for Platforms, the conversation remains open for whoever handles it on your platform.
@@ -29678,7 +30606,6 @@ paths:
                   value:
                     conversation_id: ext-123
                     status: escalated
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                 New conversation:
                   value:
                     intercom_conversation_id: '987654321'
@@ -29694,11 +30621,6 @@ paths:
                     type: string
                     description: The internal Intercom conversation ID. Returned when a new conversation was created for the escalation.
                     example: '987654321'
-                  sse_subscription_url:
-                    type: string
-                    description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires. Includes a `rewind` window so a subscriber that connects after the escalation is processed can still receive the `escalated` and `complete` events.
-                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                   status:
                     type: string
                     enum:
@@ -29793,8 +30715,8 @@ paths:
         remark.
 
         Fin decides *when* to ask for a rating — this reuses the CSAT settings on your Fin
-        workflow, not this API. When Fin asks, it fires a `csat_requested` event over webhooks or
-        SSE carrying the rating options to show the user. Present those options, then submit the
+        workflow, not this API. When Fin asks, it fires a `csat_requested` event over webhooks
+        carrying the rating options to show the user. Present those options, then submit the
         user's choice here.
 
         Submitting the same rating again, with no new remark, is a no-op and stays successful,
@@ -29958,8 +30880,6 @@ paths:
 
         During this workflow, the client should allow Fin to continue uninterrupted until a final *complete* status is returned, at which point control of the conversation passes back to the client.
 
-        Events can be received via webhooks or Server-Sent Events (SSE) using the `sse_subscription_url` in the response.
-
         {% admonition type="warning" %}
         To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
         {% /admonition %}
@@ -29976,7 +30896,6 @@ paths:
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                 Response with attribute errors:
                   value:
                     conversation_id: ext-123
@@ -29984,7 +30903,6 @@ paths:
                     user_id: user-456
                     status: thinking
                     created_at_ms: '2025-01-24T10:00:00.123Z'
-                    sse_subscription_url: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
                     errors:
                       user:
                         attributes:
@@ -30026,11 +30944,6 @@ paths:
                     example: '2025-01-24T10:00:00.123Z'
                   errors:
                     "$ref": "#/components/schemas/fin_agent_attribute_errors"
-                  sse_subscription_url:
-                    type: string
-                    description: |
-                      Optional. A URL to subscribe to Server-Sent Events (SSE) for this conversation, if SSE is enabled. The access token is a JWT with a 3-minute TTL. The token is revoked when Fin sets the conversation to awaiting_user_reply or complete status. When CSAT is enabled and a survey will follow the resolution, `complete` revocation is deferred until the `csat_requested` event is delivered or the token expires.
-                    example: 'https://primary-realtime.intercom-messenger.com/event-stream?channels=fin_agent_api:app123:ext-123&accessToken=eyJhbG...&rewind=2m'
         '400':
           description: Bad Request
           content:
@@ -33964,7 +34877,7 @@ components:
         email_verified:
           type: boolean
           description: >-
-            Whether the contact has proved they own their current email address. `true` only when this address was marked verified through the Contacts API (`email_verified: true` on create or update) and has not changed since; it becomes `false` again if the contact's email changes, until the new address is verified. Intercom reuses a lead with a verified email when it later matches an inbound email, or an outbound conversation or ticket, to that address, instead of creating a new lead. Only returned on the Preview version; not present on any released API version.
+            Whether the contact has proved they own their current email address. `true` only when this address was marked verified through the Contacts API (`email_verified: true` on create or update) and has not changed since; it becomes `false` again if the contact's email changes, until the new address is verified. Intercom reuses a lead with a verified email when it later matches an inbound email, or an outbound conversation or ticket, to that address, instead of creating a new lead. In List contacts and Search contacts responses it is left out only if the contact can't be loaded, for example when it is deleted while the request runs.
           example: true
         phone:
           type: string
@@ -34149,19 +35062,11 @@ components:
           type: object
           description: The custom attributes which are set for the contact.
         avatar:
-          type: object
+          type: string
+          format: uri
           nullable: true
-          properties:
-            type:
-              type: string
-              description: The type of object
-              example: avatar
-            image_url:
-              type: string
-              format: uri
-              nullable: true
-              description: An image URL containing the avatar of a contact.
-              example: https://example.org/128Wash.jpg
+          description: An image URL containing the avatar of a contact.
+          example: https://example.org/128Wash.jpg
         tags:
           "$ref": "#/components/schemas/contact_tags"
         notes:
@@ -34172,12 +35077,59 @@ components:
           "$ref": "#/components/schemas/contact_location"
         social_profiles:
           "$ref": "#/components/schemas/contact_social_profiles"
+        opted_out_subscription_types:
+          "$ref": "#/components/schemas/contact_subscription_types"
+        opted_in_subscription_types:
+          "$ref": "#/components/schemas/contact_subscription_types"
+        utm_campaign:
+          type: string
+          nullable: true
+          description: The `utm_campaign` value recorded for the contact.
+          example: spring_launch
+        utm_content:
+          type: string
+          nullable: true
+          description: The `utm_content` value recorded for the contact.
+          example: banner_ad
+        utm_medium:
+          type: string
+          nullable: true
+          description: The `utm_medium` value recorded for the contact.
+          example: email
+        utm_source:
+          type: string
+          nullable: true
+          description: The `utm_source` value recorded for the contact.
+          example: newsletter
+        utm_term:
+          type: string
+          nullable: true
+          description: The `utm_term` value recorded for the contact.
+          example: support_software
+        referrer:
+          type: string
+          nullable: true
+          description: The URL of the page the contact came from, as recorded by the Messenger.
+          example: https://example.com/pricing
+        sms_consent:
+          type: boolean
+          description: Whether the contact has consented to receive SMS messages.
+          example: false
+        unsubscribed_from_sms:
+          type: boolean
+          description: Whether the contact is unsubscribed from SMS messages.
+          example: false
+        enabled_push_messaging:
+          type: boolean
+          nullable: true
+          description: Whether the contact has a mobile device registered to receive push messages.
+          example: true
         merge_history:
           type: array
           nullable: true
-          description: A list of contacts that were merged into this contact. Only
-            included in the response when `include_merge_history=true` is passed as
-            a query parameter. Only available for contacts with a `user` role.
+          description: A list of contacts that were merged into this contact, most
+            recent first, capped at 10. Only included in the response when
+            `include_merge_history=true` is passed as a query parameter.
           items:
             "$ref": "#/components/schemas/merge_history_item"
     merge_history_item:
@@ -34226,7 +35178,7 @@ components:
           type: string
           nullable: true
           description: A cursor to pass as the `cursor` query parameter to fetch
-            the next page of results. Absent when there are no more pages.
+            the next page of results. `null` when there are no more pages.
           example: WyIxNjM0NTY3ODkwIl0
         has_more:
           type: boolean
@@ -34243,7 +35195,7 @@ components:
           enum:
           - list
           example: list
-        companies:
+        data:
           type: array
           description: An array containing Company Objects
           items:
@@ -34341,28 +35293,23 @@ components:
           example: 6329bd9ffe4e2e91dc5d6a1e
         external_id:
           type: string
-          nullable: true
-          description: The external identifier of the contact, if one is set.
+          description: The external identifier of the contact. Omitted when not set.
           example: user-42
         role:
           type: string
-          nullable: true
-          description: The role of the contact at the time of the event, either user, lead, or visitor.
+          description: The role of the contact at the time of the event, either user, lead, or visitor. Omitted when not recorded.
           example: user
         merge_source_id:
           type: string
-          nullable: true
-          description: For merge events, the identifier of the contact that was merged away.
+          description: For merge events, the identifier of the contact that was merged away. Omitted on other events.
           example: 5f7f0d217c3f2e001a4e8b12
         merge_target_id:
           type: string
-          nullable: true
-          description: For merge events, the identifier of the contact that was merged into.
+          description: For merge events, the identifier of the contact that was merged into. Omitted on other events.
           example: 6329bd9ffe4e2e91dc5d6a1e
         failure_reason:
           type: string
-          nullable: true
-          description: For failed events, the reason the activity did not succeed.
+          description: For failed events, the reason the activity did not succeed. Omitted on other events.
           example: duplicate_external_id
         created_at:
           type: integer
@@ -34400,8 +35347,7 @@ components:
               example: 10
             next:
               type: object
-              nullable: true
-              description: Cursor for the next page of results.
+              description: Cursor for the next page of results. Omitted on the last page.
               properties:
                 starting_after:
                   type: string
@@ -34541,7 +35487,6 @@ components:
           type: string
           description: The current state of the job.
           enum:
-          - pending
           - running
           - completed
           - completed_with_errors
@@ -34560,8 +35505,9 @@ components:
           type: integer
           format: date-time
           nullable: true
-          description: The time the job completed as a UNIX timestamp. Null if not
-            yet completed.
+          description: The time the most recent task completed as a Unix timestamp.
+            Set as soon as any task completes, so check `state` to know whether
+            the whole job has finished. Null until a task completes.
           example: 1713360120
         tasks:
           type: array
@@ -34635,6 +35581,16 @@ components:
           nullable: true
           description: The city that the contact is located in
           example: Dublin
+        country_code:
+          type: string
+          nullable: true
+          description: The ISO 3166-1 alpha-3 code of the country that the contact is located in
+          example: IRL
+        continent_code:
+          type: string
+          nullable: true
+          description: The code of the continent that the contact is located in
+          example: EU
     contact_notes:
       title: Contact notes
       type: object
@@ -34914,6 +35870,12 @@ components:
       description: An object containing Subscription Types meta data about the SubscriptionTypes
         that a contact has.
       properties:
+        type:
+          type: string
+          description: The type of the object
+          enum:
+          - list
+          example: list
         data:
           type: array
           description: This object represents the subscriptions attached to a contact.
@@ -37670,7 +38632,7 @@ components:
       properties:
         role:
           type: string
-          description: The role of the contact.
+          description: The role of the contact. `lead` creates a lead; any other value creates a user.
           example: user
         external_id:
           type: string
@@ -37727,6 +38689,14 @@ components:
           nullable: true
           description: Whether the contact is unsubscribed from emails
           example: true
+        sms_consent:
+          type: boolean
+          description: Whether the contact has consented to receive SMS messages.
+          example: false
+        unsubscribed_from_sms:
+          type: boolean
+          description: Whether the contact is unsubscribed from SMS messages.
+          example: false
         language_override:
           type: string
           nullable: true
@@ -42546,7 +43516,7 @@ components:
             - awaiting_user_reply: Fin has finished replying and is waiting for the user to respond
             - escalated: The conversation has been escalated to a human
             - resolved: The user's query has been resolved
-            - complete: Fin has completed its workflow. When CSAT is enabled a csat_requested event may follow, in which case the SSE stream is held open past complete until it is delivered or the token expires
+            - complete: Fin has completed its workflow. When CSAT is enabled a csat_requested event may follow
           example: escalated
         reason:
           type: string
@@ -42664,13 +43634,6 @@ components:
             - replying: Intermediate reply part; more parts may follow
             - awaiting_user_reply: Legacy status; instead use the fin_status_updated event with 'awaiting_user_reply', which fires once Fin's reply is done
           example: replying
-        stream_id:
-          type: string
-          description: |
-            Optional. Present when the reply was generated via streaming.
-            Correlates this event with the fin_reply_chunk events that preceded it.
-            Use this to know when to replace streamed chunk_text with the final message body.
-          example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
         created_at_ms:
           type: string
           format: date-time
@@ -42683,73 +43646,14 @@ components:
       - message
       - status
       - created_at_ms
-    fin_agent_reply_chunk_event:
-      title: Fin Agent Reply Chunk Event
-      type: object
-      description: |
-        SSE-only event fired during streaming reply generation.
-        Each chunk contains the full accumulated plain text of Fin's answer so far (cumulative, not a delta).
-        Only delivered over SSE when streaming is enabled. Not available via webhooks.
-        When the fin_replied event arrives with the same stream_id, replace streamed text with the final HTML body.
-      x-tags:
-      - Fin Agent
-      properties:
-        event_name:
-          type: string
-          enum:
-          - fin_reply_chunk
-          description: The name of the event.
-          example: fin_reply_chunk
-        conversation_id:
-          type: string
-          description: The ID of the conversation.
-          example: '123456'
-        stream_id:
-          type: string
-          description: |
-            A unique identifier for this streaming response.
-            Correlates chunks with each other and with the eventual fin_replied event.
-          example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
-        chunk_index:
-          type: integer
-          description: |
-            0-based counter for this chunk within the stream. Contiguous.
-          example: 3
-        chunk_text:
-          type: string
-          description: |
-            The full accumulated plain text of Fin's answer so far.
-            Each chunk supersedes the previous — replace rather than append.
-          example: You can see your account details by clicking
-        status:
-          type: string
-          enum:
-          - replying
-          description: Fin's current status (always 'replying' for this event).
-          example: replying
-        created_at_ms:
-          type: string
-          format: date-time
-          description: The timestamp the event was created at, with millisecond precision.
-          example: '2025-01-24T10:00:00.123Z'
-      required:
-      - event_name
-      - conversation_id
-      - stream_id
-      - chunk_index
-      - chunk_text
-      - created_at_ms
     fin_agent_csat_requested_event:
       title: Fin Agent CSAT Requested Event
       type: object
       description: |
         Event fired when Fin asks the user to rate the conversation.
-        Delivered via webhooks or SSE. Carries the rating options to present to the user; submit
+        Delivered via webhooks. Carries the rating options to present to the user; submit
         the user's choice with POST /fin/csat. Unlike the reply events it has no message — a
         rating survey is a set of options to choose from, not readable text.
-        Over SSE this event arrives after Fin reaches 'complete'. Because a survey is expected,
-        'complete' does not close the stream: the connection is held open so this event can be
-        delivered, and the token is revoked once it is sent.
       x-tags:
       - Fin Agent
       properties:
@@ -43892,7 +44796,7 @@ components:
       properties:
         attributes:
           type: array
-          description: The individual attribute changes. Capped at 50 items; total_count reflects the full number of changes.
+          description: The individual attribute changes. At most 50 custom attribute changes are included; changes to standard fields are always included, so this array can hold more than 50 items. total_count reflects the full number of changes.
           items:
             "$ref": "#/components/schemas/merge_preview_attribute_change"
         total_count:
@@ -46911,7 +47815,8 @@ components:
       properties:
         role:
           type: string
-          description: The role of the contact.
+          description: The role of the contact, either `user` or `lead`. Any other value is ignored.
+            A user can't be changed to a lead; sending `lead` for a user returns a `400` error.
         external_id:
           type: string
           description: A unique identifier for the contact which is given to Intercom
@@ -46966,6 +47871,14 @@ components:
           nullable: true
           description: Whether the contact is unsubscribed from emails
           example: true
+        sms_consent:
+          type: boolean
+          description: Whether the contact has consented to receive SMS messages.
+          example: false
+        unsubscribed_from_sms:
+          type: boolean
+          description: Whether the contact is unsubscribed from SMS messages.
+          example: false
         language_override:
           type: string
           nullable: true
@@ -48058,7 +48971,7 @@ tags:
 
     &nbsp;
 
-    Orchestrate Fin from your own agent: discover what Fin can do with `/fin/capabilities`, ask a one-shot question with `/fin/ask`, run a specific procedure with `/fin/procedures/{procedure_id}/run`, continue a conversation with `/fin/reply`, escalate to a human with `/fin/escalate`, and record a satisfaction rating with `/fin/csat`. Fin notifies your application of its status and responses through a set of events, delivered via webhooks or Server-Sent Events (SSE).
+    Orchestrate Fin from your own agent: discover what Fin can do with `/fin/capabilities`, ask a one-shot question with `/fin/ask`, run a specific procedure with `/fin/procedures/{procedure_id}/run`, continue a conversation with `/fin/reply`, escalate to a human with `/fin/escalate`, and record a satisfaction rating with `/fin/csat`. Fin notifies your application of its status and responses through a set of events, delivered via webhooks.
 
     &nbsp;
 
@@ -48068,11 +48981,10 @@ tags:
 
     **Events**
 
-    Configure a webhook endpoint in the Fin Agent API settings to receive events, or use the `sse_subscription_url` from the API response to subscribe via SSE. See the [setup guide](/docs/guides/fin-agent-api/setup) for configuration details.
+    Configure a webhook endpoint in the Fin Agent API settings to receive events. See the [setup guide](/docs/guides/fin-agent-api/setup) for configuration details.
 
     - `fin_status_updated` - Fired when Fin's status changes (awaiting_user_reply, escalated, resolved, complete)
     - `fin_replied` - Fired when Fin sends a reply to the user
-    - `fin_reply_chunk` - SSE-only streaming event fired during reply generation (requires streaming enabled)
     - `csat_requested` - Fired when Fin asks the user to rate the conversation (submit the choice with `POST /fin/csat`)
 
     All webhook requests include an `X-Fin-Agent-API-Webhook-Signature` header for request validation.
