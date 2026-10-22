@@ -17731,7 +17731,10 @@ paths:
       tags:
       - Custom Object Instances
       operationId: createCustomObjectInstances
-      description: Create or update a custom object instance
+      description: |
+        Create or update a custom object instance
+
+        Requires the `read_write_custom_object_instances` OAuth scope.
       responses:
         '200':
           description: successful
@@ -17752,6 +17755,27 @@ paths:
                     updated_at: 1734537745
               schema:
                 "$ref": "#/components/schemas/custom_object_instance"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Reserved external_id:
+                  value:
+                    type: error.list
+                    request_id: 3f1a6d2b-9c47-4e58-8a01-6b7d2e4f9c13
+                    errors:
+                    - code: bad_request
+                      message: Invalid external_id value
+                Value does not match the attribute type:
+                  value:
+                    type: error.list
+                    request_id: 5c8e4b17-2a6d-49f3-b0e5-71c9a3d82f46
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid value 'yesterday' for attribute 'ordered_at'
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           $ref: "#/components/responses/Unauthorized"
         '404':
@@ -17813,13 +17837,15 @@ paths:
       tags:
       - Custom Object Instances
       operationId: listCustomObjectInstances
-      description: |-
+      description: |
         List instances of a custom object type. Three modes are supported:
         - **No filter** — returns all instances for the type.
         - **`references_contact_id`** — returns instances associated with the given contact.
         - **`references_conversation_id`** — returns instances associated with the given conversation.
 
-        When **`external_id`** is provided, returns a single matching instance (not a list).
+        When **`external_id`** is provided, returns a single matching instance (not a list). If no instance matches, the response is still `200`, with the same body the single-instance endpoint returns for a miss.
+
+        Requires the `read_conversations`, `read_users_companies`, `read_write_custom_object_instances` or `read_write_users` OAuth scope.
       responses:
         '200':
           description: successful
@@ -17857,7 +17883,24 @@ paths:
                       created_at: 1734537100
                       updated_at: 1734537100
               schema:
-                "$ref": "#/components/schemas/custom_object_instances_paginated_list"
+                oneOf:
+                - "$ref": "#/components/schemas/custom_object_instances_paginated_list"
+                - "$ref": "#/components/schemas/custom_object_instance"
+                - "$ref": "#/components/schemas/custom_object_instance_not_found"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Both reference filters given:
+                  value:
+                    type: error.list
+                    request_id: 7d2b9e54-6c13-4a87-95f0-2e8b4c71d9a3
+                    errors:
+                    - code: bad_request
+                      message: Cannot provide both references_contact_id and references_conversation_id
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           $ref: "#/components/responses/Unauthorized"
         '404':
@@ -17885,8 +17928,11 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
-      operationId: deleteCustomObjectInstancesById
-      description: Delete a single Custom Object instance by external_id.
+      operationId: deleteCustomObjectInstancesByExternalId
+      description: |
+        Delete a single Custom Object instance by external_id.
+
+        Requires the `read_write_custom_object_instances` OAuth scope.
       responses:
         '200':
           description: successful
@@ -17903,7 +17949,26 @@ paths:
         '401':
           $ref: "#/components/responses/Unauthorized"
         '404':
-          $ref: "#/components/responses/ObjectNotFound"
+          description: Custom object type or instance not found
+          content:
+            application/json:
+              examples:
+                Instance not found:
+                  value:
+                    type: error.list
+                    request_id: 9e4c1a86-3d75-42b9-8c60-5f1a7b93e2d4
+                    errors:
+                    - code: not_found
+                      message: Custom object instance not found
+                Type not found:
+                  value:
+                    type: error.list
+                    request_id: 2a7f5c93-8b14-46e0-97d2-3c6e1b85a07f
+                    errors:
+                    - code: not_found
+                      message: Custom object type `undefined` not found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/custom_object_instances/{custom_object_type_identifier}/{custom_object_instance_id}":
     parameters:
     - name: custom_object_type_identifier
@@ -17919,7 +17984,9 @@ paths:
       parameters:
       - name: custom_object_instance_id
         in: path
-        description: The id or external_id of the custom object instance
+        description: The Intercom defined id of the custom object instance. An external
+          id here is not looked up; to find an instance by its external id, call
+          `GET /custom_object_instances/{custom_object_type_identifier}?external_id=`.
         required: true
         schema:
           type: string
@@ -17930,7 +17997,10 @@ paths:
       tags:
       - Custom Object Instances
       operationId: getCustomObjectInstancesById
-      description: Fetch a Custom Object Instance by id.
+      description: |
+        Fetch a Custom Object Instance by id.
+
+        Requires the `read_conversations`, `read_users_companies`, `read_write_custom_object_instances` or `read_write_users` OAuth scope.
       responses:
         '200':
           description: "successful. If the custom object type exists but no instance matches, the response is still `200` with `found: false`."
@@ -17984,9 +18054,11 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       tags:
       - Custom Object Instances
-      operationId: deleteCustomObjectInstancesByExternalId
-      description: Delete a single Custom Object instance using the Intercom defined
-        id.
+      operationId: deleteCustomObjectInstancesById
+      description: |
+        Delete a single Custom Object instance using the Intercom defined id.
+
+        Requires the `read_write_custom_object_instances` OAuth scope.
       responses:
         '200':
           description: successful
@@ -18003,7 +18075,26 @@ paths:
         '401':
           $ref: "#/components/responses/Unauthorized"
         '404':
-          $ref: "#/components/responses/ObjectNotFound"
+          description: Custom object type or instance not found
+          content:
+            application/json:
+              examples:
+                Instance not found:
+                  value:
+                    type: error.list
+                    request_id: 4b6d8e01-7f29-4c53-a1b8-9d3e5c270f84
+                    errors:
+                    - code: not_found
+                      message: Custom object instance not found
+                Type not found:
+                  value:
+                    type: error.list
+                    request_id: 6e9a3c47-1b58-4d02-83f7-c5214a9e6b30
+                    errors:
+                    - code: not_found
+                      message: Custom object type `undefined` not found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/data_attributes":
     get:
       summary: List all data attributes
@@ -33958,27 +34049,42 @@ components:
         external_id:
           type: string
           description: A unique identifier for the Custom Object instance in the external
-            system it originated from.
+            system it originated from. The value `reference_not_found` is reserved
+            and is rejected with a `400`. Omitting this field creates a new instance
+            on every request instead of updating an existing one.
         external_created_at:
           type: integer
           format: date-time
           nullable: true
           description: The time when the Custom Object instance was created in the
-            external system it originated from.
+            external system it originated from. A value that cannot be read as a time
+            is stored as `null` rather than rejected.
           example: 1571672154
         external_updated_at:
           type: integer
           format: date-time
           nullable: true
           description: The time when the Custom Object instance was last updated in
-            the external system it originated from.
+            the external system it originated from. A value that cannot be read as
+            a time is stored as `null` rather than rejected.
           example: 1571672154
         custom_attributes:
           type: object
           nullable: true
-          description: The custom attributes which are set for the Custom Object instance.
+          description: |-
+            The custom attributes which are set for the Custom Object instance.
+
+            Each value must match the type of the attribute it is set on: a string, integer, number or boolean, the label of one of a list attribute's options, or `null` to clear the attribute. A reference attribute takes the id of the record it points at, as a string.
           additionalProperties:
-            type: string
+            anyOf:
+            - type: string
+              nullable: true
+            - type: integer
+            - type: number
+            - type: boolean
+          example:
+            order_number: ORDER-12345
+            total_amount: 99.99
     create_or_update_tag_request:
       description: You can create or update an existing tag.
       type: object
