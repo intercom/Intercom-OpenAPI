@@ -1519,10 +1519,30 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: The page of results to fetch. Defaults to the first page.
+        example: 1
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 150
+          default: 50
+        description: The number of results to return per page. Maximum 150.
+        example: 50
       tags:
       - AI Content
       operationId: listContentImportSources
-      description: You can retrieve a list of all content import sources for a workspace.
+      description: |
+        You can retrieve a list of all content import sources for a workspace.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
       responses:
         '200':
           description: successful
@@ -1580,6 +1600,34 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Invalid page:
+                  value:
+                    type: error.list
+                    request_id: 6c1f2a54-8d0b-4e0e-9a43-0f5b1d7a2c11
+                    errors:
+                    - code: parameter_invalid
+                      message: Page must be greater than or equal to 1
+                Page size too large:
+                  value:
+                    type: error.list
+                    request_id: b7d94e0a-3f52-4c58-8a1e-52c0e9d36f27
+                    errors:
+                    - code: parameter_invalid
+                      message: Page size must be less than or equal to 150
               schema:
                 "$ref": "#/components/schemas/error"
     post:
@@ -1592,8 +1640,10 @@ paths:
       tags:
       - AI Content
       operationId: createContentImportSource
-      description: You can create a new content import source by sending a POST request
-        to this endpoint.
+      description: |
+        You can create a new content import source by sending a POST request to this endpoint.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
       responses:
         '200':
           description: successful
@@ -1625,6 +1675,48 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing parameter:
+                  value:
+                    type: error.list
+                    request_id: 0a7e5c31-9b24-4d86-b3f1-6e8d2c4a9f15
+                    errors:
+                    - code: parameter_not_found
+                      message: sync_behavior is a required parameter
+                Invalid URL:
+                  value:
+                    type: error.list
+                    request_id: 73d1b8e6-4c0a-4f59-82d7-a5e91c3b0f48
+                    errors:
+                    - code: parameter_invalid
+                      message: URL must be a valid URI with a http or https protocol
+                Sync behavior must be api:
+                  value:
+                    type: error.list
+                    request_id: c5f09a27-3e81-4b6d-9a42-d8b17e6c0a93
+                    errors:
+                    - code: parameter_invalid
+                      message: Sync behavior must be api
+                Invalid audience IDs:
+                  value:
+                    type: error.list
+                    request_id: 1e6b3d98-a2c7-4f05-8b91-47d0c5e2a6f3
+                    errors:
+                    - code: parameter_invalid
+                      message: audience_ids contains invalid audience references
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -1650,9 +1742,10 @@ paths:
     delete:
       summary: Delete a content import source
       operationId: deleteContentImportSource
-      description: You can delete a content import source by making a DELETE request
-        this endpoint. This will also delete all external pages that were imported
-        from this source.
+      description: |
+        You can delete a content import source by making a DELETE request this endpoint. This will also delete all external pages that were imported from this source.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
       parameters:
       - name: Intercom-Version
         in: header
@@ -1675,11 +1768,36 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Content import source not found
+          content:
+            application/json:
+              examples:
+                Content import source not found:
+                  value:
+                    type: error.list
+                    request_id: 2f8a6d13-5b7c-4e49-b0d2-9e1c4a7f3b58
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
     get:
       summary: Retrieve a content import source
       operationId: getContentImportSource
+      description: |
+        You can retrieve a content import source.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
       parameters:
       - name: Intercom-Version
         in: header
@@ -1718,6 +1836,27 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Content import source not found
+          content:
+            application/json:
+              examples:
+                Content import source not found:
+                  value:
+                    type: error.list
+                    request_id: 2f8a6d13-5b7c-4e49-b0d2-9e1c4a7f3b58
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
     put:
@@ -1730,7 +1869,10 @@ paths:
       tags:
       - AI Content
       operationId: updateContentImportSource
-      description: You can update an existing content import source.
+      description: |
+        You can update an existing content import source.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
       responses:
         '200':
           description: successful
@@ -1762,6 +1904,55 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing parameter:
+                  value:
+                    type: error.list
+                    request_id: 9d3a1f60-5e27-4c84-a0b6-2f7c8e1d4b59
+                    errors:
+                    - code: parameter_not_found
+                      message: url is a required parameter
+                Sync behavior must be api:
+                  value:
+                    type: error.list
+                    request_id: 4b8e2c75-0d19-4a63-95f8-e3a1b7c60d24
+                    errors:
+                    - code: parameter_invalid
+                      message: Sync behavior must be api
+                Invalid audience IDs:
+                  value:
+                    type: error.list
+                    request_id: f2c75a09-6b3e-4d18-b4a7-80e9d1c35f62
+                    errors:
+                    - code: parameter_invalid
+                      message: audience_ids contains invalid audience references
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Content import source not found
+          content:
+            application/json:
+              examples:
+                Content import source not found:
+                  value:
+                    type: error.list
+                    request_id: 2f8a6d13-5b7c-4e49-b0d2-9e1c4a7f3b58
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -1783,10 +1974,30 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        description: The page of results to fetch. Defaults to the first page. `page` cannot exceed 5,001, and `page` multiplied by `per_page` cannot exceed 10,000. Past 5,001 the API returns a 400 `parameter_invalid` error; past 10,000 results it returns a 400 `bad_request` error with the message `page limit reached, please use scroll API`.
+        example: 1
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 150
+          default: 50
+        description: The number of results to return per page. Maximum 150.
+        example: 50
       tags:
       - AI Content
       operationId: listExternalPages
-      description: You can retrieve a list of all external pages for a workspace.
+      description: |
+        You can retrieve a list of all external pages for a workspace.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
       responses:
         '200':
           description: successful
@@ -1809,6 +2020,9 @@ paths:
                       source_id: 42
                       external_id: '3'
                       audience_ids: []
+                      tags:
+                        type: tag.list
+                        tags: []
                       created_at: 1734537269
                       updated_at: 1734537269
                       last_ingested_at: 1734537269
@@ -1825,6 +2039,9 @@ paths:
                       source_id: 41
                       external_id: '2'
                       audience_ids: []
+                      tags:
+                        type: tag.list
+                        tags: []
                       created_at: 1734537269
                       updated_at: 1734537269
                       last_ingested_at: 1734537269
@@ -1841,6 +2058,9 @@ paths:
                       source_id: 40
                       external_id: '1'
                       audience_ids: []
+                      tags:
+                        type: tag.list
+                        tags: []
                       created_at: 1734537269
                       updated_at: 1734537269
                       last_ingested_at: 1734537269
@@ -1865,6 +2085,41 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Invalid page:
+                  value:
+                    type: error.list
+                    request_id: 6c1f2a54-8d0b-4e0e-9a43-0f5b1d7a2c11
+                    errors:
+                    - code: parameter_invalid
+                      message: Page must be greater than or equal to 1
+                Page size too large:
+                  value:
+                    type: error.list
+                    request_id: b7d94e0a-3f52-4c58-8a1e-52c0e9d36f27
+                    errors:
+                    - code: parameter_invalid
+                      message: Page size must be less than or equal to 150
+                Page limit exceeded:
+                  value:
+                    type: error.list
+                    request_id: d2a8f6c1-5b3e-4a79-8e0d-7c41f9b2a6e3
+                    errors:
+                    - code: bad_request
+                      message: page limit reached, please use scroll API
               schema:
                 "$ref": "#/components/schemas/error"
     post:
@@ -1877,9 +2132,10 @@ paths:
       tags:
       - AI Content
       operationId: createExternalPage
-      description: You can create a new external page by sending a POST request to
-        this endpoint. If an external page already exists with the specified source_id
-        and external_id, it will be updated instead.
+      description: |
+        You can create a new external page by sending a POST request to this endpoint. If an external page already exists with the specified source_id and external_id, it will be updated instead.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
       responses:
         '200':
           description: successful
@@ -1903,6 +2159,9 @@ paths:
                     audience_ids:
                     - 1
                     - 2
+                    tags:
+                      type: tag.list
+                      tags: []
                     created_at: 1734537273
                     updated_at: 1734537274
                     last_ingested_at: 1734537274
@@ -1920,6 +2179,62 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing parameter:
+                  value:
+                    type: error.list
+                    request_id: 3a9d6e21-8f04-4b7c-a5d3-1c0e7b92f846
+                    errors:
+                    - code: parameter_not_found
+                      message: external_id is a required parameter
+                Unsupported locale:
+                  value:
+                    type: error.list
+                    request_id: a8e14c63-2d75-4f09-b1a8-6d3f90c5e7b2
+                    errors:
+                    - code: parameter_invalid
+                      message: Locale must be supported
+                Source is not an API source:
+                  value:
+                    type: error.list
+                    request_id: 5f0b9d84-1a36-4e72-8c4d-b27e5a1f0c69
+                    errors:
+                    - code: parameter_invalid
+                      message: Content Import Source must have API sync behaviour
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Content import source or audience not found
+          content:
+            application/json:
+              examples:
+                Content import source not found:
+                  value:
+                    type: error.list
+                    request_id: 58c2f0b9-7e14-4a3d-a6c8-1d9b3e5f7a02
+                    errors:
+                    - code: content_import_source_not_found
+                      message: Content Import Source not found
+                Unknown audience IDs:
+                  value:
+                    type: error.list
+                    request_id: e9a30c47-1b6d-4d52-8f0a-7c5e2b9d1a36
+                    errors:
+                    - code: parameter_invalid
+                      message: 'audience_ids contains unknown audience IDs: 999'
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -1958,8 +2273,10 @@ paths:
       tags:
       - AI Content
       operationId: deleteExternalPage
-      description: Sending a DELETE request for an external page will remove it from
-        the content library UI and from being used for AI answers.
+      description: |
+        Sending a DELETE request for an external page will remove it from the content library UI and from being used for AI answers.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
       responses:
         '200':
           description: successful
@@ -1981,6 +2298,9 @@ paths:
                     source_id: 45
                     external_id: '4'
                     audience_ids: []
+                    tags:
+                      type: tag.list
+                      tags: []
                     created_at: 1734537276
                     updated_at: 1734537276
                     last_ingested_at: 1734537276
@@ -1998,6 +2318,27 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: External page not found
+          content:
+            application/json:
+              examples:
+                External page not found:
+                  value:
+                    type: error.list
+                    request_id: d41b7e92-6a03-4f8c-91e5-3c2a8b0f6d74
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
     get:
@@ -2010,7 +2351,10 @@ paths:
       tags:
       - AI Content
       operationId: getExternalPage
-      description: You can retrieve an external page.
+      description: |
+        You can retrieve an external page.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
       responses:
         '200':
           description: successful
@@ -2032,6 +2376,9 @@ paths:
                     source_id: 46
                     external_id: '5'
                     audience_ids: []
+                    tags:
+                      type: tag.list
+                      tags: []
                     created_at: 1734537278
                     updated_at: 1734537278
                     last_ingested_at: 1734537278
@@ -2049,6 +2396,27 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: External page not found
+          content:
+            application/json:
+              examples:
+                External page not found:
+                  value:
+                    type: error.list
+                    request_id: d41b7e92-6a03-4f8c-91e5-3c2a8b0f6d74
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
     put:
@@ -2061,8 +2429,10 @@ paths:
       tags:
       - AI Content
       operationId: updateExternalPage
-      description: You can update an existing external page (if it was created via
-        the API).
+      description: |
+        You can update an existing external page (if it was created via the API).
+
+        OAuth tokens must have the `read_write_ai_content` scope.
       responses:
         '200':
           description: successful
@@ -2086,6 +2456,9 @@ paths:
                     audience_ids:
                     - 1
                     - 2
+                    tags:
+                      type: tag.list
+                      tags: []
                     created_at: 1734537280
                     updated_at: 1734537281
                     last_ingested_at: 1734537281
@@ -2103,6 +2476,69 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing parameter:
+                  value:
+                    type: error.list
+                    request_id: e07c4a15-9b62-4d38-a1f5-c3d8b6e20a74
+                    errors:
+                    - code: parameter_not_found
+                      message: html is a required parameter
+                Source cannot be changed:
+                  value:
+                    type: error.list
+                    request_id: 2d9f6b30-7a58-4c14-93e6-0b4a1d8c5f27
+                    errors:
+                    - code: parameter_invalid
+                      message: You can't update source_id
+                Unsupported locale:
+                  value:
+                    type: error.list
+                    request_id: b61a3e97-4c08-4f25-8d70-9e5c2a1b7d43
+                    errors:
+                    - code: parameter_invalid
+                      message: Locale must be supported
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: External page, content import source or audience not found
+          content:
+            application/json:
+              examples:
+                External page not found:
+                  value:
+                    type: error.list
+                    request_id: d41b7e92-6a03-4f8c-91e5-3c2a8b0f6d74
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+                Content import source not found:
+                  value:
+                    type: error.list
+                    request_id: 58c2f0b9-7e14-4a3d-a6c8-1d9b3e5f7a02
+                    errors:
+                    - code: content_import_source_not_found
+                      message: Content Import Source not found
+                Unknown audience IDs:
+                  value:
+                    type: error.list
+                    request_id: e9a30c47-1b6d-4d52-8f0a-7c5e2b9d1a36
+                    errors:
+                    - code: parameter_invalid
+                      message: 'audience_ids contains unknown audience IDs: 999'
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -4483,7 +4919,7 @@ paths:
                     - resolved
                     - complete
                     description: |
-                      Fin's current status in the conversation workflow.
+                      Fin's status when the request was accepted. Always `thinking`; later statuses arrive as events.
                     example: thinking
                   created_at_ms:
                     type: string
@@ -4497,13 +4933,13 @@ paths:
           content:
             application/json:
               examples:
-                Invalid request:
+                Not available in this API version:
                   value:
                     type: error.list
                     request_id: b68959ea-6328-4f70-83cb-e7913dba1542
                     errors:
-                    - code: parameter_invalid
-                      message: conversation_id is required
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -4518,8 +4954,81 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token not authorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+                Response format not available:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: The requested response format is not available.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The request could not be processed. The response body maps each field name to its error message, or uses `base` for request-level failures. Values are usually strings. When a required field inside an object, such as `user.id`, is missing or invalid, the error is a nested object keyed by the inner field.
+          content:
+            application/json:
+              examples:
+                Conversation ID missing:
+                  value:
+                    errors:
+                      conversation_id: Conversation ID is required
+                Conversation already exists:
+                  value:
+                    errors:
+                      conversation_id: Fin session already exists for this conversation. Please use /reply to continue the conversation.
+                Message timestamp missing:
+                  value:
+                    errors:
+                      message: timestamp_ms is required
+                Too many user attributes:
+                  value:
+                    errors:
+                      user: Cannot update more than 10 attributes at once. Received 11 attributes.
+                Too many history items:
+                  value:
+                    errors:
+                      conversation_metadata: Conversation history cannot contain more than 10 items
+                Invalid environment on a Fin for Platforms workspace:
+                  value:
+                    errors:
+                      environment: Invalid environment
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Validation messages keyed by the field they apply to, or `base` for request-level failures.
+                    example:
+                      conversation_id: Conversation ID is required
+                    additionalProperties: true
       requestBody:
         required: true
         content:
@@ -4545,8 +5054,16 @@ paths:
                   "$ref": "#/components/schemas/fin_agent_conversation_metadata"
                 environment:
                   type: string
-                  description: The identifier of the environment to start the conversation in, if your Fin for Platforms workspace has environments. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment; an identifier that matches no environment is rejected.
+                  description: The identifier of the environment to start the conversation in. Only Fin for Platforms workspaces use it; other workspaces ignore it. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment. On a Fin for Platforms workspace, an identifier that matches no environment returns a 422 error.
                   example: a1b2c3d4e5
+                response_format:
+                  type: string
+                  enum:
+                  - html
+                  - markdown
+                  default: html
+                  description: The format of the `body` in Fin's replies. Defaults to `html`. Requesting `markdown` on a workspace where it is not enabled returns a 403 error.
+                  example: html
               required:
               - conversation_id
               - message
@@ -4674,7 +5191,7 @@ paths:
                     - resolved
                     - complete
                     description: |
-                      Fin's current status in the conversation workflow.
+                      Fin's status when the request was accepted. Always `thinking`; later statuses arrive as events.
                     example: thinking
                   created_at_ms:
                     type: string
@@ -4688,13 +5205,13 @@ paths:
           content:
             application/json:
               examples:
-                Invalid request:
+                Not available in this API version:
                   value:
                     type: error.list
                     request_id: b68959ea-6328-4f70-83cb-e7913dba1542
                     errors:
-                    - code: parameter_invalid
-                      message: conversation_id is required
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -4709,8 +5226,73 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token not authorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+                Response format not available:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: The requested response format is not available.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The request could not be processed. The response body maps each field name to its error message, or uses `base` for request-level failures. Values are usually strings. When a required field inside an object, such as `user.id`, is missing or invalid, the error is a nested object keyed by the inner field.
+          content:
+            application/json:
+              examples:
+                Conversation ID missing:
+                  value:
+                    errors:
+                      conversation_id: Conversation ID is required
+                Conversation not found:
+                  value:
+                    errors:
+                      conversation_id: Conversation not found for the given conversation_id
+                Message timestamp missing:
+                  value:
+                    errors:
+                      message: timestamp_ms is required
+                Too many user attributes:
+                  value:
+                    errors:
+                      user: Cannot update more than 10 attributes at once. Received 11 attributes.
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Validation messages keyed by the field they apply to, or `base` for request-level failures.
+                    example:
+                      conversation_id: Conversation ID is required
+                    additionalProperties: true
       requestBody:
         required: true
         content:
@@ -4732,6 +5314,14 @@ paths:
                   maxItems: 10
                   items:
                     "$ref": "#/components/schemas/fin_agent_attachment"
+                response_format:
+                  type: string
+                  enum:
+                  - html
+                  - markdown
+                  default: html
+                  description: The format of the `body` in Fin's replies. Defaults to `html`. Requesting `markdown` on a workspace where it is not enabled returns a 403 error.
+                  example: html
               required:
               - conversation_id
               - message
@@ -4839,6 +5429,27 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+              schema:
+                "$ref": "#/components/schemas/error"
         '422':
           description: |
             The rating could not be recorded. Common causes: no conversation exists for the given
@@ -4933,7 +5544,7 @@ paths:
 
         The response is audience-matched to the supplied user: each live, API-triggerable
         procedure is checked against that user before being included, alongside the static
-        `reply` and `ask` actions.
+        `reply`, `ask`, and `escalate` actions.
 
         {% admonition type="warning" %}
         To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
@@ -4946,22 +5557,223 @@ paths:
               examples:
                 Successful response:
                   value:
-                    version: "2.17"
-                    capabilities:
-                    - type: procedure
-                      id: '12345'
-                      name: Reset password
-                      description: Walk the user through resetting their password.
-                      endpoint: /fin/procedures/12345/run
-                      method: POST
-                    - type: reply
-                      description: Reply to an in-progress Fin conversation.
-                      endpoint: /fin/reply
-                      method: POST
-                    - type: ask
-                      description: Ask Fin a single, self-contained question.
-                      endpoint: /fin/ask
-                      method: POST
+                      version: "2.17"
+                      capabilities:
+                      - name: run_procedure_reset_password_12345
+                        description: |-
+                          <untrusted-content>
+                          Walk the user through resetting their password.
+                          </untrusted-content>
+                        inputSchema:
+                          type: object
+                          properties:
+                            conversation_id:
+                              type: string
+                              description: A unique external ID for the new conversation. Must not already exist for this workspace.
+                            user:
+                              type: object
+                              description: The end user the action is performed for.
+                              properties:
+                                id:
+                                  type: string
+                                  description: The user's external ID.
+                                name:
+                                  type: string
+                                email:
+                                  type: string
+                                attributes:
+                                  type: object
+                                  description: Custom user attributes (max 10).
+                              required:
+                              - id
+                            message:
+                              type: object
+                              description: Optional trigger message posted before the procedure runs.
+                              properties:
+                                body:
+                                  type: string
+                                author:
+                                  type: string
+                                  enum:
+                                  - user
+                                  - agent
+                                  - fin
+                              required:
+                              - body
+                            conversation_metadata:
+                              type: object
+                              properties:
+                                attributes:
+                                  type: object
+                          required:
+                          - conversation_id
+                          - user
+                        endpoint: /fin/procedures/12345/run
+                        method: POST
+                      - name: reply
+                        description: Send a user reply into an existing Fin conversation and get Fin's next turn. Use this to continue any ongoing conversation — including one opened by a procedure run — whenever its status is `awaiting_user_reply`.
+                        inputSchema:
+                          type: object
+                          properties:
+                            conversation_id:
+                              type: string
+                              description: External ID of the existing conversation to reply to.
+                            message:
+                              type: object
+                              properties:
+                                author:
+                                  type: string
+                                  enum:
+                                  - user
+                                  - agent
+                                  - fin
+                                body:
+                                  type: string
+                                timestamp:
+                                  type: string
+                                timestamp_ms:
+                                  type: string
+                              required:
+                              - author
+                              - body
+                            user:
+                              type: object
+                              description: The end user the action is performed for.
+                              properties:
+                                id:
+                                  type: string
+                                  description: The user's external ID.
+                                name:
+                                  type: string
+                                email:
+                                  type: string
+                                attributes:
+                                  type: object
+                                  description: Custom user attributes (max 10).
+                              required:
+                              - id
+                            attachments:
+                              type: array
+                              description: Optional attachments to include with the message.
+                            response_format:
+                              type: string
+                              enum:
+                              - html
+                              - markdown
+                              description: Response body format. Defaults to html.
+                          required:
+                          - conversation_id
+                          - message
+                          - user
+                        endpoint: /fin/reply
+                        method: POST
+                      - name: ask
+                        description: Ask Fin a single question and get one informational answer. Fin never escalates, disambiguates, or asks follow-up questions. Use for one-shot informational lookups.
+                        inputSchema:
+                          type: object
+                          properties:
+                            conversation_id:
+                              type: string
+                              description: External ID for the conversation.
+                            message:
+                              type: object
+                              properties:
+                                author:
+                                  type: string
+                                  enum:
+                                  - user
+                                  - agent
+                                  - fin
+                                body:
+                                  type: string
+                                timestamp:
+                                  type: string
+                                timestamp_ms:
+                                  type: string
+                              required:
+                              - author
+                              - body
+                            user:
+                              type: object
+                              description: The end user the action is performed for.
+                              properties:
+                                id:
+                                  type: string
+                                  description: The user's external ID.
+                                name:
+                                  type: string
+                                email:
+                                  type: string
+                                attributes:
+                                  type: object
+                                  description: Custom user attributes (max 10).
+                              required:
+                              - id
+                            conversation_metadata:
+                              type: object
+                              properties:
+                                history:
+                                  type: array
+                                attributes:
+                                  type: object
+                            attachments:
+                              type: array
+                              description: Optional attachments to include with the message.
+                            response_format:
+                              type: string
+                              enum:
+                              - html
+                              - markdown
+                              description: Response body format. Defaults to html.
+                          required:
+                          - conversation_id
+                          - message
+                          - user
+                        endpoint: /fin/ask
+                        method: POST
+                      - name: escalate
+                        description: Hand off to a human team. Summarises the conversation into a new human-facing support conversation routed to the inbox, leaving this one untouched, and notifies you when the handoff completes. Use when the user asks for a human or when you decide Fin can't resolve the request.
+                        inputSchema:
+                          type: object
+                          description: Escalate an existing conversation (conversation_id) or a new one (user) — not both.
+                          oneOf:
+                          - properties:
+                              conversation_id:
+                                type: string
+                                description: External ID of the conversation to escalate.
+                              context:
+                                type: string
+                                maxLength: 10000
+                                description: Background for the teammate who picks up the handoff. Never shown to the end user.
+                            required:
+                            - conversation_id
+                            additionalProperties: false
+                          - properties:
+                              user:
+                                type: object
+                                description: The end user the action is performed for.
+                                properties:
+                                  id:
+                                    type: string
+                                    description: The user's external ID.
+                                  name:
+                                    type: string
+                                  email:
+                                    type: string
+                                  attributes:
+                                    type: object
+                                    description: Custom user attributes (max 10).
+                                required:
+                                - id
+                              context:
+                                type: string
+                                maxLength: 10000
+                                description: Background for the teammate who picks up the handoff. Never shown to the end user.
+                            required:
+                            - user
+                            additionalProperties: false
+                        endpoint: /fin/escalate
+                        method: POST
               schema:
                 type: object
                 properties:
@@ -4971,26 +5783,23 @@ paths:
                     example: "2.17"
                   capabilities:
                     type: array
-                    description: The list of capabilities available to this user.
+                    description: The list of capabilities available to this user, as tool definitions.
                     items:
                       type: object
                       properties:
-                        type:
-                          type: string
-                          description: The kind of capability — `procedure` for a runnable procedure, or a static action such as `reply`, `ask`, or `escalate`.
-                          example: procedure
-                        id:
-                          type: string
-                          description: The procedure ID. Present only when `type` is `procedure`.
-                          example: '12345'
                         name:
                           type: string
-                          description: The procedure name. Present only when `type` is `procedure`.
-                          example: Reset password
+                          description: The capability name. Procedures are named `run_procedure_<title_slug>_<id>`, with the slug cut to 80 characters, or `run_procedure_<id>` when the title gives no usable slug (for example a blank or non-Latin title); the static actions are named `reply`, `ask`, and `escalate`.
+                          example: run_procedure_reset_password_12345
                         description:
                           type: string
-                          description: A human-readable description of the capability.
-                          example: Walk the user through resetting their password.
+                          nullable: true
+                          description: A description of the capability. For a procedure, the text is wrapped in `<untrusted-content>` tags, and is null when the procedure has no description.
+                          example: Send a user reply into an existing Fin conversation and get Fin's next turn. Use this to continue any ongoing conversation — including one opened by a procedure run — whenever its status is `awaiting_user_reply`.
+                        inputSchema:
+                          type: object
+                          description: A JSON Schema describing the request body to send to the capability's endpoint.
+                          additionalProperties: true
                         endpoint:
                           type: string
                           description: The endpoint path to call to use this capability.
@@ -4999,18 +5808,20 @@ paths:
                           type: string
                           description: The HTTP method to use.
                           example: POST
+                  errors:
+                    "$ref": "#/components/schemas/fin_agent_attribute_errors"
         '400':
           description: Bad Request
           content:
             application/json:
               examples:
-                Too many attributes:
+                Not available in this API version:
                   value:
                     type: error.list
                     request_id: b68959ea-6328-4f70-83cb-e7913dba1542
                     errors:
-                    - code: parameter_invalid
-                      message: Cannot update more than 10 attributes at once.
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -5025,8 +5836,54 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token not authorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The request could not be processed. The response body maps each field name to its error message, or uses `base` for request-level failures. Values are usually strings. When a required field inside an object, such as `user.id`, is missing or invalid, the error is a nested object keyed by the inner field.
+          content:
+            application/json:
+              examples:
+                Too many user attributes:
+                  value:
+                    errors:
+                      user: Cannot update more than 10 attributes at once. Received 11 attributes.
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Validation messages keyed by the field they apply to, or `base` for request-level failures.
+                    example:
+                      user: Cannot update more than 10 attributes at once. Received 11 attributes.
+                    additionalProperties: true
       requestBody:
         required: true
         content:
@@ -5118,7 +5975,7 @@ paths:
                     - resolved
                     - complete
                     description: |
-                      Fin's current status in the conversation workflow.
+                      Fin's status when the request was accepted. Always `thinking`; later statuses arrive as events.
                     example: thinking
                   created_at_ms:
                     type: string
@@ -5132,27 +5989,13 @@ paths:
           content:
             application/json:
               examples:
-                Conversation ID missing:
+                Not available in this API version:
                   value:
                     type: error.list
                     request_id: b68959ea-6328-4f70-83cb-e7913dba1542
                     errors:
-                    - code: parameter_invalid
-                      message: External Conversation ID is required
-                User ID missing:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: User ID is required
-                Too many history items:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: Conversation history cannot contain more than 10 items
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -5167,8 +6010,81 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token not authorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+                Response format not available:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: The requested response format is not available.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The request could not be processed. The response body maps each field name to its error message, or uses `base` for request-level failures. Values are usually strings. When a required field inside an object, such as `user.id`, is missing or invalid, the error is a nested object keyed by the inner field.
+          content:
+            application/json:
+              examples:
+                Conversation ID missing:
+                  value:
+                    errors:
+                      conversation_id: Conversation ID is required
+                Conversation already exists:
+                  value:
+                    errors:
+                      conversation_id: Fin session already exists for this conversation. Please use /reply to continue the conversation.
+                Message timestamp missing:
+                  value:
+                    errors:
+                      message: timestamp_ms is required
+                Too many user attributes:
+                  value:
+                    errors:
+                      user: Cannot update more than 10 attributes at once. Received 11 attributes.
+                Too many history items:
+                  value:
+                    errors:
+                      conversation_metadata: Conversation history cannot contain more than 10 items
+                Invalid environment on a Fin for Platforms workspace:
+                  value:
+                    errors:
+                      environment: Invalid environment
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Validation messages keyed by the field they apply to, or `base` for request-level failures.
+                    example:
+                      conversation_id: Conversation ID is required
+                    additionalProperties: true
       requestBody:
         required: true
         content:
@@ -5194,8 +6110,16 @@ paths:
                     "$ref": "#/components/schemas/fin_agent_attachment"
                 environment:
                   type: string
-                  description: The identifier of the environment to start the conversation in, if your Fin for Platforms workspace has environments. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment; an identifier that matches no environment is rejected.
+                  description: The identifier of the environment to start the conversation in. Only Fin for Platforms workspaces use it; other workspaces ignore it. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment. On a Fin for Platforms workspace, an identifier that matches no environment returns a 422 error.
                   example: a1b2c3d4e5
+                response_format:
+                  type: string
+                  enum:
+                  - html
+                  - markdown
+                  default: html
+                  description: The format of the `body` in Fin's replies. Defaults to `html`. Requesting `markdown` on a workspace where it is not enabled returns a 403 error.
+                  example: html
               required:
               - conversation_id
               - message
@@ -5316,7 +6240,7 @@ paths:
                     - resolved
                     - complete
                     description: |
-                      Fin's current status in the conversation workflow.
+                      Fin's status when the request was accepted. Always `thinking`; later statuses arrive as events.
                     example: thinking
                   created_at_ms:
                     type: string
@@ -5330,41 +6254,13 @@ paths:
           content:
             application/json:
               examples:
-                Procedure not found:
+                Not available in this API version:
                   value:
                     type: error.list
                     request_id: b68959ea-6328-4f70-83cb-e7913dba1542
                     errors:
-                    - code: parameter_invalid
-                      message: Procedure not found
-                Procedure not live:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: Procedure is not live
-                Procedure has no API trigger:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: Procedure does not have an API trigger
-                No Fin profile:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: No Fin profile is configured to handle this conversation. Configure a Fin profile and retry.
-                Conversation already exists:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: Fin session already exists for this conversation. Please use /reply to continue the conversation.
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -5379,8 +6275,82 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token not authorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The request could not be processed. The response body maps each field name to its error message, or uses `base` for request-level failures. Values are usually strings. When a required field inside an object, such as `user.id`, is missing or invalid, the error is a nested object keyed by the inner field.
+          content:
+            application/json:
+              examples:
+                Conversation ID missing:
+                  value:
+                    errors:
+                      conversation_id: Conversation ID is required
+                Procedure not found:
+                  value:
+                    errors:
+                      procedure_id: Procedure not found
+                Procedure not live:
+                  value:
+                    errors:
+                      procedure_id: Procedure is not live
+                Procedure not available on the Fin Agent API channel:
+                  value:
+                    errors:
+                      procedure_id: Procedure is not available on the Fin Agent API channel
+                Procedure not available for this user:
+                  value:
+                    errors:
+                      procedure_id: Procedure is not available for this user
+                No Fin profile:
+                  value:
+                    errors:
+                      base: No Fin profile is configured to handle this conversation. Configure a Fin profile and retry.
+                Conversation already exists:
+                  value:
+                    errors:
+                      conversation_id: Fin session already exists for this conversation. Please use /reply to continue the conversation.
+                Invalid environment on a Fin for Platforms workspace:
+                  value:
+                    errors:
+                      environment: Invalid environment
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Validation messages keyed by the field they apply to, or `base` for request-level failures.
+                    example:
+                      conversation_id: Conversation ID is required
+                    additionalProperties: true
       requestBody:
         required: true
         content:
@@ -5395,7 +6365,23 @@ paths:
                 user:
                   "$ref": "#/components/schemas/fin_agent_user"
                 message:
-                  "$ref": "#/components/schemas/fin_agent_message"
+                  type: object
+                  description: Optional message posted to the conversation before the procedure runs. Only `body` is required.
+                  properties:
+                    body:
+                      type: string
+                      description: The body of the message.
+                      example: Starting your refund request.
+                    author:
+                      type: string
+                      enum:
+                      - user
+                      - agent
+                      - fin
+                      description: Accepted but has no effect. The trigger message is always posted as an operator message.
+                      example: agent
+                  required:
+                  - body
                 conversation_metadata:
                   type: object
                   description: Metadata about the conversation. Only attributes are accepted (no history).
@@ -5410,7 +6396,7 @@ paths:
                         order_id: '98765'
                 environment:
                   type: string
-                  description: The identifier of the environment to start the conversation in, if your Fin for Platforms workspace has environments. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment; an identifier that matches no environment is rejected.
+                  description: The identifier of the environment to start the conversation in. Only Fin for Platforms workspaces use it; other workspaces ignore it. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment. On a Fin for Platforms workspace, an identifier that matches no environment returns a 422 error.
                   example: a1b2c3d4e5
               required:
               - conversation_id
@@ -5456,11 +6442,12 @@ paths:
         - `conversation_id` — escalate an existing agent conversation, including one started
           with `/fin/ask`. On the Intercom Helpdesk, Fin by default summarises the conversation
           and opens a new Helpdesk conversation that carries the summary as an internal note.
-          Escalation does not change the original agent conversation's assignment or open/closed
-          state. Configure an escalation Operator Workflow to change this default.
-        - `user` — escalate on behalf of a user with no prior agent conversation. On the Intercom
-          Helpdesk, a new Helpdesk conversation is created for the teammate. Not supported on Fin
-          for Platforms — see below.
+          Configure an escalation Operator Workflow to change this default. Escalation closes the
+          original agent conversation if it is open.
+        - `user` — escalate on behalf of a user with no prior agent conversation. Fin creates an
+          agent conversation for the escalation and closes it once the handoff completes. On the
+          Intercom Helpdesk, the teammate works in a separate new Helpdesk conversation. Not
+          supported on Fin for Platforms — see below.
 
         In both cases, pass the optional `context` to give the receiving teammate background your
         orchestrating agent has and Fin does not. On the Intercom Helpdesk, it appears above the
@@ -5474,13 +6461,15 @@ paths:
         On Fin for Platforms, `conversation_id` is required — `user` is not supported and is
         rejected, because there is no Intercom Helpdesk in which to create a conversation. There
         is no Intercom inbox either, so an escalation that no workflow handles does not open a
-        Helpdesk conversation for a teammate. `context` is not surfaced, and the conversation is
-        left open for your platform to hand off and continue driving.
+        Helpdesk conversation for a teammate. `context` is not surfaced. The conversation is closed,
+        as on the Intercom Helpdesk, and your platform hands the user off to a human.
 
         You are notified via webhooks with an `escalated` status
-        followed by `complete`. The `complete` status signals that Fin is done; it does not close
-        the conversation. On the Intercom Helpdesk, the new human conversation remains open; on
-        Fin for Platforms, the conversation remains open for whoever handles it on your platform.
+        followed by `complete`. The `complete` status signals that Fin is done. By then the
+        original agent conversation has been closed. An escalation Operator Workflow may act
+        on it afterwards, but it is closed again once the workflow's first steps have run, so
+        only steps that run later (for example after a wait) can reopen it. On the Intercom
+        Helpdesk, the new human conversation remains open.
 
         {% admonition type="warning" %}
         To request access to the Fin Agent API, go to **Settings > Integrations > Fin Agent API** in your workspace and tell us about your use case. Once access is granted, **Fin Agent API** appears under **Fin AI Agent > Deploy**.
@@ -5497,6 +6486,7 @@ paths:
                     status: escalated
                 New conversation:
                   value:
+                    conversation_id: escalate-1a2b3c4d5e6f7a8b
                     intercom_conversation_id: '987654321'
                     status: escalated
               schema:
@@ -5504,11 +6494,11 @@ paths:
                 properties:
                   conversation_id:
                     type: string
-                    description: The external ID of the conversation. Returned when you escalate an existing conversation by `conversation_id` (echoed back). When you escalate a `user`, a new conversation is created and only `intercom_conversation_id` is returned.
+                    description: The external ID of the conversation. When you escalate an existing conversation by `conversation_id`, this echoes the ID you sent. When you escalate a `user`, Fin creates an agent conversation for the escalation and generates this ID for it.
                     example: ext-123
                   intercom_conversation_id:
                     type: string
-                    description: The internal Intercom conversation ID. Returned when a new conversation was created for the escalation.
+                    description: The internal Intercom ID of the agent conversation created for the escalation. Returned only when escalating on behalf of a `user`. Fin closes this conversation once the handoff completes; the teammate works in a separate Helpdesk conversation.
                     example: '987654321'
                   status:
                     type: string
@@ -5521,20 +6511,13 @@ paths:
           content:
             application/json:
               examples:
-                Neither identifier provided:
+                Not available in this API version:
                   value:
                     type: error.list
                     request_id: b68959ea-6328-4f70-83cb-e7913dba1542
                     errors:
-                    - code: parameter_invalid
-                      message: Either conversation_id or user must be provided
-                Conversation not found:
-                  value:
-                    type: error.list
-                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
-                    errors:
-                    - code: parameter_invalid
-                      message: Conversation not found
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -5549,8 +6532,74 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token not authorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Fin Agent API not enabled:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: api_plan_restricted
+                      message: Fin Agent API is not enabled for your app.
+                Wrong credentials for the Fin Agent API:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: forbidden
+                      message: Use your workspace's Fin Agent API key to call the Fin Agent API
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The request could not be processed. The response body maps each field name to its error message, or uses `base` for request-level failures. Values are usually strings. When a required field inside an object, such as `user.id`, is missing or invalid, the error is a nested object keyed by the inner field.
+          content:
+            application/json:
+              examples:
+                Neither identifier provided:
+                  value:
+                    errors:
+                      base: Either conversation_id or user must be provided
+                Both identifiers provided:
+                  value:
+                    errors:
+                      base: Provide either conversation_id or user, not both
+                Conversation not found:
+                  value:
+                    errors:
+                      conversation_id: Conversation not found for the given conversation_id
+                User not supported on Fin for Platforms:
+                  value:
+                    errors:
+                      user: user is not supported for Fin for platforms; only escalating an existing conversation with conversation_id is.
+                Context too long:
+                  value:
+                    errors:
+                      context: context must be 10000 characters or fewer
+                Deprecated message field:
+                  value:
+                    errors:
+                      message: message is no longer supported; provide context instead
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    description: Validation messages keyed by the field they apply to, or `base` for request-level failures.
+                    example:
+                      conversation_id: Conversation not found for the given conversation_id
+                    additionalProperties: true
       requestBody:
         required: true
         content:
@@ -19484,6 +20533,8 @@ paths:
       operationId: listDataConnectors
       description: |
         Returns a paginated list of all data connectors for the workspace, ordered by most recently updated first. Data connectors allow workflows and AI agents to make HTTP requests to external APIs.
+
+        OAuth tokens must have the `read_workflow_connector_execution_result` or `read_write_data_connectors` scope.
       responses:
         '200':
           description: successful
@@ -19500,6 +20551,7 @@ paths:
                       description: Fetches order status from external fulfillment API
                       state: live
                       http_method: post
+                      enforce_auth: true
                       direct_fin_usage: false
                       created_by_admin_id: '128'
                       updated_by_admin_id: '128'
@@ -19508,9 +20560,9 @@ paths:
                       execution_results_url: "/data_connectors/12345/execution_results"
                     pages:
                       type: pages
-                      per_page: 20
+                      per_page: 1
                       next:
-                        starting_after: WzE3MDc1OTQ3MTUuMCwxMjM0NV0=
+                        starting_after: WzE3Njg5MTg5MzUuMCwxMjM0NSxudWxsXQ==
               schema:
                 "$ref": "#/components/schemas/data_connector_list"
         '400':
@@ -19539,6 +20591,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
     post:
@@ -19553,6 +20612,8 @@ paths:
       operationId: createDataConnector
       description: |
         Create a new data connector. The connector is created in `draft` state. Configure its URL, headers, data inputs, and other settings, then set it to `live` when ready.
+
+        OAuth tokens must have the `read_write_data_connectors` scope.
       responses:
         '201':
           description: Data connector created
@@ -19565,7 +20626,12 @@ paths:
                     id: '125'
                     name: Get Order Status
                     description: Looks up order status from an external service
+                    internal_description: ''
                     state: draft
+                    url: "https://api.example.com/orders/{{order_id}}/status"
+                    headers:
+                    - name: Content-Type
+                      value: "****"
                     http_method: get
                     direct_fin_usage: true
                     audiences:
@@ -19586,6 +20652,7 @@ paths:
                     token_ids: []
                     customer_authentication: true
                     bypass_authentication: false
+                    enforce_auth: true
                     validate_missing_attributes: true
                     created_by_admin_id: '128'
                     updated_by_admin_id: '128'
@@ -19594,6 +20661,27 @@ paths:
                     execution_results_url: "/data_connectors/125/execution_results"
               schema:
                 "$ref": "#/components/schemas/data_connector_detail"
+        '400':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Unpermitted property in headers:
+                  value:
+                    type: error.list
+                    request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
+                    errors:
+                    - code: parameter_invalid
+                      message: "found unpermitted parameter: :description"
+                Audiences is not an array:
+                  value:
+                    type: error.list
+                    request_id: f1a2b3c4-d5e6-4f70-8a9b-0c1d2e3f4a5b
+                    errors:
+                    - code: parameter_invalid
+                      message: "found unpermitted parameter: :audiences"
+              schema:
+                "$ref": "#/components/schemas/error"
         '422':
           description: Invalid parameter
           content:
@@ -19627,6 +20715,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -19702,6 +20797,8 @@ paths:
         You can retrieve the full detail of a single data connector by its ID.
 
         The response includes configuration, data inputs, response fields, and object mappings.
+
+        OAuth tokens must have the `read_workflow_connector_execution_result` or `read_write_data_connectors` scope.
       responses:
         '200':
           description: Data connector found
@@ -19715,6 +20812,7 @@ paths:
                     name: Order Status Service
                     description: Fetches order status from external fulfillment API
                     state: live
+                    headers: []
                     http_method: post
                     direct_fin_usage: false
                     audiences:
@@ -19722,9 +20820,8 @@ paths:
                     - leads
                     execution_type: server_side
                     configuration_response_type: test_response_type
-                    data_transformation_type:
-                    client_function_name:
-                    client_function_timeout_ms:
+                    data_transformation_type: full_access
+                    client_function_timeout_ms: 30000
                     data_inputs:
                     - name: conversation_id
                       type: string
@@ -19740,7 +20837,8 @@ paths:
                     token_ids: []
                     customer_authentication: false
                     bypass_authentication: false
-                    validate_missing_attributes:
+                    enforce_auth: true
+                    validate_missing_attributes: true
                     created_by_admin_id: '456'
                     updated_by_admin_id: '456'
                     created_at: '2025-11-15T09:30:00Z'
@@ -19759,7 +20857,7 @@ paths:
                     request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
                     errors:
                     - code: parameter_invalid
-                      message: "Invalid state_version. Must be one of: live, draft"
+                      message: "Invalid state_version. Must be one of: draft, live"
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -19788,6 +20886,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
     delete:
@@ -19809,6 +20914,8 @@ paths:
       operationId: deleteDataConnector
       description: |
         Delete an existing data connector. The connector must be in `draft` state and must not be in use by any workflows or AI agents.
+
+        OAuth tokens must have the `read_write_data_connectors` scope.
       responses:
         '200':
           description: Data connector deleted
@@ -19869,6 +20976,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
     patch:
@@ -19890,6 +21004,8 @@ paths:
       operationId: updateDataConnector
       description: |
         Update an existing data connector. Only provided fields are changed. Set `state` to `live` or `draft` to change the connector's state.
+
+        OAuth tokens must have the `read_write_data_connectors` scope.
       requestBody:
         content:
           application/json:
@@ -19929,6 +21045,7 @@ paths:
                     name: Updated Connector Name
                     description: Updated description
                     state: draft
+                    headers: []
                     http_method: post
                     direct_fin_usage: false
                     audiences:
@@ -19936,9 +21053,8 @@ paths:
                     - leads
                     execution_type: server_side
                     configuration_response_type: test_response_type
-                    data_transformation_type:
-                    client_function_name:
-                    client_function_timeout_ms:
+                    data_transformation_type: full_access
+                    client_function_timeout_ms: 30000
                     data_inputs:
                     - name: conversation_id
                       type: string
@@ -19950,6 +21066,7 @@ paths:
                     token_ids: []
                     customer_authentication: false
                     bypass_authentication: false
+                    enforce_auth: true
                     validate_missing_attributes: false
                     created_by_admin_id: '456'
                     updated_by_admin_id: '456'
@@ -19958,6 +21075,27 @@ paths:
                     execution_results_url: "/data_connectors/12345/execution_results"
               schema:
                 "$ref": "#/components/schemas/data_connector_detail"
+        '400':
+          description: Invalid parameter
+          content:
+            application/json:
+              examples:
+                Unpermitted property in headers:
+                  value:
+                    type: error.list
+                    request_id: b4a45e2c-7a8d-4f3e-9c1a-2d5e8f7a6b3c
+                    errors:
+                    - code: parameter_invalid
+                      message: "found unpermitted parameter: :description"
+                Audiences is not an array:
+                  value:
+                    type: error.list
+                    request_id: f1a2b3c4-d5e6-4f70-8a9b-0c1d2e3f4a5b
+                    errors:
+                    - code: parameter_invalid
+                      message: "found unpermitted parameter: :audiences"
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Data connector not found
           content:
@@ -20026,6 +21164,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/data_connectors/{data_connector_id}/execution_results":
@@ -20085,6 +21230,8 @@ paths:
           - non_fin_standalone_action_identity_verification_error
           - request_validation_error
           - client_side_action_error
+          - code_block_transformation_error
+          - otp_preview_not_supported_error
       - name: start_ts
         in: query
         required: false
@@ -20114,6 +21261,8 @@ paths:
         Results from the last hour are returned by default. Use `start_ts` and `end_ts` to customize the time range.
 
         Request/response bodies are excluded by default. Use `include_bodies=true` to include them.
+
+        OAuth tokens must have the `read_workflow_connector_execution_result` or `read_write_data_connectors` scope.
       responses:
         '200':
           description: successful
@@ -20140,7 +21289,6 @@ paths:
                       id: '99000'
                       data_connector_id: '12345'
                       success: false
-                      http_status:
                       http_method: post
                       error_type: 3rd_party_error
                       error_message: Connection refused
@@ -20148,9 +21296,9 @@ paths:
                       created_at: '2026-02-10T17:45:15Z'
                     pages:
                       type: pages
-                      per_page: 10
+                      per_page: 2
                       next:
-                        starting_after: WzE3MDc1OTQ3MTUuMCw5OTAwMF0=
+                        starting_after: WzE3NzA3NDU1MTUuMCw5OTAwMCxudWxsXQ==
               schema:
                 "$ref": "#/components/schemas/data_connector_execution_result_list"
         '401':
@@ -20165,6 +21313,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '400':
@@ -20178,7 +21333,7 @@ paths:
                     request_id: test-uuid-replacement
                     errors:
                     - code: parameter_invalid
-                      message: "Invalid error_type. Must be one of: request_configuration_error, faraday_error, 3rd_party_error, response_mapping_error, token_refresh_error, fin_action_response_formatting_error, fin_action_identity_verification_error, email_verification_error, non_fin_standalone_action_identity_verification_error, request_validation_error, client_side_action_error"
+                      message: "Invalid error_type. Must be one of: request_configuration_error, faraday_error, 3rd_party_error, response_mapping_error, token_refresh_error, fin_action_response_formatting_error, fin_action_identity_verification_error, email_verification_error, non_fin_standalone_action_identity_verification_error, request_validation_error, client_side_action_error, code_block_transformation_error, otp_preview_not_supported_error"
                 Invalid timestamp:
                   value:
                     type: error.list
@@ -20186,6 +21341,13 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: start_ts must be a Unix timestamp (integer)
+                Invalid cursor:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: client_error
+                      message: Invalid starting_after param. Please try again using a starting_after value from a paginated response
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -20229,7 +21391,9 @@ paths:
       operationId: showDataConnectorExecutionResult
       description: |
         Retrieve details for a specific data connector execution result.
-        Always includes request/response bodies and the sanitised request URL.
+        Includes the request/response bodies and sanitised request URL when they are available.
+
+        OAuth tokens must have the `read_workflow_connector_execution_result` or `read_write_data_connectors` scope.
       responses:
         '200':
           description: successful
@@ -20267,6 +21431,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -27029,6 +28200,20 @@ paths:
                       embedded_rules: []
               schema:
                 "$ref": "#/components/schemas/workflow_export"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Workflow not found
           content:
@@ -27040,21 +28225,21 @@ paths:
                     request_id: b3c8c472-8478-4f10-a29e-a23dbf921c46
                     errors:
                     - code: not_found
-                      message: Workflow not found
+                      message: 'Workflow not found with id: 12345'
               schema:
                 "$ref": "#/components/schemas/error"
-        '403':
-          description: Workflow export is not available for this app
+        '503':
+          description: Workflow export is currently disabled
           content:
             application/json:
               examples:
-                Feature not available:
+                Workflow export disabled:
                   value:
                     type: error.list
                     request_id: d92f7e84-5c31-4a2b-b8e6-9f4c3d2a1b0e
                     errors:
-                    - code: api_plan_restricted
-                      message: Workflow export is not available for this app
+                    - code: service_unavailable
+                      message: Workflow export is currently disabled
               schema:
                 "$ref": "#/components/schemas/error"
 components:
@@ -31771,7 +32956,7 @@ components:
       properties:
         type:
           type: string
-          description: Always external_page
+          description: Always content_import_source
           enum:
           - content_import_source
           default: content_import_source
@@ -31797,10 +32982,12 @@ components:
           example: api
         status:
           type: string
-          description: The status of the content import source.
+          description: The status of the content import source. A source that is being
+            deleted has the status `deletion_in_progress`.
           enum:
           - active
           - deactivated
+          - deletion_in_progress
           default: active
           example: active
         url:
@@ -34358,7 +35545,8 @@ components:
           example: active
         url:
           type: string
-          description: The URL of the content import source.
+          description: The URL of the content import source. It must be an http or https
+            URL whose host is a valid public domain name.
           example: https://help.example.com
         audience_ids:
           nullable: true
@@ -34647,12 +35835,16 @@ components:
             by AI Copilot. Will not default when updating an existing external page.
           default: false
           example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the external page should be used to answer questions
+            by AI Sales Agent. Will not default when updating an existing external page.
+          default: false
+          example: true
         locale:
           type: string
-          description: Always en
-          enum:
-          - en
-          default: en
+          description: The language code of the external page, for example `en`
+            or `fr`. It must be a language supported by the workspace.
           example: en
         source_id:
           type: integer
@@ -36303,6 +37495,9 @@ components:
           type: string
           description: A description of what this data connector does.
           example: Looks up order status from an external service
+        internal_description:
+          type: string
+          description: The internal description of the data connector. If omitted, it is an empty string.
         http_method:
           type: string
           description: The HTTP method used when calling the external API.
@@ -36350,6 +37545,9 @@ components:
                 type: string
                 description: The header value. Supports template variables.
                 example: application/json
+            required:
+            - name
+            - value
         data_inputs:
           type: array
           description: Input parameters accepted by the connector.
@@ -36380,6 +37578,11 @@ components:
               default_value:
                 type: string
                 description: The default value for the parameter. Defaults to an empty string if omitted.
+            required:
+            - name
+            - description
+            - type
+            - required
         customer_authentication:
           type: boolean
           description: Whether the connector requires customer authentication before executing. Defaults to false.
@@ -36388,6 +37591,9 @@ components:
           type: boolean
           description: Whether authentication is bypassed entirely (public endpoint). Defaults to false.
           example: false
+        enforce_auth:
+          type: boolean
+          description: Whether authentication is enforced. On workspaces where this is supported, it takes precedence over `customer_authentication` and `bypass_authentication` when sent together, and setting it to false disables OTP.
         validate_missing_attributes:
           type: boolean
           description: Whether to validate that all required data inputs have values before executing.
@@ -36423,6 +37629,9 @@ components:
           type: string
           description: A description of what this data connector does.
           example: Updated description
+        internal_description:
+          type: string
+          description: The internal description of the data connector. If omitted, it keeps its current value, unless the connector has no internal description yet, in which case it is set to the connector's `description`.
         state:
           type: string
           description: The desired state of the connector.
@@ -36476,6 +37685,9 @@ components:
                 type: string
                 description: The header value. Supports template variables.
                 example: application/json
+            required:
+            - name
+            - value
         data_inputs:
           type: array
           description: The input parameters accepted by this data connector. Replaces all existing inputs.
@@ -36506,6 +37718,11 @@ components:
               default_value:
                 type: string
                 description: The default value for this input, if any.
+            required:
+            - name
+            - description
+            - type
+            - required
         customer_authentication:
           type: boolean
           description: Whether OTP authentication is enabled for this connector.
@@ -36514,6 +37731,9 @@ components:
           type: boolean
           description: Whether authentication is bypassed for this connector.
           example: false
+        enforce_auth:
+          type: boolean
+          description: Whether authentication is enforced. On workspaces where this is supported, it takes precedence over `customer_authentication` and `bypass_authentication` when sent together, and setting it to false disables OTP.
         validate_missing_attributes:
           type: boolean
           description: Whether to validate missing attributes before execution.
@@ -36560,6 +37780,9 @@ components:
           nullable: true
           description: A description of what this data connector does.
           example: Fetches order status from external fulfillment API
+        internal_description:
+          type: string
+          description: The internal description of the data connector.
         state:
           type: string
           description: The current state of the data connector.
@@ -36577,6 +37800,10 @@ components:
           - delete
           - patch
           example: post
+        enforce_auth:
+          type: boolean
+          description: Whether authentication is enforced for this connector.
+          example: true
         direct_fin_usage:
           type: boolean
           description: Whether this data connector is assigned to Fin for direct usage.
@@ -36609,7 +37836,7 @@ components:
       x-tags:
       - Data Connectors
       description: |
-        Full detail view of a data connector, returned by `GET /data_connectors/{id}`.
+        Full detail view of a data connector, returned by `GET /data_connectors/{id}`, `POST /data_connectors`, and `PATCH /data_connectors/{id}`.
         Includes configuration, data inputs, response fields, and object mappings.
       properties:
         type:
@@ -36631,6 +37858,9 @@ components:
           nullable: true
           description: A description of what this data connector does.
           example: Fetches order status from external fulfillment API
+        internal_description:
+          type: string
+          description: The internal description of the data connector.
         state:
           type: string
           description: The current state of the data connector.
@@ -36692,7 +37922,6 @@ components:
           - leads
         execution_type:
           type: string
-          nullable: true
           description: How the connector executes.
           enum:
           - server_side
@@ -36700,7 +37929,6 @@ components:
           example: server_side
         configuration_response_type:
           type: string
-          nullable: true
           description: The expected response format from the connector.
           enum:
           - test_response_type
@@ -36708,12 +37936,36 @@ components:
           example: test_response_type
         data_transformation_type:
           type: string
-          nullable: true
           description: The type of data transformation applied to the response.
           enum:
           - full_access
           - redacted_access
           - code_block_transformation
+        transform_code_block:
+          type: object
+          description: |
+            The code block used to transform the connector's response. Present only when `data_transformation_type` is
+            `code_block_transformation` and a code block exists; otherwise omitted.
+          example:
+            code: |
+              def transform(response):
+                  return {"status": response["order_status"]}
+
+              return transform(inputs['data'])
+            language: python
+          properties:
+            code:
+              type: string
+              description: The source code of the transform code block. The API response body is available as `inputs['data']`. The code must `return` the transformed value.
+              example: |
+                def transform(response):
+                    return {"status": response["order_status"]}
+
+                return transform(inputs['data'])
+            language:
+              type: string
+              description: The programming language of the transform code block. Currently always `python`.
+              example: python
         client_function_name:
           type: string
           nullable: true
@@ -36834,6 +38086,10 @@ components:
           type: boolean
           description: Whether authentication is bypassed for this connector.
           example: false
+        enforce_auth:
+          type: boolean
+          description: Whether authentication is enforced for this connector.
+          example: true
         validate_missing_attributes:
           type: boolean
           nullable: true
@@ -36918,11 +38174,13 @@ components:
           - non_fin_standalone_action_identity_verification_error
           - request_validation_error
           - client_side_action_error
+          - code_block_transformation_error
+          - otp_preview_not_supported_error
           example: 3rd_party_error
         error_message:
           type: string
           nullable: true
-          description: A human-readable error message. Query parameters, userinfo, and fragments in URLs are redacted.
+          description: A human-readable error message. Any http or https URLs in it are redacted the same way as `request_url`; the rest of the message is returned as is.
           example: Connection refused
         execution_time_ms:
           type: integer
@@ -36943,6 +38201,7 @@ components:
           - triggerable_custom_bot
           - inbox
           - fin
+          - synthetic_test
           example: workflow
         source_id:
           type: string
@@ -36962,7 +38221,7 @@ components:
         request_url:
           type: string
           nullable: true
-          description: The request URL. Query parameters, userinfo, and fragments are redacted.
+          description: The request URL. Query parameters, userinfo, and fragments are redacted. For some hosts that put credentials in the path, the path is removed too. A suffix such as ` [query params redacted]` or ` [credentials redacted]` is appended when anything is redacted, and a URL that cannot be parsed becomes `[invalid URL redacted]`.
           example: https://api.example.com/webhook
         request_body:
           type: string
@@ -37016,7 +38275,7 @@ components:
                 starting_after:
                   type: string
                   description: The cursor value to use for the next page.
-                  example: WzE3MDc1OTQ3MTUuMCw5OTAwMF0=
+                  example: WzE3NzA3NDU1MTUuMCw5OTAwMCxudWxsXQ==
     data_connector_list:
       title: Data Connector List
       type: object
@@ -37054,7 +38313,7 @@ components:
                 starting_after:
                   type: string
                   description: The cursor value to use for the next page.
-                  example: WzE3MDc1OTQ3MTUuMCwxMjM0NV0=
+                  example: WzE3Njg5MTg5MzUuMCwxMjM0NSxudWxsXQ==
     data_connector_version_list:
       title: Data Connector Version List
       type: object
@@ -38110,10 +39369,8 @@ components:
           example: true
         locale:
           type: string
-          description: Always en
-          enum:
-          - en
-          default: en
+          description: The language code of the external page, for example `en`
+            or `fr`.
           example: en
         source_id:
           type: integer
@@ -38153,6 +39410,10 @@ components:
           format: date-time
           description: The time when the external page was last ingested.
           example: 1672928610
+        tags:
+          description: The tags applied to the external page.
+          allOf:
+          - "$ref": "#/components/schemas/tags"
       required:
       - id
       - type
@@ -38204,14 +39465,14 @@ components:
           - user
           - agent
           - fin
-          description: The author that created the message.
+          description: The author that created the message. In `conversation_metadata.history`, only `user` and `agent` are accepted.
           example: user
         body:
           type: string
           description: |
             The body of the message. Accepts both plain text and HTML format.
-            When sending a message to Fin, this should contain the user's message.
-            Fin's response will be returned as HTML.
+            For the message you send to Fin, this is the user's message. For an `agent` item in `conversation_metadata.history`, it is the agent's message.
+            Fin's response is returned in the format set by `response_format` (HTML by default).
           example: How can I see my account details?
         timestamp:
           type: string
@@ -38220,18 +39481,19 @@ components:
             The timestamp when the message was created.
             Used to deduplicate messages sent within a 5 minute window.
             Ideally should include milliseconds for higher precision.
+            Send `timestamp` or `timestamp_ms`; at least one is required. If you send both, `timestamp_ms` is used.
+            On the top-level `message`, sending neither fails with a 422 error (`message: timestamp_ms is required`). In `conversation_metadata.history`, an item with neither causes the whole history to be ignored.
           example: '2025-01-24T10:01:20.000Z'
         timestamp_ms:
           type: string
           format: date-time
           description: |
             The timestamp when the message was created, with millisecond precision.
-            Only present in webhook event responses (fin_replied).
+            Accepted in place of `timestamp` when you send a message, and also present in webhook event responses (fin_replied). At least one of `timestamp` or `timestamp_ms` is required.
           example: '2025-01-24T10:01:20.456Z'
       required:
       - author
       - body
-      - timestamp
     fin_agent_user:
       title: Fin Agent User
       type: object
@@ -38316,6 +39578,7 @@ components:
             An array of previous messages in the conversation before Fin is initialized.
             This data provides context to Fin and helps generate a better answer.
             Limit to the last 10 messages.
+            Only `user` and `agent` authors are accepted. If any item is invalid, for example it has no `timestamp` or `timestamp_ms`, or has another author, the whole history is ignored.
           maxItems: 10
           items:
             "$ref": "#/components/schemas/fin_agent_message"
@@ -38459,8 +39722,14 @@ components:
               example: fin
             body:
               type: string
-              description: The HTML body of Fin's response.
+              description: The body of Fin's response, in the format given by `format` (HTML by default).
               example: <p>You can see your account details by clicking on the <em>Account</em> tab in the top right corner of the screen.</p>
+            format:
+              type: string
+              enum:
+              - html
+              - markdown
+              description: Present only when the request set `response_format` to `markdown`. `markdown` when Fin converted the reply to Markdown, or `html` if it could not convert the reply and sent HTML instead. When absent, `body` is HTML.
             timestamp_ms:
               type: string
               format: date-time
@@ -40754,12 +42023,12 @@ components:
           type: integer
           format: date-time
           nullable: true
-          description: The time when the tag was applied to the object. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet.
+          description: The time when the tag was applied to the object. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet, or when it is returned as part of an external page.
           example: 1663597223
         applied_by:
           type: object
           nullable: true
-          description: The admin who applied the tag. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet.
+          description: The admin who applied the tag. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet, or when it is returned as part of an external page.
           allOf:
             - "$ref": "#/components/schemas/reference"
     tag_basic:
@@ -42205,7 +43474,7 @@ components:
           nullable: true
           description: The custom attributes which are set for the contact
     update_content_import_source_request:
-      title: Create Content Import Source Payload
+      title: Update Content Import Source Payload
       type: object
       description: You can modify a Content Import Source of your Fin Content Library.
       nullable: false
@@ -42229,8 +43498,9 @@ components:
           example: active
         url:
           type: string
-          description: The URL of the content import source. This may only be different
-            from the existing value if the sync behavior is API.
+          description: The URL of the content import source. It must be an http or https
+            URL whose host is a valid public domain name. This may only be different from the
+            existing value if the sync behavior is API.
           example: https://help.example.com
         audience_ids:
           nullable: true
@@ -42322,20 +43592,28 @@ components:
         url:
           type: string
           description: The URL of the external page. This will be used by Fin to link
-            end users to the page it based its answer on.
+            end users to the page it based its answer on. If omitted, the page's
+            existing URL is removed.
           example: https://help.example.com/en/articles/1234-getting-started
-        fin_availability:
+        ai_agent_availability:
           type: boolean
           description: Whether the external page should be used to answer questions
-            by Fin.
-          default: true
+            by AI Agent.
+          example: true
+        ai_copilot_availability:
+          type: boolean
+          description: Whether the external page should be used to answer questions
+            by AI Copilot.
+          example: true
+        ai_sales_agent_availability:
+          type: boolean
+          description: Whether the external page should be used to answer questions
+            by AI Sales Agent.
           example: true
         locale:
           type: string
-          description: Always en
-          enum:
-          - en
-          default: en
+          description: The language code of the external page, for example `en`
+            or `fr`. It must be a language supported by the workspace.
           example: en
         source_id:
           type: integer
@@ -42368,9 +43646,9 @@ components:
       required:
       - title
       - html
-      - url
       - locale
       - source_id
+      - external_id
     update_ticket_request:
       description: You can update a Ticket
       type: object
