@@ -1252,7 +1252,7 @@ paths:
           type: integer
           minimum: 1
           default: 1
-        description: The page of results to fetch. Defaults to the first page. Pages above 5001 are not supported.
+        description: The page of results to fetch. Defaults to the first page. `page` multiplied by `per_page` cannot exceed 10,000; beyond that the API returns a 400 `bad_request` error with the message `page limit reached, please use scroll API`.
         example: 1
       - name: per_page
         in: query
@@ -1384,6 +1384,13 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: Page size must be less than or equal to 150
+                Page limit exceeded:
+                  value:
+                    type: error.list
+                    request_id: d2a8f6c1-5b3e-4a79-8e0d-7c41f9b2a6e3
+                    errors:
+                    - code: bad_request
+                      message: page limit reached, please use scroll API
               schema:
                 "$ref": "#/components/schemas/error"
     post:
@@ -20001,7 +20008,7 @@ paths:
                     id: '125'
                     name: Get Order Status
                     description: Looks up order status from an external service
-                    internal_description: Looks up order status from an external service
+                    internal_description: ''
                     state: draft
                     url: "https://api.example.com/orders/{{order_id}}/status"
                     headers:
@@ -30019,7 +30026,7 @@ paths:
                     "$ref": "#/components/schemas/fin_agent_attachment"
                 environment:
                   type: string
-                  description: The identifier of the environment to start the conversation in. Only Fin for Platforms workspaces with environments use it; other workspaces ignore it. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment. On a Fin for Platforms workspace, an identifier that matches no environment returns a 422 error.
+                  description: The identifier of the environment to start the conversation in. Only Fin for Platforms workspaces use it; other workspaces ignore it. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment. On a Fin for Platforms workspace, an identifier that matches no environment returns a 422 error.
                   example: a1b2c3d4e5
                 response_format:
                   type: string
@@ -30534,7 +30541,7 @@ paths:
                         order_id: '98765'
                 environment:
                   type: string
-                  description: The identifier of the environment to start the conversation in. Only Fin for Platforms workspaces with environments use it; other workspaces ignore it. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment. On a Fin for Platforms workspace, an identifier that matches no environment returns a 422 error.
+                  description: The identifier of the environment to start the conversation in. Only Fin for Platforms workspaces use it; other workspaces ignore it. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment. On a Fin for Platforms workspace, an identifier that matches no environment returns a 422 error.
                   example: a1b2c3d4e5
               required:
               - conversation_id
@@ -31165,7 +31172,7 @@ paths:
                   "$ref": "#/components/schemas/fin_agent_conversation_metadata"
                 environment:
                   type: string
-                  description: The identifier of the environment to start the conversation in. Only Fin for Platforms workspaces with environments use it; other workspaces ignore it. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment. On a Fin for Platforms workspace, an identifier that matches no environment returns a 422 error.
+                  description: The identifier of the environment to start the conversation in. Only Fin for Platforms workspaces use it; other workspaces ignore it. Use the same value as `messenger_environment` in your Messenger installation. Defaults to the workspace's default environment. On a Fin for Platforms workspace, an identifier that matches no environment returns a 422 error.
                   example: a1b2c3d4e5
                 response_format:
                   type: string
@@ -40852,7 +40859,7 @@ components:
           example: Looks up order status from an external service
         internal_description:
           type: string
-          description: The internal description of the data connector. If omitted while `description` is sent, it is set to the same value as `description`.
+          description: The internal description of the data connector. If omitted, it is an empty string.
         http_method:
           type: string
           description: The HTTP method used when calling the external API.
@@ -41024,7 +41031,7 @@ components:
           example: Updated description
         internal_description:
           type: string
-          description: The internal description of the data connector. If omitted while `description` is sent, it is set to the same value as `description`.
+          description: The internal description of the data connector. If omitted, it keeps its current value.
         state:
           type: string
           description: The desired state of the connector.
@@ -41387,7 +41394,7 @@ components:
           properties:
             code:
               type: string
-              description: The source code of the transform code block. The API response body is available as `inputs['data']`.
+              description: The source code of the transform code block. The API response body is available as `inputs['data']`. The code must `return` the transformed value.
               example: |
                 def transform(response):
                     return {"status": response["order_status"]}
@@ -43748,8 +43755,14 @@ components:
               example: fin
             body:
               type: string
-              description: The HTML body of Fin's response.
+              description: The body of Fin's response, in the format given by `format` (HTML by default).
               example: <p>You can see your account details by clicking on the <em>Account</em> tab in the top right corner of the screen.</p>
+            format:
+              type: string
+              enum:
+              - html
+              - markdown
+              description: Present only when the request set `response_format` to `markdown`. `markdown` when Fin converted the reply to Markdown, or `html` if it could not convert the reply and sent HTML instead. When absent, `body` is HTML.
             timestamp_ms:
               type: string
               format: date-time
