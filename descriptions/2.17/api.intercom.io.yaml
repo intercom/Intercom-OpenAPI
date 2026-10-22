@@ -7438,7 +7438,10 @@ paths:
       tags:
       - IP Allowlist
       operationId: getIpAllowlist
-      description: Retrieve the current IP allowlist configuration for the workspace.
+      description: |
+        Retrieve the current IP allowlist configuration for the workspace.
+
+        Requires the `manage_ip_allowlist` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -7466,6 +7469,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
     put:
@@ -7480,6 +7490,12 @@ paths:
       operationId: updateIpAllowlist
       description: |
         Update the IP allowlist configuration for the workspace.
+
+        Both `enabled` and `ip_allowlist` are optional. A field you omit is left unchanged, and a request with neither returns the current settings without changing anything. Sending `null` for a field is the same as omitting it.
+
+        Every non-blank `ip_allowlist` entry must be an IPv4 address or an IPv4 range in CIDR notation. Blank entries are ignored and surrounding whitespace is trimmed. Any other entry, including an IPv6 address, returns a 422 `parameter_invalid` error.
+
+        Requires the `manage_ip_allowlist` OAuth scope.
 
         {% admonition type="warning" name="Lockout Protection" %}
           The API will reject updates that would lock out the caller's IP address. Ensure your current IP is included in the allowlist when enabling the feature.
@@ -7511,6 +7527,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
@@ -25631,7 +25654,9 @@ paths:
       operationId: listBrands
       description: |
         Retrieves all brands for the workspace, including the default brand.
-        The default brand id always matches the workspace
+        The default brand id always matches the workspace id.
+
+        Requires the `read_brands` OAuth scope.
       parameters:
         - name: Intercom-Version
           in: header
@@ -25669,6 +25694,21 @@ paths:
           description: Unauthorized
           content:
             application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                      - code: unauthorized
+                        message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                      - code: token_unauthorized
+                        message: Not authorized to access resource
               schema:
                 $ref: "#/components/schemas/error"
   "/brands/{id}":
@@ -25677,7 +25717,10 @@ paths:
       tags:
         - Brands
       operationId: retrieveBrand
-      description: Fetches a specific brand by its unique identifier
+      description: |
+        Fetches a specific brand by its unique identifier
+
+        Requires the `read_brands` OAuth scope.
       parameters:
         - name: Intercom-Version
           in: header
@@ -25711,6 +25754,21 @@ paths:
           description: Unauthorized
           content:
             application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                      - code: unauthorized
+                        message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                      - code: token_unauthorized
+                        message: Not authorized to access resource
               schema:
                 $ref: "#/components/schemas/error"
         '404':
@@ -25725,7 +25783,7 @@ paths:
                     type: error.list
                     request_id: "req_12345"
                     errors:
-                      - code: not_found
+                      - code: brand_not_found
                         message: Brand not found
   "/emails":
     get:
