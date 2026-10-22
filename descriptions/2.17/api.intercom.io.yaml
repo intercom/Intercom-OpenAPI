@@ -34074,7 +34074,7 @@ components:
           description: |-
             The custom attributes which are set for the Custom Object instance.
 
-            Each value must match the type of the attribute it is set on: a string, integer, number or boolean, the label of one of a list attribute's options, or `null` to clear the attribute. A reference attribute takes the id of the record it points at, as a string.
+            Each value must match the type of the attribute it is set on: a string, integer, number or boolean, a Unix timestamp or date string for a datetime attribute, or `null` to clear the attribute. A list attribute takes the label or id of one of its options; a value that matches no option clears the attribute rather than being rejected. A reference attribute takes the Intercom id of the record it points at, or an array of ids for a reference to several records; an id that matches no record is skipped.
           additionalProperties:
             anyOf:
             - type: string
@@ -34082,6 +34082,9 @@ components:
             - type: integer
             - type: number
             - type: boolean
+            - type: array
+              items:
+                type: string
           example:
             order_number: ORDER-12345
             total_amount: 99.99
