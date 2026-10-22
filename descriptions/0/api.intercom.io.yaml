@@ -10833,7 +10833,7 @@ paths:
         | tag_id                             | String                         |
         | custom_attributes.{attribute_name} | Matches the attribute's own type<br>(String, Integer, Float, Boolean or Date) |
 
-        The `ios_*` fields other than `ios_app_name` are searchable only once your workspace has received a request from the Intercom iOS SDK, and the `android_*` fields other than `android_app_name` only once it has received one from the Android SDK. `enabled_push_messaging` needs either. Until then, they return an `invalid_field` error.
+        The `ios_*` fields other than `ios_app_name` are searchable only once your workspace has been set up for the Intercom iOS SDK or has received a request from it, and the `android_*` fields other than `android_app_name` only once the same is true for the Android SDK. `enabled_push_messaging` needs either. Until then, they return an `invalid_field` error.
 
         ### Accepted Operators
 
@@ -11446,7 +11446,7 @@ paths:
                     errors:
                     - code: conflict
                       message: Multiple contacts matching those details already exists
-                        with id=user-42 email=joe@example.com
+                        with id= email=joe@example.com
                 Contact created at the same time:
                   value:
                     type: error.list
@@ -35049,7 +35049,7 @@ components:
         referrer:
           type: string
           nullable: true
-          description: The URL of the page the contact came from when they were first seen.
+          description: The URL of the page the contact came from, as recorded by the Messenger.
           example: https://example.com/pricing
         sms_consent:
           type: boolean
