@@ -7873,6 +7873,7 @@ paths:
                 oneOf:
                 - "$ref": "#/components/schemas/company"
                 - "$ref": "#/components/schemas/company_list"
+                - "$ref": "#/components/schemas/company_user_list"
         '400':
           description: Bad Request
           content:
@@ -8017,7 +8018,9 @@ paths:
                       total_count: 0
                       has_more: false
               schema:
-                "$ref": "#/components/schemas/company"
+                oneOf:
+                - "$ref": "#/components/schemas/company"
+                - "$ref": "#/components/schemas/company_user_list"
         '404':
           description: Company Not Found
           content:
@@ -30096,6 +30099,34 @@ components:
           description: The scroll parameter to use in the next request to fetch the
             next page of results.
           example: 25b649f7-4d33-4ef6-88f5-60e5b8244309
+    company_user_list:
+      title: Company Users
+      type: object
+      description: The contacts attached to one company, returned when `type` is `user`
+        or `users` and the request names a single company. Contacts are in the legacy
+        user format.
+      properties:
+        type:
+          type: string
+          description: The type of object - `user.list`.
+          enum:
+          - user.list
+          example: user.list
+        users:
+          type: array
+          description: The contacts attached to the company, in the legacy user format.
+          items:
+            type: object
+        pages:
+          "$ref": "#/components/schemas/pages_link"
+        total_count:
+          type: integer
+          description: The total number of contacts attached to the company.
+          example: 1
+        limited:
+          type: boolean
+          description: Always `false` for this list.
+          example: false
     contact:
       title: Contact
       type: object
