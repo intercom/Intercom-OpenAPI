@@ -16711,6 +16711,20 @@ paths:
                     deleted: true
               schema:
                 "$ref": "#/components/schemas/conversation_deleted"
+        '400':
+          description: Side conversation
+          content:
+            application/json:
+              examples:
+                Side conversation:
+                  value:
+                    type: error.list
+                    request_id: 44656d97-2081-44b1-b5f7-c14d0bb1b894
+                    errors:
+                    - code: side_conversation
+                      message: action can not be performed on a side conversation
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -18125,6 +18139,20 @@ paths:
                       id: 6762f19b1bb69f9f2193bbd4
               schema:
                 "$ref": "#/components/schemas/conversation_participants_response"
+        '400':
+          description: Side conversation
+          content:
+            application/json:
+              examples:
+                Side conversation:
+                  value:
+                    type: error.list
+                    request_id: af2cd450-2764-402c-a0e0-cae08a72647b
+                    errors:
+                    - code: side_conversation
+                      message: action can not be performed on a side conversation
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Not found
           content:
@@ -18230,6 +18258,20 @@ paths:
                       id: 6762f1b41bb69f9f2193bbe0
               schema:
                 "$ref": "#/components/schemas/conversation_participants_response"
+        '400':
+          description: Side conversation
+          content:
+            application/json:
+              examples:
+                Side conversation:
+                  value:
+                    type: error.list
+                    request_id: 83b5ee5b-1971-4594-a6fd-581ee7c56adb
+                    errors:
+                    - code: side_conversation
+                      message: action can not be performed on a side conversation
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Contact not found
           content:
@@ -19130,6 +19172,13 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: Ticket type is not a customer ticket type
+                Side conversation:
+                  value:
+                    type: error.list
+                    request_id: 2c105a05-72f9-4b5d-a01b-4b0c84f6e466
+                    errors:
+                    - code: side_conversation
+                      message: action can not be performed on a side conversation
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -24648,9 +24697,11 @@ paths:
               examples:
                 missing ruleset_id:
                   value:
-                    type: error
-                    request_id: "req_123"
-                    message: "ruleset_id is required"
+                    type: error.list
+                    request_id: 71c45f21-af71-4b0a-a3c6-ef5e2b55740c
+                    errors:
+                    - code: parameter_not_found
+                      message: ruleset_id is required
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -24688,9 +24739,11 @@ paths:
               examples:
                 server error:
                   value:
-                    type: error
+                    type: error.list
                     request_id: 591a0c2f-78b3-41bb-bfa7-f1fae15107b2
-                    message: "Request failed due to an internal error. Please reach out to support"
+                    errors:
+                    - code: server_error
+                      message: Request failed due to an internal error. Please reach out to support
               schema:
                 "$ref": "#/components/schemas/error"
   "/messages/whatsapp/status":
@@ -24752,9 +24805,11 @@ paths:
               examples:
                 missing message_id:
                   value:
-                    type: error
-                    request_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-                    message: "message_id is required"
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: parameter_not_found
+                      message: message_id is required
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -24769,6 +24824,20 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 76d8344a-bd94-424c-937b-cc19de8215bb
+                    errors:
+                    - code: api_plan_restricted
+                      message: Active subscription needed.
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -26297,7 +26366,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/phone_switch"
         '400':
-          description: bad request - invalid number
+          description: Phone number lookup or SMS send failed
           content:
             application/json:
               examples:
@@ -26314,9 +26383,15 @@ paths:
           content:
             application/json:
               examples:
+                Invalid phone number:
+                  value:
+                    error_key: invalid_phone_number
                 unprocessable entity:
                   value:
-                    error_key: some_error
+                    error_key: landline_phone
+                Twilio account not found:
+                  value:
+                    error_key: twilio_settings
         '401':
           description: Unauthorized
           content:
@@ -26329,6 +26404,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Feature not available:
+                  value:
+                    type: error.list
+                    request_id: 79b635fd-f1f6-4404-aa83-5782675987fb
+                    errors:
+                    - code: unauthorized
+                      message: App does not have access to this feature
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
