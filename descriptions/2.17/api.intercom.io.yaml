@@ -10388,7 +10388,7 @@ paths:
         | --- | --- |
         | `source_same_as_target` | The source contact (`from`) and the destination contact (`into`) are the same contact. A contact can't be merged into itself. |
         | `invalid_merge_role_pair` | The `from`/`into` roles aren't mergeable. `into` must be a user. |
-        | `no_shared_identifier` | The contacts share no email or phone. Set `skip_duplicate_validation` to preview anyway. |
+        | `no_shared_identifier` | The contacts share no email or phone. The source's phone also counts as shared when it matches the destination's WhatsApp number. Set `skip_duplicate_validation` to preview anyway. |
         | `facebook_user` | Facebook contacts can't be merged. |
         | `external_lead_channel_not_allowed` | The source is an external-channel lead that isn't eligible for merging. |
         | `mailing_list` | Contacts created from a mailing list can't be merged. |
@@ -10556,7 +10556,7 @@ paths:
         There are some limitations to the amount of multiple's there can be:
         * There's a limit of max 2 nested filters
         * There's a limit of max 15 filters for each AND or OR group
-        * There's a limit of max 50 values in an `IN` or `NIN` array
+        * There's a limit of max 15 values in an `IN` or `NIN` array
         * `pagination.per_page` must be between 1 and 150
 
         ### Searching for Timestamp Fields
@@ -29977,7 +29977,7 @@ components:
         email_verified:
           type: boolean
           description: >-
-            Whether the contact has proved they own their current email address. `true` only when this address was marked verified through the Contacts API (`email_verified: true` on create or update) and has not changed since; it becomes `false` again if the contact's email changes, until the new address is verified. Intercom reuses a lead with a verified email when it later matches an inbound email, or an outbound conversation or ticket, to that address, instead of creating a new lead. Not included in List contacts or Search contacts responses.
+            Whether the contact has proved they own their current email address. `true` only when this address was marked verified through the Contacts API (`email_verified: true` on create or update) and has not changed since; it becomes `false` again if the contact's email changes, until the new address is verified. Intercom reuses a lead with a verified email when it later matches an inbound email, or an outbound conversation or ticket, to that address, instead of creating a new lead. In List contacts and Search contacts responses it is left out only if the contact can't be loaded, for example when it is deleted while the request runs.
           example: true
         phone:
           type: string
