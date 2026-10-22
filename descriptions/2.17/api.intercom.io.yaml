@@ -7592,9 +7592,15 @@ paths:
 
         Companies are looked up via `company_id` in a `POST` request, if not found via `company_id`, the new company will be created, if found, that company will be updated.
 
+        You must send either `company_id` or `id`. A request with neither returns a `400` error.
+
+        Every custom attribute you send must already exist in your workspace. Sending one that doesn't returns a `400` error.
+
         {% admonition type="warning" name="Using `company_id`" %}
           You can set a unique `company_id` value when creating a company. However, it is not possible to update `company_id`. Be sure to set a unique value once upon creation of the company.
         {% /admonition %}
+
+        Requires the `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -7623,6 +7629,12 @@ paths:
                     plan: {}
                     custom_attributes:
                       industry: manufacturing
+                    notes:
+                      type: note.list
+                      data: []
+                      url: "/companies/6762f0761bb69f9f2193bae2/notes"
+                      total_count: 0
+                      has_more: false
               schema:
                 "$ref": "#/components/schemas/company"
         '400':
@@ -7637,6 +7649,34 @@ paths:
                     errors:
                     - code: bad_request
                       message: bad 'test' parameter
+                Missing company_id:
+                  value:
+                    type: error.list
+                    request_id: 0c6a6de1-7f2b-4a5e-9a3c-1b2d8e4f5a60
+                    errors:
+                    - code: bad_request
+                      message: missing 'company_id' parameter
+                Custom attribute does not exist:
+                  value:
+                    type: error.list
+                    request_id: 1d7b7ef2-8a3c-4b6f-8b4d-2c3e9f506b71
+                    errors:
+                    - code: parameter_invalid
+                      message: Custom attribute 'plan_tier' does not exist
+                Custom attribute value is an object:
+                  value:
+                    type: error.list
+                    request_id: 2e8c8f03-9b4d-4c70-9c5e-3d4f0a617c82
+                    errors:
+                    - code: nested_custom_attributes
+                      message: Cannot submit an object as a custom attribute value
+                Company is not an object:
+                  value:
+                    type: error.list
+                    request_id:
+                    errors:
+                    - code: 422
+                      message: invalid company data structure
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -7651,6 +7691,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 3f9d9014-ac5e-4d81-ad6f-4e501b728d93
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -7704,6 +7751,19 @@ paths:
         example: '98765'
         schema:
           type: string
+      - name: type
+        in: query
+        required: false
+        description: Set to `user` or `users`, together with `company_id` or `name`,
+          to return that company's users instead of the company. The response is then
+          a `user.list` object with a `users` array in the legacy user format, paged
+          with `page` and `per_page` (default 50).
+        example: users
+        schema:
+          type: string
+          enum:
+          - user
+          - users
       - name: page
         in: query
         required: false
@@ -7714,7 +7774,8 @@ paths:
       - name: per_page
         in: query
         required: false
-        description: How many results to display per page. Defaults to 15
+        description: How many results to display per page. Defaults to 15. A value
+          above 60 returns a `400` error with code `parameter_invalid`.
         example: 15
         schema:
           type: integer
@@ -7733,6 +7794,8 @@ paths:
           `https://api.intercom.io/companies?tag_id={tag_id}`
 
           `https://api.intercom.io/companies?segment_id={segment_id}`
+
+        The list is paged by page number. There is a limit of 10,000 companies; beyond that the request returns a `400` error and you should use the scroll endpoint instead.
       responses:
         '200':
           description: Successful
@@ -7762,6 +7825,12 @@ paths:
                         segments: []
                       plan: {}
                       custom_attributes: {}
+                      notes:
+                        type: note.list
+                        data: []
+                        url: "/companies/6762f07a1bb69f9f2193baea/notes"
+                        total_count: 0
+                        has_more: false
                     pages:
                       type: pages
                       next:
@@ -7790,10 +7859,41 @@ paths:
                       segments: []
                     plan: {}
                     custom_attributes: {}
+                    notes:
+                      type: note.list
+                      data:
+                      - id: '17495962'
+                        type: note
+                        url: "/notes/17495962"
+                        body: "<p>Text for the note.</p>"
+                      url: "/companies/6762f07f1bb69f9f2193baf5/notes"
+                      total_count: 1
+                      has_more: false
               schema:
                 oneOf:
                 - "$ref": "#/components/schemas/company"
                 - "$ref": "#/components/schemas/company_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Per page too big:
+                  value:
+                    type: error.list
+                    request_id: 4a0e1b25-bd6f-4e92-be70-5f612c839ea4
+                    errors:
+                    - code: parameter_invalid
+                      message: Per Page is too big
+                Page limit reached:
+                  value:
+                    type: error.list
+                    request_id: 5b1f2c36-ce70-4fa3-cf81-6a723d94afb5
+                    errors:
+                    - code: bad_request
+                      message: page limit reached, please use scroll API
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Company Not Found
           content:
@@ -7822,6 +7922,20 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              examples:
+                Search temporarily unavailable:
+                  value:
+                    type: error.list
+                    request_id: 6c2a3d47-df81-40b4-d092-7b834ea5b0c6
+                    errors:
+                    - code: service_unavailable
+                      message: Feature temporarily unavailable
+              schema:
+                "$ref": "#/components/schemas/error"
   "/companies/{company_id}":
     get:
       summary: Retrieve a company by ID
@@ -7837,6 +7951,34 @@ paths:
         example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
         schema:
           type: string
+      - name: type
+        in: query
+        required: false
+        description: Set to `user` or `users` to return the company's users instead
+          of the company. The response is then a `user.list` object with a `users`
+          array in the legacy user format.
+        example: users
+        schema:
+          type: string
+          enum:
+          - user
+          - users
+      - name: page
+        in: query
+        required: false
+        description: The page of users to fetch. Used only when `type` is `user` or
+          `users`. Defaults to first page.
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: How many users to return per page. Used only when `type` is `user`
+          or `users`. Defaults to 50.
+        example: 50
+        schema:
+          type: integer
       tags:
       - Companies
       operationId: RetrieveACompanyById
@@ -7868,6 +8010,12 @@ paths:
                       segments: []
                     plan: {}
                     custom_attributes: {}
+                    notes:
+                      type: note.list
+                      data: []
+                      url: "/companies/6762f07f1bb69f9f2193baf5/notes"
+                      total_count: 0
+                      has_more: false
               schema:
                 "$ref": "#/components/schemas/company"
         '404':
@@ -7918,9 +8066,15 @@ paths:
       description: |
         You can update a single company using the Intercom provisioned `id`.
 
+        Every custom attribute you send must already exist in your workspace. Sending one that doesn't returns a `400` error.
+
+        You can also send this request with `PATCH`; it behaves the same as `PUT`.
+
         {% admonition type="warning" name="Using `company_id`" %}
           When updating a company it is not possible to update `company_id`. This can only be set once upon creation of the company.
         {% /admonition %}
+
+        Requires the `write_users_companies` OAuth scope.
       requestBody:
         content:
           application/json:
@@ -7963,8 +8117,35 @@ paths:
                       segments: []
                     plan: {}
                     custom_attributes: {}
+                    notes:
+                      type: note.list
+                      data: []
+                      url: "/companies/6762f0841bb69f9f2193baff/notes"
+                      total_count: 0
+                      has_more: false
               schema:
                 "$ref": "#/components/schemas/company"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Custom attribute does not exist:
+                  value:
+                    type: error.list
+                    request_id: 7d3b4e58-e092-41c5-e1a3-8c945fb6c1d7
+                    errors:
+                    - code: parameter_invalid
+                      message: Custom attribute 'plan_tier' does not exist
+                Custom attribute value is an object:
+                  value:
+                    type: error.list
+                    request_id: 8e4c5f69-f1a3-42d6-f2b4-9da56ac7d2e8
+                    errors:
+                    - code: nested_custom_attributes
+                      message: Cannot submit an object as a custom attribute value
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Company Not Found
           content:
@@ -7991,6 +8172,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 9f5d6a7a-02b4-43e7-a3c5-aeb67bd8e3f9
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
     delete:
@@ -8013,11 +8201,15 @@ paths:
       description: |
         Delete a single company.
 
-        The company record is kept in your workspace, but all contacts are detached. The contacts themselves are not deleted. Detaching contacts is permanent and can't be reversed. A `company.deleted` webhook is sent when the company is deleted. These changes may take some time to be reflected in your workspace.
+        The company record is kept in your workspace, but all contacts are detached. The contacts themselves are not deleted. Detaching contacts is permanent and can't be reversed. These changes may take some time to be reflected in your workspace.
+
+        The response returns `"deleted": true` as soon as the request is accepted; the contacts are detached in the background. A `company.deleted` webhook is sent after that work finishes, so it arrives some time after the response. No webhook is sent for a company that has no contacts attached, because there is nothing to detach.
 
         {% admonition type="warning" %}
         Third-party integrations that sync companies into Intercom (for example, Salesforce or Chargebee) will recreate any company deleted through this endpoint on their next sync. To prevent recreation, remove or filter the company at the source integration before deleting it via the API.
         {% /admonition %}
+
+        Requires the `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -8057,6 +8249,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a06e7b8b-13c5-44f8-b4d6-bfc78ce9f40a
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/companies/{company_id}/contacts":
@@ -8074,11 +8273,36 @@ paths:
         example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
         schema:
           type: string
+      - name: per_page
+        in: query
+        required: false
+        description: How many contacts to return per page. Defaults to 50.
+        example: 50
+        schema:
+          type: integer
+      - name: starting_after
+        in: query
+        required: false
+        description: The cursor to fetch the next page of contacts. Use the `starting_after`
+          value from `pages.next` in the previous response.
+        schema:
+          type: string
+      - name: include_merge_history
+        in: query
+        required: false
+        description: Set to `true` to include each contact's `merge_history`. Any
+          other value omits it.
+        example: 'true'
+        schema:
+          type: string
       tags:
       - Companies
       - Contacts
       operationId: ListAttachedContacts
-      description: You can fetch a list of all contacts that belong to a company.
+      description: |
+        You can fetch a list of all contacts that belong to a company.
+
+        Requires the `read_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -8097,6 +8321,21 @@ paths:
                       total_pages: 0
               schema:
                 "$ref": "#/components/schemas/company_attached_contacts"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid starting_after:
+                  value:
+                    type: error.list
+                    request_id: b17f8a9b-139c-4418-b4e6-bfd79cf9040a
+                    errors:
+                    - code: client_error
+                      message: Invalid starting_after param. Please try again using
+                        a starting_after value from a paginated response
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Company Not Found
           content:
@@ -8123,6 +8362,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: c281819c-24d6-4509-c5e7-c0d89adfa51b
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/companies/{company_id}/segments":
@@ -8143,7 +8389,10 @@ paths:
       tags:
       - Companies
       operationId: ListAttachedSegmentsForCompanies
-      description: You can fetch a list of all segments that belong to a company.
+      description: |
+        You can fetch a list of all segments that belong to a company.
+
+        Requires the `read_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -8182,6 +8431,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: d392920d-35e7-461a-d6f8-d1e90be0b62c
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/companies/{company_id}/notes":
@@ -8428,6 +8684,12 @@ paths:
         ### Sorting
 
         Pass an optional `sort` object with a `field` and an `order` (`ascending` or `descending`; defaults to `descending`) to order the results. An invalid `order` returns a `400` error with code `invalid_sort_order`. `tag_id` can be used as a filter but not as a sort field.
+
+        ### Pagination
+
+        Pass an optional `pagination` object with `per_page` and `starting_after`. `per_page` defaults to 15 and must be between 1 and 150; anything else returns a `400` error with code `invalid_per_page`. Take `starting_after` from `pages.next` in the previous response, and send it with the same `sort` you used for that response — a cursor replayed under a different sort returns a `400` error with code `client_error`.
+
+        Requires the `read_users_companies` OAuth scope.
       responses:
         '200':
           description: successful
@@ -8445,7 +8707,7 @@ paths:
                       per_page: 5
                       total_pages: 0
               schema:
-                "$ref": "#/components/schemas/company_list"
+                "$ref": "#/components/schemas/company_search_response"
         '401':
           description: Unauthorized
           content:
@@ -8458,6 +8720,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: e4a3a31e-46f8-422b-e709-e2fa1cf1c73d
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '400':
@@ -8472,6 +8741,58 @@ paths:
                     errors:
                     - code: invalid_field
                       message: "segment_id is not a valid search field"
+                Invalid sort order:
+                  value:
+                    type: error.list
+                    request_id: f5b4b42f-5709-433c-f81a-f30b2da2d84e
+                    errors:
+                    - code: invalid_sort_order
+                      message: "Invalid sort order 'sideways'. Must be one of: ascending,
+                        descending"
+                Sort is not an object:
+                  value:
+                    type: error.list
+                    request_id: 06c5c530-681a-444d-092b-041c3eb3e95f
+                    errors:
+                    - code: client_error
+                      message: Invalid sort parameter. Expected an object with 'field'
+                        and 'order'.
+                Pagination is not an object:
+                  value:
+                    type: error.list
+                    request_id: 17d6d641-792b-455e-1a3c-152d4fc4fa60
+                    errors:
+                    - code: client_error
+                      message: Invalid pagination parameter. Expected an object.
+                Per page out of range:
+                  value:
+                    type: error.list
+                    request_id: 4a09095a-ac5e-4882-4d6f-485072f72d93
+                    errors:
+                    - code: invalid_per_page
+                      message: per_page must be an integer between 0 and 150
+                Cursor does not match the sort:
+                  value:
+                    type: error.list
+                    request_id: 28e7e752-8a3c-4660-2b4d-263e50d50b71
+                    errors:
+                    - code: client_error
+                      message: Invalid starting_after param. Please try again using
+                        a starting_after value from a paginated response
+              schema:
+                "$ref": "#/components/schemas/error"
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              examples:
+                Search temporarily unavailable:
+                  value:
+                    type: error.list
+                    request_id: 39f8f863-9b4d-4771-3c5e-374f61e61c82
+                    errors:
+                    - code: service_unavailable
+                      message: Feature temporarily unavailable
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -8512,18 +8833,24 @@ paths:
       - name: per_page
         in: query
         required: false
-        description: How many results to return per page. Defaults to 15
+        description: How many results to return per page. Defaults to 15. A value
+          above 60 returns a `400` error with code `parameter_invalid`.
         example: 15
         schema:
           type: integer
+          maximum: 60
       - name: order
         in: query
         required: false
         description: "`asc` or `desc`. Return the companies in ascending or descending
-          order. Defaults to desc"
+          order. Defaults to desc. Any other value returns a `400` error with code
+          `parameter_invalid`."
         example: desc
         schema:
           type: string
+          enum:
+          - asc
+          - desc
       tags:
       - Companies
       operationId: listAllCompanies
@@ -8532,11 +8859,13 @@ paths:
 
         Note that the API does not include companies who have no associated users in list responses.
 
-        When using the Companies endpoint and the pages object to iterate through the returned companies, there is a limit of 10,000 Companies that can be returned. If you need to list or iterate on more than 10,000 Companies, please use the [Scroll API](https://developers.intercom.com/reference#iterating-over-all-companies).
+        When using the Companies endpoint and the pages object to iterate through the returned companies, there is a limit of 10,000 Companies that can be returned. If you need to list or iterate on more than 10,000 Companies, please use the [Scroll API](https://developers.intercom.com/reference#iterating-over-all-companies). Going past that limit returns a `400` error with code `bad_request`.
         {% admonition type="warning" name="Pagination" %}
-          You can use pagination to limit the number of results returned. The default is `20` results per page.
-          See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.
+          This endpoint pages by page number, not by cursor. Use the `page` and `per_page` query parameters, and the `page`, `total_pages` and `next` values in the `pages` object of the response. The default is `15` results per page.
+          See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details.
         {% /admonition %}
+
+        Requires the `write_users_companies` OAuth scope. A token with only read scopes cannot call this endpoint.
       responses:
         '200':
           description: Successful
@@ -8566,6 +8895,12 @@ paths:
                         segments: []
                       plan: {}
                       custom_attributes: {}
+                      notes:
+                        type: note.list
+                        data: []
+                        url: "/companies/6762f0941bb69f9f2193bb25/notes"
+                        total_count: 0
+                        has_more: false
                     pages:
                       type: pages
                       next:
@@ -8575,6 +8910,27 @@ paths:
                     total_count: 1
               schema:
                 "$ref": "#/components/schemas/company_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Per page too big:
+                  value:
+                    type: error.list
+                    request_id: 5b1a1a6b-bd6f-4993-5e70-5961830833a4
+                    errors:
+                    - code: parameter_invalid
+                      message: Per Page is too big
+                Page limit reached:
+                  value:
+                    type: error.list
+                    request_id: 7d3c3c8d-df81-4bb5-7092-7b83a52a55c6
+                    errors:
+                    - code: bad_request
+                      message: page limit reached, please use scroll API
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -8587,6 +8943,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 8e4d4d9e-e092-4cc6-81a3-8c94b63b66d7
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/companies/scroll":
@@ -8600,7 +8963,9 @@ paths:
       - name: scroll_param
         in: query
         required: false
-        description: ''
+        description: The `scroll_param` from the previous response. Omit it to start
+          a new scroll.
+        example: 69352cd2-ab5b-42ac-b004-a13d4e55e9b0
         schema:
           type: string
       tags:
@@ -8609,19 +8974,18 @@ paths:
       description: |2
               The `list all companies` functionality does not work well for huge datasets, and can result in errors and performance problems when paging deeply. The Scroll API provides an efficient mechanism for iterating over all companies in a dataset.
 
-        - Each app can only have 1 scroll open at a time. You'll get an error message if you try to have more than one open per app.
-        - If the scroll isn't used for 1 minute, it expires and calls with that scroll param will fail
-        - If the end of the scroll is reached, "companies" will be empty and the scroll parameter will expire
+        - Each app can only have 1 scroll open at a time. Starting a second one returns a `400` error with code `scroll_exists`.
+        - If the scroll isn't used for 1 minute, it expires and calls with that scroll param return a `404` error with code `not_found`.
+        - If the end of the scroll is reached, `data` will be empty and the scroll parameter will expire.
+
+        The response always has `pages` and `total_count` set to `null`. Use `scroll_param` to fetch the next page.
 
         {% admonition type="info" name="Scroll Parameter" %}
           You can get the first page of companies by simply sending a GET request to the scroll endpoint.
           For subsequent requests you will need to use the scroll parameter from the response.
         {% /admonition %}
-        {% admonition type="danger" name="Scroll network timeouts" %}
-          Since scroll is often used on large datasets network errors such as timeouts can be encountered. When this occurs you will see a HTTP 500 error with the following message:
-          "Request failed due to an internal network error. Please restart the scroll operation."
-          If this happens, you will need to restart your scroll query: It is not possible to continue from a specific point when using scroll.
-        {% /admonition %}
+
+        Requires the `read_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -8651,11 +9015,45 @@ paths:
                         segments: []
                       plan: {}
                       custom_attributes: {}
+                      notes:
+                        type: note.list
+                        data: []
+                        url: "/companies/6762f0971bb69f9f2193bb2b/notes"
+                        total_count: 0
+                        has_more: false
                     pages:
                     total_count:
                     scroll_param: 69352cd2-ab5b-42ac-b004-a13d4e55e9b0
               schema:
                 "$ref": "#/components/schemas/company_scroll"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Scroll already open:
+                  value:
+                    type: error.list
+                    request_id: 9f5e5eaf-f1a3-4dd7-92b4-9da5c74c77e8
+                    errors:
+                    - code: scroll_exists
+                      message: scroll already exists for this workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Scroll Parameter Not Found
+          content:
+            application/json:
+              examples:
+                Scroll parameter not found:
+                  value:
+                    type: error.list
+                    request_id: a06f6fb0-02b4-4ee8-a3c5-aeb6d85d88f9
+                    errors:
+                    - code: not_found
+                      message: scroll parameter not found
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -8668,6 +9066,27 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: b17a7ac1-13c5-4ff9-b4d6-bfc7e96e99fa
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              examples:
+                Scroll temporarily unavailable:
+                  value:
+                    type: error.list
+                    request_id: c28b8bd2-24d6-40aa-c5e7-c0d8fa7faa0b
+                    errors:
+                    - code: service_unavailable
+                      message: Feature temporarily unavailable
               schema:
                 "$ref": "#/components/schemas/error"
   "/contacts/{contact_id}/companies":
@@ -29402,7 +29821,8 @@ components:
           example: 531ee472cce572a6ec000006
         name:
           type: string
-          description: The name of the company.
+          description: The name of the company. Returned HTML-escaped, for example
+            `&` as `&amp;`.
           example: Blue Sun
         app_id:
           type: string
@@ -29426,7 +29846,8 @@ components:
               example: Pro
         company_id:
           type: string
-          description: The company id you have defined for the company.
+          description: The company id you have defined for the company. Returned HTML-escaped,
+            for example `&` as `&amp;`.
           example: '6'
         remote_created_at:
           type: integer
@@ -29497,7 +29918,8 @@ components:
                 "$ref": "#/components/schemas/tag_basic"
         segments:
           type: object
-          description: The list of segments associated with the company
+          description: Always returned empty. Fetch a company's segments with the
+            list attached segments endpoint.
           properties:
             type:
               type: string
@@ -29517,10 +29939,24 @@ components:
               description: The type of the object
               enum:
               - note.list
-            notes:
+            data:
               type: array
+              description: The notes on the company, newest first.
               items:
                 "$ref": "#/components/schemas/company_note"
+            url:
+              type: string
+              description: The relative URL of the company's notes.
+              example: "/companies/531ee472cce572a6ec000006/notes"
+            total_count:
+              type: integer
+              description: The number of notes in `data`.
+              example: 1
+            has_more:
+              type: boolean
+              description: Always `false`. Every note on the company is returned in
+                `data`.
+              example: false
     company_attached_contacts:
       title: Company Attached Contacts
       type: object
@@ -29564,7 +30000,8 @@ components:
       type: object
       x-tags:
       - Notes
-      description: Notes allow you to annotate and comment on companies.
+      description: A note as it appears inside a company's `notes` list. Fetch the
+        full note with the retrieve note endpoint.
       properties:
         type:
           type: string
@@ -29575,28 +30012,10 @@ components:
           type: string
           description: The id of the note.
           example: '17495962'
-        created_at:
-          type: integer
-          format: timestamp
-          description: The time the note was created.
-          example: 1674589321
-        company:
-          type: object
-          description: Represents the company that the note was created about.
-          nullable: true
-          properties:
-            type:
-              type: string
-              description: String representing the object's type. Always has the value
-                `company`.
-              example: company
-            id:
-              type: string
-              description: The id of the company.
-              example: 6329bd9ffe4e2e91dac76188
-        author:
-          "$ref": "#/components/schemas/admin"
-          description: Optional. Represents the Admin that created the note.
+        url:
+          type: string
+          description: The relative URL of the note.
+          example: "/notes/17495962"
         body:
           type: string
           description: The body text of the note.
@@ -29605,6 +30024,28 @@ components:
       title: Companies
       type: object
       description: This will return a list of companies for the App.
+      properties:
+        type:
+          type: string
+          description: The type of object - `list`.
+          enum:
+          - list
+          example: list
+        pages:
+          "$ref": "#/components/schemas/pages_link"
+        total_count:
+          type: integer
+          description: The total number of companies.
+          example: 100
+        data:
+          type: array
+          description: An array containing Company Objects.
+          items:
+            "$ref": "#/components/schemas/company"
+    company_search_response:
+      title: Company Search Response
+      type: object
+      description: This will return a list of companies matching a search query.
       properties:
         type:
           type: string
@@ -29642,12 +30083,14 @@ components:
           items:
             "$ref": "#/components/schemas/company"
         pages:
-          "$ref": "#/components/schemas/cursor_pages"
+          type: object
+          description: Always `null`. Page through a scroll with `scroll_param` instead.
+          nullable: true
         total_count:
           type: integer
-          description: The total number of companies
+          description: Always `null`. The scroll endpoint does not count the companies
+            it returns.
           nullable: true
-          example: 100
         scroll_param:
           type: string
           description: The scroll parameter to use in the next request to fetch the
@@ -33837,16 +34280,22 @@ components:
     create_or_update_company_request:
       type: object
       title: Create Or Update Company Request Payload
-      description: You can create or update a Company
+      description: You can create or update a Company. Send either `company_id` or
+        `id`; a request with neither returns a `400` error.
       nullable: true
       properties:
         name:
           type: string
-          description: The name of the Company
+          description: The name of the Company. Leading and trailing whitespace is
+            removed.
           example: Intercom
         company_id:
           type: string
           description: The company id you have defined for the company. Can't be updated
+          example: 625e90fc55ab113b6d92175f
+        id:
+          type: string
+          description: An alternative name for `company_id`. Supply this or `company_id`.
           example: 625e90fc55ab113b6d92175f
         plan:
           type: string
@@ -33868,8 +34317,9 @@ components:
         custom_attributes:
           type: object
           description: Values for custom attributes that already exist in your workspace.
-            Each value can be a string, integer, number, boolean or null. Arrays and
-            objects aren't accepted.
+            Each value can be a string, integer, number, boolean or null. Objects
+            aren't accepted, and arrays are accepted only for custom object reference
+            attributes.
           additionalProperties:
             anyOf:
             - type: string
@@ -33891,10 +34341,9 @@ components:
           example: true
         monthly_spend:
           type: integer
-          description: How much revenue the company generates for your business. Note
-            that this will truncate floats. i.e. it only allow for whole integers,
-            155.98 will be truncated to 155. Note that this has an upper limit of
-            2**31-1 or 2147483647..
+          description: How much revenue the company generates for your business. Floats
+            are truncated to whole integers, so 155.98 is stored as 155. A value above
+            2147483647 (2**31-1) is stored as 0.
           example: 1000
     update_company_request:
       type: object
@@ -33904,8 +34353,13 @@ components:
       properties:
         name:
           type: string
-          description: The name of the Company
+          description: The name of the Company. Leading and trailing whitespace is
+            removed.
           example: Intercom
+        update_last_request_at:
+          type: boolean
+          description: Set to true to update the company's last seen time to now.
+          example: true
         plan:
           type: string
           description: The name of the plan you have associated with the company.
@@ -33926,8 +34380,9 @@ components:
         custom_attributes:
           type: object
           description: Values for custom attributes that already exist in your workspace.
-            Each value can be a string, integer, number, boolean or null. Arrays and
-            objects aren't accepted.
+            Each value can be a string, integer, number, boolean or null. Objects
+            aren't accepted, and arrays are accepted only for custom object reference
+            attributes.
           additionalProperties:
             anyOf:
             - type: string
@@ -33945,10 +34400,9 @@ components:
           example: 1394531169
         monthly_spend:
           type: integer
-          description: How much revenue the company generates for your business. Note
-            that this will truncate floats. i.e. it only allow for whole integers,
-            155.98 will be truncated to 155. Note that this has an upper limit of
-            2**31-1 or 2147483647..
+          description: How much revenue the company generates for your business. Floats
+            are truncated to whole integers, so 155.98 is stored as 155. A value above
+            2147483647 (2**31-1) is stored as 0.
           example: 1000
     create_or_update_custom_object_instance_request:
       description: Payload to create or update a Custom Object instance
@@ -36680,7 +37134,8 @@ components:
           example: company
         deleted:
           type: boolean
-          description: Whether the company was deleted successfully or not.
+          description: Always `true`. The contacts are detached after the response
+            is sent.
           example: true
     deleted_object:
       title: Deleted Object
