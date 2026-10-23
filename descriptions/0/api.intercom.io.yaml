@@ -1151,7 +1151,7 @@ paths:
       description: |
         You can start a sync of an API template source, which imports its content from the vendor again. The sync runs in the background: the response is the source, with the new sync as its `latest_sync`. Retrieve the source to follow the sync's status.
 
-        A source runs one sync at a time.
+        A source runs one sync at a time. Intercom also syncs each source automatically, about once a day, so you only need this endpoint to sync sooner.
 
         OAuth tokens must have the `read_write_ai_content` scope.
       parameters:
@@ -1283,7 +1283,7 @@ paths:
                     errors:
                     - code: conflict
                       message: A sync is already running for this source
-                Source being deleted:
+                Deletion started during the request:
                   value:
                     type: error.list
                     request_id: d7d75f78-fb59-43db-841c-1c88b4f08709
@@ -34515,8 +34515,8 @@ components:
               description: Placeholders filled from the node, each with the keys to
                 follow in the node to reach its value. It must be an object (`invalid`),
                 and its names can't look like credentials (`credential_name`). A value
-                filled into the path may only use letters, digits, `.`, `_` and `-`,
-                or the sync fails.
+                that is blank, or that uses anything other than letters, digits, `.`,
+                `_` and `-`, fails the sync.
               additionalProperties:
                 type: array
                 items:
@@ -34658,6 +34658,8 @@ components:
           nullable: true
           readOnly: true
           description: The source's most recent sync, or `null` if no sync has started.
+            Intercom also syncs each source automatically, about once a day, so this
+            can be a sync you didn't start.
           properties:
             id:
               type: string
