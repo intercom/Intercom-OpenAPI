@@ -44613,7 +44613,8 @@ components:
         reactions:
           type: array
           description: Ordered list of emoji reactions to the news item. When empty,
-            reactions are disabled.
+            reactions are disabled. An update that leaves out `reactions` also disables
+            them but leaves this list as it was.
           items:
             type: string
             description: The emoji reaction to the news item.
@@ -44684,15 +44685,17 @@ components:
         cover_image_url:
           type: string
           format: uri
-          description: URL of the image to use as the cover. Must end in `.png` or
-            `.jpg`. Intercom copies the image and serves it from its own signed URL.
+          description: URL of the image to use as the cover. Must contain `.png` or
+            `.jpg` in lower case, so `.jpeg` and `.PNG` are rejected. Intercom copies
+            the image and serves it from its own signed URL.
           example: https://example.com/cover.jpg
         reactions:
           type: array
           description: Ordered list of emoji reactions to the news item. Send an empty
             list to disable reactions. Send at most five, each a single Unicode code
             point, so an emoji with a skin tone, a joiner sequence or a variation selector
-            (such as ❤️) is rejected.
+            (such as ❤️) is rejected. More than five returns a 400, but the news item
+            is still saved as a draft, with no reactions or cover image.
           items:
             type: string
           example:
@@ -44753,8 +44756,9 @@ components:
         cover_image_url:
           type: string
           format: uri
-          description: URL of the image to use as the cover. Must end in `.png` or
-            `.jpg`. Intercom copies the image and serves it from its own signed URL.
+          description: URL of the image to use as the cover. Must contain `.png` or
+            `.jpg` in lower case, so `.jpeg` and `.PNG` are rejected. Intercom copies
+            the image and serves it from its own signed URL.
           example: https://example.com/cover.jpg
         reactions:
           type: array
