@@ -21549,7 +21549,14 @@ paths:
           content:
             application/json:
               examples:
-                Missing event name:
+                Missing a required field:
+                  value:
+                    type: error.list
+                    request_id: 5d0c8e27-3a91-4f6b-b2d4-7e18c9a06f53
+                    errors:
+                    - code: parameter_not_found
+                      message: missing data parameter
+                Null event name:
                   value:
                     type: error.list
                     request_id: 9b1f3c40-5d2a-4e7b-8c16-a3d9e0f51b24
@@ -22040,13 +22047,6 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: The export period is longer than 90 days
-                End date before start date:
-                  value:
-                    type: error.list
-                    request_id: 2c8da17f-693e-4051-b6c4-8f0a35e7d219
-                    errors:
-                    - code: parameter_invalid
-                      message: The end_date is before the start_date
               schema:
                 "$ref": "#/components/schemas/error"
         '429':
@@ -28968,7 +28968,7 @@ paths:
         >
         > If the User exists, then the Visitor will be merged into it, the Visitor deleted and the User returned. If the User does not exist, the Visitor will be converted to a User, with the User identifiers replacing it's Visitor identifiers.
 
-        Identify the visitor with `visitor.id` or `visitor.user_id`. The `user` object is only read when `type` is `user`.
+        Identify the visitor with `visitor.id` or `visitor.user_id`. The `user` object is required when `type` is `user`, and is not read when `type` is `lead`.
 
         Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
@@ -37969,7 +37969,7 @@ components:
         user:
           type: object
           description: The unique identifiers retained after converting or merging.
-            Only read when `type` is `user`.
+            Required when `type` is `user`; not read when `type` is `lead`.
           properties:
             id:
               type: string
@@ -38542,10 +38542,7 @@ components:
         created_at:
           type: integer
           format: date-time
-          description: The time the event occurred as a UTC Unix timestamp. Optional
-            - if you leave it out, the time we receive the request is used instead.
-            Sending it is strongly recommended, because it forms part of the key used
-            to de-duplicate events.
+          description: The time the event occurred as a UTC Unix timestamp
           example: 1671028894
         user_id:
           type: string
@@ -38579,14 +38576,17 @@ components:
       - title: id required
         required:
         - event_name
+        - created_at
         - id
       - title: user_id required
         required:
         - event_name
+        - created_at
         - user_id
       - title: email required
         required:
         - event_name
+        - created_at
         - email
     create_data_event_summaries_request:
       description: You can send a list of event summaries for a user. Each event summary
@@ -48086,12 +48086,10 @@ components:
           type: string
           description: An image URL for the visitor's avatar.
           example: https://example.org/128Wu8Q.jpg
-        company:
-          type: object
-          description: A company to associate the visitor with.
         companies:
           type: array
-          description: The companies to associate the visitor with.
+          description: The companies to associate the visitor with. Only applied
+            when the same request sends `email`, which promotes the visitor to a lead.
           items:
             type: object
         utm_campaign:
