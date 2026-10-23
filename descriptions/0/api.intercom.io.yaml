@@ -6919,6 +6919,31 @@ paths:
         example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
         schema:
           type: string
+      - name: page
+        in: query
+        required: false
+        description: The page of results to return. Defaults to `1`.
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: The number of notes to return per page. Defaults to `50`, maximum
+          `60`.
+        example: 50
+        schema:
+          type: integer
+      - name: order
+        in: query
+        required: false
+        description: The order the notes are returned in, by id. Defaults to `desc`.
+        example: desc
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
       - name: Intercom-Version
         in: header
         schema:
@@ -6927,7 +6952,10 @@ paths:
       - Notes
       - Companies
       operationId: listCompanyNotes
-      description: You can fetch a list of notes that are associated to a company.
+      description: |
+        You can fetch a list of notes that are associated to a company.
+
+        Requires the `read_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -6997,6 +7025,41 @@ paths:
                       total_pages: 1
               schema:
                 "$ref": "#/components/schemas/note_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Page size too big:
+                  value:
+                    type: error.list
+                    request_id: 4a1f7c90-2b63-4f18-9d7a-0c5e8b41d9f2
+                    errors:
+                    - code: parameter_invalid
+                      message: Per Page is too big
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 7d2e5b14-8a06-4c39-bf5d-91e07c3a6b48
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 0f6c3a92-57d1-4e80-b23f-6a9d5c8e14b7
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Company not found
           content:
@@ -7029,7 +7092,10 @@ paths:
       - Notes
       - Companies
       operationId: createCompanyNote
-      description: You can add a note to a single company.
+      description: |
+        You can add a note to a single company.
+
+        Requires the `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -7054,10 +7120,39 @@ paths:
                     body: "<p>Hello</p>"
               schema:
                 "$ref": "#/components/schemas/note"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Body missing:
+                  value:
+                    type: error.list
+                    request_id: 2b84c6e0-91fd-4a37-8c52-6e7d093af415
+                    errors:
+                    - code: parameter_invalid
+                      message: Body is required
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
             application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 5e9a2d71-6c04-4bf8-93ae-1d0f74b25c69
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 8c1b70d3-4f25-49ea-a6d8-3b5f92e07a14
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -8617,6 +8712,31 @@ paths:
         description: The unique identifier of a contact.
         schema:
           type: integer
+      - name: page
+        in: query
+        required: false
+        description: The page of results to return. Defaults to `1`.
+        example: 1
+        schema:
+          type: integer
+      - name: per_page
+        in: query
+        required: false
+        description: The number of notes to return per page. Defaults to `50`, maximum
+          `60`.
+        example: 50
+        schema:
+          type: integer
+      - name: order
+        in: query
+        required: false
+        description: The order the notes are returned in, by id. Defaults to `desc`.
+        example: desc
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
       - name: Intercom-Version
         in: header
         schema:
@@ -8625,7 +8745,10 @@ paths:
       - Notes
       - Contacts
       operationId: listNotes
-      description: You can fetch a list of notes that are associated to a contact.
+      description: |
+        You can fetch a list of notes that are associated to a contact.
+
+        Requires the `read_users_companies` or `read_write_users` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -8687,6 +8810,41 @@ paths:
                       total_pages: 1
               schema:
                 "$ref": "#/components/schemas/note_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Page size too big:
+                  value:
+                    type: error.list
+                    request_id: 6f3b2d41-7ce9-4a05-91d8-2b74e0c6a93f
+                    errors:
+                    - code: parameter_invalid
+                      message: Per Page is too big
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 3a7d90c5-14e6-4b28-bf03-85c1d6e742ab
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 9b5e41a7-0d38-4c6f-a920-7e3f85b14c6d
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Contact not found
           content:
@@ -8712,14 +8870,17 @@ paths:
         in: path
         required: true
         description: The unique identifier of a given contact.
-        example: '123'
+        example: 6762f0ad1bb69f9f2193bb62
         schema:
-          type: integer
+          type: string
       tags:
       - Notes
       - Contacts
       operationId: createNote
-      description: You can add a note to a single contact.
+      description: |
+        You can add a note to a single contact.
+
+        Requires the `read_write_users` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -8744,6 +8905,41 @@ paths:
                     body: "<p>Hello</p>"
               schema:
                 "$ref": "#/components/schemas/note"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Body missing:
+                  value:
+                    type: error.list
+                    request_id: c40d9e58-1b76-4f23-85a0-7d6c2e914bf3
+                    errors:
+                    - code: parameter_invalid
+                      message: Body is required
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 1e68b70f-9c3d-4a51-b48e-20d9f7c536a1
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 74c0a9e3-5d81-4b62-9f07-e3a5861d2c4b
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Contact not found
           content:
@@ -8789,20 +8985,17 @@ paths:
               successful_response:
                 summary: Successful response
                 value:
-                  contact_id: 6762f0ad1bb69f9f2193bb62
-                  admin_id: 991267583
+                  admin_id: '991267583'
                   body: Hello
               admin_not_found:
                 summary: Admin not found
                 value:
-                  contact_id: 6762f0af1bb69f9f2193bb63
-                  admin_id: 123
+                  admin_id: '123'
                   body: Hello
               contact_not_found:
                 summary: Contact not found
                 value:
-                  contact_id: 123
-                  admin_id: 991267585
+                  admin_id: '991267585'
                   body: Hello
   "/contacts/{contact_id}/segments":
     get:
@@ -21909,7 +22102,12 @@ paths:
       tags:
       - Jobs
       operationId: jobsStatus
-      description: Retrieve the status of job execution.
+      description: |
+        Retrieve the status of job execution.
+
+        `resource_id` and `resource_url` are returned only once `status` is `success`. While the job is `pending` or `failed` both keys are left out of the response rather than returned as `null`.
+
+        Requires the `read_jobs` OAuth scope.
       responses:
         '200':
           description: Job execution status
@@ -21920,10 +22118,18 @@ paths:
                   value:
                     type: job
                     id: '2'
+                    url: 'https://api.intercom.io/jobs/status/2'
                     status: success
                     resource_type: ticket
                     resource_id: '20'
                     resource_url: 'https://api.intercom.io/tickets/20'
+                job still pending:
+                  value:
+                    type: job
+                    id: '2'
+                    url: 'https://api.intercom.io/jobs/status/2'
+                    status: pending
+                    resource_type: ticket
               schema:
                 "$ref": "#/components/schemas/jobs"
         '404':
@@ -21952,6 +22158,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: ad9c4f05-6e31-4b7a-82d6-15c0e934b7f8
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/macros":
@@ -23533,9 +23746,9 @@ paths:
         in: path
         required: true
         description: The unique identifier of a given note
-        example: 1
+        example: '34'
         schema:
-          type: integer
+          type: string
       tags:
       - Notes
       operationId: retrieveNote
@@ -23603,14 +23816,16 @@ paths:
         in: path
         required: true
         description: The unique identifier of a given note
-        example: 1
+        example: '34'
         schema:
-          type: integer
+          type: string
       tags:
       - Notes
       operationId: deleteNote
-      description: You can delete a single contact or company note. Notes of other
-        kinds cannot be deleted through the API.
+      description: |
+        You can delete a single contact or company note. Notes of other kinds cannot be deleted through the API.
+
+        Requires the `write_users_companies` OAuth scope.
       responses:
         '200':
           description: successful
@@ -23650,6 +23865,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: b24e8f37-0a91-4d5c-9e76-38c1b0da5f62
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
         '400':
@@ -23663,7 +23885,7 @@ paths:
                     request_id: 9a2d6e4b-7c1f-4a83-b6d0-2f8e5c1a9b37
                     errors:
                     - code: intercom_version_invalid
-                      message: Requested resource is not available in current API version.
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
   "/roles":
@@ -23989,14 +24211,29 @@ paths:
       - name: include_count
         in: query
         required: false
-        description: It includes the count of contacts that belong to each segment.
+        description: Includes the count of contacts that belong to each segment. The
+          counts are added whenever this parameter is present in the query string,
+          whatever its value, so omit it entirely to leave them out.
         example: true
         schema:
           type: boolean
+      - name: type
+        in: query
+        required: false
+        description: Pass `company` to list company segments. Any other value, or
+          no value, lists contact segments.
+        example: company
+        schema:
+          type: string
       tags:
       - Segments
       operationId: listSegments
-      description: You can fetch a list of all segments.
+      description: |
+        You can fetch a list of all segments.
+
+        Segment names are returned HTML-escaped, for example `&` as `&amp;`.
+
+        Requires the `read_users_companies` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -24033,6 +24270,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 5fa31c82-7d64-4e09-b1a7-9c48d0e35b61
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/segments/{id}":
@@ -24050,10 +24294,24 @@ paths:
         example: '123'
         schema:
           type: string
+      - name: include_count
+        in: query
+        required: false
+        description: Includes the count of contacts that belong to the segment. The
+          count is added whenever this parameter is present in the query string, whatever
+          its value, so omit it entirely to leave it out.
+        example: true
+        schema:
+          type: boolean
       tags:
       - Segments
       operationId: retrieveSegment
-      description: You can fetch the details of a single segment.
+      description: |
+        You can fetch the details of a single segment.
+
+        The segment name is returned HTML-escaped, for example `&` as `&amp;`.
+
+        Requires the `read_users_companies` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -24096,6 +24354,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 36b0d794-82ce-4a15-9f63-71d4ea80c592
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/sla_rules":
@@ -24261,8 +24526,10 @@ paths:
       tags:
       - Subscription Types
       operationId: listSubscriptionTypes
-      description: You can list all subscription types. A list of subscription type
-        objects will be returned.
+      description: |
+        You can list all subscription types. A list of subscription type objects will be returned.
+
+        Requires the `read_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -24301,6 +24568,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: e8471b06-3d25-4c9f-b0a8-57fe2d619c3a
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/subscription_types/{id}":
@@ -24321,8 +24595,10 @@ paths:
       tags:
       - Subscription Types
       operationId: getSubscriptionType
-      description: You can fetch the details of a single subscription type by making
-        a GET request to `https://api.intercom.io/subscription_types/<id>`.
+      description: |
+        You can fetch the details of a single subscription type by making a GET request to `https://api.intercom.io/subscription_types/<id>`.
+
+        Requires the `read_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -24369,10 +24645,17 @@ paths:
                 Unauthorized:
                   value:
                     type: error.list
-                    request_id: 06d15b1f-19b0-42cc-aff9-a9d9db39402b
+                    request_id: 9d3f28a5-6e07-4b14-8c92-45a0f7d6b318
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 41c7e95b-08a3-4d62-97f1-6b2d5c8a034e
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/phone_call_redirects":
@@ -24844,6 +25127,65 @@ paths:
     get:
       summary: List all tags
       parameters:
+      - name: id
+        in: query
+        required: false
+        description: The unique identifier of a tag. When set, a single tag object
+          is returned instead of a list.
+        example: '123'
+        schema:
+          type: string
+      - name: taggable_type
+        in: query
+        required: false
+        description: Set to `user` or `company` to list the tags applied to one contact
+          or company instead of the whole workspace. Identify it with `taggable_id`,
+          `user_id`, `email`, `company_id` or `name`.
+        example: user
+        schema:
+          type: string
+          enum:
+          - user
+          - company
+      - name: taggable_id
+        in: query
+        required: false
+        description: The Intercom id of the contact or company whose tags you want,
+          used with `taggable_type`.
+        example: 536e564f316c83104c000020
+        schema:
+          type: string
+      - name: user_id
+        in: query
+        required: false
+        description: The external id of the contact whose tags you want, used with
+          `taggable_type=user`.
+        example: '25'
+        schema:
+          type: string
+      - name: email
+        in: query
+        required: false
+        description: The email address of the contact whose tags you want, used with
+          `taggable_type=user`.
+        example: jane@example.com
+        schema:
+          type: string
+      - name: company_id
+        in: query
+        required: false
+        description: The external id of the company whose tags you want, used with
+          `taggable_type=company`.
+        example: '6'
+        schema:
+          type: string
+      - name: name
+        in: query
+        required: false
+        description: The name of the company whose tags you want, used with `taggable_type=company`.
+        example: Intercom
+        schema:
+          type: string
       - name: Intercom-Version
         in: header
         schema:
@@ -24851,7 +25193,12 @@ paths:
       tags:
       - Tags
       operationId: listTags
-      description: "You can fetch a list of all tags for a given workspace.\n\n"
+      description: |
+        You can fetch a list of all tags for a given workspace.
+
+        Passing `id` returns that one tag object instead of a list. Passing `taggable_type` returns a list of the tags applied to a single contact or company.
+
+        Requires the `read_tags` or `read_users_companies` OAuth scope.
       responses:
         '200':
           description: successful
@@ -24865,8 +25212,15 @@ paths:
                     - type: tag
                       id: '102'
                       name: Manual tag 1
+                single tag:
+                  value:
+                    type: tag
+                    id: '102'
+                    name: Manual tag 1
               schema:
-                "$ref": "#/components/schemas/tag_list"
+                anyOf:
+                - "$ref": "#/components/schemas/tag_list"
+                - "$ref": "#/components/schemas/tag_basic"
         '401':
           description: Unauthorized
           content:
@@ -24879,6 +25233,41 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 7a4e0c61-9b35-4d28-8f70-c2a916e5473d
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Tag, contact or company not found
+          content:
+            application/json:
+              examples:
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 0c93d5a8-62f1-4e37-b54a-8d7016c9f2be
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 93e157b4-d0a2-4c86-bf39-5e702a1c4d86
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+                Company not found:
+                  value:
+                    type: error.list
+                    request_id: 2d6f81e0-4a37-49b5-91c8-607de4a2b3f5
+                    errors:
+                    - code: company_not_found
+                      message: Company Not Found
               schema:
                 "$ref": "#/components/schemas/error"
     post:
@@ -24905,6 +25294,10 @@ paths:
           **5. Tag Multiple Users:** You can tag a list of users. You can tag the users by passing in the tag name and the user details as specified in "Tag Users Request Payload" described below.
 
         Each operation will return a tag object.
+
+        Contacts and companies listed in `users` or `companies` that do not exist are skipped: they are left out of the `users` and `companies` arrays in the response and the request still succeeds. With `ids_to_add` it depends on `taggable_type`: a contact id that does not exist returns a 404, while a company id that does not exist is skipped.
+
+        Requires the `write_tags` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Action successful
@@ -24917,7 +25310,16 @@ paths:
                     id: '105'
                     name: test
                     users: []
-                    companies: [{ "id": "valid-123", "tagged": true }]
+                    companies: []
+                Companies tagged:
+                  value:
+                    type: tag
+                    id: '105'
+                    name: test
+                    users: []
+                    companies:
+                    - id: '6329e838deab40166d1a5400'
+                      tagged: true
               schema:
                 "$ref": "#/components/schemas/tag_create_response"
         '400':
@@ -24946,13 +25348,41 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 6e02b8d5-91c7-4a30-bf68-74d1e953c0a2
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Tag or contact not found
+          content:
+            application/json:
+              examples:
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8f51c0a4-2d79-4e36-9b1a-50c7d2e86f43
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+                Contact in ids_to_add not found:
+                  value:
+                    type: error.list
+                    request_id: d7b4169e-35fa-4c80-91d2-6e0853a7bc15
+                    errors:
+                    - code: not_found
+                      message: User Not Found
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
             schema:
-              oneOf:
+              anyOf:
               - "$ref": "#/components/schemas/create_or_update_tag_request"
               - "$ref": "#/components/schemas/tag_company_request"
               - "$ref": "#/components/schemas/untag_company_request"
@@ -24962,10 +25392,35 @@ paths:
                 summary: Action successful
                 value:
                   name: test
+              companies_tagged:
+                summary: Companies tagged
+                value:
+                  name: test
+                  companies:
+                  - company_id: '6'
               invalid_parameters:
                 summary: Invalid parameters
                 value:
                   test: invalid
+              unknown_company_skipped:
+                summary: Unknown company skipped
+                value:
+                  name: test
+                  companies:
+                  - company_id: '123'
+              unknown_user_skipped:
+                summary: Unknown user skipped
+                value:
+                  name: test
+                  users:
+                  - id: '123'
+              contact_in_ids_to_add_not_found:
+                summary: Contact in ids_to_add not found
+                value:
+                  name: test
+                  taggable_type: user
+                  ids_to_add:
+                  - '123'
   "/tags/{id}":
     get:
       summary: Find a specific tag
@@ -24987,6 +25442,8 @@ paths:
       description: |
         You can fetch the details of tags that are on the workspace by their id.
         This will return a tag object.
+
+        Requires the `read_tags` or `read_users_companies` OAuth scope.
       responses:
         '200':
           description: Tag found
@@ -25026,6 +25483,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a05f7362-c194-4d8b-9e27-f63b85c1d409
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
     delete:
@@ -25045,8 +25509,10 @@ paths:
       tags:
       - Tags
       operationId: deleteTag
-      description: You can delete the details of tags that are on the workspace by
-        passing in the id.
+      description: |
+        You can delete the details of tags that are on the workspace by passing in the id.
+
+        Requires the `write_tags` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -25091,6 +25557,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 1b8e4790-ad35-42f6-8c01-9e5d73a2bf64
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/teams":
@@ -38397,20 +38870,39 @@ components:
           additionalProperties:
             type: string
     create_or_update_tag_request:
-      description: You can create or update an existing tag.
+      description: You can create or update an existing tag, and optionally apply
+        it to a list of contact or company ids.
       type: object
       title: Create or Update Tag Request Payload
       properties:
         name:
           type: string
+          maxLength: 191
           description: The name of the tag, which will be created if not found, or
             the new name for the tag if this is an update request. Names are case
-            insensitive.
+            insensitive and can be at most 191 characters long.
           example: Independent
         id:
           type: string
           description: The id of tag to updates.
           example: '656452352'
+        ids_to_add:
+          type: array
+          description: The Intercom ids of the contacts or companies to apply the
+            tag to. A contact id that does not exist returns a 404; a company id
+            that does not exist is skipped.
+          items:
+            type: string
+          example:
+          - 536e564f316c83104c000020
+        taggable_type:
+          type: string
+          description: Whether the ids in `ids_to_add` are contacts or companies.
+            Defaults to `user`.
+          enum:
+          - user
+          - company
+          example: user
       required:
       - name
     create_phone_switch_request:
@@ -43432,7 +43924,7 @@ components:
         id:
           type: string
           description: The id of the job that's currently being processed or has completed.
-          example: 20
+          example: '20'
         url:
           type: string
           description: API endpoint URL to check the job status.
@@ -43450,13 +43942,13 @@ components:
           example: ticket
         resource_id:
           type: string
-          description: The id of the resource created during job execution (e.g. ticket id)
-          example: 123
+          description: The id of the resource created during job execution (e.g. ticket id). Only set once the job has succeeded.
+          example: '123'
           nullable: true
         resource_url:
           type: string
-          description: The url of the resource created during job exeuction. Use this url to fetch the resource.
-          example: http://api.intercom.io/tickets/123
+          description: The url of the resource created during job execution. Use this url to fetch the resource. Only set once the job has succeeded.
+          example: https://api.intercom.io/tickets/123
           nullable: true
       required:
       - id
@@ -44477,8 +44969,12 @@ components:
               description: The id of the company.
               example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
         author:
-          "$ref": "#/components/schemas/admin"
-          description: Optional. Represents the Admin that created the note.
+          type: object
+          nullable: true
+          description: Represents the Admin that created the note. `null` when the
+            note has no recorded admin.
+          allOf:
+          - "$ref": "#/components/schemas/admin"
         body:
           type: string
           description: The body text of the note.
@@ -44644,7 +45140,7 @@ components:
           description: A count of the total number of notes.
           example: 1
         pages:
-          "$ref": "#/components/schemas/cursor_pages"
+          "$ref": "#/components/schemas/pages_link"
     company_note:
       title: Company Note
       type: object
@@ -45067,14 +45563,13 @@ components:
         count:
           type: integer
           description: The number of items in the user segment. It's returned when
-            `include_count=true` is included in the request.
+            the `include_count` parameter is present in the request.
           example: 3
           nullable: true
     segment_list:
       title: Segment List
       type: object
-      description: This will return a list of Segment Objects. The result may also
-        have a pages object if the response is paginated.
+      description: This will return a list of Segment Objects. The list is not paginated.
       properties:
         type:
           type: string
@@ -45087,10 +45582,6 @@ components:
           description: A list of Segment objects
           items:
             "$ref": "#/components/schemas/segment"
-        pages:
-          type: object
-          description: A pagination object, which may be empty, indicating no further
-            pages to fetch.
     single_filter_search_request:
       title: Single Filter Search Request
       description: Search using Intercoms Search APIs with a single filter.
@@ -45414,14 +45905,14 @@ components:
           example: Test tag
         applied_at:
           type: integer
-          format: date-time
+          format: timestamp
           nullable: true
           description: The time when the tag was applied to the object. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet.
           example: 1663597223
         applied_by:
           type: object
           nullable: true
-          description: The admin who applied the tag. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet.
+          description: The admin who applied the tag. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet. When the tagging has no recorded admin, `type` is `nobody_admin` and `id` is `null`.
           allOf:
             - "$ref": "#/components/schemas/reference"
     tag_basic:
@@ -45491,7 +45982,9 @@ components:
       properties:
         name:
           type: string
-          description: The name of the tag, which will be created if not found.
+          maxLength: 191
+          description: The name of the tag, which will be created if not found. Names
+            can be at most 191 characters long.
           example: Independent
         companies:
           type: array
@@ -45505,8 +45998,13 @@ components:
                 type: string
                 description: The company id you have defined for the company.
                 example: '6'
-          description: The id or company_id of the company can be passed as input
-            parameters.
+              name:
+                type: string
+                description: The name of the company, used to look it up when neither
+                  `id` nor `company_id` is given.
+                example: Intercom
+          description: The id, company_id or name of the company can be passed as
+            input parameters. Companies that cannot be found are skipped.
       required:
       - name
       - companies
@@ -45527,22 +46025,41 @@ components:
           items:
             "$ref": "#/components/schemas/tag"
     tag_multiple_users_request:
-      description: You can tag a list of users.
+      description: You can tag or untag a list of users.
       type: object
       title: Tag Users Request Payload
       properties:
         name:
           type: string
-          description: The name of the tag, which will be created if not found.
+          maxLength: 191
+          description: The name of the tag, which will be created if not found. Names
+            can be at most 191 characters long.
           example: Independent
         users:
           type: array
+          description: The id, user_id or email of the user can be passed as input
+            parameters. Users that cannot be found are skipped.
           items:
             properties:
               id:
                 type: string
                 description: The Intercom defined id representing the user.
                 example: 5f7f0d217289f8d2f4262080
+              user_id:
+                type: string
+                description: The user id you have defined for the user, used to look
+                  it up when `id` is not given.
+                example: '25'
+              email:
+                type: string
+                description: The email address of the user, used to look it up when
+                  neither `id` nor `user_id` is given.
+                example: jane@example.com
+              untag:
+                type: boolean
+                description: Set to true to remove the tag from this user instead
+                  of applying it.
+                example: true
       required:
       - name
       - users
@@ -46563,7 +47080,9 @@ components:
       properties:
         name:
           type: string
-          description: The name of the tag which will be untagged from the company
+          maxLength: 191
+          description: The name of the tag which will be untagged from the company.
+            Names can be at most 191 characters long.
           example: Independent
         companies:
           type: array
@@ -46577,12 +47096,19 @@ components:
                 type: string
                 description: The company id you have defined for the company.
                 example: '6'
+              name:
+                type: string
+                description: The name of the company, used to look it up when neither
+                  `id` nor `company_id` is given.
+                example: Intercom
               untag:
                 type: boolean
                 description: Always set to true
-                example: 'true'
-          description: The id or company_id of the company can be passed as input
-            parameters.
+                example: true
+            required:
+            - untag
+          description: The id, company_id or name of the company can be passed as
+            input parameters. Companies that cannot be found are skipped.
       required:
       - name
       - companies
