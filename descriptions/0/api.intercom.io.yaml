@@ -26310,10 +26310,33 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch.
+        schema:
+          type: integer
+          default: 1
+          example: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of news items to return per page. Values above 20 are
+          reduced to 20.
+        schema:
+          type: integer
+          default: 10
+          maximum: 20
+          example: 10
       tags:
       - News
       operationId: listNewsItems
-      description: You can fetch a list of all news items
+      description: |
+        You can fetch a list of all news items
+
+        News items are returned newest first, by creation date.
+
+        Requires the `read_news_scope` or `read_write_news_scope` OAuth scope.
       responses:
         '200':
           description: successful
@@ -26338,14 +26361,11 @@ paths:
                       state: draft
                       labels: []
                       cover_image_url:
-                      reactions:
-                      -
-                      -
-                      -
-                      -
+                      reactions: []
                       deliver_silently: false
                       created_at: 1734537793
                       updated_at: 1734537793
+                      published_at:
                       newsfeed_assignments: []
                     - id: '30'
                       type: news-item
@@ -26356,18 +26376,31 @@ paths:
                       state: draft
                       labels: []
                       cover_image_url:
-                      reactions:
-                      -
-                      -
-                      -
-                      -
+                      reactions: []
                       deliver_silently: false
                       created_at: 1734537793
                       updated_at: 1734537793
+                      published_at:
                       newsfeed_assignments: []
                     total_count: 2
               schema:
                 "$ref": "#/components/schemas/paginated_response"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Per page too small:
+                  value:
+                    type: error.list
+                    request_id: 1d4b6f2a-5c83-4e71-9a0d-2b6e8c47f310
+                    errors:
+                    - code: parameter_invalid
+                      message: Per Page is too small
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: News is not enabled on the workspace. The response has no body.
         '401':
           description: Unauthorized
           content:
@@ -26380,6 +26413,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 3f7c91e4-6a25-4d8b-b1c3-7e95a2d6048f
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
     post:
@@ -26392,7 +26432,10 @@ paths:
       tags:
       - News
       operationId: createNewsItem
-      description: You can create a news item
+      description: |
+        You can create a news item
+
+        Requires the `read_write_news_scope` OAuth scope.
       responses:
         '200':
           description: successful
@@ -26419,11 +26462,77 @@ paths:
                     deliver_silently: true
                     created_at: 1734537797
                     updated_at: 1734537797
+                    published_at: 1734537797
                     newsfeed_assignments:
                     - newsfeed_id: 53
                       published_at: 1664638214
               schema:
                 "$ref": "#/components/schemas/news_item"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Title missing:
+                  value:
+                    type: error.list
+                    request_id: 5a2e8d16-9b47-4c30-8f6a-1c84e7b59d22
+                    errors:
+                    - code: parameter_not_found
+                      message: Title is a required parameter
+                Sender missing:
+                  value:
+                    type: error.list
+                    request_id: 7c93f4b8-2d16-4a59-93e7-6b0d85f1c4a3
+                    errors:
+                    - code: parameter_not_found
+                      message: sender_id is a required parameter
+                Invalid cover image URL:
+                  value:
+                    type: error.list
+                    request_id: 9e51a7c2-4f38-4b6d-a27c-85d3f960e1b4
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid cover image URL. Must be a valid url of a PNG
+                        or JPG file
+                Newsfeed does not exist:
+                  value:
+                    type: error.list
+                    request_id: 2b86d053-7e14-49af-8c35-4a71e2d9f806
+                    errors:
+                    - code: parameter_invalid
+                      message: Newsfeed with id 123 does not exist
+                Invalid state:
+                  value:
+                    type: error.list
+                    request_id: 8d40b2f7-3c95-4e18-a6d1-5f27c09e4b83
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid state. State can either be draft or live
+                Published date in the future:
+                  value:
+                    type: error.list
+                    request_id: a3e61c58-7b04-4f92-8d3e-1c69f5b20a47
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid published_at 4102444800. Date cannot be in the future. Scheduling is not supported through API
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Sender not found. If News is not enabled on the workspace the
+            response has no body.
+          content:
+            application/json:
+              examples:
+                Sender Not Found:
+                  value:
+                    type: error.list
+                    request_id: 4d19c6e7-8a52-4f03-b67d-93e5017ac2b8
+                    errors:
+                    - code: not_found
+                      message: Admin not found
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -26436,6 +26545,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 6f02b3a9-1c74-4d85-ae29-50b7c38d6e14
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -26480,7 +26596,10 @@ paths:
       tags:
       - News
       operationId: retrieveNewsItem
-      description: You can fetch the details of a single news item.
+      description: |
+        You can fetch the details of a single news item.
+
+        Requires the `read_news_scope` or `read_write_news_scope` OAuth scope.
       responses:
         '200':
           description: successful
@@ -26498,21 +26617,19 @@ paths:
                     state: live
                     labels: []
                     cover_image_url:
-                    reactions:
-                    -
-                    -
-                    -
-                    -
+                    reactions: []
                     deliver_silently: false
                     created_at: 1734537800
                     updated_at: 1734537800
+                    published_at: 1734537800
                     newsfeed_assignments:
                     - newsfeed_id: 55
                       published_at: 1734537800
               schema:
                 "$ref": "#/components/schemas/news_item"
         '404':
-          description: News Item Not Found
+          description: News Item Not Found. If News is not enabled on the workspace
+            the response has no body.
           content:
             application/json:
               examples:
@@ -26537,6 +26654,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 0c63f8b1-5d27-4e94-82a6-7f91b35ce0d8
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
     put:
@@ -26556,6 +26680,14 @@ paths:
       tags:
       - News
       operationId: updateNewsItem
+      description: |
+        You can update a news item.
+
+        You can also send this request with `PATCH`; it behaves the same as `PUT`.
+
+        `title`, `body`, `state`, `deliver_silently` and `cover_image_url` keep their current values when you leave them out. `labels` and `newsfeed_assignments` do not: leaving either out clears it, so send the full list on every update. Leaving `reactions` out disables reactions, although the list in the response does not change.
+
+        Requires the `read_write_news_scope` OAuth scope.
       responses:
         '200':
           description: successful
@@ -26579,11 +26711,50 @@ paths:
                     deliver_silently: false
                     created_at: 1734537803
                     updated_at: 1734537804
+                    published_at: 1734537804
                     newsfeed_assignments: []
               schema:
                 "$ref": "#/components/schemas/news_item"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Invalid cover image URL:
+                  value:
+                    type: error.list
+                    request_id: 1e58a2c9-7f43-4b06-95d1-3c82e67a4f90
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid cover image URL. Must be a valid url of a PNG
+                        or JPG file
+                Invalid state:
+                  value:
+                    type: error.list
+                    request_id: 3a91d7f5-2e68-4c47-b830-6d15f92b8c07
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid state. State can either be draft or live
+                Newsfeed does not exist:
+                  value:
+                    type: error.list
+                    request_id: 5c74e019-4a3b-4d62-8e15-9f07a2c631d4
+                    errors:
+                    - code: parameter_invalid
+                      message: Newsfeed with id 123 does not exist
+                Published date in the future:
+                  value:
+                    type: error.list
+                    request_id: f27c9d14-5a68-4b3e-90c2-7e81a4d6b359
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid published_at 4102444800. Date cannot be in the future. Scheduling is not supported through API
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
-          description: News Item Not Found
+          description: News Item Not Found, or the sender was not found. Omitting `sender_id`
+            also returns this status. If News is not enabled on the workspace the response
+            has no body.
           content:
             application/json:
               examples:
@@ -26594,6 +26765,13 @@ paths:
                     errors:
                     - code: not_found
                       message: Resource Not Found
+                Sender Not Found:
+                  value:
+                    type: error.list
+                    request_id: 7b20f6a4-6c81-4e39-a05b-2d48e71c9035
+                    errors:
+                    - code: not_found
+                      message: Admin not found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -26608,13 +26786,20 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 9d36c851-8e05-4a7b-b492-1a63f58d720e
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
             schema:
-              "$ref": "#/components/schemas/news_item_request"
+              "$ref": "#/components/schemas/update_news_item_request"
             examples:
               successful:
                 summary: successful
@@ -26651,7 +26836,10 @@ paths:
       tags:
       - News
       operationId: deleteNewsItem
-      description: You can delete a single news item.
+      description: |
+        You can delete a single news item.
+
+        Requires the `read_write_news_scope` OAuth scope.
       responses:
         '200':
           description: successful
@@ -26666,7 +26854,8 @@ paths:
               schema:
                 "$ref": "#/components/schemas/deleted_object"
         '404':
-          description: News Item Not Found
+          description: News Item Not Found. If News is not enabled on the workspace
+            the response has no body.
           content:
             application/json:
               examples:
@@ -26691,6 +26880,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 2f85b4d7-0a19-4c63-8e74-5b92d16fa038
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/news/newsfeeds/{id}/items":
@@ -26709,11 +26905,33 @@ paths:
         example: '123'
         schema:
           type: string
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch.
+        schema:
+          type: integer
+          default: 1
+          example: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of news items to return per page. Values above 20 are
+          reduced to 20.
+        schema:
+          type: integer
+          default: 20
+          maximum: 20
+          example: 20
       tags:
       - News
       operationId: listLiveNewsfeedItems
-      description: You can fetch a list of all news items that are live on a given
-        newsfeed
+      description: |
+        You can fetch a list of all news items that are live on a given newsfeed
+
+        News items are returned most recently published first.
+
+        Requires the `read_news_scope` or `read_write_news_scope` OAuth scope.
       responses:
         '200':
           description: successful
@@ -26732,6 +26950,35 @@ paths:
                     total_count: 0
               schema:
                 "$ref": "#/components/schemas/paginated_response"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Per page too small:
+                  value:
+                    type: error.list
+                    request_id: 4a07e9b3-2c56-4f81-96d0-8e34b15c7d92
+                    errors:
+                    - code: parameter_invalid
+                      message: Per Page is too small
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Newsfeed not found. If News is not enabled on the workspace
+            the response has no body.
+          content:
+            application/json:
+              examples:
+                Newsfeed Not Found:
+                  value:
+                    type: error.list
+                    request_id: 6c58d1f0-4e73-4a25-b8c9-0f26a93e5b14
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -26744,6 +26991,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 8e71a3c6-6b90-4d48-85f2-3a07c14e9d26
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/news/newsfeeds":
@@ -26754,10 +27008,33 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version"
+      - name: page
+        in: query
+        required: false
+        description: The page of results to fetch.
+        schema:
+          type: integer
+          default: 1
+          example: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of newsfeeds to return per page. Values above 20 are
+          reduced to 20.
+        schema:
+          type: integer
+          default: 10
+          maximum: 20
+          example: 10
       tags:
       - News
       operationId: listNewsfeeds
-      description: You can fetch a list of all newsfeeds
+      description: |
+        You can fetch a list of all newsfeeds
+
+        Newsfeeds are returned newest first, by creation date.
+
+        Requires the `read_news_scope` or `read_write_news_scope` OAuth scope.
       responses:
         '200':
           description: successful
@@ -26786,6 +27063,22 @@ paths:
                     total_count: 2
               schema:
                 "$ref": "#/components/schemas/paginated_response"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Per page too small:
+                  value:
+                    type: error.list
+                    request_id: 0b94f5e2-8d17-4b60-a3c7-5e29d60b847f
+                    errors:
+                    - code: parameter_invalid
+                      message: Per Page is too small
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: News is not enabled on the workspace. The response has no body.
         '401':
           description: Unauthorized
           content:
@@ -26798,6 +27091,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 2d16c7a8-0f34-4e82-9b51-7c40e83f6a95
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/news/newsfeeds/{id}":
@@ -26819,7 +27119,10 @@ paths:
       tags:
       - News
       operationId: retrieveNewsfeed
-      description: You can fetch the details of a single newsfeed
+      description: |
+        You can fetch the details of a single newsfeed
+
+        Requires the `read_news_scope` or `read_write_news_scope` OAuth scope.
       responses:
         '200':
           description: successful
@@ -26835,6 +27138,21 @@ paths:
                     updated_at: 1734537815
               schema:
                 "$ref": "#/components/schemas/newsfeed"
+        '404':
+          description: Newsfeed not found. If News is not enabled on the workspace
+            the response has no body.
+          content:
+            application/json:
+              examples:
+                Newsfeed Not Found:
+                  value:
+                    type: error.list
+                    request_id: 4f38e9b0-2a51-4c06-83d7-9e62f05a1b48
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -26847,6 +27165,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 1a7d35c0-6e82-4b49-9f13-48c0d2e671ba
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/notes/{id}":
@@ -48763,10 +49088,10 @@ components:
             "$ref": "#/components/schemas/newsfeed_assignment"
         labels:
           type: array
-          description: Label names displayed to users to categorize the news item.
+          description: Label names displayed to users to categorize the news item,
+            sorted with uppercase letters before lowercase.
           items:
             type: string
-            nullable: true
             description: The label name.
             example: Product Update
         cover_image_url:
@@ -48774,14 +49099,17 @@ components:
           format: uri
           nullable: true
           description: URL of the image used as cover. Must have .jpg or .png extension.
+            Intercom copies the image you send on write, so the URL returned here is
+            a signed Intercom URL that expires; fetch the news item again for a fresh
+            one.
           example: https://example.com/cover.jpg
         reactions:
           type: array
           description: Ordered list of emoji reactions to the news item. When empty,
-            reactions are disabled.
+            reactions are disabled. An update that leaves out `reactions` also disables
+            them but leaves this list as it was.
           items:
             type: string
-            nullable: true
             description: The emoji reaction to the news item.
             example: "\U0001F44D"
         deliver_silently:
@@ -48847,13 +49175,22 @@ components:
           - Product
           - Update
           - New
+        cover_image_url:
+          type: string
+          format: uri
+          description: URL of the image to use as the cover. Must contain `.png` or
+            `.jpg` in lower case, so `.jpeg` and `.PNG` are rejected. Intercom copies
+            the image and serves it from its own signed URL.
+          example: https://example.com/cover.jpg
         reactions:
           type: array
-          description: Ordered list of emoji reactions to the news item. When empty,
-            reactions are disabled.
+          description: Ordered list of emoji reactions to the news item. Send an empty
+            list to disable reactions. Send at most five, each a single Unicode code
+            point, so an emoji with a skin tone, a joiner sequence or a variation selector
+            (such as ❤️) is rejected. More than five returns a 400, but the news item
+            is still saved as a draft, with no reactions or cover image.
           items:
             type: string
-            nullable: true
           example:
           - "\U0001F606"
           - "\U0001F605"
@@ -48864,6 +49201,76 @@ components:
             "$ref": "#/components/schemas/newsfeed_assignment"
       required:
       - title
+      - sender_id
+    update_news_item_request:
+      description: The body of a request that updates an existing news item. Leaving
+        `labels` or `newsfeed_assignments` out clears them, and leaving `reactions`
+        out disables reactions; every other optional field keeps its current value
+        when left out.
+      type: object
+      title: Update News Item Request
+      properties:
+        title:
+          type: string
+          description: The title of the news item.
+          example: Halloween is here!
+        body:
+          type: string
+          description: The news item body, which may contain HTML.
+          example: "<p>New costumes in store for this spooky season</p>"
+        sender_id:
+          type: integer
+          description: The id of the sender of the news item. Must be a teammate on
+            the workspace.
+          example: 123
+        state:
+          type: string
+          description: News items will not be visible to your users in the assigned
+            newsfeeds until they are set live.
+          enum:
+          - draft
+          - live
+          example: live
+        deliver_silently:
+          type: boolean
+          description: When set to `true`, the news item will appear in the messenger
+            newsfeed without showing a notification badge.
+          example: true
+        labels:
+          type: array
+          description: Label names displayed to users to categorize the news item.
+            Send the full list; the labels you leave out are removed.
+          items:
+            type: string
+          example:
+          - Product
+          - Update
+          - New
+        cover_image_url:
+          type: string
+          format: uri
+          description: URL of the image to use as the cover. Must contain `.png` or
+            `.jpg` in lower case, so `.jpeg` and `.PNG` are rejected. Intercom copies
+            the image and serves it from its own signed URL.
+          example: https://example.com/cover.jpg
+        reactions:
+          type: array
+          description: Ordered list of emoji reactions to the news item. Send an empty
+            list to disable reactions. Send at most five, each a single Unicode code
+            point, so an emoji with a skin tone, a joiner sequence or a variation selector
+            (such as ❤️) is rejected.
+          items:
+            type: string
+          example:
+          - "\U0001F606"
+          - "\U0001F605"
+        newsfeed_assignments:
+          type: array
+          description: A list of newsfeed_assignments to assign to the specified newsfeed.
+            Send the full list; the assignments you leave out are removed.
+          items:
+            "$ref": "#/components/schemas/newsfeed_assignment"
+      required:
       - sender_id
     newsfeed:
       title: Newsfeed
@@ -48888,7 +49295,8 @@ components:
         name:
           type: string
           description: The name of the newsfeed. This name will never be visible to
-            your users.
+            your users. Returned HTML-escaped, for example `&` as `&amp;`. The News
+            Center newsfeed always returns the name `News center newsfeed`.
           example: My Newsfeed
         created_at:
           type: integer
@@ -48910,16 +49318,16 @@ components:
         newsfeed_id:
           type: integer
           description: The unique identifier for the newsfeed which is given by Intercom.
-            Publish dates cannot be in the future, to schedule news items use the
-            dedicated feature in app (see this article).
           example: 198313
         published_at:
           type: integer
           format: timestamp
+          nullable: true
           description: Publish date of the news item on the newsfeed, use this field
             if you want to set a publish date in the past (e.g. when importing existing
             news items). On write, this field will be ignored if the news item state
-            is "draft".
+            is "draft", and a date in the future is rejected with a `400`. Null while
+            the news item isn't live.
           example: 1674917488
     note:
       title: Note
@@ -49225,10 +49633,9 @@ components:
           description: The type of object
           enum:
           - list
-          - conversation.list
           example: list
         pages:
-          "$ref": "#/components/schemas/cursor_pages"
+          "$ref": "#/components/schemas/pages_link"
         total_count:
           type: integer
           description: A count of the total number of objects.
