@@ -791,7 +791,7 @@ paths:
       - name: Intercom-Version
         in: header
         schema:
-          "$ref": "#/components/schemas/intercom_version"
+          "$ref": "#/components/schemas/intercom_version_preview"
       tags:
       - AI Content
       operationId: createApiTemplateSource
@@ -906,7 +906,9 @@ paths:
 
             Each error's `field` names the request field that failed, such as `template.base_url`, `variables.space_id` or `auth_token`. A missing value has the code `parameter_not_found`, and any other failure has the code `parameter_invalid`.
 
-            When a template check fails, the message names the check: `<field> fails the <check> check`. The checks are listed in the API Template schema. A tree response over 25 MB fails on `template.tree`.
+            When a template check fails, the message names the check: `<field> fails the <check> check`. The checks are listed in the API Template schema. A tree response over 25 MB fails on `template.tree` with the message `<name>'s tree response is too large: over the 25 MB cap`, where `<name>` is the template's name.
+
+            If the vendor answers the token check with `401` or `403`, the error is on `auth_token` with the message `<name> rejected the token`. If it answers with anything other than success, `401` or `403`, such as a `404` on `tree.path`, a redirect, a `429`, a `5xx` or a timeout, the error is on `auth_token` with the message `<name> could not be reached to check the token`. The check isn't retried.
           content:
             application/json:
               examples:
@@ -942,6 +944,15 @@ paths:
                     - code: parameter_not_found
                       field: variables.space_id
                       message: space_id is required
+                Invalid variable value:
+                  value:
+                    type: error.list
+                    request_id: 8e6ae348-d9da-41a7-bf01-693dd7accede
+                    errors:
+                    - code: parameter_invalid
+                      field: variables.space_id
+                      message: "space_id may only use letters, digits, '.', '_' and
+                        '-', and can't be only dots"
                 Missing token:
                   value:
                     type: error.list
@@ -966,6 +977,26 @@ paths:
                     - code: parameter_invalid
                       field: auth_token
                       message: Example Docs could not be reached to check the token
+                Tree response too large:
+                  value:
+                    type: error.list
+                    request_id: d5ab4057-55a5-4904-8afe-0d015f5fd288
+                    errors:
+                    - code: parameter_invalid
+                      field: template.tree
+                      message: "Example Docs's tree response is too large: over the
+                        25 MB cap"
+                Several errors:
+                  value:
+                    type: error.list
+                    request_id: 2e5f0311-38de-42fc-8625-b664038601b7
+                    errors:
+                    - code: parameter_not_found
+                      field: auth_token
+                      message: A token is required
+                    - code: parameter_invalid
+                      field: template.auth.header
+                      message: auth.header fails the not_credential check
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -1039,7 +1070,7 @@ paths:
       - name: Intercom-Version
         in: header
         schema:
-          "$ref": "#/components/schemas/intercom_version"
+          "$ref": "#/components/schemas/intercom_version_preview"
       tags:
       - AI Content
       responses:
@@ -1151,14 +1182,14 @@ paths:
       description: |
         You can start a sync of an API template source, which imports its content from the vendor again. The sync runs in the background: the response is the source, with the new sync as its `latest_sync`. Retrieve the source to follow the sync's status.
 
-        A source runs one sync at a time. Intercom also syncs each source automatically, about once a day, so you only need this endpoint to sync sooner.
+        A source runs one sync at a time. Intercom also syncs each source automatically, about once a day, unless the vendor has rejected the token, so you only need this endpoint to sync sooner.
 
         OAuth tokens must have the `read_write_ai_content` scope.
       parameters:
       - name: Intercom-Version
         in: header
         schema:
-          "$ref": "#/components/schemas/intercom_version"
+          "$ref": "#/components/schemas/intercom_version_preview"
       tags:
       - AI Content
       responses:
@@ -1293,7 +1324,9 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
-          description: The vendor no longer accepts the source's token.
+          description: The vendor no longer accepts the source's token. The source's
+            token can't be replaced, and Intercom stops syncing the source automatically.
+            To import with a new token, create a new source.
           content:
             application/json:
               examples:
@@ -34372,9 +34405,9 @@ components:
 
         A placeholder such as `{space_id}` in `base_url`, a path or a query value is filled from `variables`. In the item request, it can also be filled from `item.node_values`. Values filled into `base_url` or a path are URL-encoded. `{token}` stands for the source's token. It can only be used in `auth.value` or as an entire query value.
 
-        When a template check fails, creating the source returns a `422` error. Its `field` is `template.` followed by the failing field, and its message is `<field> fails the <check> check`. Each field below names its checks in brackets. Top-level keys other than the ones below are ignored and not stored.
+        When a template check fails, creating the source returns a `422` error whose message is `<name> fails the <check> check`, where `<name>` is the failing field below; see the create endpoint for the error shape. Each field below names its checks in brackets. Top-level keys other than the ones below are ignored and not stored.
 
-        A sync fails if the tree response is over 25 MB or has more than 50,000 nodes. Nodes nested more than 12 levels deep aren't imported. An item whose response is over 10 MB, or that the vendor returns as not found, is skipped. Redirects aren't followed.
+        Intercom sends one tree request per sync. Paging isn't supported. A sync fails if the tree response is over 25 MB or has more than 50,000 nodes. Nodes nested more than 12 levels deep aren't imported. An item whose response is over 10 MB, or that the vendor returns as not found, is skipped. A redirect isn't followed and fails the sync. During a sync, if the vendor answers `429`, Intercom waits for the time in its `Retry-After` header, or 60 seconds if there's none, and then retries. If the vendor keeps answering `429`, the sync fails.
       properties:
         name:
           type: string
@@ -34384,10 +34417,11 @@ components:
         base_url:
           type: string
           description: The base URL of the vendor's API. It must be an `https` URL
-            with a host (`not_https`), with no query or fragment (`query_or_fragment`)
-            and no user name or password (`userinfo`). It can't be on an Intercom
-            domain (`intercom_host`), and must be a valid URL (`invalid`). It can
-            use placeholders from `variables` (`undeclared_placeholder`).
+            with a host (`not_https`); a URL that can't be parsed, including one
+            with malformed percent-encoding, also fails `not_https`. It must have
+            no query or fragment (`query_or_fragment`) and no user name or password
+            (`userinfo`), and can't be on an Intercom domain (`intercom_host`). It
+            can use placeholders from `variables` (`undeclared_placeholder`).
           example: https://api.example.com/v1
         variables:
           type: array
@@ -34432,9 +34466,9 @@ components:
             path:
               type: string
               description: The request path, relative to `base_url`. It can't be an
-                absolute URL or contain `//` (`not_relative`), can't contain `?` or
-                `#` (`query_or_fragment`), and must be a valid URL path (`invalid`).
-                Use `query` for query parameters.
+                absolute URL, contain `//` or have a `:` in its first segment (`not_relative`),
+                can't contain `?` or `#` (`query_or_fragment`), and must be a valid
+                URL path (`invalid`). Use `query` for query parameters.
               example: "/spaces/{space_id}/pages"
             query:
               type: object
@@ -34445,7 +34479,7 @@ components:
               additionalProperties:
                 type: string
               example:
-                per_page: '100'
+                status: published
             nodes:
               type: array
               description: The keys to follow in the tree response to reach the list
@@ -34514,9 +34548,9 @@ components:
               type: object
               description: Placeholders filled from the node, each with the keys to
                 follow in the node to reach its value. It must be an object (`invalid`),
-                and its names can't look like credentials (`credential_name`). A value
-                that is blank, or that uses anything other than letters, digits, `.`,
-                `_` and `-`, fails the sync.
+                and its names can't look like credentials (`credential_name`). A blank
+                value fails the sync. A value filled into the path must use only letters,
+                digits, `.`, `_` and `-`, and can't be only dots, or the sync fails.
               additionalProperties:
                 type: array
                 items:
@@ -34539,6 +34573,7 @@ components:
             id:
               type: array
               description: The node's unique identifier. It must start with `node`.
+                A node whose id is blank isn't imported, though its child nodes are.
               items:
                 oneOf:
                 - type: string
@@ -34548,7 +34583,8 @@ components:
               - id
             title:
               type: array
-              description: The title. Folders always read it from the node.
+              description: The title. Folders always read it from the node. Content
+                without a title isn't imported.
               items:
                 oneOf:
                 - type: string
@@ -34658,8 +34694,8 @@ components:
           nullable: true
           readOnly: true
           description: The source's most recent sync, or `null` if no sync has started.
-            Intercom also syncs each source automatically, about once a day, so this
-            can be a sync you didn't start.
+            Intercom also syncs each source automatically, about once a day, unless
+            the vendor has rejected the token, so this can be a sync you didn't start.
           properties:
             id:
               type: string
