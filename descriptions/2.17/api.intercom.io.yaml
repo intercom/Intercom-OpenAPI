@@ -37386,13 +37386,25 @@ components:
             id:
               type: string
               description: The identifier for the contact which is given by Intercom.
-              format: uuid
+                Provide one of `id`, `user_id` or `email`. If you send more than one,
+                `id` is used first, then `user_id`.
               minLength: 24
               maxLength: 24
               example: 536e564f316c83104c000020
+            user_id:
+              type: string
+              description: The external identifier you gave the user. Matches users only;
+                for a lead, use `id` or `email`.
+              example: '25'
+            email:
+              type: string
+              description: The contact's email. Matches a user or a lead, depending on
+                `type`. Used only when `user_id` isn't sent. If several leads share the
+                email and it's the only identifier sent, the request fails with
+                `multiple_users`; use `id` instead.
+              example: joe@example.com
           required:
           - type
-          - id
         body:
           type: string
           description: The content of the message. HTML is not supported.
