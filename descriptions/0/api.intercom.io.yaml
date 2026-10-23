@@ -34773,11 +34773,21 @@ components:
           items:
             type: integer
         avatar:
-          type: string
-          format: uri
+          type: object
           nullable: true
-          description: Image for the associated team or teammate
-          example: https://picsum.photos/200/300
+          description: The teammate's avatar image. Left out when the teammate has
+            neither an uploaded avatar nor a gravatar.
+          properties:
+            type:
+              type: string
+              description: Value is `avatar`. Returned on the admin endpoints only.
+              example: avatar
+            image_url:
+              type: string
+              format: uri
+              nullable: true
+              description: The URL of the avatar image.
+              example: https://picsum.photos/200/300
         team_priority_level:
           "$ref": "#/components/schemas/team_priority_level"
         role:
@@ -43471,9 +43481,21 @@ components:
           example: Order
         custom_attributes:
           type: object
-          description: The custom attributes you have set on the custom object instance.
+          description: |-
+            The custom attributes you have set on the custom object instance.
+
+            Each value is returned with the type of the attribute it is set on: a string, integer, number or boolean, or `null` when the attribute is unset. A list attribute returns the label of the selected option. A reference attribute returns an object holding the referenced records, under `contacts` for a contact reference, `conversations` for a conversation reference, or `instances` for a reference to another custom object type.
           additionalProperties:
-            type: string
+            anyOf:
+            - type: string
+              nullable: true
+            - type: integer
+            - type: number
+            - type: boolean
+            - type: object
+          example:
+            order_number: ORDER-12345
+            total_amount: 99.99
     custom_object_instance_deleted:
       title: Custom Object Instance Deleted
       type: object
@@ -45392,8 +45414,15 @@ components:
           example: frodo.baggins@example.com
         metadata:
           type: object
-          description: Optional metadata about the event.
-          additionalProperties: true
+          description: Optional metadata about the event. Values keep the type they
+            were sent with.
+          additionalProperties:
+            anyOf:
+            - type: string
+            - type: integer
+            - type: number
+            - type: boolean
+            - type: object
           example:
             invite_code: ADDAFRIEND
       required:
@@ -46649,9 +46678,13 @@ components:
           items:
             properties:
               code:
-                type: string
+                anyOf:
+                - type: string
+                - type: integer
                 description: A string indicating the kind of error, used to further
-                  qualify the HTTP response code
+                  qualify the HTTP response code. A few request validation errors
+                  send an HTTP status code as an integer here instead, for example
+                  `422`.
                 example: unauthorized
               message:
                 type: string
