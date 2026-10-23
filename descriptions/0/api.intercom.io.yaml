@@ -784,6 +784,561 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+  "/ai/api_template_sources":
+    post:
+      summary: Create an API template source
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      tags:
+      - AI Content
+      operationId: createApiTemplateSource
+      description: |
+        You can create an API template source to import a knowledge base through its vendor's REST API. Send a template that describes the vendor's API, values for the template's variables, and a token for the vendor's API.
+
+        Intercom checks the template and the variables, then checks the token by requesting the template's tree from the vendor. If any check fails, the source isn't created and the API returns a `422` error that names each failing field. Otherwise, the source is created and its first sync starts. The imported content is filed in a folder named after the template.
+
+        If the first sync can't start, the source is still created. Its `latest_sync` is then `null` or has the status `failed`, and you can start a sync with `POST /ai/api_template_sources/{id}/sync`.
+
+        The token is stored with the source and is never returned.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
+      responses:
+        '201':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: api_template_source
+                    id: '494'
+                    template:
+                      name: Example Docs
+                      base_url: https://api.example.com/v1
+                      variables:
+                      - space_id
+                      auth:
+                        header: Authorization
+                        value: 'Bearer {token}'
+                      tree:
+                        path: "/spaces/{space_id}/pages"
+                        query: {}
+                        nodes:
+                        - pages
+                        children: pages
+                        folder_if:
+                        - type: group
+                        folder_if_has_children: true
+                        content_if:
+                        - type: document
+                      item:
+                        path: "/spaces/{space_id}/pages/{page_id}"
+                        query: {}
+                        node_values:
+                          page_id:
+                          - id
+                      mapping:
+                        id:
+                        - node
+                        - id
+                        title:
+                        - node
+                        - title
+                        body:
+                        - item
+                        - body
+                        updated_at:
+                        - item
+                        - updatedAt
+                      body_format: html
+                    variables:
+                      space_id: help-center
+                    created_at: 1734537259
+                    latest_sync:
+                      id: '1287'
+                      status: in_progress
+                      created_at: 1734537259
+                      updated_at: 1734537259
+              schema:
+                "$ref": "#/components/schemas/api_template_source"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 187fc629-1bf4-419a-8995-ad0f81010c58
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: The workspace isn't allowed to fetch external URLs.
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 1aa556d8-7b3b-4386-b8de-bf562107c874
+                    errors:
+                    - code: action_forbidden
+                      message: "This workspace can't fetch external URLs yet. Contact
+                        support to enable it."
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: |
+            The template, the variables or the token failed a check, and the source wasn't created. The response can list several errors.
+
+            Each error's `field` names the request field that failed, such as `template.base_url`, `variables.space_id` or `auth_token`. A missing value has the code `parameter_not_found`, and any other failure has the code `parameter_invalid`.
+
+            When a template check fails, the message names the check: `<field> fails the <check> check`. The checks are listed in the API Template schema. A tree response over 25 MB fails on `template.tree` with the message `<name>'s tree response is too large: over the 25 MB cap`, where `<name>` is the template's name.
+
+            If the vendor answers the token check with `401` or `403`, the error is on `auth_token` with the message `<name> rejected the token`. If it answers with anything other than success, `401` or `403`, such as a `404` on `tree.path`, a redirect, a `429`, a `5xx` or a timeout, the error is on `auth_token` with the message `<name> could not be reached to check the token`. The check isn't retried.
+          content:
+            application/json:
+              examples:
+                Invalid base URL:
+                  value:
+                    type: error.list
+                    request_id: c78bca98-61fb-4dea-853f-d179a2ed7fda
+                    errors:
+                    - code: parameter_invalid
+                      field: template.base_url
+                      message: base_url fails the not_https check
+                Literal credential in a query:
+                  value:
+                    type: error.list
+                    request_id: e1e5735e-9fb5-445c-b607-6dec2df9aedf
+                    errors:
+                    - code: parameter_invalid
+                      field: template.tree.query
+                      message: tree.query fails the literal_credential check
+                Missing template:
+                  value:
+                    type: error.list
+                    request_id: db830aaf-f8c5-4298-9288-6533c3f02713
+                    errors:
+                    - code: parameter_not_found
+                      field: template
+                      message: An API template object is required
+                Missing variable:
+                  value:
+                    type: error.list
+                    request_id: 8ae61f5d-5d4a-4469-8a63-5f945047d176
+                    errors:
+                    - code: parameter_not_found
+                      field: variables.space_id
+                      message: space_id is required
+                Invalid variable value:
+                  value:
+                    type: error.list
+                    request_id: 8e6ae348-d9da-41a7-bf01-693dd7accede
+                    errors:
+                    - code: parameter_invalid
+                      field: variables.space_id
+                      message: "space_id may only use letters, digits, '.', '_' and
+                        '-', and can't be only dots"
+                Missing token:
+                  value:
+                    type: error.list
+                    request_id: 52c3ca26-c94f-4ebb-9e69-b3422a16434d
+                    errors:
+                    - code: parameter_not_found
+                      field: auth_token
+                      message: A token is required
+                Token rejected:
+                  value:
+                    type: error.list
+                    request_id: 8a27c782-f6d6-42bf-b6c5-2b630120dc8b
+                    errors:
+                    - code: parameter_invalid
+                      field: auth_token
+                      message: Example Docs rejected the token
+                Vendor unreachable:
+                  value:
+                    type: error.list
+                    request_id: 2276a961-ad8f-4cf0-81ac-9ff892ed64ea
+                    errors:
+                    - code: parameter_invalid
+                      field: auth_token
+                      message: Example Docs could not be reached to check the token
+                Tree response too large:
+                  value:
+                    type: error.list
+                    request_id: d5ab4057-55a5-4904-8afe-0d015f5fd288
+                    errors:
+                    - code: parameter_invalid
+                      field: template.tree
+                      message: "Example Docs's tree response is too large: over the
+                        25 MB cap"
+                Several errors:
+                  value:
+                    type: error.list
+                    request_id: 2e5f0311-38de-42fc-8625-b664038601b7
+                    errors:
+                    - code: parameter_not_found
+                      field: auth_token
+                      message: A token is required
+                    - code: parameter_invalid
+                      field: template.auth.header
+                      message: auth.header fails the not_credential check
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_api_template_source_request"
+            examples:
+              successful:
+                summary: successful
+                value:
+                  template:
+                    name: Example Docs
+                    base_url: https://api.example.com/v1
+                    variables:
+                    - space_id
+                    auth:
+                      header: Authorization
+                      value: 'Bearer {token}'
+                    tree:
+                      path: "/spaces/{space_id}/pages"
+                      query: {}
+                      nodes:
+                      - pages
+                      children: pages
+                      folder_if:
+                      - type: group
+                      folder_if_has_children: true
+                      content_if:
+                      - type: document
+                    item:
+                      path: "/spaces/{space_id}/pages/{page_id}"
+                      query: {}
+                      node_values:
+                        page_id:
+                        - id
+                    mapping:
+                      id:
+                      - node
+                      - id
+                      title:
+                      - node
+                      - title
+                      body:
+                      - item
+                      - body
+                      updated_at:
+                      - item
+                      - updatedAt
+                    body_format: html
+                  variables:
+                    space_id: help-center
+                  auth_token: vendor-api-token
+  "/ai/api_template_sources/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: The unique identifier for the API template source, which is given
+        by Intercom.
+      required: true
+      schema:
+        type: string
+    get:
+      summary: Retrieve an API template source
+      operationId: getApiTemplateSource
+      description: |
+        You can retrieve an API template source, with its template, its variables and the status of its latest sync. The source's token is never returned.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      tags:
+      - AI Content
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: api_template_source
+                    id: '494'
+                    template:
+                      name: Example Docs
+                      base_url: https://api.example.com/v1
+                      variables:
+                      - space_id
+                      auth:
+                        header: Authorization
+                        value: 'Bearer {token}'
+                      tree:
+                        path: "/spaces/{space_id}/pages"
+                        query: {}
+                        nodes:
+                        - pages
+                        children: pages
+                        folder_if:
+                        - type: group
+                        folder_if_has_children: true
+                        content_if:
+                        - type: document
+                      item:
+                        path: "/spaces/{space_id}/pages/{page_id}"
+                        query: {}
+                        node_values:
+                          page_id:
+                          - id
+                      mapping:
+                        id:
+                        - node
+                        - id
+                        title:
+                        - node
+                        - title
+                        body:
+                        - item
+                        - body
+                        updated_at:
+                        - item
+                        - updatedAt
+                      body_format: html
+                    variables:
+                      space_id: help-center
+                    created_at: 1734537259
+                    latest_sync:
+                      id: '1287'
+                      status: success
+                      created_at: 1734537259
+                      updated_at: 1734537265
+              schema:
+                "$ref": "#/components/schemas/api_template_source"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 963aaf87-3f2b-4fae-9f83-69eac49ce2c1
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: API template source not found
+          content:
+            application/json:
+              examples:
+                API template source not found:
+                  value:
+                    type: error.list
+                    request_id: bdba03ae-ed4d-43d8-a0df-8b6947c467bc
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/ai/api_template_sources/{id}/sync":
+    parameters:
+    - name: id
+      in: path
+      description: The unique identifier for the API template source, which is given
+        by Intercom.
+      required: true
+      schema:
+        type: string
+    post:
+      summary: Sync an API template source
+      operationId: syncApiTemplateSource
+      description: |
+        You can start a sync of an API template source, which imports its content from the vendor again. The sync runs in the background: the response is the source, with the new sync as its `latest_sync`. Retrieve the source to follow the sync's status.
+
+        A source runs one sync at a time. Intercom also syncs each source automatically, about once a day, unless the vendor has rejected the token, so you only need this endpoint to sync sooner.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      tags:
+      - AI Content
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: api_template_source
+                    id: '494'
+                    template:
+                      name: Example Docs
+                      base_url: https://api.example.com/v1
+                      variables:
+                      - space_id
+                      auth:
+                        header: Authorization
+                        value: 'Bearer {token}'
+                      tree:
+                        path: "/spaces/{space_id}/pages"
+                        query: {}
+                        nodes:
+                        - pages
+                        children: pages
+                        folder_if:
+                        - type: group
+                        folder_if_has_children: true
+                        content_if:
+                        - type: document
+                      item:
+                        path: "/spaces/{space_id}/pages/{page_id}"
+                        query: {}
+                        node_values:
+                          page_id:
+                          - id
+                      mapping:
+                        id:
+                        - node
+                        - id
+                        title:
+                        - node
+                        - title
+                        body:
+                        - item
+                        - body
+                        updated_at:
+                        - item
+                        - updatedAt
+                      body_format: html
+                    variables:
+                      space_id: help-center
+                    created_at: 1734537259
+                    latest_sync:
+                      id: '1311'
+                      status: in_progress
+                      created_at: 1734623659
+                      updated_at: 1734623659
+              schema:
+                "$ref": "#/components/schemas/api_template_source"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 3909bb15-20b6-4593-b849-b572f44a317d
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: The workspace isn't allowed to fetch external URLs.
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 7ff7b139-7b45-4121-b59f-93956207ee8d
+                    errors:
+                    - code: action_forbidden
+                      message: "This workspace can't fetch external URLs yet. Contact
+                        support to enable it."
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: API template source not found
+          content:
+            application/json:
+              examples:
+                API template source not found:
+                  value:
+                    type: error.list
+                    request_id: d2860453-7f71-4c2b-9c15-ce0f59872f73
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: A sync is already running for the source, or the source is
+            being deleted.
+          content:
+            application/json:
+              examples:
+                Sync already running:
+                  value:
+                    type: error.list
+                    request_id: 39d83fa9-2362-4bdf-8264-83bd175ef3ef
+                    errors:
+                    - code: conflict
+                      message: A sync is already running for this source
+                Deletion started during the request:
+                  value:
+                    type: error.list
+                    request_id: d7d75f78-fb59-43db-841c-1c88b4f08709
+                    errors:
+                    - code: conflict
+                      message: This source is being deleted
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The vendor no longer accepts the source's token. The source's
+            token can't be replaced, and Intercom stops syncing the source automatically.
+            To import with a new token, create a new source.
+          content:
+            application/json:
+              examples:
+                Token no longer accepted:
+                  value:
+                    type: error.list
+                    request_id: 9b1f4c2e-6a83-4d57-b0e9-2c7a5f8d1e36
+                    errors:
+                    - code: source_unauthorized
+                      message: The vendor no longer accepts this source's token
+              schema:
+                "$ref": "#/components/schemas/error"
   "/ai/content_import_sources":
     get:
       summary: List content import sources
@@ -34070,6 +34625,340 @@ components:
           example:
             email: user@example.com
             company.name: Acme Inc
+    api_template:
+      title: API Template
+      type: object
+      x-tags:
+      - AI Content
+      description: |
+        An API template describes how to read a knowledge base through its vendor's REST API. Intercom requests the `tree`, a list of the knowledge base's nodes, such as folders and pages. For each node that is content, it then requests the `item`, such as the page's body. `mapping` says which fields of the node and the item become the imported content.
+
+        A placeholder such as `{space_id}` in `base_url`, a path or a query value is filled from `variables`. In the item request, it can also be filled from `item.node_values`. Values filled into `base_url` or a path are URL-encoded. `{token}` stands for the source's token. It can only be used in `auth.value` or as an entire query value.
+
+        When a template check fails, creating the source returns a `422` error whose message is `<name> fails the <check> check`, where `<name>` is the failing field below; see the create endpoint for the error shape. Each field below names its checks in brackets. Top-level keys other than the ones below are ignored and not stored.
+
+        Intercom sends one tree request per sync. Paging isn't supported. A sync fails if the tree response is over 25 MB or has more than 50,000 nodes. Nodes nested more than 12 levels deep aren't imported. An item whose response is over 10 MB, or that the vendor returns as not found, is skipped. A redirect isn't followed and fails the sync. During a sync, if the vendor answers `429`, Intercom waits for the time in its `Retry-After` header, or 60 seconds if there's none, and then retries. If the vendor keeps answering `429`, the sync fails.
+      properties:
+        name:
+          type: string
+          description: The name of the knowledge base. The imported content is filed
+            in a folder with this name. It can't be blank (`blank`).
+          example: Example Docs
+        base_url:
+          type: string
+          description: The base URL of the vendor's API. It must be an `https` URL
+            with a host (`not_https`); a URL that can't be parsed, including one
+            with malformed percent-encoding, also fails `not_https`. It must have
+            no query or fragment (`query_or_fragment`) and no user name or password
+            (`userinfo`), and can't be on an Intercom domain (`intercom_host`). It
+            can use placeholders from `variables` (`undeclared_placeholder`).
+          example: https://api.example.com/v1
+        variables:
+          type: array
+          description: The names of the template's variables. Each name may only use
+            letters, digits and underscores (`invalid`), and can't look like a credential,
+            such as `api_key`, `token` or `secret` (`credential_name`). Use an empty
+            list if the template has no variables.
+          items:
+            type: string
+          example:
+          - space_id
+        auth:
+          type: object
+          description: How the token is sent to the vendor. It must be an object (`invalid`).
+          properties:
+            header:
+              type: string
+              description: The name of the request header that carries the token, such
+                as `Authorization` or `X-API-Key`. It may only use letters, digits
+                and hyphens (`invalid`), and must contain `auth`, `key`, `token` or
+                `secret` (`not_credential`). It can't be a header that controls the
+                connection, routing or cookies, such as `Host`, `Cookie`, `Forwarded`
+                or a `Proxy-` header (`reserved`).
+              example: Authorization
+            value:
+              type: string
+              description: The header's value. It must be `{token}`, optionally after
+                a scheme word and a space, such as `Bearer {token}` (`literal_text`).
+                A scheme word starts with a letter and has at most 24 letters and
+                hyphens.
+              example: 'Bearer {token}'
+          required:
+          - header
+          - value
+        tree:
+          type: object
+          description: The request that lists the knowledge base's nodes. It must be
+            an object (`invalid`) with `path`, `nodes` and `content_if` (`missing_keys`).
+            Its path and query values can only use placeholders from `variables`
+            (`undeclared_placeholder`).
+          properties:
+            path:
+              type: string
+              description: The request path, relative to `base_url`. It can't be an
+                absolute URL, contain `//` or have a `:` in its first segment (`not_relative`),
+                can't contain `?` or `#` (`query_or_fragment`), and must be a valid
+                URL path (`invalid`). Use `query` for query parameters.
+              example: "/spaces/{space_id}/pages"
+            query:
+              type: object
+              description: The query parameters to send. Values must be strings (`invalid`).
+                A value of exactly `{token}` is replaced with the source's token. A
+                parameter whose name looks like a credential, such as `api_key` or
+                `access_token`, must have the value `{token}` (`literal_credential`).
+              additionalProperties:
+                type: string
+              example:
+                status: published
+            nodes:
+              type: array
+              description: The keys to follow in the tree response to reach the list
+                of nodes. Use an empty list if the response is the list.
+              items:
+                oneOf:
+                - type: string
+                - type: integer
+              example:
+              - pages
+            children:
+              type: string
+              description: The key on a node that holds its child nodes, for a tree
+                whose nodes are nested.
+              example: pages
+            content_if:
+              type: array
+              description: The conditions for a node to be imported as content. A condition
+                is an object of keys and values, and a node matches it when the node
+                has each of those values at those keys. A node is imported when it
+                matches any condition. It must be a non-empty list of objects (`invalid`).
+              items:
+                type: object
+                additionalProperties: true
+              example:
+              - type: document
+            folder_if:
+              type: array
+              description: The conditions, in the same form as `content_if`, for a node
+                to become a folder. A folder's child nodes are filed in it. A folder
+                is named with `mapping.title` read from the node, and a node without
+                a title doesn't become a folder. It must be a list of objects (`invalid`).
+              items:
+                type: object
+                additionalProperties: true
+              example:
+              - type: group
+            folder_if_has_children:
+              type: boolean
+              description: Whether a node that has child nodes becomes a folder.
+              example: true
+          required:
+          - path
+          - nodes
+          - content_if
+        item:
+          type: object
+          description: The request that fetches a content node's item, made once for
+            each node that matches `tree.content_if`. It must be an object (`invalid`)
+            with a `path` (`missing_keys`). Its path and query values can use placeholders
+            from `variables` and `node_values` (`undeclared_placeholder`).
+          properties:
+            path:
+              type: string
+              description: The request path, relative to `base_url`. It has the same
+                checks as `tree.path`.
+              example: "/spaces/{space_id}/pages/{page_id}"
+            query:
+              type: object
+              description: The query parameters to send. It has the same checks as
+                `tree.query`.
+              additionalProperties:
+                type: string
+              example: {}
+            node_values:
+              type: object
+              description: Placeholders filled from the node, each with the keys to
+                follow in the node to reach its value. It must be an object (`invalid`),
+                and its names can't look like credentials (`credential_name`). A blank
+                value fails the sync. A value filled into the path must use only letters,
+                digits, `.`, `_` and `-`, and can't be only dots, or the sync fails.
+              additionalProperties:
+                type: array
+                items:
+                  oneOf:
+                  - type: string
+                  - type: integer
+              example:
+                page_id:
+                - id
+          required:
+          - path
+        mapping:
+          type: object
+          description: Where each field of the imported content comes from. Each value
+            is a list that starts with `node` or `item`, followed by the keys to follow
+            in it. An integer key indexes into a list. It must be an object (`invalid`)
+            with `id`, `title`, `body` and `updated_at` (`missing_keys`), and each
+            value must have this form (`invalid`).
+          properties:
+            id:
+              type: array
+              description: The node's unique identifier. It must start with `node`.
+                A node whose id is blank isn't imported, though its child nodes are.
+              items:
+                oneOf:
+                - type: string
+                - type: integer
+              example:
+              - node
+              - id
+            title:
+              type: array
+              description: The title. Folders always read it from the node. Content
+                without a title isn't imported.
+              items:
+                oneOf:
+                - type: string
+                - type: integer
+              example:
+              - node
+              - title
+            body:
+              type: array
+              description: The body, in `body_format`.
+              items:
+                oneOf:
+                - type: string
+                - type: integer
+              example:
+              - item
+              - body
+            updated_at:
+              type: array
+              description: When the content was last updated, as a date and time such
+                as `2024-12-18T15:47:39Z`. A value that can't be read as a date is
+                ignored.
+              items:
+                oneOf:
+                - type: string
+                - type: integer
+              example:
+              - item
+              - updatedAt
+            item_id:
+              type: array
+              description: An identifier shared by nodes that are the same item, such
+                as a page listed in two folders. The item is fetched and imported once,
+                in the first node's folder. It must start with `node`.
+              items:
+                oneOf:
+                - type: string
+                - type: integer
+              example:
+              - node
+              - page_id
+          required:
+          - id
+          - title
+          - body
+          - updated_at
+        body_format:
+          type: string
+          description: The format of the body (`unknown`). HTML is sanitized, Markdown
+            is converted to HTML without any front matter, and plain text keeps its
+            line breaks.
+          enum:
+          - html
+          - markdown
+          - plain_text
+          example: html
+      required:
+      - name
+      - base_url
+      - variables
+      - auth
+      - tree
+      - item
+      - mapping
+      - body_format
+    api_template_source:
+      title: API Template Source
+      type: object
+      x-tags:
+      - AI Content
+      description: A content source that imports a knowledge base through its vendor's
+        REST API, as its API template describes. The template is returned as it
+        was stored. The source's token is never returned.
+      nullable: false
+      properties:
+        type:
+          type: string
+          readOnly: true
+          description: Always `api_template_source`.
+          enum:
+          - api_template_source
+          example: api_template_source
+        id:
+          type: string
+          readOnly: true
+          description: The unique identifier for the API template source, which is
+            given by Intercom.
+          example: '494'
+        template:
+          "$ref": "#/components/schemas/api_template"
+        variables:
+          type: object
+          description: The values for the template's variables. Only the variables
+            the template declares are kept, as strings.
+          additionalProperties:
+            type: string
+          example:
+            space_id: help-center
+        created_at:
+          type: integer
+          format: date-time
+          readOnly: true
+          description: The time when the API template source was created.
+          example: 1734537259
+        latest_sync:
+          type: object
+          nullable: true
+          readOnly: true
+          description: The source's most recent sync, or `null` if no sync has started.
+            Intercom also syncs each source automatically, about once a day, unless
+            the vendor has rejected the token, so this can be a sync you didn't start.
+          properties:
+            id:
+              type: string
+              description: The unique identifier for the sync.
+              example: '1287'
+            status:
+              type: string
+              description: The status of the sync. It's `in_progress` while the sync
+                runs, then `success`, `failed`, `cancelled` or `skipped`.
+              enum:
+              - in_progress
+              - success
+              - failed
+              - cancelled
+              - skipped
+              example: success
+            created_at:
+              type: integer
+              format: date-time
+              description: The time when the sync started.
+              example: 1734537259
+            updated_at:
+              type: integer
+              format: date-time
+              description: The time when the sync was last updated.
+              example: 1734537265
+      required:
+      - type
+      - id
+      - template
+      - variables
+      - created_at
+      - latest_sync
     app:
       title: App
       type: object
@@ -40277,6 +41166,34 @@ components:
       - type
       - user
       - visitor
+    create_api_template_source_request:
+      title: Create API Template Source Payload
+      type: object
+      description: You can create an API template source to import a knowledge base
+        through its vendor's REST API.
+      nullable: false
+      properties:
+        template:
+          "$ref": "#/components/schemas/api_template"
+        variables:
+          type: object
+          description: A value for each variable the template declares. A value may
+            only use letters, digits, `.`, `_` and `-`, and can't be only dots. Keys
+            the template doesn't declare are ignored.
+          additionalProperties:
+            type: string
+          example:
+            space_id: help-center
+        auth_token:
+          type: string
+          description: The token for the vendor's API, sent as `auth.value` describes.
+            It may only use printable ASCII characters. Intercom checks it with the
+            vendor before creating the source. It's stored with the source and is
+            never returned.
+          example: vendor-api-token
+      required:
+      - template
+      - auth_token
     create_audience_request:
       title: Create Audience Request
       type: object
