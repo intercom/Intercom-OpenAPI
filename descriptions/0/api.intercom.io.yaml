@@ -23174,6 +23174,20 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: Newsfeed with id 123 does not exist
+                Invalid state:
+                  value:
+                    type: error.list
+                    request_id: 8d40b2f7-3c95-4e18-a6d1-5f27c09e4b83
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid state. State can either be draft or live
+                Published date in the future:
+                  value:
+                    type: error.list
+                    request_id: a3e61c58-7b04-4f92-8d3e-1c69f5b20a47
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid published_at 4102444800. Date cannot be in the future. Scheduling is not supported through API
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -23400,6 +23414,13 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: Newsfeed with id 123 does not exist
+                Published date in the future:
+                  value:
+                    type: error.list
+                    request_id: f27c9d14-5a68-4b3e-90c2-7e81a4d6b359
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid published_at 4102444800. Date cannot be in the future. Scheduling is not supported through API
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -44575,7 +44596,7 @@ components:
         labels:
           type: array
           description: Label names displayed to users to categorize the news item,
-            sorted alphabetically.
+            sorted with uppercase letters before lowercase.
           items:
             type: string
             description: The label name.
@@ -44669,7 +44690,9 @@ components:
         reactions:
           type: array
           description: Ordered list of emoji reactions to the news item. Send an empty
-            list to disable reactions. Each entry must be a single character.
+            list to disable reactions. Send at most five, each a single Unicode code
+            point, so an emoji with a skin tone, a joiner sequence or a variation selector
+            (such as ❤️) is rejected.
           items:
             type: string
           example:
@@ -44736,7 +44759,9 @@ components:
         reactions:
           type: array
           description: Ordered list of emoji reactions to the news item. Send an empty
-            list to disable reactions. Each entry must be a single character.
+            list to disable reactions. Send at most five, each a single Unicode code
+            point, so an emoji with a skin tone, a joiner sequence or a variation selector
+            (such as ❤️) is rejected.
           items:
             type: string
           example:
@@ -44805,7 +44830,7 @@ components:
             if you want to set a publish date in the past (e.g. when importing existing
             news items). On write, this field will be ignored if the news item state
             is "draft", and a date in the future is rejected with a `400`. Null while
-            the news item has not gone live on the newsfeed.
+            the news item isn't live.
           example: 1674917488
     note:
       title: Note
