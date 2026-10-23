@@ -7696,7 +7696,7 @@ paths:
         Requires the `read_articles_scope` or `read_write_articles_scope` OAuth scope.
       responses:
         '200':
-          description: successful
+          description: successful. `pages.page` and `pages.per_page` are returned as strings when you send `page` and `per_page` in the request, and as integers otherwise.
           content:
             application/json:
               examples:
@@ -7763,7 +7763,26 @@ paths:
               schema:
                 "$ref": "#/components/schemas/internal_article"
         '400':
-          description: Bad request. The request body is empty.
+          description: Bad request. The request body is empty, in which case the response has no body, or `audience_ids` is not an array of integers
+          content:
+            application/json:
+              examples:
+                audience_ids is not an array:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: data_invalid
+                      message: audience_ids must be an array
+                audience_ids contains a non-integer:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: data_invalid
+                      message: audience_ids must contain only integer values
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Teammate, folder or audience ID not found
           content:
@@ -7793,7 +7812,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
-          description: Missing required parameters, or body_markdown sent with body or json_blocks
+          description: Missing required parameters, body_markdown sent with body or json_blocks, or an ai_*_availability value that is not a boolean
           content:
             application/json:
               examples:
@@ -7811,6 +7830,13 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: body_markdown is mutually exclusive with body and json_blocks - please provide only one
+                Non-boolean availability flag:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: ai_chatbot_availability must be a boolean (true or false)
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -7978,9 +8004,28 @@ paths:
               schema:
                 "$ref": "#/components/schemas/internal_article"
         '400':
-          description: Bad request. The request body is empty.
+          description: Bad request. The request body is empty, in which case the response has no body, or `audience_ids` is not an array of integers
+          content:
+            application/json:
+              examples:
+                audience_ids is not an array:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: data_invalid
+                      message: audience_ids must be an array
+                audience_ids contains a non-integer:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: data_invalid
+                      message: audience_ids must contain only integer values
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
-          description: Internal article, folder or audience ID not found
+          description: Internal article, teammate, folder or audience ID not found
           content:
             application/json:
               examples:
@@ -7991,6 +8036,13 @@ paths:
                     errors:
                     - code: not_found
                       message: Resource not found
+                Teammate not found:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: Admin with ID 999999 not found
                 Folder not found:
                   value:
                     type: error.list
@@ -8008,7 +8060,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
-          description: body_markdown sent with body or json_blocks, or the article is in a release running a live experiment
+          description: body_markdown sent with body or json_blocks, an ai_*_availability value that is not a boolean, or the article is in a release running a live experiment
           content:
             application/json:
               examples:
@@ -8019,6 +8071,13 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: body_markdown is mutually exclusive with body and json_blocks - please provide only one
+                Non-boolean availability flag:
+                  value:
+                    type: error.list
+                    request_id: null
+                    errors:
+                    - code: parameter_invalid
+                      message: ai_chatbot_availability must be a boolean (true or false)
                 Release live experiment conflict:
                   value:
                     type: error.list
@@ -8283,8 +8342,9 @@ paths:
       - name: admin_id
         in: query
         required: false
-        description: Optional id of the teammate to attribute the removal to. Defaults
-          to the authenticating teammate.
+        description: Optional id of a teammate. The id is checked, and an unknown
+          teammate returns a 404 `admin_not_found` error, but the removal is not
+          recorded against the teammate.
         example: '1234'
         schema:
           type: string
@@ -8500,7 +8560,7 @@ paths:
         Requires the `read_articles_scope` or `read_write_articles_scope` OAuth scope.
       responses:
         '200':
-          description: successful
+          description: successful. `pages.page` and `pages.per_page` are returned as strings when you send `page` and `per_page` in the request, and as integers otherwise.
           content:
             application/json:
               example:
@@ -15437,7 +15497,26 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
-          $ref: "#/components/responses/Unauthorized"
+          description: Unauthorized. The token is invalid or is missing the `read_content` OAuth scope
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 12a938a3-314e-4939-b773-5cd45738bd21
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
         '422':
           description: Invalid filter value
           content:
@@ -15610,12 +15689,14 @@ paths:
                 Invalid availability flag:
                   value:
                     type: error.list
+                    request_id: 7c1d9e2a-3b4f-4a56-8d70-1e2f3a4b5c6d
                     errors:
                     - code: parameter_invalid
                       message: ai_chatbot_availability must be a boolean
                 Malformed audience_ids:
                   value:
                     type: error.list
+                    request_id: 9a8b7c6d-5e4f-4321-b0a9-8f7e6d5c4b3a
                     errors:
                     - code: data_invalid
                       message: audience_ids must be an array
@@ -15650,6 +15731,7 @@ paths:
                 Unknown audience IDs:
                   value:
                     type: error.list
+                    request_id: 2b3c4d5e-6f70-4812-93a4-b5c6d7e8f901
                     errors:
                     - code: parameter_invalid
                       message: 'audience_ids contains unknown audience IDs: 999'
@@ -15670,6 +15752,7 @@ paths:
                 Body and JSON blocks both provided:
                   value:
                     type: error.list
+                    request_id: 4d5e6f70-8192-4a3b-8c4d-5e6f708192a3
                     errors:
                     - code: parameter_invalid
                       message: body_markdown and json_blocks are mutually exclusive - please provide only one
@@ -15833,12 +15916,14 @@ paths:
                 Invalid availability flag:
                   value:
                     type: error.list
+                    request_id: 6f708192-a3b4-4c5d-9e6f-708192a3b4c5
                     errors:
                     - code: parameter_invalid
                       message: ai_chatbot_availability must be a boolean
                 Malformed audience_ids:
                   value:
                     type: error.list
+                    request_id: 8192a3b4-c5d6-4e7f-8091-a2b3c4d5e6f7
                     errors:
                     - code: data_invalid
                       message: audience_ids must be an array
@@ -15880,6 +15965,7 @@ paths:
                 Unknown audience IDs:
                   value:
                     type: error.list
+                    request_id: a3b4c5d6-e7f8-4091-a2b3-c4d5e6f70819
                     errors:
                     - code: parameter_invalid
                       message: 'audience_ids contains unknown audience IDs: 999'
@@ -15900,6 +15986,7 @@ paths:
                 Body and JSON blocks both provided:
                   value:
                     type: error.list
+                    request_id: c5d6e7f8-0912-4a3b-b4c5-d6e7f8091a2b
                     errors:
                     - code: parameter_invalid
                       message: body_markdown and json_blocks are mutually exclusive - please provide only one
@@ -16133,8 +16220,9 @@ paths:
       - name: admin_id
         in: query
         required: false
-        description: Optional id of the teammate to attribute the removal to. Defaults
-          to the authenticating teammate.
+        description: Optional id of a teammate. The id is checked, and an unknown
+          teammate returns a 404 `admin_not_found` error, but the removal is not
+          recorded against the teammate.
         example: '1234'
         schema:
           type: string
@@ -34328,7 +34416,8 @@ components:
           example: en
         json_blocks:
           type: array
-          description: The content blocks that make up the body of the snippet.
+          description: The content blocks that make up the body of the snippet. In
+            responses, the blocks are returned as a JSON-encoded string rather than as an array.
           items:
             type: object
           example:
@@ -34901,13 +34990,13 @@ components:
               format: uri
               description: A link to the next page of results. Omitted when on the
                 last page.
-              example: https://api.intercom.io/content/search?query=billing&page=2
+              example: https://api.intercom.io/content/search?query=billing&per_page=10&page=2
             prev:
               type: string
               format: uri
               description: A link to the previous page of results. Omitted when on
                 the first page.
-              example: https://api.intercom.io/content/search?query=billing&page=1
+              example: https://api.intercom.io/content/search?query=billing&per_page=10&page=1
         data:
           type: array
           description: The list of matched content items. Each item's `type`
