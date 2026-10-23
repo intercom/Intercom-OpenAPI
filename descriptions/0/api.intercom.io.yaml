@@ -8812,7 +8812,7 @@ paths:
                     request_id: 2b84c6e0-91fd-4a37-8c52-6e7d093af415
                     errors:
                     - code: parameter_invalid
-                      message: Body is required
+                      message: Body can't be nil
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -10837,7 +10837,7 @@ paths:
                     request_id: c40d9e58-1b76-4f23-85a0-7d6c2e914bf3
                     errors:
                     - code: parameter_invalid
-                      message: Body is required
+                      message: Body can't be nil
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -10894,10 +10894,6 @@ paths:
                   type: string
                   description: The text of the note.
                   example: New note
-                contact_id:
-                  type: string
-                  description: The unique identifier of a given contact.
-                  example: '123'
                 admin_id:
                   type: string
                   description: The unique identifier of a given admin.
@@ -27540,8 +27536,11 @@ paths:
         in: query
         required: false
         description: Includes the count of contacts that belong to each segment. The
-          counts are added whenever this parameter is present in the query string,
-          whatever its value, so omit it entirely to leave them out.
+          counts are added whenever this parameter has a value in the query string,
+          even `false` or an empty one, so omit it entirely to leave them out. A
+          bare `include_count` with no `=` adds no counts. With `type=company`, a
+          company segment gets no count unless a contact segment has the same name,
+          and then it shows that contact segment's count.
         example: true
         schema:
           type: boolean
@@ -27626,8 +27625,9 @@ paths:
         in: query
         required: false
         description: Includes the count of contacts that belong to the segment. The
-          count is added whenever this parameter is present in the query string, whatever
-          its value, so omit it entirely to leave it out.
+          count is added whenever this parameter has a value in the query string, even
+          `false` or an empty one, so omit it entirely to leave it out. A bare
+          `include_count` with no `=` adds no count.
         example: true
         schema:
           type: boolean
@@ -28636,7 +28636,7 @@ paths:
 
         Each operation will return a tag object.
 
-        Contacts and companies listed in `users` or `companies` that do not exist are skipped: they are left out of the `users` and `companies` arrays in the response and the request still succeeds. With `ids_to_add` it depends on `taggable_type`: a contact id that does not exist returns a 404, while a company id that does not exist is skipped.
+        Contacts and companies listed in `users` or `companies` that do not exist are skipped: they are left out of the `users` and `companies` arrays in the response and the request still succeeds. With `ids_to_add` it depends on `taggable_type`: a contact id that does not exist returns a 404, while a company id that does not exist is skipped. With `ids_to_add`, the `users` and `companies` arrays in the response are always empty, and a 404 still leaves the tag created or renamed.
 
         Requires the `write_tags` or `write_users_companies` OAuth scope.
       responses:
@@ -43386,7 +43386,10 @@ components:
           maxLength: 191
           description: The name of the tag, which will be created if not found, or
             the new name for the tag if this is an update request. Names are case
-            insensitive and can be at most 191 characters long.
+            insensitive and can be at most 191 characters long. Creating a tag with
+            a longer name returns a 400. When updating by `id`, a longer name or one
+            that another tag already has returns 200 with the new name, but the tag
+            keeps its old name.
           example: Independent
         id:
           type: string
@@ -43396,7 +43399,9 @@ components:
           type: array
           description: The Intercom ids of the contacts or companies to apply the
             tag to. A contact id that does not exist returns a 404; a company id
-            that does not exist is skipped.
+            that does not exist is skipped. A 404 still leaves the tag created or
+            renamed. The `users` and `companies` arrays in the response are always
+            empty when this field is used.
           items:
             type: string
           example:
@@ -49464,8 +49469,9 @@ components:
         author:
           type: object
           nullable: true
-          description: Represents the Admin that created the note. `null` when the
-            note has no recorded admin.
+          description: Represents the Admin that created the note. When the note has
+            no recorded admin, this is `null` on a single note and left out of each
+            note in a list.
           allOf:
           - "$ref": "#/components/schemas/admin"
         body:
@@ -49617,6 +49623,7 @@ components:
       title: Paginated Response
       type: object
       description: A paginated list of notes associated with a contact or a company.
+        On the last page, `pages.next` is `null`. These lists never send `pages.prev`.
       properties:
         type:
           type: string
@@ -50039,7 +50046,9 @@ components:
         count:
           type: integer
           description: The number of items in the user segment. It's returned when
-            the `include_count` parameter is present in the request.
+            the request has `include_count` with a value. A company segment only gets
+            a count when a contact segment has the same name, and it shows that
+            segment's count.
           example: 3
           nullable: true
     segment_list:
