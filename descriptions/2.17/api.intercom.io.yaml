@@ -1542,6 +1542,8 @@ paths:
       description: |
         You can retrieve a list of all content import sources for a workspace.
 
+        `total_count` and `pages.total_pages` are worked out from every content import source in the workspace, including deleted ones that the list leaves out, so both can be higher than the number of sources you get back across all pages. The last pages can be short or empty.
+
         OAuth tokens must have the `read_write_ai_content` scope.
       responses:
         '200':
@@ -15532,6 +15534,8 @@ paths:
         required: false
         description: A free-text search term matched against the title and body of
           each content item. When omitted, returns the most recent content items.
+          Keep it to 500 characters or fewer. The API doesn't currently reject
+          longer values.
         example: billing
         schema:
           type: string
@@ -15541,6 +15545,7 @@ paths:
         required: false
         description: The page number to fetch. Defaults to 1. Values below 1 are
           clamped to 1.
+          Values above 5001 return a `400` `parameter_invalid` error.
         example: 1
         schema:
           type: integer
@@ -15800,7 +15805,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/content_search_response"
         '400':
-          description: Page number too high. `page` multiplied by `per_page` must not exceed 10,000, and `page` must not exceed 5001
+          description: Page number too high. `page` multiplied by `per_page` must not exceed 10,000, and `page` must not exceed 5001. Going over the 10,000 window returns `bad_request`.
           content:
             application/json:
               schema:
@@ -15943,6 +15948,8 @@ paths:
       operationId: createContentSnippet
       description: |
         You can create a new content snippet.
+
+        `title` is listed as required, but a missing, `null` or empty `title` is accepted and the snippet is created with a blank title. When `json_blocks` is omitted or `null` and `body_markdown` is omitted or blank, the snippet is created with a single empty paragraph.
 
         Requires the `read_write_content_snippets` OAuth scope.
       requestBody:
@@ -36040,7 +36047,8 @@ components:
           "$ref": "#/components/schemas/pages_link"
         total_count:
           type: integer
-          description: A count of the total number of content import sources.
+          description: A count of the total number of content import sources, including
+            deleted ones that the list leaves out.
           example: 1
         data:
           type: array
@@ -36213,16 +36221,18 @@ components:
     content_snippet_create_request:
       title: Create Content Snippet Request
       type: object
-      description: The request payload for creating a content snippet. You must provide
+      description: The request payload for creating a content snippet. You can provide
         either `json_blocks` or `body_markdown` for the snippet content — they are
-        mutually exclusive.
+        mutually exclusive. When `json_blocks` is omitted or `null` and `body_markdown` is
+        omitted or blank, the snippet is created with a single empty paragraph.
       nullable: false
       required:
       - title
       properties:
         title:
           type: string
-          description: The title of the content snippet.
+          description: The title of the content snippet. The API accepts a missing, `null`
+            or empty title.
           maxLength: 255
           example: How to reset your password
         json_blocks:
