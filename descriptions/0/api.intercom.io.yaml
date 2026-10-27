@@ -32884,7 +32884,7 @@ paths:
                         endpoint: /fin/reply
                         method: POST
                       - name: ask
-                        description: Ask Fin a single question and get one informational answer. Fin never escalates, disambiguates, or asks follow-up questions. Use for one-shot informational lookups.
+                        description: Ask Fin a single question and get one informational answer. Fin does not decide to hand over to a human, disambiguate, or ask follow-up questions, although escalation rules can still apply. Use for one-shot informational lookups.
                         inputSchema:
                           type: object
                           properties:
@@ -33133,10 +33133,11 @@ paths:
         Ask Fin a single, self-contained question and receive one informational answer.
 
         Unlike a conversation, `/fin/ask` is non-conversational: Fin will not ask follow-up
-        questions, will not run procedures, and will not escalate to a human on its own. You can
-        still escalate one yourself with `POST /fin/escalate`; the ask conversation is already
-        closed after its one-shot answer, and escalation leaves it closed while routing the
-        handoff separately.
+        questions, will not run procedures, and will not decide to hand over to a human itself.
+        Escalation rules can still match, and the conversation can still be routed to a team or
+        finish without resolution. You can also escalate one yourself with `POST /fin/escalate`;
+        the ask conversation is already closed after its one-shot answer, and escalation leaves
+        it closed while routing the handoff separately.
 
         Fin's answer is delivered asynchronously via the `fin_replied` event. The conversation
         ends with a `complete` status — there is no `awaiting_user_reply` cycle.
@@ -47555,8 +47556,9 @@ components:
             The following reasons apply to Fin-decided escalations when Fin owns the
             conversation (`/fin/start`, `/fin/procedures/{procedure_id}/run`, and
             `/fin/reply` on a conversation that was started that way). `/fin/ask` can
-            report the two escalation rule reasons, "Routed to team" and "Conversation
-            finished without resolution".
+            report any of them, because escalation rules still apply and the conversation
+            can still be routed to a team or finish without resolution. On an Ask,
+            "Escalation requested by user" only follows an escalation rule match.
             - "Escalation requested by user"
             - "Escalation rule: {rule_name}"
             - "Escalation rule matched"
