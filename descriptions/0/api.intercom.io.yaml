@@ -47554,12 +47554,19 @@ components:
 
             The following reasons apply to Fin-decided escalations when Fin owns the
             conversation (`/fin/start`, `/fin/procedures/{procedure_id}/run`, and
-            `/fin/reply` on a conversation that was started that way):
+            `/fin/reply` on a conversation that was started that way). `/fin/ask` can
+            report the two escalation rule reasons, "Routed to team" and "Conversation
+            finished without resolution".
             - "Escalation requested by user"
             - "Escalation rule: {rule_name}"
             - "Escalation rule matched"
             - "Routed to team"
             - "Conversation finished without resolution"
+
+            "Escalation requested by user" is sent whenever Fin decides to hand over, not
+            only when the user asks for a human, for example on a procedure handoff or a
+            custom answer handover. During `/fin/procedures/{procedure_id}/run` every
+            escalation reports it.
           example: Escalation requested via API
         created_at_ms:
           type: string
