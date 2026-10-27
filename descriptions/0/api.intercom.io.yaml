@@ -5012,7 +5012,10 @@ paths:
   "/export/reporting_data/enqueue":
     post:
       summary: Enqueue a new reporting data export job
-      description: For the **conversation** dataset, from the Preview version this export returns all conversations, including those that never received a user reply. Earlier versions return only conversations that received at least one user reply. Other datasets are unaffected.
+      description: |
+        For the **conversation** dataset, from API version 2.16 this export returns all conversations, including those that never received a user reply. Earlier versions return only conversations that received at least one user reply. Other datasets are unaffected.
+
+        Requires the `export_reporting_data` OAuth scope.
       tags: [Reporting Data Export]
       parameters:
       - name: Intercom-Version
@@ -5035,15 +5038,17 @@ paths:
                   description: List of attribute identifiers to include in the export. Requires qualified_id format (e.g., "people.Brand", "standard.conversation_id"). Use the qualified_id returned from the get_datasets response.
                   items:
                     type: string
-                  example: [conversation_id, conversation_started_at]
+                  example: [standard.conversation_id, timestamp.conversation_started_at]
                 start_time:
                   type: integer
                   format: int64
-                  example: 1717490000
+                  description: Start of the export period, as a Unix timestamp in seconds. Must be within your workspace's reporting data retention period, which is 2 years by default (3 years for workspaces with extended retention).
+                  example: 1788220800
                 end_time:
                   type: integer
                   format: int64
-                  example: 1717510000
+                  description: End of the export period, as a Unix timestamp in seconds. Must not be earlier than start_time and must also be within the retention period.
+                  example: 1788307200
       responses:
         '200':
           description: Job enqueued successfully
@@ -5057,11 +5062,14 @@ paths:
                     example: job1
                   status:
                     type: string
+                    description: The status of the job. A newly enqueued job is `pending`.
                     example: pending
                   download_url:
                     type: string
+                    description: Empty until the job is complete.
                   download_expires_at:
                     type: string
+                    description: Empty until the job is complete.
         '400':
           description: Bad request (e.g. validation errors)
           content:
@@ -5101,7 +5109,7 @@ paths:
                     request_id: b68959ea-6328-4f70-83cb-e7913dba1542
                     errors:
                     - code: bad_request
-                      message: "'attribute_ids' not an array must be of type Array"
+                      message: "'attribute_ids: not an array' must be of type Array"
                 Invalid attribute_ids:
                   value:
                     type: error.list
@@ -5109,6 +5117,41 @@ paths:
                     errors:
                     - code: bad_request
                       message: "attribute_ids invalid for conversation dataset: non_existent"
+                Unqualified attribute_ids:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: "attribute_ids must use qualified_id format (e.g., 'people.Brand' instead of 'Brand'). Use the qualified_id from the get_datasets response. Unqualified ids: conversation_id"
+                start_time too far in the past:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: "'start_time' parameter too far in past (more than 2 years)"
+                end_time before start_time:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: end_time is less than start_time
+                Unknown parameter:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: "bad 'unknown_field' parameter"
+                Not available in this API version:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -5142,27 +5185,16 @@ paths:
   "/export/reporting_data/{job_identifier}":
     get:
       summary: Get export job status
+      description: Requires the `export_reporting_data` OAuth scope.
       tags: [Reporting Data Export]
       parameters:
         - name: Intercom-Version
           in: header
           schema:
             "$ref": "#/components/schemas/intercom_version"
-        - name: app_id
-          in: query
-          description: The Intercom defined code of the workspace the company is associated
-            to.
-          required: true
-          schema:
-            type: string
-        - name: client_id
-          in: query
-          required: true
-          schema:
-            type: string
         - name: job_identifier
           description: Unique identifier of the job.
-          in: query
+          in: path
           required: true
           schema:
             type: string
@@ -5172,12 +5204,18 @@ paths:
           content:
             application/json:
               examples:
+                With pending status:
+                  value:
+                    job_identifier: job1
+                    status: pending
+                    download_url: ''
+                    download_expires_at: ''
                 With complete status:
                   value:
                     job_identifier: job1
                     status: complete
-                    download_url: ''
-                    download_expires_at: ''
+                    download_url: https://api.intercom.io/download/reporting_data/job1
+                    download_expires_at: 1788480000
                 With failed status:
                   value:
                     job_identifier: job1
@@ -5189,14 +5227,42 @@ paths:
                 properties:
                   job_identifier:
                     type: string
+                    description: Unique identifier of the job.
                   status:
                     type: string
+                    description: The status of the job.
+                    enum:
+                    - pending
+                    - complete
+                    - failed
                   download_url:
                     type: string
+                    description: The URL to download the export from. Empty until the job is complete.
                   download_expires_at:
-                    type: string
+                    description: The time after which the export can no longer be downloaded, as a Unix timestamp in seconds. Empty string until the job is complete.
+                    oneOf:
+                    - type: integer
+                      format: int64
+                    - type: string
+                      maxLength: 0
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Not available in this API version:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
         '404':
-          description: When job not found
+          description: When the job is not found or was created by a different teammate
           content:
             application/json:
               examples:
@@ -5212,6 +5278,7 @@ paths:
   "/export/reporting_data/get_datasets":
     get:
       summary: List available datasets and attributes
+      description: Requires the `export_reporting_data` or `read_reporting_datasets` OAuth scope.
       parameters:
       - name: Intercom-Version
         in: header
@@ -5245,7 +5312,7 @@ paths:
                           example: "Conversation-level details: status, channel, assignee."
                         default_time_attribute_id:
                           type: string
-                          example: conversation_started_at
+                          example: conversation.conversation_created_at
                         attributes:
                           type: array
                           items:
@@ -5258,10 +5325,26 @@ paths:
                               qualified_id:
                                 type: string
                                 description: A namespaced identifier that uniquely identifies the attribute across all types. Format is "prefix.name" (e.g., "people.Brand", "conversation.Brand"). Required when calling the enqueue endpoint.
-                                example: conversation.conversation_id
+                                example: standard.conversation_id
                               name:
                                 type: string
                                 example: Conversation ID
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Not available in this API version:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/download/reporting_data/{job_identifier}":
     get:
       summary: Download completed export job data
@@ -5271,6 +5354,8 @@ paths:
         > Octet header required
         >
         > You will have to specify the header Accept: `application/octet-stream` when hitting this endpoint.
+
+        Requires the `export_reporting_data` OAuth scope.
       tags: [Reporting Data Export]
       parameters:
         - name: Intercom-Version
@@ -5286,21 +5371,44 @@ paths:
             enum:
               - application/octet-stream
           description: "Required header for downloading the export file"
-        - name: app_id
-          in: query
-          required: true
-          schema:
-            type: string
         - name: job_identifier
-          in: query
+          description: Unique identifier of the job.
+          in: path
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Export file downloaded
+          description: "Export file downloaded. The CSV data is gzip-compressed and the response has a `Content-Encoding: gzip` header, so most HTTP clients decompress it automatically."
+          headers:
+            Content-Encoding:
+              description: The encoding applied to the response body.
+              schema:
+                type: string
+                example: gzip
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Not available in this API version:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
         '404':
-          description: When job not found
+          description: When the job is not found, was created by a different teammate, or is not complete, or the export file is no longer available
           content:
             application/json:
               examples:
@@ -5311,6 +5419,13 @@ paths:
                     errors:
                     - code: not_found
                       message: "Export job not found for identifier: job1"
+                Export file not found:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: not_found
+                      message: Object not found
               schema:
                 "$ref": "#/components/schemas/error"
   "/help_center/help_centers/{help_center_id}/redirects":
