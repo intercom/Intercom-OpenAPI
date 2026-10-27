@@ -41030,8 +41030,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/email_setting"
-    metadata:
-          "$ref": "#/components/schemas/conversation_part_metadata"
     conversation_attribute_updated_by_workflow:
       title: Part type - conversation_attribute_updated_by_workflow
       type: object
@@ -41600,12 +41598,14 @@ components:
         status:
           type: string
           enum:
+          - thinking
           - awaiting_user_reply
           - escalated
           - resolved
           - complete
           description: |
             Fin's current status.
+            - thinking: Fin has started running a procedure. Not sent on every turn
             - awaiting_user_reply: Fin has finished replying and is waiting for the user to respond
             - escalated: The conversation has been escalated to a human
             - resolved: The user's query has been resolved
@@ -41616,13 +41616,19 @@ components:
           description: |
             Optional. A human-readable explanation of why the conversation was escalated.
             Only present when status is 'escalated'.
-            Possible values include:
+
+            When you escalate deterministically with `/fin/escalate`, the reason is always
+            "Escalation requested via API".
+
+            The following reasons apply to Fin-decided escalations when Fin owns the
+            conversation (`/fin/start`, `/fin/procedures/{procedure_id}/run`, and
+            `/fin/reply` on a conversation that was started that way):
             - "Escalation requested by user"
             - "Escalation rule: {rule_name}"
             - "Escalation rule matched"
             - "Routed to team"
             - "Conversation finished without resolution"
-          example: Escalation requested by user
+          example: Escalation requested via API
         created_at_ms:
           type: string
           format: date-time
@@ -41727,10 +41733,12 @@ components:
           enum:
           - replying
           - awaiting_user_reply
+          - complete
           description: |
             Fin's current status.
             - replying: Intermediate reply part; more parts may follow
             - awaiting_user_reply: Legacy status; instead use the fin_status_updated event with 'awaiting_user_reply', which fires once Fin's reply is done
+            - complete: Fin's reply is final and no user reply is expected. Sent for one-shot Ask replies only
           example: replying
         created_at_ms:
           type: string
