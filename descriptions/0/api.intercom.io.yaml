@@ -36828,13 +36828,19 @@ components:
       x-tags:
       - AI Content
       description: |
-        An API template describes how to read a knowledge base through its vendor's REST API. Intercom requests the `tree`, a list of the knowledge base's nodes, such as folders and pages. For each node that is content, it then requests the `item`, such as the page's body. `mapping` says which fields of the node and the item become the imported content.
+        An API template describes how to read a knowledge base through its vendor's REST API. Intercom requests the `tree`, a list of the knowledge base's nodes, such as folders and pages. For each node that is content, it then requests the `item`, such as the page's body. `mapping` says which fields of the node and the item become the imported content. If the vendor lists one level at a time, `tree.child_calls` lists each node's child nodes, and `paging` follows a list across its pages.
 
-        A placeholder such as `{space_id}` in `base_url`, a path or a query value is filled from `variables`. In the item request, it can also be filled from `item.node_values`. Values filled into `base_url` or a path are URL-encoded. `{token}` stands for the source's token. It can only be used in `auth.value` or as an entire query value.
+        A placeholder such as `{space_id}` in `base_url`, a path or a query value is filled from `variables`. In the item request and in a child call, it can also be filled from that call's `node_values`. Values filled into `base_url` or a path are URL-encoded. `{token}` stands for the source's token. It can only be used in `auth.value` or as an entire query value.
 
         When a template check fails, creating the source returns a `422` error whose message is `<name> fails the <check> check`, where `<name>` is the failing field below; see the create endpoint for the error shape. Each field below names its checks in brackets. Top-level keys other than the ones below are ignored and not stored.
 
-        Intercom sends one tree request per sync. Paging isn't supported. A sync fails if the tree response is over 25 MB or has more than 50,000 nodes. Nodes nested more than 12 levels deep aren't imported. An item whose response is over 10 MB, or that the vendor returns as not found, is skipped. A redirect isn't followed and fails the sync. During a sync, if the vendor answers `429`, Intercom waits for the time in its `Retry-After` header, or 60 seconds if there's none, and then retries. If the vendor keeps answering `429`, the sync fails.
+        A sync lists the whole tree before it fetches any item: every page of the tree call, then each child call once for every node the call before it listed, with every page of each. Nothing is imported until the whole tree is listed, so if a listing request fails, the content from earlier syncs is kept. A `404` on the first page of the tree call means the knowledge base is gone: the sync fails, and Intercom stops syncing the source automatically until a sync you start with `POST /ai/api_template_sources/{id}/sync` succeeds. A `404` on a later page or on a child call is handled like any other failed request.
+
+        If a request fails for a reason that can pass, such as a `5xx`, a timeout or a `404` on a later page, Intercom tries the sync again later, a few times at most. The sync's `status` stays `in_progress` until a try succeeds or the last one fails. A sync fails without another try if, in one try, a listing response is over 25 MB, the listing responses add up to more than 100 MB, the listing finds more than 50,000 nodes, or more than 100,000 requests are sent, retries included.
+
+        A node's level counts both kinds of nesting: the tree call's nodes are at level 1, and a node's child nodes, from `tree.children` or a child call, are one level below it. Nodes more than 12 levels deep aren't imported. An item whose response is over 10 MB, or that the vendor returns as not found, is skipped. A redirect isn't followed and fails the sync.
+
+        During a sync, if the vendor answers `429`, Intercom waits for the longest time its `Retry-After`, `RateLimit-Reset` and `X-RateLimit-Reset` headers give, or 60 seconds if none gives one, and then retries. `Retry-After` is seconds or a date, `RateLimit-Reset` is seconds, and `X-RateLimit-Reset` is seconds, or a Unix time when it's over 1,000,000,000. If the vendor keeps answering `429`, the sync fails.
       properties:
         name:
           type: string
@@ -36948,6 +36954,147 @@ components:
               type: boolean
               description: Whether a node that has child nodes becomes a folder.
               example: true
+            paging:
+              type: object
+              description: How to request every page of the tree call, for a vendor
+                that pages its lists. Intercom sends the page number in `param`, starting
+                at 1, and stops after a page that lists no nodes or once the page number
+                reaches the page count in the response. A page that lists nodes but has
+                no page count fails the sync. Without `paging`, the request is sent once.
+                When the source is created, the token check sends the tree request once,
+                without the page number. It must be an object with `style`, `param`
+                and `page_count`, each of the form below (`invalid`).
+              properties:
+                style:
+                  type: string
+                  description: How the vendor numbers its pages. `page_number` means
+                    the pages are numbered from 1.
+                  enum:
+                  - page_number
+                  example: page_number
+                param:
+                  type: string
+                  description: The name of the query parameter that carries the page
+                    number. It may only use letters, digits, underscores, `.`, `-`,
+                    `[` and `]`. It replaces a parameter of the same name in `query`.
+                  example: page
+                page_count:
+                  type: array
+                  description: The keys to follow in each page's response to reach the
+                    number of pages, which must be an integer. It must be a non-empty
+                    list.
+                  items:
+                    oneOf:
+                    - type: string
+                    - type: integer
+                  example:
+                  - total_pages
+              required:
+              - style
+              - param
+              - page_count
+            child_calls:
+              type: array
+              description: The requests that list child nodes, for a vendor that lists
+                one level at a time. The first child call is made once for each node
+                the tree call listed, the second once for each node the first child
+                call listed, and so on. A call is made for every node the call before
+                it listed, whether or not that node is content or a folder, but not for
+                nodes nested inside it through `children`. The nodes a child call lists
+                become child nodes of the node it was made for, after any nodes under
+                `children`, and they follow the same `children`, `content_if`, `folder_if`
+                and `folder_if_has_children` as the tree's nodes. It must be a list of
+                at most 11 calls (`invalid`). A failing check in a child call names it
+                by its index, such as `tree.child_calls.0` or `tree.child_calls.0.path`.
+              items:
+                type: object
+                description: A child call. It must be an object (`invalid`) with `path`
+                  and `nodes` (`missing_keys`). Its path and query values can use placeholders
+                  from `variables` and its `node_values` (`undeclared_placeholder`).
+                properties:
+                  path:
+                    type: string
+                    description: The request path, relative to `base_url`. It has the
+                      same checks as `tree.path`.
+                    example: "/spaces/{space_id}/pages/{page_id}/children"
+                  query:
+                    type: object
+                    description: The query parameters to send. It has the same checks
+                      as `tree.query`.
+                    additionalProperties:
+                      type: string
+                    example:
+                      limit: '100'
+                  node_values:
+                    type: object
+                    description: Placeholders filled from the node the call is made for,
+                      each with the keys to follow in that node to reach its value. It
+                      has the same checks as `item.node_values`, and fails the sync in
+                      the same cases.
+                    additionalProperties:
+                      type: array
+                      items:
+                        oneOf:
+                        - type: string
+                        - type: integer
+                    example:
+                      page_id:
+                      - id
+                  nodes:
+                    type: array
+                    description: The keys to follow in the response to reach the list
+                      of nodes. Use an empty list if the response is the list.
+                    items:
+                      oneOf:
+                      - type: string
+                      - type: integer
+                    example:
+                    - pages
+                  paging:
+                    type: object
+                    description: How to request every page of this call. It has the same
+                      form and checks as `tree.paging`, and is followed the same way.
+                    properties:
+                      style:
+                        type: string
+                        description: How the vendor numbers its pages, as in `tree.paging`.
+                        enum:
+                        - page_number
+                        example: page_number
+                      param:
+                        type: string
+                        description: The query parameter that carries the page number,
+                          as in `tree.paging`.
+                        example: page
+                      page_count:
+                        type: array
+                        description: The keys to follow in each page's response to reach
+                          the number of pages, as in `tree.paging`.
+                        items:
+                          oneOf:
+                          - type: string
+                          - type: integer
+                        example:
+                        - total_pages
+                    required:
+                    - style
+                    - param
+                    - page_count
+                required:
+                - path
+                - nodes
+              example:
+              - path: "/spaces/{space_id}/pages/{page_id}/children"
+                node_values:
+                  page_id:
+                  - id
+                nodes:
+                - pages
+                paging:
+                  style: page_number
+                  param: page
+                  page_count:
+                  - total_pages
           required:
           - path
           - nodes
