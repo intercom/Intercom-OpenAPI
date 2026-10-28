@@ -3263,7 +3263,9 @@ paths:
         rendered with its draft content, leaving the live article untouched.
 
         A draft exists only when a published article has unpublished changes staged
-        on top of it. Returns `404` when the article has no staged draft.
+        on top of it. Returns `404` with an empty response body when the article
+        has no staged draft. An article ID that doesn't exist returns a `404` with
+        the standard error body.
 
         Requires the `read_articles_scope` OAuth scope.
       responses:
@@ -3344,7 +3346,9 @@ paths:
         unchanged until the draft is published.
 
         The article must already be published; staging a draft on an article that
-        has never been published returns `422`.
+        has never been published returns `422`. That `422` has the short body
+        `{ "errors": [{ "message": "...", "status": 422 }] }`, with no `type`,
+        `request_id` or `code`. Other `422` errors use the standard error format.
 
         Only text content is staged: `title`, `description`, `body` or
         `body_markdown`, and `author_id`, including per-locale values in
@@ -3415,11 +3419,16 @@ paths:
               examples:
                 Article not published:
                   value:
+                    errors:
+                    - message: Article must be published before a draft can be staged
+                      status: 422
+                Locale not published:
+                  value:
                     type: error.list
                     request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
                     errors:
                     - code: parameter_invalid
-                      message: Article must be published before a draft can be staged
+                      message: 'Cannot stage a draft for locale(s) that are not published on the article: fr'
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -3462,6 +3471,10 @@ paths:
         workspace you must list which locales to publish via the `locales` array;
         omitting it returns `422`. Returns `422` when there is no staged draft to
         publish, or when a requested locale has no pending changes.
+
+        The `422` for no staged draft has the short body
+        `{ "errors": [{ "message": "...", "status": 422 }] }`, with no `type`,
+        `request_id` or `code`. The other `422` errors use the standard error format.
 
         Requires the `read_write_articles_scope` OAuth scope.
       responses:
@@ -3524,11 +3537,9 @@ paths:
               examples:
                 No draft to publish:
                   value:
-                    type: error.list
-                    request_id: 8a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d
                     errors:
-                    - code: parameter_invalid
-                      message: Article has no draft to publish
+                    - message: Article has no draft to publish
+                      status: 422
                 Locales required on a multilingual workspace:
                   value:
                     type: error.list
@@ -3807,6 +3818,9 @@ paths:
         `GET /articles/{article_id}/versions/{id}` to retrieve a single version
         with its full content.
 
+        A `404` has an empty response body, whether the article or its content
+        isn't found.
+
         Requires the `read_articles_scope` OAuth scope.
       responses:
         '200':
@@ -3904,6 +3918,9 @@ paths:
         by making a GET request to
         `https://api.intercom.io/articles/<article_id>/versions/<id>`. Returns
         the version's full content; the live article remains untouched.
+
+        A `404` has an empty response body, whether the article, its content or
+        the version isn't found.
 
         Requires the `read_articles_scope` OAuth scope.
       responses:
@@ -7513,6 +7530,8 @@ paths:
       description: |
         You can update the details of a single collection by making a PUT request to `https://api.intercom.io/help_center/collections/<id>`.
 
+        `help_center_id` is checked but never applied. It must match the help center of the collection's articles and sub-collections, or the request returns a `400`. A collection with no content rejects any `help_center_id`, so leave it out. Moving a collection to another help center isn't supported.
+
         Requires the `read_write_articles_scope` OAuth scope.
       responses:
         '200':
@@ -9096,6 +9115,8 @@ paths:
         Both `enabled` and `ip_allowlist` are optional. A field you omit is left unchanged, and a request with neither returns the current settings without changing anything. Sending `null` for a field is the same as omitting it.
 
         Every non-blank `ip_allowlist` entry must be an IPv4 address or an IPv4 range in CIDR notation. Blank entries are ignored and surrounding whitespace is trimmed. Any other entry, including an IPv6 address, returns a 422 `parameter_invalid` error.
+
+        When the update leaves the allowlist enabled with at least one entry, the request must come from an IPv4 address that is on the list. A request from an IPv6 address can never match an IPv4 allowlist, so it returns the lockout 422 below.
 
         Requires the `manage_ip_allowlist` OAuth scope.
 
@@ -31082,7 +31103,10 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       - name: id
         in: path
-        description: The unique identifier for the workflow
+        description: 'The ruleset ID of the workflow. This is the number at the end
+          of the workflow''s URL in Intercom, `https://app.intercom.com/a/apps/<app_id>/automation/workflows/<id>`.
+          It is not the `workflow.id` returned in the response, so don''t pass that
+          value back here.'
         required: true
         schema:
           type: string
@@ -31092,6 +31116,8 @@ paths:
       operationId: exportWorkflow
       description: |
         Export a workflow configuration by its ID. This endpoint returns the complete workflow definition including its steps, targeting rules, and attributes.
+
+        The `id` in the path is the workflow's ruleset ID, the number at the end of the workflow's URL in Intercom (`https://app.intercom.com/a/apps/<app_id>/automation/workflows/<id>`). The `workflow.id` in the response is a different ID, so don't pass it back as `id`.
 
         This endpoint is designed for EU Data Act compliance, allowing customers to export their workflow configurations.
       responses:
@@ -47489,7 +47515,8 @@ components:
           properties:
             id:
               type: string
-              description: The unique identifier for the workflow.
+              description: The unique identifier for the workflow. This is not the
+                ruleset ID that the export endpoint's `id` path parameter expects.
               example: "67890"
             title:
               type: string
@@ -47753,7 +47780,7 @@ tags:
   description: |
     Manage IP allowlist settings for your workspace.
 
-    The IP Allowlist API allows you to configure which IP addresses are allowed to access the Intercom API and web application for your workspace. This is useful for restricting access to your Intercom workspace to specific corporate networks or VPNs.
+    The IP Allowlist API allows you to configure which IP addresses teammates can use your workspace from, in the web app and mobile apps. This is useful for restricting teammate access to specific corporate networks or VPNs. It doesn't apply to REST API requests, which use a separate REST API allowlist that this API doesn't manage.
 
     {% admonition type="info" name="Authentication" %}
       This endpoint requires the `manage_ip_allowlist` OAuth scope.
