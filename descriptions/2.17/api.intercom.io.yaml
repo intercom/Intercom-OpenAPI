@@ -5895,7 +5895,7 @@ paths:
                         endpoint: /fin/reply
                         method: POST
                       - name: ask
-                        description: Ask Fin a single question and get one informational answer. Fin never escalates, disambiguates, or asks follow-up questions. Use for one-shot informational lookups.
+                        description: Ask Fin a single question and get one informational answer. Fin does not decide to hand over to a human, disambiguate, or ask follow-up questions, although escalation rules can still apply. Use for one-shot informational lookups.
                         inputSchema:
                           type: object
                           properties:
@@ -6144,10 +6144,11 @@ paths:
         Ask Fin a single, self-contained question and receive one informational answer.
 
         Unlike a conversation, `/fin/ask` is non-conversational: Fin will not ask follow-up
-        questions, will not run procedures, and will not escalate to a human on its own. You can
-        still escalate one yourself with `POST /fin/escalate`; the ask conversation is already
-        closed after its one-shot answer, and escalation leaves it closed while routing the
-        handoff separately.
+        questions, will not run procedures, and will not decide to hand over to a human itself.
+        Escalation rules can still match, and the conversation can still be routed to a team or
+        finish without resolution. You can also escalate one yourself with `POST /fin/escalate`;
+        the ask conversation is already closed after its one-shot answer, and escalation leaves
+        it closed while routing the handoff separately.
 
         Fin's answer is delivered asynchronously via the `fin_replied` event. The conversation
         ends with a `complete` status — there is no `awaiting_user_reply` cycle.
@@ -42228,8 +42229,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/email_setting"
-    metadata:
-          "$ref": "#/components/schemas/conversation_part_metadata"
     conversation_attribute_updated_by_workflow:
       title: Part type - conversation_attribute_updated_by_workflow
       type: object
@@ -42802,12 +42801,14 @@ components:
         status:
           type: string
           enum:
+          - thinking
           - awaiting_user_reply
           - escalated
           - resolved
           - complete
           description: |
             Fin's current status.
+            - thinking: Fin has started running a procedure. Not sent on every turn
             - awaiting_user_reply: Fin has finished replying and is waiting for the user to respond
             - escalated: The conversation has been escalated to a human
             - resolved: The user's query has been resolved
@@ -42818,13 +42819,28 @@ components:
           description: |
             Optional. A human-readable explanation of why the conversation was escalated.
             Only present when status is 'escalated'.
-            Possible values include:
+
+            When you escalate deterministically with `/fin/escalate`, the reason is always
+            "Escalation requested via API".
+
+            The following reasons apply to Fin-decided escalations when Fin owns the
+            conversation (`/fin/start`, `/fin/procedures/{procedure_id}/run`, and
+            `/fin/reply` on a conversation that was started that way). `/fin/ask` can
+            report any of them, because escalation rules still apply and the conversation
+            can still be routed to a team or finish without resolution. On an Ask,
+            "Escalation requested by user" normally only follows an escalation rule match.
             - "Escalation requested by user"
             - "Escalation rule: {rule_name}"
             - "Escalation rule matched"
             - "Routed to team"
             - "Conversation finished without resolution"
-          example: Escalation requested by user
+
+            "Escalation requested by user" is sent whenever Fin decides to hand over, not
+            only when the user asks for a human, for example on a procedure handoff or a
+            custom answer handover. It also follows an escalation rule match, as a second
+            `escalated` event after the rule's reason. While a procedure is running, every
+            escalation Fin decides on reports it.
+          example: Escalation requested via API
         created_at_ms:
           type: string
           format: date-time
@@ -42929,10 +42945,12 @@ components:
           enum:
           - replying
           - awaiting_user_reply
+          - complete
           description: |
             Fin's current status.
             - replying: Intermediate reply part; more parts may follow
             - awaiting_user_reply: Legacy status; instead use the fin_status_updated event with 'awaiting_user_reply', which fires once Fin's reply is done
+            - complete: Fin's reply is final and no user reply is expected. Sent for one-shot Ask replies only
           example: replying
         created_at_ms:
           type: string
