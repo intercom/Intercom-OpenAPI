@@ -295,9 +295,10 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       - name: created_at_after
         in: query
-        required: true
+        required: false
         description: The start date that you request data for. It must be formatted
-          as a Unix timestamp.
+          as a Unix timestamp. If you leave it out, it defaults to 30 days before
+          the request.
         example: '1677253093'
         schema:
           type: string
@@ -305,10 +306,29 @@ paths:
         in: query
         required: false
         description: The end date that you request data for. It must be formatted
-          as a Unix timestamp.
+          as a Unix timestamp. If you leave it out, it defaults to the time of the
+          request.
         example: '1677861493'
         schema:
           type: string
+      - name: page
+        in: query
+        required: false
+        description: The page number of results to return. Defaults to the first page.
+        example: 1
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results per page. Must be between 1 and 250.
+        example: 20
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 250
       tags:
       - Admins
       operationId: listActivityLogs
@@ -424,20 +444,20 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-              - created_at_after
               properties:
                 created_at_after:
                   type: integer
                   format: date-time
                   description: The start date that you request data for. It must
-                    be formatted as a Unix timestamp.
+                    be formatted as a Unix timestamp. If you leave it out, it defaults
+                    to 30 days before the request.
                   example: 1677253093
                 created_at_before:
                   type: integer
                   format: date-time
                   description: The end date that you request data for. It must
-                    be formatted as a Unix timestamp.
+                    be formatted as a Unix timestamp. If you leave it out, it defaults
+                    to the time of the request.
                   example: 1677861493
                 event_types:
                   type: array
