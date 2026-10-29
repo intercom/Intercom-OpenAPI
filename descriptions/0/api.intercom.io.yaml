@@ -17333,7 +17333,7 @@ paths:
       - name: include_email_history
         in: query
         required: false
-        description: If set to true, the source of the conversation will include the email history.
+        description: If set to true, the source of the conversation will include the email history, for conversations started by email.
         example: true
         schema:
           type: boolean
@@ -36943,8 +36943,9 @@ components:
         skip_reopen:
           type: boolean
           default: false
-          description: When true, a `comment` on a closed conversation leaves it
-            closed instead of reopening it. Available from API version 2.17.
+          description: When true, a reply that assigns the conversation (a `comment`
+            with `assignee_id`) doesn't reopen or unsnooze it. A plain `comment` still
+            reopens a closed conversation. Available from API version 2.17.
           example: true
         skip_unsnooze:
           type: boolean
@@ -41126,7 +41127,8 @@ components:
         body:
           type: string
           description: The text body of the comment. Required unless you are sending
-            a quick reply selection in `reply_options`.
+            a quick reply selection in `reply_options`, which is only allowed when `type`
+            is `user`. Always required when replying to a ticket.
         created_at:
           type: integer
           description: The time the reply was created. If not provided, the current
@@ -41218,6 +41220,7 @@ components:
       - "$ref": "#/components/schemas/contact_reply_base_request"
       required:
       - email
+      - body
     contact_reply_ticket_intercom_user_id_request:
       title: Intercom User ID
       type: object
@@ -41231,6 +41234,7 @@ components:
           description: The identifier for the contact as given by Intercom.
       required:
       - intercom_user_id
+      - body
     contact_reply_ticket_request:
       title: Contact Reply on ticket
       oneOf:
@@ -41250,6 +41254,7 @@ components:
           description: The external_id you have defined for the contact.
       required:
       - user_id
+      - body
     contact_reply_user_id_request:
       title: User ID
       type: object
@@ -45146,13 +45151,14 @@ components:
           type: string
           nullable: true
           description: The phone number as the contact typed it, in national format.
-            Used together with `country` instead of `phone` to work out the number.
+            When sent with `country`, used in place of `phone` to read the number.
+            `phone` is still required.
           example: "087 234 5678"
         country:
           type: string
           nullable: true
           description: The two-letter country code used to read `user_input_phone`.
-            For `US` numbers, Intercom also checks whether the number is a landline.
+            When `country` is `US`, Intercom also looks up the carrier to detect landlines.
           example: IE
       required:
       - phone
