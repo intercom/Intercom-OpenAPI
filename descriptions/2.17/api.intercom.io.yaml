@@ -26519,15 +26519,19 @@ paths:
       - name: per_page
         in: query
         required: false
-        description: How many results to display per page. Defaults to 25. Max 25.
+        description: How many results to display per page. Defaults to 25. Must be between 1 and 25. A value outside that range returns a 400 error.
         example: 25
         schema:
           type: integer
+          minimum: 1
+          maximum: 25
       tags:
       - Calls
       operationId: listCalls
       description: |
         Retrieve a paginated list of calls.
+
+        Requires the `read_conversations` OAuth scope.
       responses:
         '200':
           description: successful
@@ -26546,6 +26550,27 @@ paths:
                       total_pages: 0
               schema:
                 "$ref": "#/components/schemas/call_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Per page too large:
+                  value:
+                    type: error.list
+                    request_id: 5d1f7a3c-8e2b-4c64-9a0f-1b7e3c2d4f90
+                    errors:
+                    - code: parameter_invalid
+                      message: Per Page is too big
+                Per page too small:
+                  value:
+                    type: error.list
+                    request_id: 0c9b6e41-27d3-4a85-b1f6-6e8a3d5c7b12
+                    errors:
+                    - code: parameter_invalid
+                      message: Per Page is too small
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -26558,6 +26583,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/calls/{call_id}":
@@ -26577,7 +26609,10 @@ paths:
       tags:
       - Calls
       operationId: showCall
-      description: Retrieve a single call by id.
+      description: |
+        Retrieve a single call by id.
+
+        Requires the `read_conversations` OAuth scope.
       responses:
         '200':
           description: successful
@@ -26591,7 +26626,7 @@ paths:
                     conversation_id: "456"
                     admin_id: "789"
                     contact_id: "6762f0dd1bb69f9f2193bb83"
-                    state: completed
+                    state: ended
                     initiated_at: 1734537437
                     answered_at: 1734537440
                     ended_at: 1734537530
@@ -26601,10 +26636,14 @@ paths:
                     transcription_url: "https://api.intercom.io/calls/123/transcript"
                     call_type: phone
                     direction: outbound
-                    ended_reason: answered
+                    ended_reason: null
                     phone: "+15551234567"
                     fin_recording_url: "https://api.intercom.io/calls/124/recording"
                     fin_transcription_url: "https://api.intercom.io/calls/124/transcript"
+                    duration: 90
+                    talk_time: 85
+                    queue_time: 3
+                    hold_time: null
               schema:
                 "$ref": "#/components/schemas/call"
         '404':
@@ -26633,6 +26672,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/calls/{call_id}/recording":
@@ -26652,7 +26698,10 @@ paths:
       tags:
       - Calls
       operationId: showCallRecording
-      description: Redirects to a signed URL for the call's recording if it exists.
+      description: |
+        Redirects to a signed URL for the call's recording if it exists.
+
+        Requires the `read_conversations` OAuth scope.
       responses:
         '302':
           description: Redirect to signed recording URL
@@ -26663,17 +26712,24 @@ paths:
                 type: string
                 format: uri
         '404':
-          description: Recording not found
+          description: Call or recording not found
           content:
             application/json:
               examples:
-                Not Found:
+                Recording not found:
                   value:
                     type: error.list
                     request_id: 9bc4fc62-7cdf-4f72-a56e-02af4836d499
                     errors:
-                    - code: not_found
+                    - code: call_recording_not_found
                       message: Recording Not Found
+                Call not found:
+                  value:
+                    type: error.list
+                    request_id: 4f2d8b17-6a39-4e0c-8d51-c3b7a90e1f26
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -26688,6 +26744,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/calls/{id}/transcript":
@@ -26709,6 +26772,8 @@ paths:
       operationId: showCallTranscript
       description: |
         Returns the transcript for the specified call as a JSON array of turns.
+
+        Requires the `read_conversations` OAuth scope.
       responses:
         '200':
           description: successful
@@ -26749,6 +26814,27 @@ paths:
                       message: Not Found
               schema:
                 "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
   "/calls/search":
     post:
       summary: List calls with transcripts
@@ -26763,6 +26849,8 @@ paths:
       description: |
         Retrieve calls by a list of conversation ids and include transcripts when available.
         A maximum of 20 `conversation_ids` can be provided. If none are provided or more than 20 are provided, a 400 error is returned.
+
+        Requires the `read_conversations` OAuth scope.
       requestBody:
         required: true
         content:
@@ -26799,7 +26887,13 @@ paths:
                       id: "123"
                       conversation_id: "64619700005694"
                       transcript:
-                      - {}
+                      - start_time: "0.0"
+                        end_time: "3.00"
+                        speaker_label: "Teammate 1"
+                        speaker: "Teammate 1"
+                        content: "Hello, thanks for calling. How can I help today?"
+                        speaker_type: admin
+                        speaker_id: "789"
                       transcript_status: completed
               schema:
                 type: object
@@ -26848,6 +26942,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/tags":
@@ -30809,7 +30910,10 @@ paths:
       tags:
         - Emails
       operationId: listEmails
-      description: Lists all sender email address settings for the workspace
+      description: |
+        Lists all sender email address settings for the workspace
+
+        Requires the `read_emails` OAuth scope.
       parameters:
         - name: Intercom-Version
           in: header
@@ -30851,6 +30955,21 @@ paths:
           description: Unauthorized
           content:
             application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                      - code: unauthorized
+                        message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                      - code: token_unauthorized
+                        message: Not authorized to access resource
               schema:
                 $ref: "#/components/schemas/error"
   "/emails/{id}":
@@ -30859,7 +30978,10 @@ paths:
       tags:
         - Emails
       operationId: retrieveEmail
-      description: Fetches a specific email setting by its unique identifier
+      description: |
+        Fetches a specific email setting by its unique identifier
+
+        Requires the `read_emails` OAuth scope.
       parameters:
         - name: Intercom-Version
           in: header
@@ -30895,6 +31017,21 @@ paths:
           description: Unauthorized
           content:
             application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                      - code: unauthorized
+                        message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                      - code: token_unauthorized
+                        message: Not authorized to access resource
               schema:
                 $ref: "#/components/schemas/error"
         '404':
@@ -30922,9 +31059,17 @@ paths:
         - AWS Connect (default)
         - Five9
         - Zoom Phone
+        - NICE CXone
+        - Dialpad
+        - Generic
       operationId: registerFinVoiceCall
       tags:
         - Calls
+      parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            $ref: "#/components/schemas/intercom_version"
       requestBody:
         content:
           application/json:
@@ -30963,6 +31108,10 @@ paths:
       tags:
         - Calls
       parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            $ref: "#/components/schemas/intercom_version"
         - name: id
           in: path
           required: true
@@ -30996,6 +31145,10 @@ paths:
       tags:
         - Calls
       parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            $ref: "#/components/schemas/intercom_version"
         - name: external_id
           in: path
           required: true
@@ -31032,6 +31185,10 @@ paths:
       tags:
         - Calls
       parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            $ref: "#/components/schemas/intercom_version"
         - name: phone_number
           in: path
           required: true
@@ -31074,6 +31231,10 @@ paths:
       tags:
         - Calls
       parameters:
+        - name: Intercom-Version
+          in: header
+          schema:
+            $ref: "#/components/schemas/intercom_version"
         - name: conversation_id
           in: path
           required: true
@@ -32341,6 +32502,11 @@ components:
           type: string
           description: The external call identifier from the call provider
           example: 'call-123-abc'
+        vendor_internal_id:
+          type: string
+          nullable: true
+          description: Vendor-supplied identifier provided at registration time, for linking the Fin Voice session to records in the vendor's own systems. Null when the vendor did not supply one.
+          example: 'vendor-internal-abc-123'
         intercom_conversation_id:
           type: string
           nullable: true
@@ -32362,12 +32528,22 @@ components:
           items:
             type: object
           example: []
+        fin_call_duration:
+          type: string
+          nullable: true
+          description: How long the AI Agent (Fin) part of the call lasted, in seconds, returned as a string. Null while that part of the call is still in progress or when the call has no AI Agent part.
+          example: '45'
         data:
           type: object
           description: The metadata object supplied when the call was registered, returned verbatim. Empty object when none was supplied.
           example:
             masterContactID: 'abc123'
             DNIS: '+18005551212'
+        language:
+          type: string
+          nullable: true
+          description: The language of the call's conversation, as a locale code. Null until the call is matched to a conversation or while no language has been set.
+          example: 'fr'
     app:
       title: App
       type: object
@@ -39594,7 +39770,7 @@ components:
         state:
           type: string
           description: The current state of the call.
-          example: completed
+          example: ended
         initiated_at:
           "$ref": "#/components/schemas/datetime"
         answered_at:
@@ -39629,7 +39805,7 @@ components:
           type: string
           nullable: true
           description: The reason for the call end, if applicable.
-          example: completed
+          example: missed
         phone:
           type: string
           nullable: true
@@ -39645,6 +39821,26 @@ components:
           format: uri
           nullable: true
           description: API URL to the AI Agent (Fin) call transcript if available.
+        duration:
+          type: integer
+          nullable: true
+          description: Total call duration in seconds from the caller's perspective. For inbound calls, measured from initiated to ended. For outbound calls, measured from answered to ended.
+          example: 900
+        talk_time:
+          type: integer
+          nullable: true
+          description: Total time in seconds the agent and customer were connected.
+          example: 300
+        queue_time:
+          type: integer
+          nullable: true
+          description: Total time in seconds the caller waited in queue before connecting, when assigned to a team.
+          example: 45
+        hold_time:
+          type: integer
+          nullable: true
+          description: Total time in seconds the caller was placed on hold during the call.
+          example: 60
     call_list:
       title: Calls
       type: object
@@ -39664,7 +39860,7 @@ components:
           description: Total number of items available.
           example: 0
         pages:
-          "$ref": "#/components/schemas/cursor_pages"
+          "$ref": "#/components/schemas/pages_link"
     call_transcript_turn:
       title: Call Transcript Turn
       type: object
@@ -44883,12 +45079,20 @@ components:
           example: 'call-123-abc'
         source:
           type: string
-          description: Source of the call. Can be "five9", "zoom_phone", or defaults to "aws_connect"
+          description: Source of the call. Can be "five9", "zoom_phone", "nice_cxone", "dialpad", "generic", or "aws_connect". Defaults to "aws_connect", and any other value is treated as "aws_connect".
           enum:
             - five9
             - zoom_phone
+            - nice_cxone
+            - dialpad
+            - generic
             - aws_connect
           example: 'aws_connect'
+        vendor_internal_id:
+          type: string
+          description: Optional vendor-supplied identifier for linking the Fin Voice session to records in the vendor's own systems. Stored as-is and returned on every lookup.
+          nullable: true
+          example: 'vendor-internal-abc-123'
         data:
           type: object
           description: Additional metadata about the call
