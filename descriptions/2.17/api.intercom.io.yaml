@@ -620,6 +620,7 @@ paths:
               type: object
               required:
               - away_mode_enabled
+              - away_mode_reassign
               properties:
                 away_mode_enabled:
                   type: boolean
@@ -627,8 +628,10 @@ paths:
                   example: true
                 away_mode_reassign:
                   type: boolean
-                  description: Set to `true` to assign any new conversation replies to your default inbox. Required when `away_mode_enabled` is `true`, and it can't be `true` when `away_mode_enabled` is `false`.
+                  description: Set to "true" to assign any new conversation replies
+                    to your default inbox.
                   example: false
+                  default: false
                 away_status_reason_id:
                   type: integer
                   description: The unique identifier of the away status reason. Only allowed when `away_mode_enabled` is `true`, and the reason can't be archived, unless it is already the admin's current reason. Required if your workspace makes away status reasons mandatory.
@@ -33244,11 +33247,32 @@ components:
           type: string
           description: The email of the admin.
           example: jdoe@example.com
+        job_title:
+          type: string
+          description: The job title of the admin.
+          example: Associate
+        away_mode_enabled:
+          type: boolean
+          description: Identifies if this admin is currently set in away mode.
+          example: false
+        away_mode_reassign:
+          type: boolean
+          description: Identifies if this admin is set to automatically reassign new
+            conversations to the apps default inbox.
+          example: false
         has_inbox_seat:
           type: boolean
           description: Identifies if this admin has a paid inbox seat to restrict/allow
             features that require them.
           example: true
+        team_ids:
+          type: array
+          description: This is a list of ids of the teams that this admin is part
+            of.
+          example:
+          - 814865
+          items:
+            type: integer
         avatar:
           type: object
           description: This object represents the avatar associated with the admin.
