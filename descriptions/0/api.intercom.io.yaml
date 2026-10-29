@@ -3862,6 +3862,15 @@ paths:
         example: false
         schema:
           type: boolean
+      - name: locale
+        in: query
+        required: false
+        description: Return only articles with content in this locale, and only this
+          locale in `translated_content`. Use a locale selected for the Help Center (for
+          example `en`, `fr`).
+        example: fr
+        schema:
+          type: string
       - name: page
         in: query
         required: false
@@ -3978,6 +3987,13 @@ paths:
                     errors:
                     - code: data_invalid
                       message: Pagination data must be a number greater than 0
+                Invalid locale:
+                  value:
+                    type: error.list
+                    request_id: 7c2e5d4a-3b1f-4e8a-9d6c-0f5a2b8e1c37
+                    errors:
+                    - code: parameter_invalid
+                      message: Locale 'de' is not available in this Help Center
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
