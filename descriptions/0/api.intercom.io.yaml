@@ -266,7 +266,7 @@ paths:
                   example: false
                 away_status_reason_id:
                   type: integer
-                  description: The unique identifier of the away status reason. Only allowed when `away_mode_enabled` is `true`, and the reason can't be archived. Required if your workspace makes away status reasons mandatory.
+                  description: The unique identifier of the away status reason. Only allowed when `away_mode_enabled` is `true`, and the reason can't be archived, unless it is already the admin's current reason. Required if your workspace makes away status reasons mandatory.
                   example: 12345
             examples:
               successful_response:
@@ -508,20 +508,6 @@ paths:
                         from before to after.
               schema:
                 "$ref": "#/components/schemas/activity_log_list"
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              examples:
-                Not available in this API version:
-                  value:
-                    type: error.list
-                    request_id: 131287e8-784c-48a9-a045-7feb06b861b7
-                    errors:
-                    - code: intercom_version_invalid
-                      message: Requested resource is not available in current API version
-              schema:
-                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -957,20 +943,6 @@ paths:
                     - masked_admin_avatar_change
               schema:
                 "$ref": "#/components/schemas/activity_log_event_type_list"
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              examples:
-                Not available in this API version:
-                  value:
-                    type: error.list
-                    request_id: 131287e8-784c-48a9-a045-7feb06b861b7
-                    errors:
-                    - code: intercom_version_invalid
-                      message: Requested resource is not available in current API version
-              schema:
-                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -36773,7 +36745,7 @@ components:
     create_office_hours_schedule_request:
       type: object
       title: Create Office Hours Schedule Request
-      description: The request payload for creating an office hours schedule. A field that isn't listed here is rejected with a 400 error.
+      description: The request payload for creating an office hours schedule. Any other field, apart from `id`, is rejected with a 400 error.
       required:
       - name
       - time_intervals
@@ -36795,7 +36767,7 @@ components:
       type: object
       title: Update Office Hours Schedule Request
       description: The request payload for updating an office hours schedule. Only the
-        provided fields are updated. A field that isn't listed here is rejected with a 400 error.
+        provided fields are updated. Any other field, apart from `id`, is rejected with a 400 error.
       properties:
         name:
           type: string
@@ -36814,7 +36786,7 @@ components:
       type: object
       title: Create Office Hours Exception Request
       description: The request payload for creating an office hours exception. Omit
-        `time_intervals` when `exception_type` is `closed`. A field that isn't listed here is rejected with a 400 error.
+        `time_intervals` when `exception_type` is `closed`. Any other field, apart from `id` and `office_hours_schedule_id`, is rejected with a 400 error.
       required:
       - exception_date
       - exception_type
@@ -36849,7 +36821,7 @@ components:
       type: object
       title: Update Office Hours Exception Request
       description: The request payload for updating an office hours exception. Only
-        the provided fields are updated. A field that isn't listed here is rejected with a 400 error.
+        the provided fields are updated. Any other field, apart from `id` and `office_hours_schedule_id`, is rejected with a 400 error.
       properties:
         exception_date:
           type: string
