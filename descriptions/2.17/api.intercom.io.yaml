@@ -26885,6 +26885,7 @@ paths:
                   phone: "+353832345678"
                   custom_attributes:
                     issue_type:
+                    - Billing
   "/calls":
     get:
       summary: List all calls
@@ -32432,7 +32433,7 @@ components:
         assignee_id:
           type: string
           description: The `id` of the admin or team to assign the conversation to
-            with this reply. Only used with `comment` replies.
+            with this reply.
           example: '4324241'
         skip_reopen:
           type: boolean
@@ -39512,12 +39513,15 @@ components:
       properties:
         message_type:
           type: string
-          description: 'The kind of message being created. Values: `inapp`, `email` or `whatsapp`.'
+          description: 'The kind of message being created. Values: `in_app`, `email` or `whatsapp`. `inapp`
+            is also accepted for in-app messages, and responses always show in-app
+            messages as `inapp`.'
           enum:
+          - in_app
           - inapp
           - email
           - whatsapp
-          example: inapp
+          example: in_app
         subject:
           type: string
           description: The title of the email.
@@ -39902,8 +39906,8 @@ components:
           type: object
           description: Custom attributes to add to the user or lead's custom data
             attributes. Values are strings. Numbers and booleans are converted to
-            strings. An empty string, `null`, array or object value returns a `422`
-            error with the key `context`.
+            strings. An empty string, array or object value returns a `422` error
+            with the key `context`. A `null` value is ignored.
           additionalProperties:
             oneOf:
             - type: string
