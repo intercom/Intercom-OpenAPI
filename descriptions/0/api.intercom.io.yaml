@@ -36940,6 +36940,11 @@ components:
           type: boolean
           description: Option to disable notifications when replying to a conversation.
           example: true
+        assignee_id:
+          type: string
+          description: The `id` of the admin or team to assign the conversation to
+            with this reply. Only used with `comment` replies.
+          example: '4324241'
         skip_reopen:
           type: boolean
           default: false
@@ -45128,10 +45133,13 @@ components:
           type: object
           description: Custom attributes to add to the user or lead's custom data
             attributes. Values are strings. Numbers and booleans are converted to
-            strings. A `null`, array or object value returns a `422` error with the
-            key `context`.
+            strings. An empty string, `null`, array or object value returns a `422`
+            error with the key `context`.
           additionalProperties:
-            type: string
+            oneOf:
+            - type: string
+            - type: number
+            - type: boolean
           example:
             issue_type: Billing
             priority: High
@@ -50850,7 +50858,7 @@ components:
           type: string
           description: The id WhatsApp gave the message. Only present for `whatsapp`
             messages that WhatsApp accepted.
-          example: wamid.HBgLNTU0Nzk5OTk5ODg4FQIAERgSN0ZFM0JBRjNEMEY2QTA2RDY0AA==
+          example: wamid.EXAMPLE123
       required:
       - type
       - id
@@ -51860,6 +51868,26 @@ components:
             title: multiple filter search request
         pagination:
           "$ref": "#/components/schemas/starting_after_paging"
+        sort:
+          type: object
+          description: How to sort the results. Without it, the endpoint's default
+            order is used.
+          properties:
+            field:
+              type: string
+              description: The searchable field to sort by. A field that isn't
+                searchable returns a `400` error with the code `invalid_field`.
+              example: updated_at
+            order:
+              type: string
+              enum:
+              - ascending
+              - descending
+              default: descending
+              description: The sort order. Any other value is treated as `descending`.
+              example: descending
+          required:
+          - field
       required:
       - query
     company_search_request:
