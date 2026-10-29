@@ -32564,7 +32564,7 @@ paths:
                     - code: parameter_invalid
                       message: "Ticket cannot be shared. Tracker tickets cannot be shared and Customer tickets are shared by default. Back-Office tickets can only be shared if they are linked to a conversation and that conversation does not have any other shared linked tickets"
         '422':
-          description: Conversation already assigned to the assignee
+          description: Unprocessable Entity
           content:
             application/json:
               examples:
@@ -32575,6 +32575,13 @@ paths:
                     errors:
                     - code: conversation_already_assigned_to_assignee
                       message: "The conversation is already assigned to the specified assignee"
+                Unrecognised priority level:
+                  value:
+                    type: error.list
+                    request_id: 3f6c9b21-7d58-4e0a-8b44-5a9e2c1d7b03
+                    errors:
+                    - code: parameter_invalid
+                      message: 'priority must be one of: none, low, medium, high, urgent'
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -32603,20 +32610,6 @@ paths:
                     errors:
                     - code: action_forbidden
                       message: This admin does not have Inbox access permissions
-              schema:
-                "$ref": "#/components/schemas/error"
-        '422':
-          description: Unprocessable Entity
-          content:
-            application/json:
-              examples:
-                Unrecognised priority level:
-                  value:
-                    type: error.list
-                    request_id: 3f6c9b21-7d58-4e0a-8b44-5a9e2c1d7b03
-                    errors:
-                    - code: parameter_invalid
-                      message: 'priority must be one of: none, low, medium, high, urgent'
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
