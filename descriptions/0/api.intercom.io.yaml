@@ -21022,7 +21022,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/conversation_attribute"
         '422':
-          description: Invalid data_type
+          description: Unprocessable entity
           content:
             application/json:
               examples:
@@ -21033,6 +21033,34 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: "data_type 'invalid_type' is not valid. Allowed types: string, integer, list, decimal, boolean, datetime, relationship, files"
+                List without options:
+                  value:
+                    type: error.list
+                    request_id: 5e2ef33c-16b4-418c-a294-c0ffeed2f0e4
+                    errors:
+                    - code: parameter_invalid
+                      message: "Data type is list but no list options were given"
+                List with too few options:
+                  value:
+                    type: error.list
+                    request_id: 5e2f122b-16c1-418f-a299-c0ffeed489fd
+                    errors:
+                    - code: parameter_invalid
+                      message: "options requires a minimum of 2 items for list type attributes"
+                Relationship without object_type_id:
+                  value:
+                    type: error.list
+                    request_id: 5e2f311a-16ce-4192-a29e-c0ffeed62316
+                    errors:
+                    - code: parameter_invalid
+                      message: "reference.object_type_id is required"
+                Name already exists:
+                  value:
+                    type: error.list
+                    request_id: 5e2f5009-16db-4195-a2a3-c0ffeed7bc2f
+                    errors:
+                    - code: parameter_invalid
+                      message: "An attribute with that name already exists"
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -21185,6 +21213,34 @@ paths:
                       message: Conversation attribute not found
               schema:
                 "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              examples:
+                Options not allowed on update:
+                  value:
+                    type: error.list
+                    request_id: 5e2f6ef8-16e8-4198-a2a8-c0ffeed95548
+                    errors:
+                    - code: parameter_invalid
+                      message: "options is not allowed on update. Use /conversations/attributes/:id/options to manage list options"
+                Name already exists:
+                  value:
+                    type: error.list
+                    request_id: 5e2f8de7-16f5-419b-a2ad-c0ffeedaee61
+                    errors:
+                    - code: parameter_invalid
+                      message: "An attribute with that name already exists"
+                Name too long:
+                  value:
+                    type: error.list
+                    request_id: 5e2facd6-1702-419e-a2b2-c0ffeedc877a
+                    errors:
+                    - code: parameter_invalid
+                      message: "name exceeds the maximum length of 191 characters"
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -21263,6 +21319,20 @@ paths:
                     errors:
                     - code: conversation_attribute_not_found
                       message: Conversation attribute not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Attribute has dependent objects
+          content:
+            application/json:
+              examples:
+                Dependent objects:
+                  value:
+                    type: error.list
+                    request_id: 5e2fcbc5-170f-41a1-a2b7-c0ffeede2093
+                    errors:
+                    - code: data_invalid
+                      message: "The attribute you are trying to archive has dependent objects"
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -21639,7 +21709,7 @@ paths:
                     request_id: null
                     errors:
                     - code: parameter_invalid
-                      message: A list attribute must have at least 2 active options
+                      message: You must have at least 2 options on a list type data attribute
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -30218,7 +30288,7 @@ paths:
       tags:
       - Ticket States
       operationId: listTicketStates
-      description: You can get a list of all ticket states for a workspace.
+      description: You can get a list of all ticket states for a workspace. The list includes archived ticket states; check `archived` on each one.
       responses:
         '200':
           description: successful
@@ -30465,6 +30535,48 @@ paths:
                     updated_at: 1734537862
               schema:
                 "$ref": "#/components/schemas/ticket_type_attribute"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing name:
+                  value:
+                    type: error.list
+                    request_id: 5e2e5891-1673-417d-a27b-c0ffeecaf367
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid name parameter - Missing name"
+                Missing data_type:
+                  value:
+                    type: error.list
+                    request_id: 5e2e7780-1680-4180-a280-c0ffeecc8c80
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid data_type parameter - Missing data type"
+                Invalid data_type:
+                  value:
+                    type: error.list
+                    request_id: 5e2e966f-168d-4183-a285-c0ffeece2599
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid data_type parameter - Allowed options: string list integer decimal boolean datetime files"
+                Duplicate name:
+                  value:
+                    type: error.list
+                    request_id: 5e2eb55e-169a-4186-a28a-c0ffeecfbeb2
+                    errors:
+                    - code: parameter_invalid
+                      message: "Ticket type attribute name 'Severity' already exists on this ticket type"
+                List without enough options:
+                  value:
+                    type: error.list
+                    request_id: 5e2ed44d-16a7-4189-a28f-c0ffeed157cb
+                    errors:
+                    - code: parameter_invalid
+                      message: "options requires a minimum of 2 items for list type attributes"
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -30578,7 +30690,7 @@ paths:
       tags:
       - Ticket Types
       operationId: listTicketTypes
-      description: You can get a list of all ticket types for a workspace.
+      description: You can get a list of all ticket types for a workspace. The list includes archived ticket types and ticket types that Intercom creates itself.
       responses:
         '200':
           description: successful
@@ -30792,6 +30904,62 @@ paths:
                         external_label: Resolved
               schema:
                 "$ref": "#/components/schemas/ticket_type"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing name:
+                  value:
+                    type: error.list
+                    request_id: 5e2d6119-160b-4165-a253-c0ffeebe2a9f
+                    errors:
+                    - code: parameter_not_found
+                      message: "name is a required parameter"
+                Missing category:
+                  value:
+                    type: error.list
+                    request_id: 5e2d8008-1618-4168-a258-c0ffeebfc3b8
+                    errors:
+                    - code: parameter_not_found
+                      message: "category is a required parameter"
+                Invalid category:
+                  value:
+                    type: error.list
+                    request_id: 5e2d9ef7-1625-416b-a25d-c0ffeec15cd1
+                    errors:
+                    - code: ticket_type_category_invalid
+                      message: "Ticket type category: Unknown is invalid. Valid categories are: Tracker, Customer, Back-office"
+                Duplicate name:
+                  value:
+                    type: error.list
+                    request_id: 5e2dbde6-1632-416e-a262-c0ffeec2f5ea
+                    errors:
+                    - code: parameter_invalid
+                      message: "A ticket type with Bug already exists"
+                Customer ticket type cannot be internal:
+                  value:
+                    type: error.list
+                    request_id: 5e2ddcd5-163f-4171-a267-c0ffeec48f03
+                    errors:
+                    - code: parameter_invalid
+                      message: "Requests cannot be internal"
+                Tracker ticket type must be internal:
+                  value:
+                    type: error.list
+                    request_id: 5e2dfbc4-164c-4174-a26c-c0ffeec6281c
+                    errors:
+                    - code: parameter_invalid
+                      message: "Trackers must be internal"
+                Invalid icon:
+                  value:
+                    type: error.list
+                    request_id: 5e2e1ab3-1659-4177-a271-c0ffeec7c135
+                    errors:
+                    - code: parameter_invalid
+                      message: "Emoji should be valid and supported"
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -30836,7 +31004,7 @@ paths:
       tags:
       - Ticket Types
       operationId: getTicketType
-      description: You can fetch the details of a single ticket type.
+      description: You can fetch the details of a single ticket type. Archived ticket types are returned as well.
       responses:
         '200':
           description: Ticket type found
@@ -30937,6 +31105,20 @@ paths:
                         external_label: Resolved
               schema:
                 "$ref": "#/components/schemas/ticket_type"
+        '404':
+          description: Ticket type not found
+          content:
+            application/json:
+              examples:
+                Ticket type not found:
+                  value:
+                    type: error.list
+                    request_id: 5e2e39a2-1666-417a-a276-c0ffeec95a4e
+                    errors:
+                    - code: not_found
+                      message: "Resource Not Found"
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -31912,9 +32094,79 @@ paths:
                       has_more: false
                     category: Back-office
                     is_shared: false
-                    channel: messenger
+                    channel: email
               schema:
                 "$ref": "#/components/schemas/ticket"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing ticket_type_id:
+                  value:
+                    type: error.list
+                    request_id: 5e2b344b-1521-412f-a1f9-c0ffeea166dd
+                    errors:
+                    - code: parameter_not_found
+                      message: "ticket_type_id is a required parameter"
+                Missing contact:
+                  value:
+                    type: error.list
+                    request_id: 5e2b533a-152e-4132-a1fe-c0ffeea2fff6
+                    errors:
+                    - code: parameter_invalid
+                      message: "You must pass in a single contact in an array"
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 5e2b7229-153b-4135-a203-c0ffeea4990f
+                    errors:
+                    - code: parameter_invalid
+                      message: "User Not Found"
+                Invalid ticket type:
+                  value:
+                    type: error.list
+                    request_id: 5e2b9118-1548-4138-a208-c0ffeea63228
+                    errors:
+                    - code: parameter_invalid
+                      message: "Invalid ticket type provided"
+                Missing required attributes:
+                  value:
+                    type: error.list
+                    request_id: 5e2bb007-1555-413b-a20d-c0ffeea7cb41
+                    errors:
+                    - code: parameter_invalid
+                      message: "Missing required attributes: _default_title_"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Conversation to link not found
+          content:
+            application/json:
+              examples:
+                Conversation to link not found:
+                  value:
+                    type: error.list
+                    request_id: 5e2bcef6-1562-413e-a212-c0ffeea9645a
+                    errors:
+                    - code: conversation_to_link_not_found
+                      message: "Couldn't find Conversation with ID=1234"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '500':
+          description: Ticket could not be created
+          content:
+            application/json:
+              examples:
+                Ticket creation failed:
+                  value:
+                    type: error.list
+                    request_id: 5e2bede5-156f-4141-a217-c0ffeeaafd73
+                    errors:
+                    - code: ticket_creation
+                      message: "Error creating ticket"
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -31944,7 +32196,7 @@ paths:
               successful_response:
                 summary: Successful response
                 value:
-                  ticket_type_id: 88
+                  ticket_type_id: '88'
                   contacts:
                   - id: 6762f2d81bb69f9f2193bc54
                   ticket_attributes:
@@ -31978,13 +32230,12 @@ paths:
               successful_response:
                 summary: Successful response
                 value:
-                  ticket_type_id: 88
+                  ticket_type_id: '88'
                   contacts:
                   - id: 6762f2d81bb69f9f2193bc54
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
-                  channel: email
       responses:
         '200':
           description: Successful response
@@ -32027,7 +32278,21 @@ paths:
                     request_id: c7bf358f-135e-48d7-8286-a4988a8a1456
                     errors:
                     - code: parameter_invalid
-                      message: "Missing required ticket attributes"
+                      message: "attributes: Missing required attributes: _default_title_"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '500':
+          description: Job could not be enqueued
+          content:
+            application/json:
+              examples:
+                Enqueue failed:
+                  value:
+                    type: error.list
+                    request_id: 5e2c0cd4-157c-4144-a21c-c0ffeeac968c
+                    errors:
+                    - code: ticket_creation
+                      message: "Failed to enqueue ticket creation job"
               schema:
                 "$ref": "#/components/schemas/error"
   "/tickets/{id}":
@@ -32248,7 +32513,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/ticket"
         '404':
-          description: Assignee not found
+          description: Ticket, admin or assignee not found
           content:
             application/json:
               examples:
@@ -32257,8 +32522,8 @@ paths:
                     type: error.list
                     request_id: f9757add-b48a-4519-a6e0-04b2ef9c8c6c
                     errors:
-                    - code: assignee_not_found
-                      message: Assignee not found
+                    - code: admin_not_found
+                      message: Admin not found
                 Assignee not found:
                   value:
                     type: error.list
@@ -32266,9 +32531,15 @@ paths:
                     errors:
                     - code: assignee_not_found
                       message: Assignee not found
+                Ticket not found:
+                  value:
+                    type: error.list
+                    request_id: 5e2c2bc3-1589-4147-a221-c0ffeeae2fa5
+                    errors:
+                    - code: not_found
+                      message: "Resource Not Found"
         '400':
-          description: Ticket state id is not valid or is not associated with the
-            ticket type.
+          description: Bad request
           content:
             application/json:
               examples:
@@ -32280,6 +32551,34 @@ paths:
                     - code: ticket_state_id_invalid
                       message: Ticket state id is not valid or is not associated with
                         the ticket type
+                Ticket cannot be unshared:
+                  value:
+                    type: error.list
+                    request_id: 5e2c4ab2-1596-414a-a226-c0ffeeafc8be
+                    errors:
+                    - code: parameter_invalid
+                      message: "Tickets cannot be unshared"
+                Ticket cannot be shared:
+                  value:
+                    type: error.list
+                    request_id: 5e2c69a1-15a3-414d-a22b-c0ffeeb161d7
+                    errors:
+                    - code: parameter_invalid
+                      message: "Ticket cannot be shared. Tracker tickets cannot be shared and Customer tickets are shared by default. Back-Office tickets can only be shared if they are linked to a conversation and that conversation does not have any other shared linked tickets"
+        '422':
+          description: Conversation already assigned to the assignee
+          content:
+            application/json:
+              examples:
+                Already assigned:
+                  value:
+                    type: error.list
+                    request_id: 5e2c8890-15b0-4150-a230-c0ffeeb2faf0
+                    errors:
+                    - code: conversation_already_assigned_to_assignee
+                      message: "The conversation is already assigned to the specified assignee"
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -32341,10 +32640,10 @@ paths:
                     _default_title_: example
                     _default_description_: there is a problem
                   admin_id: 991268011
-                  assignee_id: 991268013
+                  assignee_id: '991268013'
                   open: true
                   snoozed_until: 1673609604
-                  ticket_state_id: 8498
+                  ticket_state_id: '8498'
                   priority: high
               admin_not_found:
                 summary: Admin not found
@@ -32353,8 +32652,8 @@ paths:
                     _default_title_: example
                     _default_description_: there is a problem
                   admin_id: 991268011
-                  assignee_id: 991268013
-                  ticket_state_id: 8506
+                  assignee_id: '991268013'
+                  ticket_state_id: '8506'
               assignee_not_found:
                 summary: Assignee not found
                 value:
@@ -32362,8 +32661,8 @@ paths:
                     _default_title_: example
                     _default_description_: there is a problem
                   admin_id: 991268011
-                  assignee_id: 991268013
-                  ticket_state_id: 8514
+                  assignee_id: '991268013'
+                  ticket_state_id: '8514'
               ticket_state_id_is_not_valid_or_is_not_associated_with_the_ticket_type:
                 summary: Ticket state id is not valid or is not associated with the
                   ticket type.
@@ -32499,6 +32798,20 @@ paths:
                     is_shared: false
               schema:
                 "$ref": "#/components/schemas/ticket"
+        '404':
+          description: Ticket not found
+          content:
+            application/json:
+              examples:
+                Ticket not found:
+                  value:
+                    type: error.list
+                    request_id: 5e2ca77f-15bd-4153-a235-c0ffeeb49409
+                    errors:
+                    - code: not_found
+                      message: "Resource Not Found"
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -32562,8 +32875,22 @@ paths:
                     type: error.list
                     request_id: 34a070f1-122e-42dc-a94e-9b86768df26c
                     errors:
-                    - code: ticket_not_found
-                      message: Ticket not found
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Back-office ticket linked to a conversation
+          content:
+            application/json:
+              examples:
+                Linked to a conversation:
+                  value:
+                    type: error.list
+                    request_id: 5e2cc66e-15ca-4156-a23a-c0ffeeb62d22
+                    errors:
+                    - code: back_office_ticket_delete_exception
+                      message: "Cannot delete back-office ticket with a linked conversation, delete conversation instead"
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -32629,7 +32956,12 @@ paths:
                     ticket_attributes:
                       _default_title_: example
                       _default_description_: having a problem
-                    ticket_state: submitted
+                    ticket_state:
+                      type: ticket_state
+                      id: '8481'
+                      category: submitted
+                      internal_label: Submitted
+                      external_label: Submitted
                     ticket_type:
                       type: ticket_type
                       id: '1234'
@@ -32682,8 +33014,6 @@ paths:
                       has_more: false
                     category: Back-office
                     is_shared: false
-                    ticket_state_internal_label: Submitted
-                    ticket_state_external_label: Submitted
               schema:
                 "$ref": "#/components/schemas/ticket"
         '400':
@@ -32968,6 +33298,41 @@ paths:
                       is_shared: false
               schema:
                 "$ref": "#/components/schemas/ticket_list"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Invalid query:
+                  value:
+                    type: error.list
+                    request_id: 5e2ce55d-15d7-4159-a23f-c0ffeeb7c63b
+                    errors:
+                    - code: invalid_query
+                      message: "Invalid query. Ensure 'field', 'operator', 'value' are present for simple queries. Ensure 'operator' and 'value' for composite queries. Ensure query is a JSON object."
+                Invalid field:
+                  value:
+                    type: error.list
+                    request_id: 5e2d044c-15e4-415c-a244-c0ffeeb95f54
+                    errors:
+                    - code: invalid_field
+                      message: "source.body is not a valid field"
+                Invalid operator:
+                  value:
+                    type: error.list
+                    request_id: 5e2d233b-15f1-415f-a249-c0ffeebaf86d
+                    errors:
+                    - code: invalid_operator
+                      message: "== is not a valid operator"
+                Invalid per_page:
+                  value:
+                    type: error.list
+                    request_id: 5e2d422a-15fe-4162-a24e-c0ffeebc9186
+                    errors:
+                    - code: invalid_per_page
+                      message: "per_page must be an integer between 0 and 150"
+              schema:
+                "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
@@ -44581,7 +44946,8 @@ components:
         contacts:
           type: array
           description: The list of contacts (users or leads) affected by this ticket.
-            Currently only one is allowed
+            Currently only one is allowed. Required for Customer and Back-office
+            ticket types, and optional for Tracker ticket types.
           items:
             type: object
             oneOf:
@@ -44653,7 +45019,6 @@ components:
           example: email
       required:
       - ticket_type_id
-      - contacts
     create_ticket_type_attribute_request:
       description: You can create a Ticket Type Attribute
       type: object
@@ -44721,7 +45086,6 @@ components:
           example: false
       required:
       - name
-      - description
       - data_type
     create_ticket_type_request:
       description: |
@@ -45505,7 +45869,8 @@ components:
           example: 1778239701
         admin_id:
           type: string
-          description: ID of the admin who created the attribute.
+          nullable: true
+          description: ID of the admin who created the attribute, or `null` if there isn't one.
           example: '16'
     conversation_attribute_string_type:
       title: Conversation Attribute (String)
@@ -45758,6 +46123,8 @@ components:
       allOf:
       - "$ref": "#/components/schemas/create_conversation_attribute_request_base"
       - type: object
+        required:
+        - options
         properties:
           data_type:
             type: string
@@ -45765,7 +46132,8 @@ components:
             - list
           options:
             type: array
-            description: Initial options for this list attribute. Each option must have a `label`.
+            minItems: 2
+            description: Initial options for this list attribute. Each option must have a `label`. A list attribute needs at least 2 options.
             items:
               "$ref": "#/components/schemas/create_conversation_attribute_option_request"
     create_conversation_attribute_decimal_request:
@@ -45803,6 +46171,8 @@ components:
       allOf:
       - "$ref": "#/components/schemas/create_conversation_attribute_request_base"
       - type: object
+        required:
+        - reference
         properties:
           data_type:
             type: string
@@ -45813,6 +46183,7 @@ components:
             description: Reference configuration for related objects.
             required:
             - type
+            - object_type_id
             properties:
               type:
                 type: string
@@ -45822,7 +46193,7 @@ components:
                 - many
               object_type_id:
                 type: string
-                description: The ID of the related custom object type.
+                description: The ID of the related custom object type. It must match an existing custom object type.
     create_conversation_attribute_files_request:
       title: Create Conversation Attribute Request (Files)
       allOf:
@@ -52084,6 +52455,11 @@ components:
           type: boolean
           description: Whether or not the ticket is shared with the customer.
           example: true
+        company_id:
+          type: string
+          nullable: true
+          description: The ID of the company the ticket is associated with. Omitted when the ticket has no company.
+          example: 5f4d3c1c-7b1b-4d7d-a97e-6095715c6632
         previous_ticket_state_id:
           type: string
           nullable: true
@@ -52464,6 +52840,11 @@ components:
           type: boolean
           description: Whether or not the ticket part has been redacted.
           example: false
+        app_package_code:
+          type: string
+          nullable: false
+          example: text-integration
+          description: The app package code if this part was created via API. Note this field won't show if the part was not created via API.
         translations:
           type: object
           nullable: true
@@ -52590,7 +52971,7 @@ components:
           example: false
         ticket_types:
           type: object
-          description: A list of ticket types associated with a given ticket state.
+          description: A list of the ticket types that use this ticket state.
           properties:
             type:
               type: string
@@ -52599,10 +52980,47 @@ components:
               example: list
             data:
               type: array
-              description: A list of ticket type attributes associated with a given
-                ticket type.
+              description: A summary of each ticket type that uses this ticket state. It doesn't include the ticket type's attributes or ticket states; retrieve the ticket type for those.
               items:
-                "$ref": "#/components/schemas/ticket_type"
+                type: object
+                properties:
+                  type:
+                    type: string
+                    description: String representing the object's type. Always has the value
+                      `ticket_type`.
+                    example: ticket_type
+                  id:
+                    type: string
+                    description: The id representing the ticket type.
+                    example: '1295'
+                  name:
+                    type: string
+                    description: The name of the ticket type
+                    example: Bug
+                  description:
+                    type: string
+                    description: The description of the ticket type
+                    example: A bug that has been reported.
+                  icon:
+                    type: string
+                    description: The icon of the ticket type
+                    example: "\U0001F41E"
+                  archived:
+                    type: boolean
+                    description: Whether the ticket type is archived or not.
+                    example: false
+                  is_internal:
+                    type: boolean
+                    description: Whether the tickets of this ticket type are for internal use only (`true`) or shared with customers (`false`).
+                    example: false
+                  category:
+                    type: string
+                    description: Category of the Ticket Type.
+                    enum:
+                    - Customer
+                    - Back-office
+                    - Tracker
+                    example: Customer
     ticket_state_list:
       title: Ticket States
       type: object
@@ -52682,6 +53100,10 @@ components:
           type: boolean
           description: Whether the ticket type is archived or not.
           example: false
+        is_internal:
+          type: boolean
+          description: Whether the tickets of this ticket type are for internal use only (`true`) or shared with customers (`false`).
+          example: false
         created_at:
           type: integer
           format: timestamp
@@ -52726,8 +53148,10 @@ components:
           example: string
         input_options:
           type: object
-          description: Input options for the attribute
-          example: 'multiline: true'
+          nullable: true
+          description: Input options for the attribute. For a string attribute this holds `multiline`; for a list attribute it holds the list's options. `null` for attributes that have no input options.
+          example:
+            multiline: true
         order:
           type: integer
           description: The order of the attribute against other attributes
@@ -53552,7 +53976,11 @@ components:
           example: true
         is_shared:
           type: boolean
-          description: Specify whether the ticket is visible to users.
+          description: Specify whether the ticket is visible to users. Only `true` is
+            accepted, because a ticket can't be unshared once it is shared. Customer
+            tickets are shared by default and Tracker tickets can't be shared. A
+            Back-office ticket can only be shared if it is linked to a conversation
+            that has no other shared linked ticket. Any other value returns a `400`.
           example: true
         snoozed_until:
           type: integer
