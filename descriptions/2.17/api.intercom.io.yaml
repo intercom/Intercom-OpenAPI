@@ -22,12 +22,14 @@ paths:
       tags:
       - Admins
       operationId: identifyAdmin
-      description: "\nYou can view the currently authorised admin along with the embedded
-        app object (a \"workspace\" in legacy terminology).\n\n> \U0001F6A7 Single
-        Sign On\n>\n> If you are building a custom \"Log in with Intercom\" flow for
-        your site, and you call the `/me` endpoint to identify the logged-in user,
-        you should not accept any sign-ins from users with unverified email addresses
-        as it poses a potential impersonation security risk.\n"
+      description: |
+        You can view the currently authorised admin along with the embedded app object (a "workspace" in legacy terminology).
+
+        > 🚧 Single Sign On
+        >
+        > If you are building a custom "Log in with Intercom" flow for your site, and you call the `/me` endpoint to identify the logged-in user, you should not accept any sign-ins from users with unverified email addresses as it poses a potential impersonation security risk.
+
+        Requires the `read_single_admin` or `read_admins` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -56,6 +58,41 @@ paths:
                     has_inbox_seat: true
               schema:
                 "$ref": "#/components/schemas/admin_with_app"
+        '404':
+          description: Admin not found
+          content:
+            application/json:
+              examples:
+                Admin not found:
+                  value:
+                    type: error.list
+                    request_id: b154eb7d-2ef7-4df5-afb2-4bee6c21039b
+                    errors:
+                    - code: admin_not_found
+                      message: Admin not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
   "/macros/{id}":
     get:
       summary: Retrieve a macro
@@ -438,7 +475,10 @@ paths:
       tags:
       - Admins
       operationId: setAwayAdmin
-      description: You can set an Admin as away for the Inbox.
+      description: |
+        You can set an Admin as away for the Inbox.
+
+        Requires the `update_admins` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -454,8 +494,10 @@ paths:
                     away_mode_enabled: true
                     away_mode_reassign: true
                     has_inbox_seat: true
-                    away_status_reason_id: '12345'
-                    team_ids: []
+                    away_status_reason_id: 12345
+                    team_ids:
+                    - 991267903
+                    team_priority_level: {}
               schema:
                 "$ref": "#/components/schemas/admin"
         '404':
@@ -478,19 +520,78 @@ paths:
             application/json:
               examples:
                 parameter_invalid:
-                  summary: "Example of an invalid away_status_reason_id"
+                  summary: Example of an archived away_status_reason_id
                   value:
                     type: error.list
+                    request_id: 640daa00-327f-4d79-ae61-3c47b1f78736
                     errors:
-                      - code: parameter_invalid
-                        message: "Away status reason is deleted"
+                    - code: parameter_invalid
+                      message: Away status reason is archived
+                away_status_reason_not_found:
+                  summary: Example of an away_status_reason_id that does not exist
+                  value:
+                    type: error.list
+                    request_id: 39d6f280-b1bf-45e6-a8e7-92343943e361
+                    errors:
+                    - code: parameter_invalid
+                      message: Away status reason not found
                 away_status_reason_mandatory:
-                  summary: "Example of a missing away_status_reason_id when away reasons are mandatory"
+                  summary: Example of a missing away_status_reason_id when away reasons are mandatory
                   value:
                     type: error.list
+                    request_id: bd8d3fca-202d-429c-a13d-4abd9833cb6d
                     errors:
-                      - code: away_status_reason_mandatory
-                        message: "Away status reason is mandatory"
+                    - code: away_status_reason_mandatory
+                      message: Away status reason is mandatory
+                away_status_reason_not_allowed:
+                  summary: Example of an away_status_reason_id sent with away_mode_enabled set to false
+                  value:
+                    type: error.list
+                    request_id: 552e4a27-c479-4d15-abfd-81e662896952
+                    errors:
+                    - code: parameter_invalid
+                      message: Away status reason must not be provided when away mode disabled
+                away_mode_reassign_required:
+                  summary: Example of a missing away_mode_reassign when away_mode_enabled is true
+                  value:
+                    type: error.list
+                    request_id: c8d12440-d0c3-4a7f-a2ea-6cc30e2f1d6a
+                    errors:
+                    - code: parameter_invalid
+                      message: Reassign conversations must be provided when away mode is changing
+                away_mode_reassign_not_allowed:
+                  summary: Example of away_mode_reassign set to true when away_mode_enabled is false
+                  value:
+                    type: error.list
+                    request_id: 744ef872-e215-4ce9-ac4e-0ea7fbcd5d75
+                    errors:
+                    - code: parameter_invalid
+                      message: Reassign conversations cannot be enabled when away mode is disabled
+                away_mode_enabled_missing:
+                  summary: Example of a missing away_mode_enabled
+                  value:
+                    type: error.list
+                    request_id: 609e0487-f2ca-4bb8-a1b9-4e186763cc53
+                    errors:
+                    - code: parameter_missing
+                      message: 'param is missing or the value is empty or invalid: away_mode_enabled'
+              schema:
+                "$ref": "#/components/schemas/error"
+        '405':
+          description: Method Not Allowed
+          content:
+            application/json:
+              examples:
+                Admin is a bot:
+                  summary: Example of an id that belongs to a bot rather than a teammate
+                  value:
+                    type: error.list
+                    request_id: 2f448921-6b3a-48f6-a4dc-eef1ca0ca095
+                    errors:
+                    - code: action_forbidden
+                      message: This method is not allowed for this type of Admin for admin_id
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -503,6 +604,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -516,10 +624,8 @@ paths:
               properties:
                 away_mode_enabled:
                   type: boolean
-                  description: Set to "true" to change the status of the admin to
-                    away.
+                  description: Set to `true` to change the status of the admin to away, or `false` to set them back to active.
                   example: true
-                  default: true
                 away_mode_reassign:
                   type: boolean
                   description: Set to "true" to assign any new conversation replies
@@ -528,7 +634,7 @@ paths:
                   default: false
                 away_status_reason_id:
                   type: integer
-                  description: The unique identifier of the away status reason
+                  description: The unique identifier of the away status reason. Only allowed when `away_mode_enabled` is `true`, and the reason can't be archived, unless it is already the admin's current reason. Required if your workspace makes away status reasons mandatory.
                   example: 12345
             examples:
               successful_response:
@@ -557,9 +663,10 @@ paths:
           "$ref": "#/components/schemas/intercom_version"
       - name: created_at_after
         in: query
-        required: true
+        required: false
         description: The start date that you request data for. It must be formatted
-          as a UNIX timestamp.
+          as a UNIX timestamp. If you leave it out, it defaults to 30 days before
+          the request.
         example: '1677253093'
         schema:
           type: string
@@ -567,14 +674,36 @@ paths:
         in: query
         required: false
         description: The end date that you request data for. It must be formatted
-          as a UNIX timestamp.
+          as a UNIX timestamp. If you leave it out, it defaults to the time of the
+          request.
         example: '1677861493'
         schema:
           type: string
+      - name: page
+        in: query
+        required: false
+        description: The page number of results to return. Defaults to the first page.
+        example: 1
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of results per page. Must be between 1 and 250.
+        example: 20
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 250
       tags:
       - Admins
       operationId: listActivityLogs
-      description: You can get a log of activities by all admins in an app.
+      description: |
+        You can get a log of activities by all admins in an app.
+
+        Requires the `read_admins` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -591,7 +720,8 @@ paths:
                       per_page: 20
                       total_pages: 1
                     activity_logs:
-                    - id: fca05814-4b72-4dce-ad4f-77a786a2c136
+                    - type: admin_activity_log_event
+                      id: fca05814-4b72-4dce-ad4f-77a786a2c136
                       performed_by:
                         type: admin
                         id: '991267464'
@@ -604,7 +734,8 @@ paths:
                       activity_type: app_name_change
                       activity_description: Ciaran5 Lee changed your app name from
                         before to after.
-                    - id: f48c653b-0185-48ac-a276-23d11006bafb
+                    - type: admin_activity_log_event
+                      id: f48c653b-0185-48ac-a276-23d11006bafb
                       performed_by:
                         type: admin
                         id: '991267464'
@@ -623,6 +754,20 @@ paths:
                         title.
               schema:
                 "$ref": "#/components/schemas/activity_log_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                event_types not supported:
+                  value:
+                    type: error.list
+                    request_id: d1fd16d4-97de-41ae-a996-38055f993a1d
+                    errors:
+                    - code: parameter_invalid
+                      message: event_types filtering is not supported on this endpoint. Use the search activity logs endpoint (POST /admins/activity_logs/search) to filter by event_types.
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -635,6 +780,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/admins/activity_logs/search":
@@ -648,30 +800,32 @@ paths:
       tags:
       - Admins
       operationId: searchActivityLogs
-      description: Search and filter admin activity logs using a POST request
-        with event type filter in the request body. You can find more details
-        about the available event types in the List all activity log event
-        types endpoint.
+      description: |
+        Search and filter admin activity logs using a POST request with event type filter in the request body. You can find more details about the available event types in the List all activity log event types endpoint.
+
+        Results are paginated by page number. Use `page` and `per_page` in the request body to choose a page. The `next` link in the response is a URL that keeps the query string of the request URL and sets `page` and `per_page` for the next page. It does not include the filters from your request body. To fetch the next page, send a POST request with the same request body to that URL. Query parameters in the `next` URL take precedence over `page` and `per_page` in the body.
+
+        Requires the `read_admins` OAuth scope.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-              - created_at_after
               properties:
                 created_at_after:
                   type: integer
                   format: date-time
                   description: The start date that you request data for. It must
-                    be formatted as a UNIX timestamp.
+                    be formatted as a UNIX timestamp. If you leave it out, it defaults
+                    to 30 days before the request.
                   example: 1677253093
                 created_at_before:
                   type: integer
                   format: date-time
                   description: The end date that you request data for. It must
-                    be formatted as a UNIX timestamp.
+                    be formatted as a UNIX timestamp. If you leave it out, it defaults
+                    to the time of the request.
                   example: 1677861493
                 event_types:
                   type: array
@@ -726,7 +880,8 @@ paths:
                       per_page: 20
                       total_pages: 1
                     activity_logs:
-                    - id: fca05814-4b72-4dce-ad4f-77a786a2c136
+                    - type: admin_activity_log_event
+                      id: fca05814-4b72-4dce-ad4f-77a786a2c136
                       performed_by:
                         type: admin
                         id: '991267464'
@@ -753,6 +908,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/admins/activity_log_event_types":
@@ -767,7 +929,9 @@ paths:
       - Admins
       operationId: listActivityLogEventTypes
       description: |
-        You can get a list of all activity log event types. This is useful for discovering valid values to use with the `event_types` filter on the List all activity logs endpoint.
+        You can get a list of all activity log event types. This is useful for discovering valid values to use with the `event_types` filter on the Search activity logs endpoint.
+
+        Requires the `read_admins` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -778,39 +942,56 @@ paths:
                   value:
                     type: activity_log_event_type.list
                     event_types:
-                    - admin_conversation_assignment_limit_change
-                    - admin_ticket_assignment_limit_change
                     - admin_avatar_change
                     - admin_away_mode_change
+                    - admin_occupancy_state_change
+                    - admin_channel_change
                     - admin_deletion
                     - admin_deprovisioned
+                    - intercom_teammate_removal
+                    - admin_impersonation_consent_approved
+                    - admin_impersonation_consent_revoked
                     - admin_impersonation_end
                     - admin_impersonation_start
                     - admin_invite_change
+                    - admin_bulk_invite_creation
+                    - admin_bulk_notification_settings_change
                     - admin_invite_creation
                     - admin_invite_deletion
+                    - admin_unauthorized_sign_in_method
                     - admin_login_failure
                     - admin_login_success
                     - admin_logout
-                    - admin_occupancy_setting_change
-                    - admin_occupancy_state_change
+                    - admin_login_attempts_reset
+                    - admin_mobile_login_failure
+                    - admin_mobile_login_success
+                    - admin_sign_in_method_expired
                     - admin_password_reset_request
                     - admin_password_reset_success
                     - admin_permission_change
                     - admin_provisioned
-                    - admin_two_factor_auth_change
-                    - admin_unauthorized_sign_in_method
+                    - admin_name_change
+                    - admin_email_change
+                    - admin_password_change
+                    - admin_locale_change
                     - app_admin_join
                     - app_authentication_method_change
                     - app_data_deletion
                     - app_data_export
+                    - request_log_export_requested
+                    - workspace_deletion_request
+                    - workspace_owner_designation_change
                     - app_google_sso_domain_change
                     - app_identity_verification_change
+                    - app_identity_verification_reminder_disabled
+                    - identity_verification_unmarked
                     - app_name_change
                     - app_outbound_address_change
                     - app_package_installation
                     - app_package_token_regeneration
                     - app_package_uninstallation
+                    - developer_hub_secret_revealed
+                    - developer_hub_secret_copied
                     - app_team_creation
                     - app_team_deletion
                     - app_team_membership_modification
@@ -818,40 +999,336 @@ paths:
                     - app_webhook_creation
                     - app_webhook_deletion
                     - articles_in_messenger_enabled_change
+                    - automatic_domain_authentication_started
+                    - automatic_domain_authentication_complete
+                    - messenger_api_secret_creation
+                    - messenger_api_secret_deletion
+                    - messenger_search_required_change
+                    - messenger_spaces_change
+                    - bulk_data_export_creation
+                    - bulk_data_export_delete
+                    - bulk_data_export_run
+                    - bulk_data_export_settings_change
                     - bulk_delete
                     - bulk_export
+                    - call_settings_change
                     - campaign_deletion
                     - campaign_state_change
+                    - content_sync_pair_creation
+                    - content_sync_pair_deletion
+                    - content_sync_pair_run
+                    - content_sync_pair_update
+                    - conversation_attribute_archive
+                    - conversation_deletion
+                    - conversation_deletion_schedule_creation
+                    - conversation_deletion_schedule_state_change
+                    - conversation_deletion_schedule_update
+                    - conversation_hard_deletion_enqueued
                     - conversation_part_deletion
+                    - conversation_part_edited
+                    - conversation_part_redaction
                     - conversation_pdf_export
+                    - conversation_redaction_enqueued
+                    - conversation_sla_change
                     - conversation_topic_change
                     - conversation_topic_creation
                     - conversation_topic_deletion
+                    - csv_import_completion
+                    - csv_import_creation
+                    - taxonomy_upload_creation
+                    - automation_roadmap_form_submission_creation
+                    - data_connector_log_retention_setting_creation
+                    - data_connector_log_retention_setting_update
+                    - email_settings_change
+                    - strip_inbound_email_links_change
                     - help_center_settings_change
                     - inbound_conversations_change
                     - inbox_access_change
                     - inbox_bulk_action
+                    - internal_agent_proposal_applied
                     - message_deletion
+                    - ruleset_activation
+                    - ruleset_deletion
+                    - ruleset_creation
+                    - workflow_creation
+                    - workflow_deletion
+                    - workflow_update
+                    - workflow_status_change
+                    - workflow_participant_action_configured
+                    - oauth_token_revocation
+                    - article_creation
+                    - article_deletion
+                    - article_content_creation
+                    - article_content_update
+                    - article_content_deletion
+                    - article_content_published
+                    - article_content_unpublished
+                    - article_content_audience_updated
                     - message_state_change
                     - messenger_look_and_feel_change
-                    - messenger_search_required_change
-                    - messenger_spaces_change
                     - office_hours_change
+                    - office_hours_exception_change
                     - role_change
                     - role_creation
                     - role_deletion
-                    - ruleset_activation_title_preview
-                    - ruleset_creation
-                    - ruleset_deletion
-                    - search_browse_enabled_change
-                    - search_browse_required_change
                     - seat_change
                     - seat_revoke
+                    - pre_migration_seat_expiration_date_change
+                    - post_migration_seat_deletion
+                    - post_migration_seat_update
+                    - post_migration_seat_creation
                     - security_settings_change
+                    - temporary_expectation_auto_expired
                     - temporary_expectation_change
-                    - upfront_email_collection_change
+                    - temporary_expectation_messages_change
                     - welcome_message_change
+                    - start_conversation_button_text_change
+                    - upfront_email_collection_change
+                    - admin_assignment_limit_change
+                    - admin_channel_limit_change
+                    - admin_conversation_assignment_limit_change
+                    - admin_ticket_assignment_limit_change
+                    - admin_unassign_unsnoozed_at_capacity_change
+                    - team_assignment_limit_change
+                    - teammate_skills_synced
+                    - skill_category_created
+                    - skill_category_updated
+                    - snooze_presets_change
+                    - team_skill_categories_updated
+                    - admin_two_factor_auth_change
+                    - admin_two_factor_login_failure
+                    - email_signature_change
+                    - recovery_code_sent
+                    - billing_addressees_change
+                    - billing_addressees_bounced_and_removed
+                    - billing_details_change
+                    - broadcast_deletion
+                    - fin_opt_in
+                    - fin_free_usage_window_create
+                    - fin_free_usage_window_extension
+                    - fin_ingestion_consent
+                    - ip_allowlist_setting_change
+                    - rest_api_ip_allowlist_setting_change
+                    - messenger_platform_availability_change
+                    - messenger_platform_inactivity_disable_event
+                    - custom_report_update
+                    - custom_report_delete
+                    - custom_report_create
+                    - reporting_folder_create
+                    - reporting_folder_delete
+                    - teammate_office_hours_schedule_assign
+                    - teammate_office_hours_schedule_unassign
+                    - report_snapshot_create
+                    - report_scheduled_share_create
+                    - report_scheduled_share_update
+                    - report_scheduled_share_delete
+                    - reporting_folder_name_change
+                    - reporting_folder_position_change
+                    - reporting_folder_reports_change
+                    - reporting_folder_pin_change
+                    - reporting_csv_export
+                    - pii_data_revealed
+                    - privacy_policy_notice_change
+                    - privacy_policy_notice_contents_change
+                    - report_access_create
+                    - report_access_delete
+                    - report_access_update
+                    - fin_persisted_data_context_attribute_change
+                    - fin_sdr_connector_generated
+                    - fin_sdr_connector_activated
+                    - fin_sdr_marketo_connected
+                    - fin_sdr_marketo_partition_selected
+                    - fin_sdr_marketo_disconnected
+                    - fin_sdr_playbook_updated
+                    - generic_ecommerce_connector_creation
+                    - ai_agent_customization_settings_change
+                    - ai_agent_identity_settings_change
+                    - ai_agent_multilingual_settings_change
+                    - ai_agent_safety_guard_settings_change
+                    - messenger_language_change
+                    - ai_agent_guidance_change
+                    - ai_category_change
+                    - escalation_rule_change
+                    - hitl_rule_change
+                    - safety_response_category_config_change
+                    - hitl_inbox_action
+                    - brand_creation
+                    - brand_update
+                    - brand_deletion
+                    - brand_settings_change
+                    - action_created
+                    - action_risk_accepted_change
+                    - data_connector_security_warning_acknowledged
+                    - action_published
+                    - action_status_change
+                    - action_update
+                    - allowed_attachment_filetypes_setting_change
+                    - ai_agent_fin_playground_change
+                    - ai_agent_preview_token_generated
+                    - selection_set_creation
+                    - selection_set_archive
+                    - series_creation
+                    - series_deletion
+                    - series_settings_update
+                    - series_status_change
+                    - series_update
+                    - messenger_launch_to_conversation_change
+                    - messenger_launcher_display_condition_change
+                    - alias_mode_change
+                    - alias_name_change
+                    - hippa_compliance_settings_change
+                    - ai_inbox_translation_setting_change
+                    - slack_integration_auto_promoted
+                    - slack_oauth_fresh_install
+                    - slack_oauth_reinstall
+                    - slack_oauth_reauthentication
+                    - slack_integration_uninstalled
+                    - telegram_identity_reset
+                    - telegram_integration_installed
+                    - telegram_integration_uninstalled
+                    - slack_user_association_setting_change
+                    - ms_teams_user_association_setting_change
+                    - slack_integration_type_change
+                    - slack_multi_conversational_changed
+                    - whatsapp_direct_send_changed
+                    - slack_user_token_creation
+                    - standalone_channel_change
+                    - standalone_connection_config_change
+                    - standalone_schedule_sync_deletion
+                    - skill_category_deleted
+                    - skill_based_routing_toggled
+                    - consent_banner_settings_change
+                    - content_redaction_rule_creation
+                    - content_redaction_rule_deletion
+                    - content_redaction_rule_update
+                    - content_suggestions_change
+                    - suggestions_limiters_reset
+                    - custom_authentication_token_creation
+                    - custom_authentication_token_update
+                    - custom_authentication_token_deletion
+                    - device_token_deletion
+                    - predictive_answers_settings_change
+                    - custom_emoji_deletion
+                    - customer_facing_name_change
+                    - attach_uploads_inline_setting_change
+                    - user_camera_attachments_setting_change
+                    - user_media_attachments_setting_change
+                    - user_file_attachments_setting_change
+                    - file_upload_audience_predicates_setting_change
+                    - user_gifs_setting_change
+                    - user_emojis_setting_change
+                    - user_voice_notes_setting_change
+                    - user_conversation_attachments_setting_change
+                    - teammate_gifs_setting_change
+                    - scim_group_creation
+                    - scim_group_update
+                    - scim_groups_bulk_update
+                    - scim_group_deletion
+                    - scim_group_membership_change
+                    - scim_admin_role_change
+                    - scim_admin_bulk_role_assignment
+                    - scim_admin_profile_update
+                    - scim_admin_password_update
+                    - scim_system_enabled
+                    - scim_system_disabled
+                    - scim_settings_change
+                    - macro_content_export_run
+                    - personal_macro_admin_read
+                    - personal_macro_admin_convert
+                    - personal_macro_admin_destroy
+                    - macro_creation
+                    - macro_deletion
+                    - macro_update
+                    - macro_usage_export
+                    - mcp_server_created
+                    - mcp_server_updated
+                    - mcp_server_deleted
+                    - mcp_server_enabled
+                    - mcp_server_disabled
+                    - mcp_server_oauth_connected
+                    - mcp_server_oauth_disconnected
+                    - mcp_server_reconnected
+                    - mcp_action_added
+                    - mcp_actions_batch_added
+                    - mcp_action_updated
+                    - mcp_action_removed
+                    - fin_agent_api_settings_change
+                    - fin_procedures_hitl_settings_change
+                    - fin_procedures_hitl_access_token_rotated
+                    - fin_agent_api_secret_revealed
+                    - fin_agent_api_secret_copied
+                    - a2a_agent_registered
+                    - a2a_agent_oauth_connected
+                    - automatic_away_mode_setting_change
+                    - admin_occupancy_setting_change
+                    - unassign_unsnoozed_at_capacity_setting_change
+                    - unassign_unsnoozed_when_away_setting_change
+                    - unassign_triggers_setting_change
+                    - malicious_domains_setting_change
+                    - trusted_domains_setting_change
+                    - messenger_allowed_domains_change
+                    - qa_monitor_creation
+                    - qa_monitor_update
+                    - qa_monitor_archive
+                    - qa_monitor_restore
+                    - qa_scorecard_creation
+                    - qa_scorecard_update
+                    - qa_scorecard_archive
+                    - qa_review_plan_creation
+                    - qa_review_plan_archive
+                    - lead_to_user_merge
+                    - user_to_user_merge
+                    - sales_messenger_configuration_change
+                    - shopify_refund_order
+                    - shopify_replacement_order
+                    - shopify_gift_card_compensation
+                    - shopify_add_replacement_item
+                    - shopify_disable_discount_code
+                    - shopify_disable_gift_card
+                    - shopify_create_discount_code
+                    - shopify_update_shipping_address
+                    - channel_identity_rule_change
+                    - topic_curation_set_live
                     - hide_csat_from_agents_setting_change
+                    - phone_purchase_diagnostic
+                    - phone_number_purchase
+                    - sip_domain_provisioned
+                    - sip_domain_deleted
+                    - sip_integration_stage_confirmed
+                    - sip_header_mappings_updated
+                    - phone_queue_call_pinned
+                    - phone_queue_call_unpinned
+                    - phone_queue_call_pin_cleared
+                    - outbound_phone_campaign_creation
+                    - outbound_phone_campaign_change
+                    - outbound_phone_campaign_deletion
+                    - outbound_phone_campaign_state_change
+                    - outbound_phone_campaign_csv_upload
+                    - outbound_phone_campaign_import
+                    - outbound_phone_campaign_session_start
+                    - channel_wrap_up_settings_change
+                    - ticket_state_customer_notifications_change
+                    - schedule_template_update
+                    - schedule_template_creation
+                    - schedule_template_deletion
+                    - schedule_template_apply
+                    - wfm_google_calendar_connected
+                    - wfm_google_calendar_disconnected
+                    - wfm_google_calendar_sync_setting_change
+                    - github_sync_disconnected
+                    - github_sync_cleanup_deleted_folder
+                    - github_sync_installed
+                    - github_sync_connector_cloned
+                    - github_sync_pulled
+                    - fallback_admin_alias_change
+                    - spam_email_deletion
+                    - snowflake_share_activated
+                    - snowflake_share_torn_down
+                    - calendar_mapping_rule_creation
+                    - calendar_mapping_rule_deletion
+                    - calendar_mapping_rule_update
+                    - activity_type_creation
+                    - masked_admin_avatar_change
               schema:
                 "$ref": "#/components/schemas/activity_log_event_type_list"
         '401':
@@ -866,6 +1343,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/admins":
@@ -887,7 +1371,10 @@ paths:
       tags:
       - Admins
       operationId: listAdmins
-      description: You can fetch a list of admins for a given workspace.
+      description: |
+        You can fetch a list of admins for a given workspace.
+
+        Requires the `read_admins` OAuth scope.
       responses:
         '200':
           description: Successful response
@@ -920,6 +1407,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/office_hours_schedules/{office_hours_schedule_id}/office_hours_exceptions/{id}":
@@ -971,7 +1465,26 @@ paths:
         '401':
           "$ref": "#/components/responses/Unauthorized"
         '404':
-          "$ref": "#/components/responses/ObjectNotFound"
+          description: Office hours schedule or exception not found
+          content:
+            application/json:
+              examples:
+                Office hours schedule not found:
+                  value:
+                    type: error.list
+                    request_id: 01664eba-f831-4abf-a194-acf282811d5d
+                    errors:
+                    - code: office_hours_schedule_not_found
+                      message: Office hours schedule not found
+                Office hours exception not found:
+                  value:
+                    type: error.list
+                    request_id: f58c31d2-a33c-41e2-ad14-d2c7e907f5fd
+                    errors:
+                    - code: office_hours_exception_not_found
+                      message: Office hours exception not found
+              schema:
+                "$ref": "#/components/schemas/error"
     put:
       summary: Update an office hours exception
       parameters:
@@ -1034,12 +1547,71 @@ paths:
                     updated_at: 1717203600
               schema:
                 "$ref": "#/components/schemas/office_hours_exception"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Unknown field:
+                  value:
+                    type: error.list
+                    request_id: 3b886172-7c30-49c4-adcd-64c4da2cc22c
+                    errors:
+                    - code: parameter_invalid
+                      message: 'found unpermitted parameter: :day_of_week'
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           "$ref": "#/components/responses/Unauthorized"
         '404':
-          "$ref": "#/components/responses/ObjectNotFound"
+          description: Office hours schedule or exception not found
+          content:
+            application/json:
+              examples:
+                Office hours schedule not found:
+                  value:
+                    type: error.list
+                    request_id: 01664eba-f831-4abf-a194-acf282811d5d
+                    errors:
+                    - code: office_hours_schedule_not_found
+                      message: Office hours schedule not found
+                Office hours exception not found:
+                  value:
+                    type: error.list
+                    request_id: f58c31d2-a33c-41e2-ad14-d2c7e907f5fd
+                    errors:
+                    - code: office_hours_exception_not_found
+                      message: Office hours exception not found
+              schema:
+                "$ref": "#/components/schemas/error"
         '422':
-          "$ref": "#/components/responses/ValidationError"
+          description: Validation Error
+          content:
+            application/json:
+              examples:
+                Intervals on a closed exception:
+                  value:
+                    type: error.list
+                    request_id: f14c2e4e-484b-4960-af3a-46636c3ad153
+                    errors:
+                    - code: parameter_invalid
+                      message: time_intervals must not be provided for a closed exception
+                Interval off the 15-minute grid:
+                  value:
+                    type: error.list
+                    request_id: cca3b23b-1fb4-444d-a793-1099086544ff
+                    errors:
+                    - code: parameter_invalid
+                      message: time_intervals start_minute and end_minute must be integers on a 15-minute boundary
+                Invalid exception_type:
+                  value:
+                    type: error.list
+                    request_id: b9c61923-b499-4ac3-a5ac-5b5b9d7a7d45
+                    errors:
+                    - code: parameter_invalid
+                      message: Exception type must be 'closed' or 'custom_hours'
+              schema:
+                "$ref": "#/components/schemas/error"
     delete:
       summary: Delete an office hours exception
       parameters:
@@ -1091,7 +1663,26 @@ paths:
         '401':
           "$ref": "#/components/responses/Unauthorized"
         '404':
-          "$ref": "#/components/responses/ObjectNotFound"
+          description: Office hours schedule or exception not found
+          content:
+            application/json:
+              examples:
+                Office hours schedule not found:
+                  value:
+                    type: error.list
+                    request_id: 01664eba-f831-4abf-a194-acf282811d5d
+                    errors:
+                    - code: office_hours_schedule_not_found
+                      message: Office hours schedule not found
+                Office hours exception not found:
+                  value:
+                    type: error.list
+                    request_id: f58c31d2-a33c-41e2-ad14-d2c7e907f5fd
+                    errors:
+                    - code: office_hours_exception_not_found
+                      message: Office hours exception not found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/office_hours_schedules/{office_hours_schedule_id}/office_hours_exceptions":
     get:
       summary: List all office hours exceptions
@@ -1110,7 +1701,8 @@ paths:
       tags:
       - Office Hours
       operationId: listOfficeHoursExceptions
-      description: You can fetch a list of all exceptions for an office hours schedule.
+      description: |
+        You can fetch a list of all exceptions for an office hours schedule, ordered by date with the earliest first.
       responses:
         '200':
           description: Successful response
@@ -1121,16 +1713,6 @@ paths:
                   value:
                     type: office_hours_exception.list
                     data:
-                    - type: office_hours_exception
-                      id: '456'
-                      office_hours_schedule_id: '123'
-                      exception_date: '2026-12-25'
-                      exception_type: closed
-                      name: Christmas Day
-                      time_intervals:
-                      recurring_annually: true
-                      created_at: 1717200000
-                      updated_at: 1717200000
                     - type: office_hours_exception
                       id: '457'
                       office_hours_schedule_id: '123'
@@ -1144,12 +1726,34 @@ paths:
                       recurring_annually: true
                       created_at: 1717200000
                       updated_at: 1717200000
+                    - type: office_hours_exception
+                      id: '456'
+                      office_hours_schedule_id: '123'
+                      exception_date: '2026-12-25'
+                      exception_type: closed
+                      name: Christmas Day
+                      time_intervals:
+                      recurring_annually: true
+                      created_at: 1717200000
+                      updated_at: 1717200000
               schema:
                 "$ref": "#/components/schemas/office_hours_exception_list"
         '401':
           "$ref": "#/components/responses/Unauthorized"
         '404':
-          "$ref": "#/components/responses/ObjectNotFound"
+          description: Office hours schedule not found
+          content:
+            application/json:
+              examples:
+                Office hours schedule not found:
+                  value:
+                    type: error.list
+                    request_id: 01664eba-f831-4abf-a194-acf282811d5d
+                    errors:
+                    - code: office_hours_schedule_not_found
+                      message: Office hours schedule not found
+              schema:
+                "$ref": "#/components/schemas/error"
     post:
       summary: Create an office hours exception
       parameters:
@@ -1203,12 +1807,78 @@ paths:
                     updated_at: 1717200000
               schema:
                 "$ref": "#/components/schemas/office_hours_exception"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Unknown field:
+                  value:
+                    type: error.list
+                    request_id: e6180ccb-38df-4f47-aa82-97eb5c6c1482
+                    errors:
+                    - code: parameter_invalid
+                      message: 'found unpermitted parameter: :day_of_week'
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           "$ref": "#/components/responses/Unauthorized"
         '404':
-          "$ref": "#/components/responses/ObjectNotFound"
+          description: Office hours schedule not found
+          content:
+            application/json:
+              examples:
+                Office hours schedule not found:
+                  value:
+                    type: error.list
+                    request_id: 01664eba-f831-4abf-a194-acf282811d5d
+                    errors:
+                    - code: office_hours_schedule_not_found
+                      message: Office hours schedule not found
+              schema:
+                "$ref": "#/components/schemas/error"
         '422':
-          "$ref": "#/components/responses/ValidationError"
+          description: Validation Error
+          content:
+            application/json:
+              examples:
+                Missing exception_type:
+                  value:
+                    type: error.list
+                    request_id: 6f68d983-3afb-4ddc-a5fc-0181f07a0da0
+                    errors:
+                    - code: parameter_not_found
+                      message: exception_type is required when creating an exception
+                Intervals on a closed exception:
+                  value:
+                    type: error.list
+                    request_id: f14c2e4e-484b-4960-af3a-46636c3ad153
+                    errors:
+                    - code: parameter_invalid
+                      message: time_intervals must not be provided for a closed exception
+                Missing time_intervals:
+                  value:
+                    type: error.list
+                    request_id: aa205b58-370f-4ddd-adc1-82381d9555e8
+                    errors:
+                    - code: parameter_invalid
+                      message: Time intervals are required for custom hours exceptions
+                Duplicate date:
+                  value:
+                    type: error.list
+                    request_id: 72a58e2b-58f7-4af2-ad85-1922f1a26479
+                    errors:
+                    - code: parameter_invalid
+                      message: An exception already exists for this date
+                Interval off the 15-minute grid:
+                  value:
+                    type: error.list
+                    request_id: cca3b23b-1fb4-444d-a793-1099086544ff
+                    errors:
+                    - code: parameter_invalid
+                      message: time_intervals start_minute and end_minute must be integers on a 15-minute boundary
+              schema:
+                "$ref": "#/components/schemas/error"
   "/office_hours_schedules/{id}":
     get:
       summary: Retrieve an office hours schedule
@@ -1252,7 +1922,19 @@ paths:
         '401':
           "$ref": "#/components/responses/Unauthorized"
         '404':
-          "$ref": "#/components/responses/ObjectNotFound"
+          description: Office hours schedule not found
+          content:
+            application/json:
+              examples:
+                Office hours schedule not found:
+                  value:
+                    type: error.list
+                    request_id: 01664eba-f831-4abf-a194-acf282811d5d
+                    errors:
+                    - code: office_hours_schedule_not_found
+                      message: Office hours schedule not found
+              schema:
+                "$ref": "#/components/schemas/error"
     put:
       summary: Update an office hours schedule
       parameters:
@@ -1304,12 +1986,64 @@ paths:
                     updated_at: 1717203600
               schema:
                 "$ref": "#/components/schemas/office_hours_schedule"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Unknown field:
+                  value:
+                    type: error.list
+                    request_id: 8a13f337-edee-4f90-adaa-52dd58dfd63c
+                    errors:
+                    - code: parameter_invalid
+                      message: 'found unpermitted parameter: :day_of_week'
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           "$ref": "#/components/responses/Unauthorized"
         '404':
-          "$ref": "#/components/responses/ObjectNotFound"
+          description: Office hours schedule not found
+          content:
+            application/json:
+              examples:
+                Office hours schedule not found:
+                  value:
+                    type: error.list
+                    request_id: 01664eba-f831-4abf-a194-acf282811d5d
+                    errors:
+                    - code: office_hours_schedule_not_found
+                      message: Office hours schedule not found
+              schema:
+                "$ref": "#/components/schemas/error"
         '422':
-          "$ref": "#/components/responses/ValidationError"
+          description: Validation Error
+          content:
+            application/json:
+              examples:
+                Duplicate name:
+                  value:
+                    type: error.list
+                    request_id: e7bfd750-7e4b-44c0-a711-e8ab09e0b897
+                    errors:
+                    - code: parameter_invalid
+                      message: A schedule already exists with this name
+                Interval off the 15-minute grid:
+                  value:
+                    type: error.list
+                    request_id: 36146ba3-853f-482c-a9b2-435c6848a0c2
+                    errors:
+                    - code: parameter_invalid
+                      message: time_intervals start_minute and end_minute must be integers on a 15-minute boundary
+                Invalid time zone:
+                  value:
+                    type: error.list
+                    request_id: b46c814a-bafd-4ad4-a84f-416f753c9096
+                    errors:
+                    - code: parameter_invalid
+                      message: Time zone is invalid
+              schema:
+                "$ref": "#/components/schemas/error"
     delete:
       summary: Delete an office hours schedule
       parameters:
@@ -1327,7 +2061,8 @@ paths:
       tags:
       - Office Hours
       operationId: deleteOfficeHoursSchedule
-      description: You can delete a single office hours schedule.
+      description: |
+        You can delete a single office hours schedule. The workspace's default schedule can't be deleted.
       responses:
         '200':
           description: Office hours schedule deleted
@@ -1354,7 +2089,33 @@ paths:
         '401':
           "$ref": "#/components/responses/Unauthorized"
         '404':
-          "$ref": "#/components/responses/ObjectNotFound"
+          description: Office hours schedule not found
+          content:
+            application/json:
+              examples:
+                Office hours schedule not found:
+                  value:
+                    type: error.list
+                    request_id: 01664eba-f831-4abf-a194-acf282811d5d
+                    errors:
+                    - code: office_hours_schedule_not_found
+                      message: Office hours schedule not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              examples:
+                Default schedule:
+                  value:
+                    type: error.list
+                    request_id: 1c24c1c0-009f-44f8-ab8f-35f607ef0a83
+                    errors:
+                    - code: parameter_invalid
+                      message: Cannot delete the default office hours.
+              schema:
+                "$ref": "#/components/schemas/error"
   "/office_hours_schedules":
     get:
       summary: List all office hours schedules
@@ -1441,10 +2202,57 @@ paths:
                     updated_at: 1717200000
               schema:
                 "$ref": "#/components/schemas/office_hours_schedule"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Unknown field:
+                  value:
+                    type: error.list
+                    request_id: 5c7edb8e-8f11-4cfc-a8b8-d2f0f80d432e
+                    errors:
+                    - code: parameter_invalid
+                      message: 'found unpermitted parameter: :day_of_week'
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           "$ref": "#/components/responses/Unauthorized"
         '422':
-          "$ref": "#/components/responses/ValidationError"
+          description: Validation Error
+          content:
+            application/json:
+              examples:
+                Missing time_intervals:
+                  value:
+                    type: error.list
+                    request_id: 074541fe-2ac8-45f6-a367-263b43483ef9
+                    errors:
+                    - code: parameter_not_found
+                      message: time_intervals is required when creating a new schedule
+                Duplicate name:
+                  value:
+                    type: error.list
+                    request_id: e7bfd750-7e4b-44c0-a711-e8ab09e0b897
+                    errors:
+                    - code: parameter_invalid
+                      message: A schedule already exists with this name
+                Interval off the 15-minute grid:
+                  value:
+                    type: error.list
+                    request_id: 36146ba3-853f-482c-a9b2-435c6848a0c2
+                    errors:
+                    - code: parameter_invalid
+                      message: time_intervals start_minute and end_minute must be integers on a 15-minute boundary
+                Invalid time zone:
+                  value:
+                    type: error.list
+                    request_id: b46c814a-bafd-4ad4-a84f-416f753c9096
+                    errors:
+                    - code: parameter_invalid
+                      message: Time zone is invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/admins/{admin_id}":
     get:
       summary: Retrieve an admin
@@ -1463,7 +2271,10 @@ paths:
       tags:
       - Admins
       operationId: retrieveAdmin
-      description: You can retrieve the details of a single admin.
+      description: |
+        You can retrieve the details of a single admin.
+
+        Requires the `read_single_admin` or `read_admins` OAuth scope.
       responses:
         '200':
           description: Admin found
@@ -1480,7 +2291,12 @@ paths:
                     away_mode_reassign: false
                     has_inbox_seat: true
                     away_status_reason_id: null
-                    team_ids: []
+                    team_ids:
+                    - 814865
+                    - 991267903
+                    team_priority_level:
+                      primary_team_ids:
+                      - 814865
               schema:
                 "$ref": "#/components/schemas/admin"
         '404':
@@ -1509,6 +2325,13 @@ paths:
                     errors:
                     - code: unauthorized
                       message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
   "/ai/content_import_sources":
@@ -27464,7 +28287,6 @@ paths:
                     id: '991267902'
                     name: team 1
                     admin_ids: []
-                    assignment_limit: 10
                     distribution_method: round_robin
               schema:
                 "$ref": "#/components/schemas/team"
@@ -31395,10 +32217,10 @@ components:
       title: Office Hours Time Interval
       x-tags:
       - Office Hours
-      description: A single open interval. For schedules, `start_minute` and `end_minute`
-        are minute offsets from the start of the week (Monday 00:00 = 0), in the range
-        0 to 10080. For exceptions, they are minute offsets from midnight on `exception_date`,
-        in the range 0 to 1440.
+      description: |
+        A single open interval. For schedules, `start_minute` and `end_minute` are minute offsets from the start of the week (Monday 00:00 = 0), in the range 0 to 10080. For exceptions, they are minute offsets from midnight on `exception_date`, in the range 0 to 1440.
+
+        In requests, `start_minute` and `end_minute` must be multiples of 15. The one exception is a schedule's whole-week interval, `0` to `10079`, which makes the schedule open 24/7. A request interval can contain only `start_minute` and `end_minute`; any other field, including the read-only `day_of_week`, is rejected with a 400 error.
       properties:
         start_minute:
           type: integer
@@ -31416,7 +32238,7 @@ components:
           type: integer
           readOnly: true
           description: Derived day of the week the interval falls on (0 = Monday … 6
-            = Sunday). For exceptions, this is derived from `exception_date`.
+            = Sunday). For exceptions, this is derived from `exception_date`. It is returned in responses only; a request that includes it is rejected with a 400 error.
           example: 0
     office_hours_schedule:
       type: object
@@ -31476,35 +32298,33 @@ components:
     create_office_hours_schedule_request:
       type: object
       title: Create Office Hours Schedule Request
-      description: The request payload for creating an office hours schedule.
+      description: The request payload for creating an office hours schedule. Any other field, apart from `id`, is rejected with a 400 error.
       required:
       - name
-      - time_zone_name
       - time_intervals
       properties:
         name:
           type: string
-          description: The name of the office hours schedule.
+          description: The name of the office hours schedule. It must be unique among the workspace's schedules; a duplicate name returns a 422 error.
           example: Standard Support Hours
         time_zone_name:
           type: string
-          description: The IANA time zone the schedule's hours are evaluated in.
+          description: The IANA time zone the schedule's hours are evaluated in. Optional; defaults to the workspace's time zone.
           example: America/New_York
         time_intervals:
           type: array
-          description: The open intervals for the schedule. `start_minute` and `end_minute`
-            must be on a 15-minute boundary.
+          description: The open intervals for the schedule. `start_minute` and `end_minute` must be on a 15-minute boundary, except for the whole-week interval `0` to `10079`. Don't send `day_of_week`; it is read-only and a request that includes it is rejected with a 400 error.
           items:
             "$ref": "#/components/schemas/office_hours_time_interval"
     update_office_hours_schedule_request:
       type: object
       title: Update Office Hours Schedule Request
       description: The request payload for updating an office hours schedule. Only the
-        provided fields are updated.
+        provided fields are updated. Any other field, apart from `id`, is rejected with a 400 error.
       properties:
         name:
           type: string
-          description: The name of the office hours schedule.
+          description: The name of the office hours schedule. It must be unique among the workspace's schedules; a duplicate name returns a 422 error.
           example: Extended Support Hours
         time_zone_name:
           type: string
@@ -31512,8 +32332,7 @@ components:
           example: America/New_York
         time_intervals:
           type: array
-          description: The open intervals for the schedule. `start_minute` and `end_minute`
-            must be on a 15-minute boundary.
+          description: The open intervals for the schedule. `start_minute` and `end_minute` must be on a 15-minute boundary, except for the whole-week interval `0` to `10079`. Don't send `day_of_week`; it is read-only and a request that includes it is rejected with a 400 error. When provided, the intervals replace all of the schedule's existing intervals.
           items:
             "$ref": "#/components/schemas/office_hours_time_interval"
     office_hours_exception:
@@ -31591,7 +32410,7 @@ components:
       type: object
       title: Create Office Hours Exception Request
       description: The request payload for creating an office hours exception. Omit
-        `time_intervals` when `exception_type` is `closed`.
+        `time_intervals` when `exception_type` is `closed`. Any other field, apart from `id` and `office_hours_schedule_id`, is rejected with a 400 error.
       required:
       - exception_date
       - exception_type
@@ -31599,7 +32418,7 @@ components:
         exception_date:
           type: string
           format: date
-          description: The date the exception applies to, in `YYYY-MM-DD` format.
+          description: The date the exception applies to, in `YYYY-MM-DD` format. A schedule can have only one exception for each date; a second one returns a 422 error.
           example: '2026-12-25'
         exception_type:
           type: string
@@ -31615,8 +32434,7 @@ components:
         time_intervals:
           type: array
           nullable: true
-          description: The open intervals for the exception date. Required for `custom_hours`;
-            omit for `closed`.
+          description: The open intervals for the exception date. Required for `custom_hours`; omit for `closed`, which returns a 422 error if intervals are sent. `start_minute` and `end_minute` must be on a 15-minute boundary. Don't send `day_of_week`; it is read-only and a request that includes it is rejected with a 400 error.
           items:
             "$ref": "#/components/schemas/office_hours_time_interval"
         recurring_annually:
@@ -31627,12 +32445,12 @@ components:
       type: object
       title: Update Office Hours Exception Request
       description: The request payload for updating an office hours exception. Only
-        the provided fields are updated.
+        the provided fields are updated. Any other field, apart from `id` and `office_hours_schedule_id`, is rejected with a 400 error.
       properties:
         exception_date:
           type: string
           format: date
-          description: The date the exception applies to, in `YYYY-MM-DD` format.
+          description: The date the exception applies to, in `YYYY-MM-DD` format. A schedule can have only one exception for each date.
           example: '2026-12-25'
         exception_type:
           type: string
@@ -31648,8 +32466,7 @@ components:
         time_intervals:
           type: array
           nullable: true
-          description: The open intervals for the exception date. Required for `custom_hours`;
-            omit for `closed`.
+          description: The open intervals for the exception date. Required for `custom_hours`; omit for `closed`, which returns a 422 error if intervals are sent. `start_minute` and `end_minute` must be on a 15-minute boundary. Don't send `day_of_week`; it is read-only and a request that includes it is rejected with a 400 error.
           items:
             "$ref": "#/components/schemas/office_hours_time_interval"
         recurring_annually:
@@ -31671,13 +32488,18 @@ components:
       description: Activities performed by Admins.
       nullable: true
       properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `admin_activity_log_event`.
+          example: admin_activity_log_event
         id:
           type: string
           description: The id representing the activity.
           example: '6'
         performed_by:
           type: object
-          description: Details about the Admin involved in the activity.
+          nullable: true
+          description: Details about the Admin involved in the activity. `null` when the admin who performed the activity isn't available.
           properties:
             type:
               type: string
@@ -31706,41 +32528,56 @@ components:
         activity_type:
           type: string
           enum:
-          - admin_conversation_assignment_limit_change
-          - admin_ticket_assignment_limit_change
           - admin_avatar_change
           - admin_away_mode_change
+          - admin_occupancy_state_change
+          - admin_channel_change
           - admin_deletion
           - admin_deprovisioned
-          - admin_impersonation_end
-          - admin_impersonation_start
+          - intercom_teammate_removal
           - admin_impersonation_consent_approved
           - admin_impersonation_consent_revoked
+          - admin_impersonation_end
+          - admin_impersonation_start
           - admin_invite_change
+          - admin_bulk_invite_creation
+          - admin_bulk_notification_settings_change
           - admin_invite_creation
           - admin_invite_deletion
+          - admin_unauthorized_sign_in_method
           - admin_login_failure
           - admin_login_success
           - admin_logout
-          - admin_occupancy_setting_change
-          - admin_occupancy_state_change
+          - admin_login_attempts_reset
+          - admin_mobile_login_failure
+          - admin_mobile_login_success
+          - admin_sign_in_method_expired
           - admin_password_reset_request
           - admin_password_reset_success
           - admin_permission_change
           - admin_provisioned
-          - admin_two_factor_auth_change
-          - admin_unauthorized_sign_in_method
+          - admin_name_change
+          - admin_email_change
+          - admin_password_change
+          - admin_locale_change
           - app_admin_join
           - app_authentication_method_change
           - app_data_deletion
           - app_data_export
+          - request_log_export_requested
+          - workspace_deletion_request
+          - workspace_owner_designation_change
           - app_google_sso_domain_change
           - app_identity_verification_change
+          - app_identity_verification_reminder_disabled
+          - identity_verification_unmarked
           - app_name_change
           - app_outbound_address_change
           - app_package_installation
           - app_package_token_regeneration
           - app_package_uninstallation
+          - developer_hub_secret_revealed
+          - developer_hub_secret_copied
           - app_team_creation
           - app_team_deletion
           - app_team_membership_modification
@@ -31748,83 +32585,341 @@ components:
           - app_webhook_creation
           - app_webhook_deletion
           - articles_in_messenger_enabled_change
-          - automatic_away_mode_setting_change
+          - automatic_domain_authentication_started
+          - automatic_domain_authentication_complete
+          - messenger_api_secret_creation
+          - messenger_api_secret_deletion
+          - messenger_search_required_change
+          - messenger_spaces_change
+          - bulk_data_export_creation
+          - bulk_data_export_delete
+          - bulk_data_export_run
+          - bulk_data_export_settings_change
           - bulk_delete
           - bulk_export
+          - call_settings_change
           - campaign_deletion
           - campaign_state_change
+          - content_sync_pair_creation
+          - content_sync_pair_deletion
+          - content_sync_pair_run
+          - content_sync_pair_update
+          - conversation_attribute_archive
+          - conversation_deletion
           - conversation_deletion_schedule_creation
-          - conversation_deletion_schedule_deletion
           - conversation_deletion_schedule_state_change
           - conversation_deletion_schedule_update
+          - conversation_hard_deletion_enqueued
           - conversation_part_deletion
+          - conversation_part_edited
+          - conversation_part_redaction
           - conversation_pdf_export
+          - conversation_redaction_enqueued
+          - conversation_sla_change
           - conversation_topic_change
           - conversation_topic_creation
           - conversation_topic_deletion
-          - content_redaction_rule_creation
-          - content_redaction_rule_deletion
-          - content_redaction_rule_update
           - csv_import_completion
           - csv_import_creation
-          - custom_authentication_token_creation
+          - taxonomy_upload_creation
+          - automation_roadmap_form_submission_creation
+          - data_connector_log_retention_setting_creation
+          - data_connector_log_retention_setting_update
+          - email_settings_change
+          - strip_inbound_email_links_change
           - help_center_settings_change
           - inbound_conversations_change
           - inbox_access_change
           - inbox_bulk_action
-          - macro_creation
-          - macro_deletion
-          - macro_update
-          - macro_usage_export
-          - malicious_domains_setting_change
+          - internal_agent_proposal_applied
           - message_deletion
-          - message_state_change
-          - messenger_api_secret_creation
-          - messenger_api_secret_deletion
-          - messenger_look_and_feel_change
-          - messenger_search_required_change
-          - messenger_spaces_change
+          - ruleset_activation
+          - ruleset_deletion
+          - ruleset_creation
+          - workflow_creation
+          - workflow_deletion
+          - workflow_update
+          - workflow_status_change
+          - workflow_participant_action_configured
           - oauth_token_revocation
+          - article_creation
+          - article_deletion
+          - article_content_creation
+          - article_content_update
+          - article_content_deletion
+          - article_content_published
+          - article_content_unpublished
+          - article_content_audience_updated
+          - message_state_change
+          - messenger_look_and_feel_change
           - office_hours_change
+          - office_hours_exception_change
           - role_change
           - role_creation
           - role_deletion
-          - ruleset_activation_title_preview
-          - ruleset_creation
-          - ruleset_deletion
-          - search_browse_enabled_change
-          - search_browse_required_change
           - seat_change
           - seat_revoke
+          - pre_migration_seat_expiration_date_change
+          - post_migration_seat_deletion
+          - post_migration_seat_update
+          - post_migration_seat_creation
           - security_settings_change
+          - temporary_expectation_auto_expired
+          - temporary_expectation_change
+          - temporary_expectation_messages_change
+          - welcome_message_change
+          - start_conversation_button_text_change
+          - upfront_email_collection_change
+          - admin_assignment_limit_change
+          - admin_channel_limit_change
+          - admin_conversation_assignment_limit_change
+          - admin_ticket_assignment_limit_change
+          - admin_unassign_unsnoozed_at_capacity_change
+          - team_assignment_limit_change
+          - teammate_skills_synced
+          - skill_category_created
+          - skill_category_updated
+          - snooze_presets_change
+          - team_skill_categories_updated
+          - admin_two_factor_auth_change
+          - admin_two_factor_login_failure
+          - email_signature_change
+          - recovery_code_sent
+          - billing_addressees_change
+          - billing_addressees_bounced_and_removed
+          - billing_details_change
+          - broadcast_deletion
+          - fin_opt_in
+          - fin_free_usage_window_create
+          - fin_free_usage_window_extension
+          - fin_ingestion_consent
+          - ip_allowlist_setting_change
+          - rest_api_ip_allowlist_setting_change
+          - messenger_platform_availability_change
+          - messenger_platform_inactivity_disable_event
+          - custom_report_update
+          - custom_report_delete
+          - custom_report_create
+          - reporting_folder_create
+          - reporting_folder_delete
+          - teammate_office_hours_schedule_assign
+          - teammate_office_hours_schedule_unassign
+          - report_snapshot_create
+          - report_scheduled_share_create
+          - report_scheduled_share_update
+          - report_scheduled_share_delete
+          - reporting_folder_name_change
+          - reporting_folder_position_change
+          - reporting_folder_reports_change
+          - reporting_folder_pin_change
+          - reporting_csv_export
+          - pii_data_revealed
+          - privacy_policy_notice_change
+          - privacy_policy_notice_contents_change
+          - report_access_create
+          - report_access_delete
+          - report_access_update
+          - fin_persisted_data_context_attribute_change
+          - fin_sdr_connector_generated
+          - fin_sdr_connector_activated
+          - fin_sdr_marketo_connected
+          - fin_sdr_marketo_partition_selected
+          - fin_sdr_marketo_disconnected
+          - fin_sdr_playbook_updated
+          - generic_ecommerce_connector_creation
+          - ai_agent_customization_settings_change
+          - ai_agent_identity_settings_change
+          - ai_agent_multilingual_settings_change
+          - ai_agent_safety_guard_settings_change
+          - messenger_language_change
+          - ai_agent_guidance_change
+          - ai_category_change
+          - escalation_rule_change
+          - hitl_rule_change
+          - safety_response_category_config_change
+          - hitl_inbox_action
+          - brand_creation
+          - brand_update
+          - brand_deletion
+          - brand_settings_change
+          - action_created
+          - action_risk_accepted_change
+          - data_connector_security_warning_acknowledged
+          - action_published
+          - action_status_change
+          - action_update
+          - allowed_attachment_filetypes_setting_change
+          - ai_agent_fin_playground_change
+          - ai_agent_preview_token_generated
+          - selection_set_creation
+          - selection_set_archive
           - series_creation
           - series_deletion
           - series_settings_update
           - series_status_change
           - series_update
-          - strip_inbound_email_links_change
-          - temporary_expectation_change
-          - team_assignment_limit_change
-          - trusted_domains_setting_change
+          - messenger_launch_to_conversation_change
+          - messenger_launcher_display_condition_change
+          - alias_mode_change
+          - alias_name_change
+          - hippa_compliance_settings_change
+          - ai_inbox_translation_setting_change
+          - slack_integration_auto_promoted
+          - slack_oauth_fresh_install
+          - slack_oauth_reinstall
+          - slack_oauth_reauthentication
+          - slack_integration_uninstalled
+          - telegram_identity_reset
+          - telegram_integration_installed
+          - telegram_integration_uninstalled
+          - slack_user_association_setting_change
+          - ms_teams_user_association_setting_change
+          - slack_integration_type_change
+          - slack_multi_conversational_changed
+          - whatsapp_direct_send_changed
+          - slack_user_token_creation
+          - standalone_channel_change
+          - standalone_connection_config_change
+          - standalone_schedule_sync_deletion
+          - skill_category_deleted
+          - skill_based_routing_toggled
+          - consent_banner_settings_change
+          - content_redaction_rule_creation
+          - content_redaction_rule_deletion
+          - content_redaction_rule_update
+          - content_suggestions_change
+          - suggestions_limiters_reset
+          - custom_authentication_token_creation
+          - custom_authentication_token_update
+          - custom_authentication_token_deletion
+          - device_token_deletion
+          - predictive_answers_settings_change
+          - custom_emoji_deletion
+          - customer_facing_name_change
+          - attach_uploads_inline_setting_change
+          - user_camera_attachments_setting_change
+          - user_media_attachments_setting_change
+          - user_file_attachments_setting_change
+          - file_upload_audience_predicates_setting_change
+          - user_gifs_setting_change
+          - user_emojis_setting_change
+          - user_voice_notes_setting_change
+          - user_conversation_attachments_setting_change
+          - teammate_gifs_setting_change
+          - scim_group_creation
+          - scim_group_update
+          - scim_groups_bulk_update
+          - scim_group_deletion
+          - scim_group_membership_change
+          - scim_admin_role_change
+          - scim_admin_bulk_role_assignment
+          - scim_admin_profile_update
+          - scim_admin_password_update
+          - scim_system_enabled
+          - scim_system_disabled
+          - scim_settings_change
+          - macro_content_export_run
+          - personal_macro_admin_read
+          - personal_macro_admin_convert
+          - personal_macro_admin_destroy
+          - macro_creation
+          - macro_deletion
+          - macro_update
+          - macro_usage_export
+          - mcp_server_created
+          - mcp_server_updated
+          - mcp_server_deleted
+          - mcp_server_enabled
+          - mcp_server_disabled
+          - mcp_server_oauth_connected
+          - mcp_server_oauth_disconnected
+          - mcp_server_reconnected
+          - mcp_action_added
+          - mcp_actions_batch_added
+          - mcp_action_updated
+          - mcp_action_removed
+          - fin_agent_api_settings_change
+          - fin_procedures_hitl_settings_change
+          - fin_procedures_hitl_access_token_rotated
+          - fin_agent_api_secret_revealed
+          - fin_agent_api_secret_copied
+          - a2a_agent_registered
+          - a2a_agent_oauth_connected
+          - automatic_away_mode_setting_change
+          - admin_occupancy_setting_change
           - unassign_unsnoozed_at_capacity_setting_change
           - unassign_unsnoozed_when_away_setting_change
-          - upfront_email_collection_change
-          - allowed_attachment_filetypes_setting_change
-          - attach_uploads_inline_setting_change
-          - teammate_gifs_setting_change
-          - user_camera_attachments_setting_change
-          - user_conversation_attachments_setting_change
-          - user_file_attachments_setting_change
-          - user_gifs_setting_change
-          - user_media_attachments_setting_change
-          - user_voice_notes_setting_change
-          - welcome_message_change
-          - workspace_deletion_request
+          - unassign_triggers_setting_change
+          - malicious_domains_setting_change
+          - trusted_domains_setting_change
+          - messenger_allowed_domains_change
+          - qa_monitor_creation
+          - qa_monitor_update
+          - qa_monitor_archive
+          - qa_monitor_restore
+          - qa_scorecard_creation
+          - qa_scorecard_update
+          - qa_scorecard_archive
+          - qa_review_plan_creation
+          - qa_review_plan_archive
+          - lead_to_user_merge
+          - user_to_user_merge
+          - sales_messenger_configuration_change
+          - shopify_refund_order
+          - shopify_replacement_order
+          - shopify_gift_card_compensation
+          - shopify_add_replacement_item
+          - shopify_disable_discount_code
+          - shopify_disable_gift_card
+          - shopify_create_discount_code
+          - shopify_update_shipping_address
+          - channel_identity_rule_change
+          - topic_curation_set_live
           - hide_csat_from_agents_setting_change
+          - phone_purchase_diagnostic
+          - phone_number_purchase
+          - sip_domain_provisioned
+          - sip_domain_deleted
+          - sip_integration_stage_confirmed
+          - sip_header_mappings_updated
+          - phone_queue_call_pinned
+          - phone_queue_call_unpinned
+          - phone_queue_call_pin_cleared
+          - outbound_phone_campaign_creation
+          - outbound_phone_campaign_change
+          - outbound_phone_campaign_deletion
+          - outbound_phone_campaign_state_change
+          - outbound_phone_campaign_csv_upload
+          - outbound_phone_campaign_import
+          - outbound_phone_campaign_session_start
+          - channel_wrap_up_settings_change
+          - ticket_state_customer_notifications_change
+          - schedule_template_update
+          - schedule_template_creation
+          - schedule_template_deletion
+          - schedule_template_apply
+          - wfm_google_calendar_connected
+          - wfm_google_calendar_disconnected
+          - wfm_google_calendar_sync_setting_change
+          - github_sync_disconnected
+          - github_sync_cleanup_deleted_folder
+          - github_sync_installed
+          - github_sync_connector_cloned
+          - github_sync_pulled
+          - fallback_admin_alias_change
+          - spam_email_deletion
+          - snowflake_share_activated
+          - snowflake_share_torn_down
+          - calendar_mapping_rule_creation
+          - calendar_mapping_rule_deletion
+          - calendar_mapping_rule_update
+          - activity_type_creation
+          - masked_admin_avatar_change
           example: app_name_change
         activity_description:
           type: string
-          description: A sentence or two describing the activity.
+          nullable: true
+          description: A sentence or two describing the activity. `null` when the admin who performed the activity isn't available.
           example: Admin updated the app's name to "My App".
     activity_log_event_type_list:
       title: Activity Log Event Types
@@ -31858,7 +32953,7 @@ components:
             `activity_log.list`.
           example: activity_log.list
         pages:
-          "$ref": "#/components/schemas/cursor_pages"
+          "$ref": "#/components/schemas/pages_link"
         activity_logs:
           type: array
           description: An array of activity logs
@@ -32090,7 +33185,7 @@ components:
         away_status_reason_id:
           type: integer
           nullable: true
-          description: The unique identifier of the away status reason
+          description: The unique identifier of the away status reason. Not returned by List all admins.
           example: 12345
         has_inbox_seat:
           type: boolean
@@ -32099,7 +33194,7 @@ components:
           example: true
         team_ids:
           type: array
-          description: This object represents the avatar associated with the admin.
+          description: The ids of the teams the admin belongs to. When the workspace has a default team, its id is the last item.
           example:
           - 814865
           items:
@@ -32390,6 +33485,25 @@ components:
           description: Identifies if this admin's email is verified.
           nullable: true
           example: true
+        role:
+          type: object
+          nullable: true
+          description: The role assigned to this admin. Only present if the admin has
+            a role assigned.
+          properties:
+            type:
+              type: string
+              description: String representing the object's type. Always has the value
+                `role`.
+              example: role
+            id:
+              type: string
+              description: The id of the role.
+              example: '1'
+            name:
+              type: string
+              description: The name of the role.
+              example: Support Agent
         app:
           "$ref": "#/components/schemas/app"
           nullable: true
@@ -32608,6 +33722,10 @@ components:
         identity_verification:
           type: boolean
           description: Whether or not the app uses identity verification.
+          example: false
+        secure:
+          type: boolean
+          description: Whether or not the app uses identity verification. Same value as `identity_verification`.
           example: false
     audience:
       title: Audience
@@ -44984,9 +46102,9 @@ components:
         next:
           type: string
           format: uri
-          description: A link to the next page of results. Omitted on the last page.
-            Some lists never include `next` or `prev`, so compare `page` with `total_pages`
-            to tell whether more pages remain.
+          description: A link to the next page of results. Omitted or `null` on the
+            last page, depending on the list. Some lists never include `next` or `prev`,
+            so compare `page` with `total_pages` to tell whether more pages remain.
           nullable: true
         prev:
           type: string
@@ -47901,20 +49019,6 @@ components:
                 errors:
                   - code: not_found
                     message: Integration not found
-          schema:
-            "$ref": "#/components/schemas/error"
-    ValidationError:
-      description: Validation Error
-      content:
-        application/json:
-          examples:
-            ValidationError:
-              value:
-                type: error.list
-                request_id: 12a938a3-314e-4939-b773-5cd45738bd21
-                errors:
-                  - code: parameter_invalid
-                    message: Invalid or duplicated record reference
           schema:
             "$ref": "#/components/schemas/error"
     BadRequest:
