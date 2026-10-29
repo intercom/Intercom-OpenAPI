@@ -26642,7 +26642,7 @@ paths:
                     fin_transcription_url: "https://api.intercom.io/calls/124/transcript"
                     duration: 90
                     talk_time: 85
-                    queue_time: 3
+                    queue_time: null
                     hold_time: null
               schema:
                 "$ref": "#/components/schemas/call"
@@ -31080,6 +31080,24 @@ paths:
           description: successful
           content:
             application/json:
+              examples:
+                registered:
+                  value:
+                    id: 12345
+                    app_id: 12345
+                    user_phone_number: "+1234567890"
+                    status: registered
+                    intercom_call_id: null
+                    external_call_id: call-123-abc
+                    vendor_internal_id: null
+                    intercom_conversation_id: null
+                    call_transcript:
+                    - {}
+                    call_summary: ""
+                    intent: []
+                    fin_call_duration: null
+                    data: {}
+                    language: null
               schema:
                 $ref: "#/components/schemas/ai_call_response"
         '400':
@@ -32531,7 +32549,7 @@ components:
         fin_call_duration:
           type: string
           nullable: true
-          description: How long the AI Agent (Fin) part of the call lasted, in seconds, returned as a string. Null while that part of the call is still in progress or when the call has no AI Agent part.
+          description: How long the most recent AI Agent (Fin) part of the call lasted, in seconds, returned as a string. Null until the call is matched and that part has ended, or when the call has no AI Agent part.
           example: '45'
         data:
           type: object
@@ -39824,7 +39842,7 @@ components:
         duration:
           type: integer
           nullable: true
-          description: Total call duration in seconds from the caller's perspective. For inbound calls, measured from initiated to ended. For outbound calls, measured from answered to ended.
+          description: Total call duration in seconds from the caller's perspective. For inbound calls, measured from initiated to ended. For outbound calls, measured from answered to ended. Null until the call ends, and for outbound calls that were never answered.
           example: 900
         talk_time:
           type: integer
