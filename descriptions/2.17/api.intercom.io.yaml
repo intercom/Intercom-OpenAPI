@@ -20631,14 +20631,14 @@ paths:
                 List without options:
                   value:
                     type: error.list
-                    request_id: 5e2ef33c-16b4-418c-a294-c0ffeed2f0e4
+                    request_id: null
                     errors:
                     - code: parameter_invalid
                       message: "Data type is list but no list options were given"
                 List with too few options:
                   value:
                     type: error.list
-                    request_id: 5e2f122b-16c1-418f-a299-c0ffeed489fd
+                    request_id: null
                     errors:
                     - code: parameter_invalid
                       message: "options requires a minimum of 2 items for list type attributes"
@@ -20652,7 +20652,7 @@ paths:
                 Name already exists:
                   value:
                     type: error.list
-                    request_id: 5e2f5009-16db-4195-a2a3-c0ffeed7bc2f
+                    request_id: null
                     errors:
                     - code: parameter_invalid
                       message: "An attribute with that name already exists"
@@ -20823,14 +20823,14 @@ paths:
                 Name already exists:
                   value:
                     type: error.list
-                    request_id: 5e2f8de7-16f5-419b-a2ad-c0ffeedaee61
+                    request_id: null
                     errors:
                     - code: parameter_invalid
                       message: "An attribute with that name already exists"
                 Name too long:
                   value:
                     type: error.list
-                    request_id: 5e2facd6-1702-419e-a2b2-c0ffeedc877a
+                    request_id: null
                     errors:
                     - code: parameter_invalid
                       message: "name exceeds the maximum length of 191 characters"
@@ -20924,7 +20924,7 @@ paths:
                 Dependent objects:
                   value:
                     type: error.list
-                    request_id: 5e2fcbc5-170f-41a1-a2b7-c0ffeede2093
+                    request_id: null
                     errors:
                     - code: data_invalid
                       message: "The attribute you are trying to archive has dependent objects"
@@ -29368,7 +29368,6 @@ paths:
                       has_more: false
                     category: Back-office
                     is_shared: false
-                    channel: email
               schema:
                 "$ref": "#/components/schemas/ticket"
         '400':
@@ -29476,7 +29475,6 @@ paths:
                   ticket_attributes:
                     _default_title_: example
                     _default_description_: there is a problem
-                  channel: email
   "/tickets/enqueue":
     post:
       summary: Enqueue create ticket
@@ -46565,7 +46563,7 @@ components:
                     example: false
                   is_internal:
                     type: boolean
-                    description: Whether the tickets of this ticket type are for internal use only (`true`) or shared with customers (`false`).
+                    description: "`true` if tickets of this type are internal only and can never be shared with customers; `false` if they are, or can be, shared."
                     example: false
                   category:
                     type: string
@@ -46656,7 +46654,7 @@ components:
           example: false
         is_internal:
           type: boolean
-          description: Whether the tickets of this ticket type are for internal use only (`true`) or shared with customers (`false`).
+          description: "`true` if tickets of this type are internal only and can never be shared with customers; `false` if they are, or can be, shared."
           example: false
         created_at:
           type: integer
@@ -47422,11 +47420,7 @@ components:
           example: true
         is_shared:
           type: boolean
-          description: Specify whether the ticket is visible to users. Only `true` is
-            accepted, because a ticket can't be unshared once it is shared. Customer
-            tickets are shared by default and Tracker tickets can't be shared. A
-            Back-office ticket can only be shared if it is linked to a conversation
-            that has no other shared linked ticket. Any other value returns a `400`.
+          description: "Set to `true` to share a ticket with the customer. Only a ticket that isn't shared yet can be shared: a Back-office ticket, of a ticket type that isn't internal, that is linked to a conversation with no other shared linked ticket. Sending `false`, or `true` for a ticket that is already shared (Customer tickets are shared by default) or can't be shared (Tracker tickets), returns a `400`."
           example: true
         snoozed_until:
           type: integer
