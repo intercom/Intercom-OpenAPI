@@ -17411,7 +17411,7 @@ paths:
       - name: include_monitors
         in: query
         required: false
-        description: If set to true, the response will include a `monitor_evaluations` array on each conversation with any QA monitor results that flagged it.
+        description: If set to true, the response will include a `monitor_evaluations` array on each conversation with the latest QA monitor evaluation for each monitor that has evaluated it.
         example: true
         schema:
           type: boolean
@@ -17502,6 +17502,13 @@ paths:
                         has_more: false
                       ai_agent:
                       ai_agent_participated: false
+                      sales_agent_participated: false
+                      sales_agent:
+                      company:
+                      external_references: []
+                      channel:
+                        initial: messenger
+                        current: messenger
               schema:
                 "$ref": "#/components/schemas/conversation_list"
         '401':
@@ -17530,6 +17537,27 @@ paths:
                     errors:
                     - code: api_plan_restricted
                       message: Active subscription needed.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              examples:
+                Invalid per_page:
+                  value:
+                    type: error.list
+                    request_id: 3b6e9d52-7a04-4c81-b5f3-0d8a2e4c1f69
+                    errors:
+                    - code: invalid_per_page
+                      message: per_page must be an integer between 0 and 150
+                Invalid starting_after:
+                  value:
+                    type: error.list
+                    request_id: c9a5e130-6d72-4f48-8b0e-2a7c4d1f5b83
+                    errors:
+                    - code: client_error
+                      message: Invalid starting_after param. Please try again using a starting_after value from a paginated response
               schema:
                 "$ref": "#/components/schemas/error"
     post:
@@ -17614,6 +17642,34 @@ paths:
                       message: Active subscription needed.
               schema:
                 "$ref": "#/components/schemas/error"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              examples:
+                Sender missing:
+                  value:
+                    type: error.list
+                    request_id: 2a9c6e13-5d70-4b84-8f21-6c3e0a7d9b58
+                    errors:
+                    - code: data_invalid
+                      message: "Field 'from.type' is required"
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              examples:
+                Message too long:
+                  value:
+                    type: error.list
+                    request_id: f0b4d728-1e63-4a95-b7c0-8d2a5e9c3f16
+                    errors:
+                    - code: parameter_invalid
+                      message: Message is too long. Maximum length is 300000
+              schema:
+                "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
@@ -17663,10 +17719,31 @@ paths:
         example: true
         schema:
           type: boolean
+      - name: include_email_history
+        in: query
+        required: false
+        description: If set to true, the source of the conversation will include the email history.
+        example: true
+        schema:
+          type: boolean
+      - name: parts_created_after
+        in: query
+        required: false
+        description: Only include conversation parts created at or after this time, as a Unix timestamp in seconds.
+        example: 1700000000
+        schema:
+          type: integer
+      - name: parts_created_before
+        in: query
+        required: false
+        description: Only include conversation parts created at or before this time, as a Unix timestamp in seconds.
+        example: 1700086400
+        schema:
+          type: integer
       - name: include_monitors
         in: query
         required: false
-        description: If set to true, the response will include a `monitor_evaluations` array with any QA monitor results that flagged this conversation.
+        description: If set to true, the response will include a `monitor_evaluations` array with the latest QA monitor evaluation for each monitor that has evaluated this conversation.
         example: true
         schema:
           type: boolean
@@ -17763,7 +17840,7 @@ paths:
                       type: conversation_part.list
                       conversation_parts:
                       - type: conversation_part
-                        id: 1
+                        id: '1'
                         part_type: comment
                         body: <p>Okay!</p>
                         created_at: 1663597223
@@ -17791,7 +17868,7 @@ paths:
                           en: '<p>Okay!</p>'
                           es: '<p>¡Vale!</p>'
                       - type: conversation_part
-                        id: 2
+                        id: '2'
                         part_type: custom_action_started
                         body:
                         created_at: 1740141842
@@ -17814,7 +17891,7 @@ paths:
                             name: Jira Create Issue
                         app_package_code: test-integration
                       - type: conversation_part
-                        id: 3
+                        id: '3'
                         part_type: conversation_attribute_updated_by_admin
                         body:
                         created_at: 1740141851
@@ -17839,7 +17916,7 @@ paths:
                             name: PROJ-007
                         app_package_code: null
                       - type: conversation_part
-                        id: 4
+                        id: '4'
                         part_type: custom_action_finished
                         body:
                         created_at: 1740141857
@@ -18166,6 +18243,27 @@ paths:
                       message: Active subscription needed.
               schema:
                 "$ref": "#/components/schemas/error"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              examples:
+                Side conversation:
+                  value:
+                    type: error.list
+                    request_id: c6a1d739-8e25-4f40-b9c7-2d5e0a3b7f19
+                    errors:
+                    - code: side_conversation
+                      message: action can not be performed on a side conversation
+                Unknown conversation attribute:
+                  value:
+                    type: error.list
+                    request_id: 83b4e6f0-2d17-4a59-8c36-0e9a1b5d7c42
+                    errors:
+                    - code: parameter_invalid
+                      message: Conversation attribute 'Region' does not exist
+              schema:
+                "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
@@ -18302,7 +18400,7 @@ paths:
       - name: include_monitors
         in: query
         required: false
-        description: If set to true, the response will include a `monitor_evaluations` array on each conversation with any QA monitor results that flagged it.
+        description: If set to true, the response will include a `monitor_evaluations` array on each conversation with the latest QA monitor evaluation for each monitor that has evaluated it.
         example: true
         schema:
           type: boolean
@@ -18345,11 +18443,13 @@ paths:
 
         | Field                                     | Type                                                                                                                                                   |
         | :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
-        | id                                        | String                                                                                                                                                 |
+        | id                                        | Integer                                                                                                                                                |
+        | title                                     | String                                                                                                                                                 |
+        | type                                      | String                                                                                                                                                 |
         | created_at                                | Date (UNIX timestamp)                                                                                                                                  |
         | updated_at                                | Date (UNIX timestamp)                                                                                                                                  |
         | source.type                               | String<br>Accepted fields are `conversation`, `email`, `facebook`, `instagram`, `phone_call`, `phone_switch`, `push`, `sms`, `twitter` and `whatsapp`. |
-        | source.id                                 | String                                                                                                                                                 |
+        | source.id                                 | Integer                                                                                                                                                |
         | source.delivered_as                       | String                                                                                                                                                 |
         | source.subject                            | String                                                                                                                                                 |
         | source.body                               | String                                                                                                                                                 |
@@ -18384,7 +18484,7 @@ paths:
         | statistics.last_contact_reply_at          | Date (UNIX timestamp)                                                                                                                                  |
         | statistics.last_admin_reply_at            | Date (UNIX timestamp)                                                                                                                                  |
         | statistics.last_close_at                  | Date (UNIX timestamp)                                                                                                                                  |
-        | statistics.last_closed_by_id              | String                                                                                                                                                 |
+        | statistics.last_closed_by_id              | Integer                                                                                                                                                |
         | statistics.count_reopens                  | Integer                                                                                                                                                |
         | statistics.count_assignments              | Integer                                                                                                                                                |
         | statistics.count_conversation_parts       | Integer                                                                                                                                                |
@@ -18393,7 +18493,7 @@ paths:
         | conversation_rating.score                 | Integer                                                                                                                                                |
         | conversation_rating.remark                | String                                                                                                                                                 |
         | conversation_rating.contact_id            | String                                                                                                                                                 |
-        | conversation_rating.admin_d               | String                                                                                                                                                 |
+        | conversation_rating.admin_id              | String                                                                                                                                                 |
         | ai_agent_participated                     | Boolean                                                                                                                                                |
         | ai_agent.resolution_state                 | String                                                                                                                                                 |
         | ai_agent.last_answer_type                 | String                                                                                                                                                 |
@@ -18412,12 +18512,17 @@ paths:
         | !=       | All                            | Doesn't Equal                                                |
         | IN       | All                            | In  Shortcut for `OR` queries  Values most be in Array       |
         | NIN      | All                            | Not In  Shortcut for `OR !` queries  Values must be in Array |
-        | >        | Integer  Date (UNIX Timestamp) | Greater (or equal) than                                      |
-        | <       | Integer  Date (UNIX Timestamp) | Lower (or equal) than                                        |
+        | >       | Integer  Date (UNIX Timestamp) | Greater than                                                 |
+        | >=      | Integer  Date (UNIX Timestamp) | Greater than or equal to                                     |
+        | <       | Integer  Date (UNIX Timestamp) | Lower than                                                   |
+        | <=      | Integer  Date (UNIX Timestamp) | Lower than or equal to                                       |
         | ~        | String                         | Contains                                                     |
         | !~       | String                         | Doesn't Contain                                              |
         | ^        | String                         | Starts With                                                  |
         | $        | String                         | Ends With                                                    |
+        ### Sorting
+
+        Results are sorted by `updated_at`, newest first. To sort differently, add a `sort` object to the request body with the `field` to sort by, one of the fields in the table above, and an `order` of `ascending` or `descending`. Any other `order` is treated as `descending`. A `field` that isn't searchable returns a `400` error with the code `invalid_field`.
       responses:
         '200':
           description: successful
@@ -18485,8 +18590,71 @@ paths:
                         has_more: false
                       ai_agent:
                       ai_agent_participated: false
+                      sales_agent_participated: false
+                      sales_agent:
+                      company:
+                      external_references: []
+                      channel:
+                        initial: messenger
+                        current: messenger
               schema:
                 "$ref": "#/components/schemas/conversation_list"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              examples:
+                Invalid query:
+                  value:
+                    type: error.list
+                    request_id: 5e0a9c24-6f18-4d73-a2b5-8c1e3d7f9a60
+                    errors:
+                    - code: invalid_query
+                      message: "Invalid query. Ensure 'field', 'operator', 'value' are present for simple queries. Ensure 'operator' and 'value' for composite queries. Ensure query is a JSON object."
+                Invalid operator:
+                  value:
+                    type: error.list
+                    request_id: a1c7e439-0b52-4f86-9d24-3e6a8c0b5d71
+                    errors:
+                    - code: invalid_operator
+                      message: Composite operators must be of type AND or OR
+                Invalid field:
+                  value:
+                    type: error.list
+                    request_id: 2f8d6b05-9a31-4c47-b1e8-7d0c5a3e9f36
+                    errors:
+                    - code: invalid_field
+                      message: foo is not a valid search field
+                Invalid per_page:
+                  value:
+                    type: error.list
+                    request_id: e9b3a728-4d60-4a15-8f7c-1c5e0d2b6a94
+                    errors:
+                    - code: invalid_per_page
+                      message: per_page must be an integer between 0 and 150
+                Invalid starting_after:
+                  value:
+                    type: error.list
+                    request_id: 74a0c5d1-8e39-4b62-a9f4-6b2d1e8c3a07
+                    errors:
+                    - code: client_error
+                      message: Invalid starting_after param. Please try again using a starting_after value from a paginated response
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: d0c4f817-3a96-4e25-8b1d-5f7a2c9e0b38
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
       requestBody:
         content:
           application/json:
@@ -18515,8 +18683,7 @@ paths:
       - name: conversation_id
         in: path
         required: true
-        description: The Intercom provisioned identifier for the conversation or the
-          string "last" to reply to the last part of the conversation
+        description: "The Intercom provisioned identifier for the conversation, or the string `last` to use the most recent conversation of a contact. With `last`, also send the contact's `intercom_user_id`, `user_id` or `email` in the request body, whatever type of request you send. A contact that can't be found returns a `404` error, and a contact with no conversations returns a `422` error."
         example: 123 or "last"
         schema:
           type: string
@@ -18877,6 +19044,13 @@ paths:
                     errors:
                     - code: not_found
                       message: Resource Not Found
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 19e8b3c6-0a74-4f52-b6d1-3c9a5e7d2b04
+                    errors:
+                    - code: not_found
+                      message: User Not Found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -18894,7 +19068,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '403':
-          description: API plan restricted
+          description: Forbidden
           content:
             application/json:
               examples:
@@ -18905,6 +19079,55 @@ paths:
                     errors:
                     - code: api_plan_restricted
                       message: Active subscription needed.
+                Admin lacks permission:
+                  value:
+                    type: error.list
+                    request_id: d3a6f081-5b27-4e94-8c1d-7a0e9b2c4f68
+                    errors:
+                    - code: action_forbidden
+                      message: The admin doesn't have the permissions required to reply to this conversation
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              examples:
+                Side conversation:
+                  value:
+                    type: error.list
+                    request_id: b5e90d26-7c14-4a83-8f3b-1d6a2c9e4b70
+                    errors:
+                    - code: side_conversation
+                      message: action can not be performed on a side conversation
+                Unsupported message type:
+                  value:
+                    type: error.list
+                    request_id: 4c7a1e85-2f90-4d63-a5b8-9e3d0c6f1a27
+                    errors:
+                    - code: parameter_invalid
+                      message: Unsupported message type
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              examples:
+                No conversation for the contact:
+                  value:
+                    type: error.list
+                    request_id: 0e5c9a37-4b82-4d16-a3f7-7c1d8b6e2a49
+                    errors:
+                    - code: parameter_invalid
+                      message: No conversation for this user
+                Message too long:
+                  value:
+                    type: error.list
+                    request_id: 7f2d5a98-1c46-4b03-9e7a-6b8c0d3f5a21
+                    errors:
+                    - code: parameter_invalid
+                      message: Message is too long. Maximum length is 300000
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -18925,7 +19148,7 @@ paths:
                 value:
                   message_type: note
                   type: admin
-                  admin_id: 991267696
+                  admin_id: '991267696'
                   body: "<html> <body>  <h2>An Unordered HTML List</h2>  <ul>   <li>Coffee</li>
                     \  <li>Tea</li>   <li>Milk</li> </ul>    <h2>An Ordered HTML List</h2>
                     \ <ol>   <li>Coffee</li>   <li>Tea</li>   <li>Milk</li> </ol>
@@ -18935,7 +19158,7 @@ paths:
                 value:
                   message_type: quick_reply
                   type: admin
-                  admin_id: 991267698
+                  admin_id: '991267698'
                   reply_options:
                   - text: 'Yes'
                     uuid: a5e1c524-5ddd-4c3e-9328-6bca5d6e3edb
@@ -18968,7 +19191,7 @@ paths:
       - name: conversation_id
         in: path
         required: true
-        description: The identifier for the conversation as given by Intercom.
+        description: "The identifier for the conversation as given by Intercom, or the string `last` to use the most recent conversation of a contact. With `last`, also send the contact's `intercom_user_id`, `user_id` or `email` in the request body, whatever type of request you send. A contact that can't be found returns a `404` error, and a contact with no conversations returns a `422` error."
         example: '123'
         schema:
           type: string
@@ -19315,6 +19538,13 @@ paths:
                     errors:
                     - code: not_found
                       message: Resource Not Found
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 19e8b3c6-0a74-4f52-b6d1-3c9a5e7d2b04
+                    errors:
+                    - code: not_found
+                      message: User Not Found
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -19332,7 +19562,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '403':
-          description: API plan restricted
+          description: Forbidden
           content:
             application/json:
               examples:
@@ -19343,6 +19573,62 @@ paths:
                     errors:
                     - code: api_plan_restricted
                       message: Active subscription needed.
+                Admin lacks permission:
+                  value:
+                    type: error.list
+                    request_id: d3a6f081-5b27-4e94-8c1d-7a0e9b2c4f68
+                    errors:
+                    - code: action_forbidden
+                      message: The admin doesn't have the permissions required to reply to this conversation
+              schema:
+                "$ref": "#/components/schemas/error"
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              examples:
+                Side conversation:
+                  value:
+                    type: error.list
+                    request_id: b5e90d26-7c14-4a83-8f3b-1d6a2c9e4b70
+                    errors:
+                    - code: side_conversation
+                      message: action can not be performed on a side conversation
+                Unsupported message type:
+                  value:
+                    type: error.list
+                    request_id: 4c7a1e85-2f90-4d63-a5b8-9e3d0c6f1a27
+                    errors:
+                    - code: parameter_invalid
+                      message: Unsupported message type
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable entity
+          content:
+            application/json:
+              examples:
+                Snooze time not in the future:
+                  value:
+                    type: error.list
+                    request_id: 6d1a8f40-9c37-4e25-b0d8-2f7a4c5e8b93
+                    errors:
+                    - code: parameter_invalid
+                      message: snoozed_until must be in the future
+                Already assigned:
+                  value:
+                    type: error.list
+                    request_id: a8f2c514-3e69-4b07-9d1a-5e0c7b3d6f82
+                    errors:
+                    - code: conversation_already_assigned_to_assignee
+                      message: The conversation is already assigned to the specified assignee
+                Message too long:
+                  value:
+                    type: error.list
+                    request_id: 7f2d5a98-1c46-4b03-9e7a-6b8c0d3f5a21
+                    errors:
+                    - code: parameter_invalid
+                      message: Message is too long. Maximum length is 300000
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -19360,32 +19646,32 @@ paths:
                 value:
                   message_type: close
                   type: admin
-                  admin_id: 991267708
+                  admin_id: '991267708'
                   body: Goodbye :)
               snooze_a_conversation:
                 summary: Snooze a conversation
                 value:
                   message_type: snoozed
-                  admin_id: 991267710
+                  admin_id: '991267710'
                   snoozed_until: 1734541187
               open_a_conversation:
                 summary: Open a conversation
                 value:
                   message_type: open
-                  admin_id: 991267712
+                  admin_id: '991267712'
               assign_a_conversation:
                 summary: Assign a conversation
                 value:
                   message_type: assignment
                   type: admin
-                  admin_id: 991267715
-                  assignee_id: 991267715
+                  admin_id: '991267715'
+                  assignee_id: '991267715'
               not_found:
                 summary: Not found
                 value:
                   message_type: close
                   type: admin
-                  admin_id: 991267717
+                  admin_id: '991267717'
                   body: Goodbye :)
   "/conversations/{conversation_id}/customers":
     post:
@@ -20057,8 +20343,8 @@ paths:
                 summary: Redact a conversation part
                 value:
                   type: conversation_part
-                  conversation_id: 608
-                  conversation_part_id: 149
+                  conversation_id: '608'
+                  conversation_part_id: '149'
               not_found:
                 summary: Not found
                 value:
@@ -20128,8 +20414,8 @@ paths:
                       created_at: 1734537561
                       type: conversation
                       url:
-                    admin_assignee_id:
-                    team_assignee_id:
+                    admin_assignee_id: 0
+                    team_assignee_id: 0
                     open: true
                     state: open
                     read: false
@@ -20215,8 +20501,8 @@ paths:
                     type: error.list
                     request_id: b4f6c9d3-2345-6789-abcd-ef0123456789
                     errors:
-                    - code: forbidden
-                      message: Forbidden request
+                    - code: action_forbidden
+                      message: The admin doesn't have the permissions required to merge conversations
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
@@ -20488,7 +20774,21 @@ paths:
                     request_id: 7a80b950-b392-499f-85db-ea7c6c424d37
                     errors:
                     - code: intercom_version_invalid
-                      message: Requested resource is not available in current API version.
+                      message: Requested resource is not available in current API version
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: API plan restricted
+          content:
+            application/json:
+              examples:
+                API plan restricted:
+                  value:
+                    type: error.list
+                    request_id: 58d2b7e4-1f93-4a60-9c05-4e8b3a6d0c17
+                    errors:
+                    - code: api_plan_restricted
+                      message: Active subscription needed.
               schema:
                 "$ref": "#/components/schemas/error"
   "/conversations/attributes":
@@ -24656,7 +24956,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/message"
         '400':
-          description: No body supplied for email message
+          description: Invalid request
           content:
             application/json:
               examples:
@@ -24674,10 +24974,31 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: Body is required
+                Recipient missing:
+                  value:
+                    type: error.list
+                    request_id: 8c1f3a52-6d0e-4f7b-9a41-2e5b7c9d0a11
+                    errors:
+                    - code: data_invalid
+                      message: "Field 'to' is required"
+                Too many recipients:
+                  value:
+                    type: error.list
+                    request_id: 1b7e9d34-5c28-4a6f-8e03-7d4a6b2c9f52
+                    errors:
+                    - code: parameter_invalid
+                      message: Max Number of recipients per request reached
+                Brand not found:
+                  value:
+                    type: error.list
+                    request_id: 5a2c8e71-3f94-4d0b-b6a8-0c9e1d7f3b64
+                    errors:
+                    - code: parameter_invalid
+                      message: brand_id 1234 not found
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
-          description: No subject supplied for email message
+          description: Unprocessable entity
           content:
             application/json:
               examples:
@@ -24688,6 +25009,20 @@ paths:
                     errors:
                     - code: parameter_not_found
                       message: No subject supplied for email message
+                Subject too long:
+                  value:
+                    type: error.list
+                    request_id: 3d8b5f90-7a16-4c2e-8f04-9b6d1e3a5c77
+                    errors:
+                    - code: parameter_invalid
+                      message: Subject length must be under 255 characters
+                Message too long:
+                  value:
+                    type: error.list
+                    request_id: c2e7a461-0d95-4b38-a7f6-4e8c0b2d9a15
+                    errors:
+                    - code: parameter_invalid
+                      message: Message is too long. Maximum length is 300000
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -24705,7 +25040,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '403':
-          description: API plan restricted
+          description: Forbidden
           content:
             application/json:
               examples:
@@ -24716,6 +25051,34 @@ paths:
                     errors:
                     - code: api_plan_restricted
                       message: Active subscription needed.
+                Recipient unsubscribed from emails:
+                  value:
+                    type: error.list
+                    request_id: e4d6b0a8-2c71-4f35-9d8e-6a1b3c5f7e20
+                    errors:
+                    - code: action_forbidden
+                      message: One or more users are unsubscribed from emails
+                Recipient hard bounced:
+                  value:
+                    type: error.list
+                    request_id: 9f3a7c15-8b42-4e60-a1d9-5c7e2b4d6a83
+                    errors:
+                    - code: action_forbidden
+                      message: One or more users have hard bounced and cannot be messaged via email
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Contact not found
+          content:
+            application/json:
+              examples:
+                Contact not found:
+                  value:
+                    type: error.list
+                    request_id: 7b0d4e92-6a53-4c18-9e2f-3a5c8d1b6f40
+                    errors:
+                    - code: not_found
+                      message: User Not Found
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -24761,7 +25124,7 @@ paths:
                   bcc:
                     - type: user
                       id: 6762f23e1bb69f9f2193bc2f
-                  message_type: conversation
+                  message_type: inapp
                   body: heyy
               admin_whatsapp_message_created:
                 summary: admin whatsapp message created
@@ -26420,7 +26783,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/phone_switch"
         '400':
-          description: Phone number lookup or SMS send failed
+          description: The SMS could not be sent
           content:
             application/json:
               examples:
@@ -26433,7 +26796,10 @@ paths:
                     error_key: invalid_phone_number
                     message: Invalid phone number
         '422':
-          description: unprocessable entity
+          description: "The request was invalid. The response is an object with a
+            single `error_key`: `caller_phone` when `phone` is missing, `invalid_phone_number`,
+            `landline_phone`, `twilio_settings` when the workspace has no Twilio account
+            to send the SMS, or `context` when `custom_attributes` is invalid."
           content:
             application/json:
               examples:
@@ -26446,6 +26812,12 @@ paths:
                 Twilio account not found:
                   value:
                     error_key: twilio_settings
+                Missing phone number:
+                  value:
+                    error_key: caller_phone
+                Invalid custom attributes:
+                  value:
+                    error_key: context
         '401':
           description: Unauthorized
           content:
@@ -26501,6 +26873,18 @@ paths:
                   custom_attributes:
                     issue_type: Billing
                     priority: High
+              missing_phone_number:
+                summary: Missing phone number
+                value:
+                  custom_attributes:
+                    issue_type: Billing
+                    priority: High
+              invalid_custom_attributes:
+                summary: Invalid custom attributes
+                value:
+                  phone: "+353832345678"
+                  custom_attributes:
+                    issue_type:
   "/calls":
     get:
       summary: List all calls
@@ -32045,10 +32429,72 @@ components:
           type: boolean
           description: Option to disable notifications when replying to a conversation.
           example: true
+        skip_reopen:
+          type: boolean
+          default: false
+          description: When true, a `comment` on a closed conversation leaves it
+            closed instead of reopening it. Available from API version 2.17.
+          example: true
       required:
       - message_type
       - type
       - admin_id
+    bot_reply_conversation_request:
+      title: Bot Reply
+      type: object
+      description: Payload of the request to reply on behalf of a bot
+      properties:
+        message_type:
+          type: string
+          enum:
+          - comment
+          - note
+          - quick_reply
+          example: comment
+        type:
+          type: string
+          enum:
+          - bot
+          example: bot
+        bot_id:
+          type: string
+          description: The id of the bot that is authoring the reply. A bot that
+            doesn't exist returns a `404` error.
+          example: '3156780'
+        body:
+          type: string
+          description: The text body of the reply. Must be present for comment and
+            note message types.
+          example: Hello there!
+        created_at:
+          type: integer
+          description: The time the reply was created. If not provided, the current
+            time will be used.
+          example: 1590000000
+        reply_options:
+          title: Quick Reply Options
+          type: array
+          description: The quick reply options to display to the end user. Must be present for quick_reply
+            message types.
+          items:
+            "$ref": "#/components/schemas/quick_reply_option"
+        attachment_urls:
+          type: array
+          description: A list of image URLs that will be added as attachments. You
+            can include up to 10 URLs.
+          items:
+            type: string
+            format: uri
+          maxItems: 10
+        skip_notifications:
+          type: boolean
+          description: Option to disable notifications when replying to a conversation.
+            Available from API version 2.15.
+          example: true
+      required:
+      - message_type
+      - type
+      - bot_id
     admin_reply_ticket_request:
       title: Admin Reply on ticket
       type: object
@@ -33550,55 +33996,45 @@ components:
             keeps its original close timestamp and the assignment does not count as
             a new closure in reporting.
           example: true
+        skip_notifications:
+          type: boolean
+          description: Option to disable notifications when assigning a conversation. Available from API version 2.15.
+          example: true
       required:
       - message_type
       - type
       - admin_id
       - assignee_id
     attach_contact_to_conversation_request:
-      title: Assign Conversation Request
+      title: Attach Contact To Conversation Request
       type: object
-      description: Payload of the request to assign a conversation
+      description: |-
+        Payload of the request to add a contact to a conversation. Say who is adding the contact in one of two ways: send `admin_id` to act as an admin, or send one of `intercom_user_id`, `user_id` or `email` to act as a contact. Sending both, or neither, returns a `422` error. Use `customer` to identify the contact to add.
       properties:
         admin_id:
           type: string
-          description: The `id` of the admin who is adding the new participant.
+          description: The `id` of the admin who is adding the new participant. Send
+            this to act as an admin.
           example: '12345'
+        intercom_user_id:
+          type: string
+          description: The identifier, as given by Intercom, of the contact who is
+            adding the new participant. Send this, `user_id` or `email` to act as
+            a contact.
+          example: 6329bd9ffe4e2e91dac76188
+        user_id:
+          type: string
+          description: The `external_id` you have defined for the contact who is adding
+            the new participant.
+          example: 2e91dac761886329bd9ffe4e
+        email:
+          type: string
+          description: The email of the contact who is adding the new participant.
+          example: winstonsmith@truth.org
         customer:
-          type: object
-          oneOf:
-          - title: Intercom User ID
-            properties:
-              intercom_user_id:
-                type: string
-                description: The identifier for the contact as given by Intercom.
-                example: 6329bd9ffe4e2e91dac76188
-              customer:
-                "$ref": "#/components/schemas/customer_request"
-            required:
-            - intercom_user_id
-          - title: User ID
-            properties:
-              user_id:
-                type: string
-                description: The external_id you have defined for the contact who
-                  is being added as a participant.
-                example: 6329bd9ffe4e2e91dac76188
-              customer:
-                "$ref": "#/components/schemas/customer_request"
-            required:
-            - user_id
-          - title: Email
-            properties:
-              email:
-                type: string
-                description: The email you have defined for the contact who is being
-                  added as a participant.
-                example: winstonsmith@truth.org
-              customer:
-                "$ref": "#/components/schemas/customer_request"
-            required:
-            - email
+          "$ref": "#/components/schemas/customer_request"
+          description: The contact to add as a participant. Identify them with exactly
+            one of `intercom_user_id`, `user_id` or `email`.
     conversation_participants_response:
       title: Conversation Participants Response
       type: object
@@ -33958,6 +34394,14 @@ components:
           description: Optionally you can leave a message in the conversation to provide
             additional context to the user and other teammates.
           example: " This conversation is now closed!"
+        assignee_id:
+          type: string
+          description: The `id` of the `admin` or `team` to assign the conversation to when it is closed. Set `0` to leave it unassigned.
+          example: '4324241'
+        skip_notifications:
+          type: boolean
+          description: Option to disable notifications when closing a conversation. Available from API version 2.15.
+          example: true
       required:
       - message_type
       - type
@@ -35458,7 +35902,8 @@ components:
           - user
         body:
           type: string
-          description: The text body of the comment.
+          description: The text body of the comment. Required unless you are sending
+            a quick reply selection in `reply_options`.
         created_at:
           type: integer
           description: The time the reply was created. If not provided, the current
@@ -35495,7 +35940,6 @@ components:
       required:
       - message_type
       - type
-      - body
     contact_reply_conversation_request:
       title: Contact Reply
       oneOf:
@@ -36894,6 +37338,94 @@ components:
           type: object
           nullable: true
           description: The channel through which the conversation was initiated and its current channel.
+        topics:
+          type: object
+          description: The topics of the conversation. An empty object when the workspace
+            doesn't use topics.
+          properties:
+            type:
+              type: string
+              description: Always `topic.list`.
+              example: topic.list
+            topics:
+              type: array
+              description: The topics of the conversation.
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    description: Always `topic`.
+                    example: topic
+                  id:
+                    type: integer
+                    description: The id of the topic.
+                    example: 4521
+                  name:
+                    type: string
+                    description: The name of the topic.
+                    example: Billing
+            total_count:
+              type: integer
+              description: The number of topics.
+              example: 1
+        ticket:
+          type: object
+          nullable: true
+          description: The ticket details when the conversation is a ticket. `null`
+            for any other conversation.
+          properties:
+            type:
+              type: string
+              description: Always `ticket`.
+              example: ticket
+            id:
+              type: integer
+              description: The id of the ticket's conversation.
+              example: 1295
+            url:
+              type: string
+              description: The link to the ticket in the inbox.
+              example: https://app.intercom.com/a/inbox/abcd1234/inbox/conversation/1295
+            custom_attributes:
+              type: object
+              description: The ticket's attributes, keyed by attribute name.
+              additionalProperties:
+                type: object
+                properties:
+                  value:
+                    description: The value of the attribute.
+                  type:
+                    type: string
+                    description: The data type of the attribute.
+                    example: string
+            state:
+              type: string
+              description: The current state of the ticket.
+              example: submitted
+            ticket_type:
+              type: string
+              description: The name of the ticket type.
+              example: Bug report
+            ticket_type_description:
+              type: string
+              description: The description of the ticket type.
+              example: Something is broken
+            ticket_type_emoji:
+              type: string
+              nullable: true
+              description: The emoji of the ticket type.
+              example: "\U0001F41B"
+            ticket_custom_state_admin_label:
+              type: string
+              nullable: true
+              description: The label of the ticket's state as teammates see it.
+              example: Submitted
+            ticket_custom_state_user_label:
+              type: string
+              nullable: true
+              description: The label of the ticket's state as the customer sees it.
+              example: Received
         external_references:
           type: array
           description: References linking this conversation to records in an external helpdesk or CRM system. Populated for Fin Standalone workspaces synced from an external platform; an empty array otherwise. Sorted alphabetically by `type` and capped at 20 entries.
@@ -36906,7 +37438,7 @@ components:
               id: abc-def-uuid
         monitor_evaluations:
           type: array
-          description: QA monitor evaluations that flagged this conversation. Only included when `include_monitors=true` is passed as a query parameter.
+          description: The latest QA monitor evaluation for each monitor that has evaluated this conversation, whatever its result. Only included when `include_monitors=true` is passed as a query parameter.
           items:
             "$ref": "#/components/schemas/conversation_monitor_evaluation"
         scorecards:
@@ -37057,7 +37589,7 @@ components:
               id: abc-def-uuid
         monitor_evaluations:
           type: array
-          description: QA monitor evaluations that flagged this conversation. Only included when `include_monitors=true` is passed as a query parameter.
+          description: The latest QA monitor evaluation for each monitor that has evaluated this conversation, whatever its result. Only included when `include_monitors=true` is passed as a query parameter.
           items:
             "$ref": "#/components/schemas/conversation_monitor_evaluation"
         scorecards:
@@ -37115,7 +37647,7 @@ components:
       type: object
       x-tags:
       - Conversations
-      description: A QA monitor evaluation that flagged this conversation. Returned in the `monitor_evaluations` array on conversation responses when `include_monitors=true` is passed.
+      description: A QA monitor evaluation of this conversation. Returned in the `monitor_evaluations` array on conversation responses when `include_monitors=true` is passed.
       properties:
         monitor_id:
           type: string
@@ -37133,8 +37665,8 @@ components:
           example: prompt
         result:
           type: string
-          description: The evaluation outcome reported by the monitor.
-          example: flagged
+          description: "The evaluation outcome reported by the monitor: `included` (the conversation matches the monitor's criteria), `excluded`, `error` or `awaiting_async_data`."
+          example: included
         explanation:
           type: string
           nullable: true
@@ -37466,9 +37998,10 @@ components:
           example: 5ba682d23d7cf92bef87bfd4
         object:
           type: string
-          description: always conversation
+          description: "`conversation`, or `ticket` when the deleted item is a ticket."
           enum:
           - conversation
+          - ticket
           example: conversation
         deleted:
           type: boolean
@@ -37680,7 +38213,7 @@ components:
           description: >-
             A map of the reply text keyed by locale code. Backs the
             `conversation.admin.replied.translated` webhook topic. `original` holds
-            the locale code the reply was written in; every other key holds the
+            the locale code the reply was written in, when it is known; every other key holds the
             reply translated into that locale.
           properties:
             original:
@@ -37689,8 +38222,6 @@ components:
               example: en
           additionalProperties:
             type: string
-          required:
-          - original
           example:
             original: en
             en: '<p>Hello</p>'
@@ -38971,12 +39502,12 @@ components:
       properties:
         message_type:
           type: string
-          description: 'The kind of message being created. Values: `in_app`, `email` or `whatsapp`.'
+          description: 'The kind of message being created. Values: `inapp`, `email` or `whatsapp`.'
           enum:
-          - in_app
+          - inapp
           - email
           - whatsapp
-          example: in_app
+          example: inapp
         subject:
           type: string
           description: The title of the email.
@@ -39020,6 +39551,21 @@ components:
                   id: 536e564f316c83104c000020
                 - type: lead
                   id: 536e564f316c83104c000021
+            - type: object
+              title: WhatsApp recipient
+              description: The recipient of a `whatsapp` message, identified by phone
+                number. A contact is created for the number if there isn't one.
+              properties:
+                phone:
+                  type: string
+                  description: The recipient's phone number, in international format.
+                  example: "+5547999998888"
+                name:
+                  type: string
+                  description: The name to give the contact if one is created.
+                  example: John Doe
+              required:
+              - phone
         cc:
           oneOf:
             - $ref: '#/components/schemas/recipient'
@@ -39051,6 +39597,30 @@ components:
             message without the contact replying. Defaults to false if not provided.
           default: false
           example: true
+        components:
+          type: array
+          description: The components of the WhatsApp template, with the values for
+            its variables. Required for `whatsapp` messages.
+          items:
+            type: object
+            additionalProperties: true
+          example:
+          - type: BODY
+            parameters:
+            - type: text
+              text: Username 123
+        locale:
+          type: string
+          description: The locale of the WhatsApp template to send, such as `en`.
+            If you leave it out, the contact's messenger locale is used, then the
+            workspace locale. A template that isn't available in the locale returns
+            a `400` error.
+          example: en
+        brand_id:
+          type: string
+          description: The id of the brand to send the message from. Not used for
+            `whatsapp` messages. A brand that doesn't exist returns a `400` error.
+          example: '1234'
       anyOf:
       - title: 'message_type: `email`.'
         required:
@@ -39319,7 +39889,40 @@ components:
             continue the conversation in the Messenger.
           example: "+1 1234567890"
         custom_attributes:
-          "$ref": "#/components/schemas/custom_attributes_request"
+          type: object
+          description: Custom attributes to add to the user or lead's custom data
+            attributes. Values are strings. Numbers and booleans are converted to
+            strings. A `null`, array or object value returns a `422` error with the
+            key `context`.
+          additionalProperties:
+            type: string
+          example:
+            issue_type: Billing
+            priority: High
+        body:
+          type: string
+          description: The text of the contact's first message. When you send it,
+            a conversation is created straight away with this text as its first
+            message.
+          example: I need help with my invoice
+        send_notification:
+          type: boolean
+          default: true
+          description: Whether to send the SMS with the link to the Messenger. When
+            `false`, no SMS is sent.
+          example: true
+        user_input_phone:
+          type: string
+          nullable: true
+          description: The phone number as the contact typed it, in national format.
+            Used together with `country` instead of `phone` to work out the number.
+          example: "087 234 5678"
+        country:
+          type: string
+          nullable: true
+          description: The two-letter country code used to read `user_input_phone`.
+            For `US` numbers, Intercom also checks whether the number is a landline.
+          example: IE
       required:
       - phone
     create_ticket_reply_with_comment_request:
@@ -44185,13 +44788,33 @@ components:
           - inapp
           - facebook
           - twitter
-          description: The type of message that was sent. Can be email, inapp, facebook
-            or twitter.
+          - whatsapp
+          description: The type of message that was sent. Can be email, inapp, facebook,
+            twitter or whatsapp.
           example: inapp
         conversation_id:
           type: string
           description: The associated conversation_id
           example: '64619700005570'
+        owner:
+          "$ref": "#/components/schemas/admin"
+          description: The admin who sent the message. Only present when the message
+            has an owner.
+        template:
+          type: string
+          description: The style of the email, such as `plain` or `personal`. Only
+            present when `message_type` is `email`.
+          example: plain
+        external_id:
+          type: string
+          description: The external identifier of the message, if one was set when
+            the message was created.
+          example: api:order-1234
+        whatsapp_message_id:
+          type: string
+          description: The id WhatsApp gave the message. Only present for `whatsapp`
+            messages that WhatsApp accepted.
+          example: wamid.HBgLNTU0Nzk5OTk5ODg4FQIAERgSN0ZFM0JBRjNEMEY2QTA2RDY0AA==
       required:
       - type
       - id
@@ -44736,6 +45359,14 @@ components:
           type: string
           description: The id of the admin who is performing the action.
           example: '5017690'
+        assignee_id:
+          type: string
+          description: The `id` of the `admin` or `team` to assign the conversation to when it is opened. Set `0` to leave it unassigned.
+          example: '4324241'
+        skip_notifications:
+          type: boolean
+          description: Option to disable notifications when opening a conversation. Available from API version 2.15.
+          example: true
       required:
       - message_type
       - admin_id
@@ -44959,6 +45590,7 @@ components:
       oneOf:
       - "$ref": "#/components/schemas/contact_reply_conversation_request"
       - "$ref": "#/components/schemas/admin_reply_conversation_request"
+      - "$ref": "#/components/schemas/bot_reply_conversation_request"
     search_request:
       description: Search using Intercoms Search APIs.
       type: object
@@ -45840,7 +46472,7 @@ components:
           description: >-
             A map of the reply text keyed by locale code. Backs the
             `ticket.admin.replied.translated` webhook topic. `original` holds
-            the locale code the reply was written in; every other key holds the
+            the locale code the reply was written in, when it is known; every other key holds the
             reply translated into that locale.
           properties:
             original:
@@ -45849,8 +46481,6 @@ components:
               example: en
           additionalProperties:
             type: string
-          required:
-          - original
           example:
             original: en
             en: '<p>Hello</p>'
@@ -46030,7 +46660,7 @@ components:
           description: >-
             A map of the reply text keyed by locale code. Backs the
             `ticket.admin.replied.translated` webhook topic. `original` holds
-            the locale code the reply was written in; every other key holds the
+            the locale code the reply was written in, when it is known; every other key holds the
             reply translated into that locale.
           properties:
             original:
@@ -46039,8 +46669,6 @@ components:
               example: en
           additionalProperties:
             type: string
-          required:
-          - original
           example:
             original: en
             en: '<p>Hello</p>'
