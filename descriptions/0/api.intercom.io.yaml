@@ -17263,7 +17263,7 @@ paths:
                     request_id: 2a9c6e13-5d70-4b84-8f21-6c3e0a7d9b58
                     errors:
                     - code: data_invalid
-                      message: "Field 'from.type' is required"
+                      message: "Field 'from' must be an object"
               schema:
                 "$ref": "#/components/schemas/error"
         '422':
@@ -18580,7 +18580,7 @@ paths:
         | $        | String                         | Ends With                                                    |
         ### Sorting
 
-        Results are sorted by `updated_at`, newest first. To sort differently, add a `sort` object to the request body with the `field` to sort by, one of the fields in the table above, and an `order` of `ascending` or `descending`. Any other `order` is treated as `descending`. A `field` that isn't searchable returns a `400` error with the code `invalid_field`.
+        Results are sorted by `updated_at`, newest first. To sort differently, add a `sort` object to the request body with a `field` and an `order` of `ascending` or `descending`. `field` is required whenever `sort` is sent, and must be one of the fields in the table above, other than `title`, `type`, `state`, `source.subject`, `source.body`, `source.author.id`, `source.author.type`, `source.author.name`, `source.author.email`, `conversation_rating.remark`, `ai_agent.rating_remark` and `ai_agent.source_title`, which can't be sorted. Any other `order` is treated as `descending`. A missing `field`, or one that isn't searchable, returns a `400` error with the code `invalid_field`.
       responses:
         '200':
           description: successful
@@ -29385,7 +29385,8 @@ paths:
           description: "The request was invalid. The response is an object with a
             single `error_key`: `caller_phone` when `phone` is missing, `invalid_phone_number`,
             `landline_phone`, `twilio_settings` when the workspace has no Twilio account
-            to send the SMS, or `context` when `custom_attributes` is invalid."
+            to send the SMS, or `context` when `custom_attributes` is invalid. Any other
+            invalid input returns its own key, such as `send_notification` or `country`."
           content:
             application/json:
               examples:
@@ -39224,7 +39225,7 @@ components:
           example: " This conversation is now closed!"
         assignee_id:
           type: string
-          description: The `id` of the `admin` or `team` to assign the conversation to when it is closed. Set `0` to leave it unassigned.
+          description: The `id` of the `admin` or `team` to assign the conversation to when it is closed. Set `0` to unassign it, which clears both the teammate and the team assignee.
           example: '4324241'
         skip_notifications:
           type: boolean
@@ -42627,6 +42628,13 @@ components:
                 properties:
                   value:
                     description: The value of the attribute.
+                    anyOf:
+                    - type: string
+                      nullable: true
+                    - type: number
+                    - type: boolean
+                    - type: array
+                    - "$ref": "#/components/schemas/file_attribute"
                   type:
                     type: string
                     description: The data type of the attribute.
@@ -50857,7 +50865,7 @@ components:
         external_id:
           type: string
           description: The external identifier of the message, if one was set when
-            the message was created.
+            the message was created. Only returned for messages started by a contact.
           example: api:order-1234
         whatsapp_message_id:
           type: string
@@ -51576,7 +51584,7 @@ components:
           example: '5017690'
         assignee_id:
           type: string
-          description: The `id` of the `admin` or `team` to assign the conversation to when it is opened. Set `0` to leave it unassigned.
+          description: The `id` of the `admin` or `team` to assign the conversation to when it is opened. Set `0` to unassign it, which clears both the teammate and the team assignee.
           example: '4324241'
         skip_notifications:
           type: boolean
@@ -51880,8 +51888,10 @@ components:
           properties:
             field:
               type: string
-              description: The searchable field to sort by. A field that isn't
-                searchable returns a `400` error with the code `invalid_field`.
+              description: The field to sort by, one of the searchable fields listed
+                for the endpoint. Some fields can't be sorted; the endpoint's Sorting
+                section says which. A missing `field`, or one that isn't searchable,
+                returns a `400` error with the code `invalid_field`.
               example: updated_at
             order:
               type: string
