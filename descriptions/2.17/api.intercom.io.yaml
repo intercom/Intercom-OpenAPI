@@ -18444,7 +18444,6 @@ paths:
         | Field                                     | Type                                                                                                                                                   |
         | :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
         | id                                        | Integer                                                                                                                                                |
-        | title                                     | String                                                                                                                                                 |
         | type                                      | String                                                                                                                                                 |
         | created_at                                | Date (UNIX timestamp)                                                                                                                                  |
         | updated_at                                | Date (UNIX timestamp)                                                                                                                                  |
@@ -18522,7 +18521,7 @@ paths:
         | $        | String                         | Ends With                                                    |
         ### Sorting
 
-        Results are sorted by `updated_at`, newest first. To sort differently, add a `sort` object to the request body with a `field` and an `order` of `ascending` or `descending`. `field` is required whenever `sort` is sent, and must be one of the fields in the table above, other than `title`, `type`, `state`, `source.subject`, `source.body`, `source.author.id`, `source.author.type`, `source.author.name`, `source.author.email`, `conversation_rating.remark`, `ai_agent.rating_remark` and `ai_agent.source_title`, which can't be sorted. Any other `order` is treated as `descending`. A missing `field`, or one that isn't searchable, returns a `400` error with the code `invalid_field`.
+        Results are sorted by `updated_at`, newest first. To sort differently, add a `sort` object to the request body with a `field` and an `order` of `ascending` or `descending`. `field` is required whenever `sort` is sent, and must be one of the fields in the table above, other than `type`, `state`, `source.subject`, `source.body`, `source.author.id`, `source.author.type`, `source.author.name`, `source.author.email`, `conversation_rating.remark`, `ai_agent.rating_remark` and `ai_agent.source_title`, which can't be sorted. A missing `field`, or one that isn't searchable, returns a `400` error with the code `invalid_field`.
       responses:
         '200':
           description: successful
@@ -34043,6 +34042,8 @@ components:
           "$ref": "#/components/schemas/customer_request"
           description: The contact to add as a participant. Identify them with exactly
             one of `intercom_user_id`, `user_id` or `email`.
+      required:
+      - customer
     conversation_participants_response:
       title: Conversation Participants Response
       type: object
@@ -45649,7 +45650,7 @@ components:
               - ascending
               - descending
               default: descending
-              description: The sort order. Any other value is treated as `descending`.
+              description: The sort order.
               example: descending
           required:
           - field
