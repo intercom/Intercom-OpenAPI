@@ -418,7 +418,7 @@ paths:
                     - code: parameter_invalid
                       message: event_types filtering is not supported on this endpoint. Use the search activity logs endpoint (POST /admins/activity_logs/search) to filter by event_types.
                 per_page above 250:
-                  summary: Example of a per_page above 250
+                  summary: Example of a per_page greater than 250
                   value:
                     type: error.list
                     request_id: 816186b3-3187-4b47-adf8-e201bea32208
@@ -561,7 +561,7 @@ paths:
             application/json:
               examples:
                 per_page above 250:
-                  summary: Example of a per_page above 250
+                  summary: Example of a per_page greater than 250
                   value:
                     type: error.list
                     request_id: 816186b3-3187-4b47-adf8-e201bea32208
@@ -37314,19 +37314,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/fin_task_list"
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: 2859da57-c83f-405c-8166-240a312442a3
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
+          "$ref": "#/components/responses/Unauthorized"
     post:
       summary: Create a Fin Task
       parameters:
@@ -37361,29 +37349,17 @@ paths:
           content:
             application/json:
               examples:
-                Title too long:
+                Title missing:
                   value:
                     type: error.list
-                    request_id: ff2353d3-d3d6-4f20-8268-847869d01e73
+                    request_id: 00000000-0000-4000-8000-000000000021
                     errors:
-                    - code: parameter_invalid
-                      message: Title cannot exceed 255 characters
+                    - code: parameter_missing
+                      message: 'param is missing or the value is empty or invalid: title'
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: ff2353d3-d3d6-4f20-8268-847869d01e73
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
+          "$ref": "#/components/responses/Unauthorized"
       requestBody:
         content:
           application/json:
@@ -37449,19 +37425,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: f230e3a7-00a9-456b-bf1c-2ad4b7dc49f6
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
+          "$ref": "#/components/responses/Unauthorized"
     put:
       summary: Update a Fin Task
       parameters:
@@ -37479,7 +37443,7 @@ paths:
       tags:
       - Fin Tasks
       operationId: updateFinTask
-      description: You can update the title and description of an existing Fin Task, and set the audience segments it is available to. `title` and `description` must either both be provided, or both omitted. Omit both when you only want to change `segment_ids`.
+      description: You can update the title and description of an existing Fin Task, and set the audience segments it is available to. `title` and `description` must always be sent together, including when you only want to change `segment_ids`.
       responses:
         '200':
           description: successful
@@ -37504,20 +37468,13 @@ paths:
           content:
             application/json:
               examples:
-                Title and description must be sent together:
+                Title and description missing:
                   value:
                     type: error.list
-                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    request_id: 00000000-0000-4000-8000-000000000022
                     errors:
                     - code: parameter_invalid
-                      message: Both title and description must be provided together
-                segment_ids must contain integers:
-                  value:
-                    type: error.list
-                    request_id: e9a30c47-1b6d-4d52-8f0a-7c5e2b9d1a36
-                    errors:
-                    - code: parameter_invalid
-                      message: segment_ids must contain integers
+                      message: Name & description must both be set for a Task
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -37535,19 +37492,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: f230e3a7-00a9-456b-bf1c-2ad4b7dc49f6
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
+          "$ref": "#/components/responses/Unauthorized"
       requestBody:
         content:
           application/json:
@@ -37610,19 +37555,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                Unauthorized:
-                  value:
-                    type: error.list
-                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
-                    errors:
-                    - code: unauthorized
-                      message: Access Token Invalid
-              schema:
-                "$ref": "#/components/schemas/error"
+          "$ref": "#/components/responses/Unauthorized"
   "/procedures/{conversation_id}/collect_agent_input":
     post:
       summary: Submit human input to a Fin Procedure HITL step
@@ -41049,6 +40982,20 @@ components:
             values provided here override the transferred values. HTML markup sent
             in a string attribute's value is stripped to its text before the ticket
             is stored.
+            For a `files` attribute, pass an array of upload ids; for a `relationship`
+            attribute, pass an array of related object ids as strings.
+          additionalProperties:
+            anyOf:
+            - type: string
+              nullable: true
+            - type: number
+            - type: boolean
+            - type: array
+              items:
+                type: integer
+            - type: array
+              items:
+                type: string
           example:
             _default_title_: example
             _default_description_: having a problem
@@ -51501,7 +51448,7 @@ components:
     update_fin_task_request:
       title: Update Fin Task Request Payload
       type: object
-      description: You can update the title and description of an existing Fin Task, and set the audience segments it is available to. `title` and `description` must either both be provided, or both omitted. Omit both when you only want to change `segment_ids`.
+      description: You can update the title and description of an existing Fin Task, and set the audience segments it is available to. `title` and `description` must always be sent together, including when you only want to change `segment_ids`.
       properties:
         title:
           type: string
@@ -56122,6 +56069,20 @@ components:
           type: object
           description: The attributes set on the ticket. HTML markup sent in a string
             attribute's value is stripped to its text before the ticket is stored.
+            For a `files` attribute, pass an array of upload ids; for a `relationship`
+            attribute, pass an array of related object ids as strings.
+          additionalProperties:
+            anyOf:
+            - type: string
+              nullable: true
+            - type: number
+            - type: boolean
+            - type: array
+              items:
+                type: integer
+            - type: array
+              items:
+                type: string
           example:
             _default_title_: example
             _default_description_: having a problem
