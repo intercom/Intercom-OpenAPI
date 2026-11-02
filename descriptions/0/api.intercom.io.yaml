@@ -18500,6 +18500,24 @@ paths:
             type: string
         style: form
         explode: false
+      - name: page
+        in: query
+        required: false
+        description: The page of conversation parts to return. When sent, parts are paginated oldest first, so page 1 holds the oldest parts. A page past the end returns an empty list.
+        example: 1
+        schema:
+          type: integer
+          minimum: 1
+      - name: per_page
+        in: query
+        required: false
+        description: The number of conversation parts per page, between 1 and 500. Only used when `page` is sent.
+        example: 50
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 20
       tags:
       - Conversations
       operationId: retrieveConversation
@@ -18509,8 +18527,8 @@ paths:
 
         This will return a single Conversation model with all its conversation parts.
 
-        {% admonition type="warning" name="Hard limit of 500 parts" %}
-        The maximum number of conversation parts that can be returned via the API is 500. If you have more than that we will return the 500 most recent conversation parts. `include_part_types` and `exclude_part_types` are applied before this limit, so filtering returns the 500 most recent matching parts. `conversation_parts.total_count` counts the parts in this response, after filtering — it is not the conversation's total part count.
+        {% admonition type="info" name="Conversation parts limit" %}
+        Without `page`, the response returns the 500 most recent conversation parts. If you need more than the 500 most recent parts, send `page` (and optionally `per_page`) to page through every part, oldest first, following `conversation_parts.pages.next`. Part type and `parts_created_after`/`parts_created_before` filters are applied first. `conversation_parts.total_count` counts the parts in this response after filtering, not the conversation's total part count.
         {% /admonition %}
 
         For AI agent conversation metadata, please note that you need to have the agent enabled in your workspace, which is a [paid feature](https://www.intercom.com/help/en/articles/8205718-fin-resolutions#h_97f8c2e671).
@@ -19135,6 +19153,20 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: include_part_types and exclude_part_types are not supported on this API version
+                Invalid page:
+                  value:
+                    type: error.list
+                    request_id: 8091a2b3-c4d5-4e6f-8a7b-9c0d1e2f3a4b
+                    errors:
+                    - code: parameter_invalid
+                      message: page must be a positive integer
+                Invalid per_page:
+                  value:
+                    type: error.list
+                    request_id: 91a2b3c4-d5e6-4f70-9b8c-0d1e2f3a4b5c
+                    errors:
+                    - code: parameter_invalid
+                      message: per_page must be an integer between 1 and 500
               schema:
                 "$ref": "#/components/schemas/error"
     put:
@@ -45915,9 +45947,16 @@ components:
         total_count:
           type: integer
           description: A count of the conversation parts in this response, after any
-            `include_part_types` or `exclude_part_types` filter has been applied. This
-            is not the conversation's total part count.
+            `include_part_types` or `exclude_part_types` filter has been applied. When
+            paginating, this is the number of parts on the current page. This is not
+            the conversation's total part count.
           example: 1
+        pages:
+          allOf:
+          - "$ref": "#/components/schemas/pages_link"
+          type: object
+          description: Pagination details for the conversation parts. Only returned
+            when the `page` query parameter is sent. `next` is null on the last page.
     conversation_part_metadata:
       title: Conversation Part Metadata
       description: Metadata for a conversation part
