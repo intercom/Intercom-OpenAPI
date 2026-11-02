@@ -18290,11 +18290,9 @@ paths:
 
         This will return a single Conversation model with all its conversation parts.
 
-        {% admonition type="warning" name="Hard limit of 500 parts" %}
-        The maximum number of conversation parts that can be returned via the API is 500. If you have more than that we will return the 500 most recent conversation parts. `include_part_types` and `exclude_part_types` are applied before this limit, so filtering returns the 500 most recent matching parts. `conversation_parts.total_count` counts the parts in this response, after filtering — it is not the conversation's total part count.
+        {% admonition type="info" name="Conversation parts limit" %}
+        Without `page`, the response returns the 500 most recent conversation parts. If you need more than the 500 most recent parts, send `page` (and optionally `per_page`) to page through every part, oldest first, following `conversation_parts.pages.next`. Part type and `parts_created_after`/`parts_created_before` filters are applied first. `conversation_parts.total_count` counts the parts in this response after filtering, not the conversation's total part count.
         {% /admonition %}
-
-        To read every part of a long conversation, send `page` (and optionally `per_page`). Parts are then paginated oldest first, and `conversation_parts.pages` links to the next page. Part type and `parts_created_after`/`parts_created_before` filters are applied before pagination. Without `page`, the response is unchanged and has no `pages` object.
 
         For AI agent conversation metadata, please note that you need to have the agent enabled in your workspace, which is a [paid feature](https://www.intercom.com/help/en/articles/8205718-fin-resolutions#h_97f8c2e671).
 
