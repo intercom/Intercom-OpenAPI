@@ -478,6 +478,8 @@ paths:
       description: |
         You can set an Admin as away for the Inbox.
 
+        When `away_mode_reassign` is `true`, the request can return a `403` if the teammate does not have Inbox access.
+
         Requires the `update_admins` OAuth scope.
       responses:
         '200':
@@ -577,6 +579,21 @@ paths:
                       message: 'param is missing or the value is empty or invalid: away_mode_enabled'
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden. Can be returned when `away_mode_reassign` is `true`
+            and the admin does not have Inbox access for the workspace.
+          content:
+            application/json:
+              examples:
+                Admin without Inbox access:
+                  value:
+                    type: error.list
+                    request_id: f62b30e2-5b2e-561d-b1e8-01a84a380ee2
+                    errors:
+                    - code: action_forbidden
+                      message: This admin does not have Inbox access permissions
+              schema:
+                "$ref": "#/components/schemas/error"
         '405':
           description: Method Not Allowed
           content:
@@ -631,7 +648,6 @@ paths:
                   description: Set to "true" to assign any new conversation replies
                     to your default inbox.
                   example: false
-                  default: false
                 away_status_reason_id:
                   type: integer
                   description: The unique identifier of the away status reason. Only allowed when `away_mode_enabled` is `true`, and the reason can't be archived, unless it is already the admin's current reason. Required if your workspace makes away status reasons mandatory.
@@ -766,6 +782,14 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: event_types filtering is not supported on this endpoint. Use the search activity logs endpoint (POST /admins/activity_logs/search) to filter by event_types.
+                per_page above 250:
+                  summary: Example of a per_page above 250
+                  value:
+                    type: error.list
+                    request_id: 816186b3-3187-4b47-adf8-e201bea32208
+                    errors:
+                    - code: parameter_not_found
+                      message: 'Please provide the following parameters: max_per_page'
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -896,6 +920,21 @@ paths:
                         from before to after.
               schema:
                 "$ref": "#/components/schemas/activity_log_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                per_page above 250:
+                  summary: Example of a per_page above 250
+                  value:
+                    type: error.list
+                    request_id: 816186b3-3187-4b47-adf8-e201bea32208
+                    errors:
+                    - code: parameter_not_found
+                      message: 'Please provide the following parameters: max_per_page'
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -3384,6 +3423,204 @@ paths:
                   source_id: 47
                   title: Test
                   url: https://www.example.com
+  "/ai/external_pages/{external_page_id}/tags":
+    post:
+      summary: Add a tag to an external page
+      tags:
+      - AI Content
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: external_page_id
+        in: path
+        required: true
+        description: The unique identifier for the external page which is given by Intercom.
+        example: '1234'
+        schema:
+          type: string
+      operationId: attachTagToExternalPage
+      description: |
+        Apply an existing tag to an external page. Returns the tag that was applied.
+
+        The tag must already exist in the workspace (create tags with the Tags API),
+        and the authenticating teammate must have the `manage_knowledge_base_content`
+        permission. Pages uploaded as files can't be tagged and return a 404.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - id
+              properties:
+                id:
+                  type: string
+                  description: The unique identifier of the tag to apply, as given by
+                    Intercom.
+                  example: '7522907'
+                admin_id:
+                  type: string
+                  nullable: true
+                  description: Optional id of the teammate to attribute the tagging to.
+                    Defaults to the authenticating teammate.
+                  example: '1234'
+            examples:
+              successful:
+                summary: Apply a tag
+                value:
+                  id: '7522907'
+      responses:
+        '200':
+          description: Tag applied
+          content:
+            application/json:
+              examples:
+                Tag applied:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '1234'
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: External page, tag or teammate not found
+          content:
+            application/json:
+              examples:
+                External page not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+                Admin not found:
+                  value:
+                    type: error.list
+                    request_id: 7a34a204-9fae-5335-b818-1da0df3b5234
+                    errors:
+                    - code: admin_not_found
+                      message: Admin not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+  "/ai/external_pages/{external_page_id}/tags/{id}":
+    delete:
+      summary: Remove a tag from an external page
+      tags:
+      - AI Content
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: external_page_id
+        in: path
+        required: true
+        description: The unique identifier for the external page which is given by Intercom.
+        example: '1234'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the tag to remove, as given by Intercom.
+        example: '7522907'
+        schema:
+          type: string
+      operationId: detachTagFromExternalPage
+      description: |
+        Remove a tag from an external page. Returns the tag that was removed, with
+        null `applied_at` and `applied_by`.
+
+        The authenticating teammate must have the `manage_knowledge_base_content`
+        permission. Pages uploaded as files can't be tagged and return a 404.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
+      responses:
+        '200':
+          description: Tag removed
+          content:
+            application/json:
+              examples:
+                Tag removed:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: null
+                    applied_by: null
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: External page or tag not found
+          content:
+            application/json:
+              examples:
+                External page not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/articles":
     get:
       summary: List all articles
@@ -31323,7 +31560,7 @@ paths:
 
         ### Sorting
 
-        You can sort the results with a `sort` object, for example `{"field": "created_at", "order": "ascending"}`. `field` must be one of the fields in the table above, other than `ticket_attribute.{id}`, `title` and `description`. `order` is `ascending` or `descending`, and any other value is treated as `descending`. Without `sort`, results are sorted by `updated_at`, newest first.
+        You can sort the results with a `sort` object, for example `{"field": "created_at", "order": "ascending"}`. `field` must be one of the fields in the table above, other than `ticket_attribute.{id}`, `title` and `description`. `order` is `ascending` or `descending`. Without `sort`, results are sorted by `updated_at`, newest first.
 
         ### Accepted Operators
 
@@ -46608,8 +46845,9 @@ components:
           example: 'aws_connect'
         vendor_internal_id:
           type: string
-          description: Optional vendor-supplied identifier for linking the Fin Voice session to records in the vendor's own systems. Stored as-is and returned on every lookup.
+          description: Optional vendor-supplied identifier for linking the Fin Voice session to records in the vendor's own systems. Stored as-is and returned on every lookup. Cannot exceed 191 characters.
           nullable: true
+          maxLength: 191
           example: 'vendor-internal-abc-123'
         data:
           type: object
@@ -46995,8 +47233,8 @@ components:
       x-tags:
       - Tags
       description: A tag allows you to label your contacts, companies, conversations,
-        tickets, articles, internal articles and content snippets, and list them using
-        that tag.
+        tickets, articles, internal articles, content snippets and external pages,
+        and list them using that tag.
       properties:
         type:
           type: string
@@ -47014,12 +47252,12 @@ components:
           type: integer
           format: timestamp
           nullable: true
-          description: The time when the tag was applied to the object. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet, when listing the tags on a contact, or when it is returned as part of an external page. `null` when the tag has just been removed from an article, internal article, content snippet or external page. Removing a tag from a contact, conversation or ticket returns the original value.
+          description: The time when the tag was applied to the object. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, content snippet, or external page, when listing the tags on a contact, or when it is returned as part of an external page. `null` when the tag has just been removed from an article, internal article, content snippet or external page. Removing a tag from a contact, conversation or ticket returns the original value.
           example: 1663597223
         applied_by:
           type: object
           nullable: true
-          description: The admin who applied the tag. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet, when listing the tags on a contact, or when it is returned as part of an external page. `null` when the tag has just been removed from an article, internal article, content snippet or external page. Removing a tag from a contact, conversation or ticket returns the original value. When no admin is recorded, `type` is `nobody_admin` and `id` is `null`.
+          description: The admin who applied the tag. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, content snippet, or external page, when listing the tags on a contact, or when it is returned as part of an external page. `null` when the tag has just been removed from an article, internal article, content snippet or external page. Removing a tag from a contact, conversation or ticket returns the original value. When no admin is recorded, `type` is `nobody_admin` and `id` is `null`.
           allOf:
             - "$ref": "#/components/schemas/reference"
     tag_basic:
@@ -47787,7 +48025,9 @@ components:
         attribute should be the list item id, obtainable by [listing the ticket type](ref:get_ticket-types).
         For example, if the ticket type has an attribute called `priority` of type
         `list`, the key should be `priority` and the value of the attribute should
-        be the guid of the list item (e.g. `de1825a0-0164-4070-8ca6-13e22462fa7e`).
+        be the guid of the list item (e.g. `de1825a0-0164-4070-8ca6-13e22462fa7e`). For a `files` attribute, pass
+        an array of upload ids; for a `relationship` attribute, pass an array
+        of related object ids as strings.
       additionalProperties:
         anyOf:
         - type: string
@@ -47795,6 +48035,11 @@ components:
         - type: number
         - type: boolean
         - type: array
+          items:
+            type: integer
+        - type: array
+          items:
+            type: string
       example:
         _default_title_: Found a bug
         _default_description_: The button is not working

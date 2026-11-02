@@ -113,6 +113,8 @@ paths:
       description: |
         You can set an Admin as away for the Inbox.
 
+        When `away_mode_reassign` is `true`, the request can return a `403` if the teammate does not have Inbox access.
+
         Requires the `update_admins` OAuth scope.
       responses:
         '200':
@@ -212,6 +214,21 @@ paths:
                       message: 'param is missing or the value is empty or invalid: away_mode_enabled'
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden. Can be returned when `away_mode_reassign` is `true`
+            and the admin does not have Inbox access for the workspace.
+          content:
+            application/json:
+              examples:
+                Admin without Inbox access:
+                  value:
+                    type: error.list
+                    request_id: 8e4a1ee0-2a4c-4a9f-9c3f-1c2b6d7e5f01
+                    errors:
+                    - code: action_forbidden
+                      message: This admin does not have Inbox access permissions
+              schema:
+                "$ref": "#/components/schemas/error"
         '405':
           description: Method Not Allowed
           content:
@@ -266,7 +283,6 @@ paths:
                   description: Set to "true" to assign any new conversation replies
                     to your default inbox.
                   example: false
-                  default: false
                 away_status_reason_id:
                   type: integer
                   description: The unique identifier of the away status reason. Only allowed when `away_mode_enabled` is `true`, and the reason can't be archived, unless it is already the admin's current reason. Required if your workspace makes away status reasons mandatory.
@@ -401,6 +417,14 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: event_types filtering is not supported on this endpoint. Use the search activity logs endpoint (POST /admins/activity_logs/search) to filter by event_types.
+                per_page above 250:
+                  summary: Example of a per_page above 250
+                  value:
+                    type: error.list
+                    request_id: 816186b3-3187-4b47-adf8-e201bea32208
+                    errors:
+                    - code: parameter_not_found
+                      message: 'Please provide the following parameters: max_per_page'
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -531,6 +555,21 @@ paths:
                         from before to after.
               schema:
                 "$ref": "#/components/schemas/activity_log_list"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                per_page above 250:
+                  summary: Example of a per_page above 250
+                  value:
+                    type: error.list
+                    request_id: 816186b3-3187-4b47-adf8-e201bea32208
+                    errors:
+                    - code: parameter_not_found
+                      message: 'Please provide the following parameters: max_per_page'
+              schema:
+                "$ref": "#/components/schemas/error"
         '401':
           description: Unauthorized
           content:
@@ -2902,6 +2941,204 @@ paths:
                   audience_ids:
                   - 1
                   - 2
+  "/ai/external_pages/{external_page_id}/tags":
+    post:
+      summary: Add a tag to an external page
+      tags:
+      - AI Content
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: external_page_id
+        in: path
+        required: true
+        description: The unique identifier for the external page which is given by Intercom.
+        example: '1234'
+        schema:
+          type: string
+      operationId: attachTagToExternalPage
+      description: |
+        Apply an existing tag to an external page. Returns the tag that was applied.
+
+        The tag must already exist in the workspace (create tags with the Tags API),
+        and the authenticating teammate must have the `manage_knowledge_base_content`
+        permission. Pages uploaded as files can't be tagged and return a 404.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - id
+              properties:
+                id:
+                  type: string
+                  description: The unique identifier of the tag to apply, as given by
+                    Intercom.
+                  example: '7522907'
+                admin_id:
+                  type: string
+                  nullable: true
+                  description: Optional id of the teammate to attribute the tagging to.
+                    Defaults to the authenticating teammate.
+                  example: '1234'
+            examples:
+              successful:
+                summary: Apply a tag
+                value:
+                  id: '7522907'
+      responses:
+        '200':
+          description: Tag applied
+          content:
+            application/json:
+              examples:
+                Tag applied:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: 1663597223
+                    applied_by:
+                      type: admin
+                      id: '1234'
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: External page, tag or teammate not found
+          content:
+            application/json:
+              examples:
+                External page not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+                Admin not found:
+                  value:
+                    type: error.list
+                    request_id: 7a34a204-9fae-5335-b818-1da0df3b5234
+                    errors:
+                    - code: admin_not_found
+                      message: Admin not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+  "/ai/external_pages/{external_page_id}/tags/{id}":
+    delete:
+      summary: Remove a tag from an external page
+      tags:
+      - AI Content
+      - Tags
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: external_page_id
+        in: path
+        required: true
+        description: The unique identifier for the external page which is given by Intercom.
+        example: '1234'
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the tag to remove, as given by Intercom.
+        example: '7522907'
+        schema:
+          type: string
+      operationId: detachTagFromExternalPage
+      description: |
+        Remove a tag from an external page. Returns the tag that was removed, with
+        null `applied_at` and `applied_by`.
+
+        The authenticating teammate must have the `manage_knowledge_base_content`
+        permission. Pages uploaded as files can't be tagged and return a 404.
+
+        OAuth tokens must have the `read_write_ai_content` scope.
+      responses:
+        '200':
+          description: Tag removed
+          content:
+            application/json:
+              examples:
+                Tag removed:
+                  value:
+                    type: tag
+                    id: '7522907'
+                    name: Independent
+                    applied_at: null
+                    applied_by: null
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Forbidden:
+                  value:
+                    type: error.list
+                    request_id: 6f3c2b1a-2d4e-4f6a-9b8c-1a2b3c4d5e6f
+                    errors:
+                    - code: forbidden
+                      message: Not authorized to manage knowledge base content
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: External page or tag not found
+          content:
+            application/json:
+              examples:
+                External page not found:
+                  value:
+                    type: error.list
+                    request_id: 302049fb-b8c1-4dc8-a327-a8f6e1923484
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 8a3e4f88-ae65-433a-b4eb-46780ffc5402
+                    errors:
+                    - code: tag_not_found
+                      message: Tag not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
   "/articles":
     get:
       summary: List all articles
@@ -30981,6 +31218,7 @@ paths:
                     id: '991267902'
                     name: team 1
                     admin_ids: []
+                    distribution_method: round_robin
               schema:
                 "$ref": "#/components/schemas/team"
         '404':
@@ -34082,7 +34320,7 @@ paths:
 
         ### Sorting
 
-        You can sort the results with a `sort` object, for example `{"field": "created_at", "order": "ascending"}`. `field` must be one of the fields in the table above, other than `ticket_attribute.{id}`, `title` and `description`. `order` is `ascending` or `descending`, and any other value is treated as `descending`. Without `sort`, results are sorted by `updated_at`, newest first.
+        You can sort the results with a `sort` object, for example `{"field": "created_at", "order": "ascending"}`. `field` must be one of the fields in the table above, other than `ticket_attribute.{id}`, `title` and `description`. `order` is `ascending` or `descending`. Without `sort`, results are sorted by `updated_at`, newest first.
 
         ### Accepted Operators
 
@@ -37041,6 +37279,350 @@ paths:
                     name: screenshot.png
                     content_type: image/png
                     data: iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk...
+  "/fin/tasks":
+    get:
+      summary: List all Fin Tasks
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      tags:
+      - Fin Tasks
+      operationId: listFinTasks
+      description: You can fetch a list of all Fin Tasks (AI agent workflows) configured for your workspace.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: list
+                    data:
+                    - type: task
+                      id: '1'
+                      title: Refund request
+                      description: Handles refund requests end to end
+                      state: live
+                      created_at: '2026-01-24T10:01:20Z'
+                      updated_at: '2026-01-24T10:01:20Z'
+                      segment_ids:
+                      - 12
+                    total_count: 1
+              schema:
+                "$ref": "#/components/schemas/fin_task_list"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create a Fin Task
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      tags:
+      - Fin Tasks
+      operationId: createFinTask
+      description: You can create a new Fin Task (AI agent workflow). Set `activate` to `true` to make the task live immediately, otherwise it is created as a draft. If activation fails, the task is still created as a draft. The workspace must have access to Fin.
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: task
+                    id: '1'
+                    title: Refund request
+                    description: Handles refund requests end to end
+                    state: draft
+                    created_at: '2026-01-24T10:01:20Z'
+                    updated_at: '2026-01-24T10:01:20Z'
+                    segment_ids: []
+              schema:
+                "$ref": "#/components/schemas/fin_task"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Title too long:
+                  value:
+                    type: error.list
+                    request_id: ff2353d3-d3d6-4f20-8268-847869d01e73
+                    errors:
+                    - code: parameter_invalid
+                      message: Title cannot exceed 255 characters
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: ff2353d3-d3d6-4f20-8268-847869d01e73
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_fin_task_request"
+            examples:
+              successful:
+                summary: successful
+                value:
+                  title: Refund request
+                  description: Handles refund requests end to end
+                  activate: false
+  "/fin/tasks/{id}":
+    get:
+      summary: Retrieve a Fin Task
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        description: The unique identifier of a given Fin Task
+        example: '1'
+        required: true
+        schema:
+          type: string
+      tags:
+      - Fin Tasks
+      operationId: retrieveFinTask
+      description: You can fetch the details of a single Fin Task by its id.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: task
+                    id: '1'
+                    title: Refund request
+                    description: Handles refund requests end to end
+                    state: live
+                    created_at: '2026-01-24T10:01:20Z'
+                    updated_at: '2026-01-24T10:01:20Z'
+                    segment_ids:
+                    - 12
+              schema:
+                "$ref": "#/components/schemas/fin_task"
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              examples:
+                Task not found:
+                  value:
+                    type: error.list
+                    request_id: e20c89d2-29c6-4abb-aa3d-c860e1cec1ca
+                    errors:
+                    - code: not_found
+                      message: Task not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: f230e3a7-00a9-456b-bf1c-2ad4b7dc49f6
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update a Fin Task
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        description: The unique identifier of a given Fin Task
+        example: '1'
+        required: true
+        schema:
+          type: string
+      tags:
+      - Fin Tasks
+      operationId: updateFinTask
+      description: You can update the title and description of an existing Fin Task, and set the audience segments it is available to. `title` and `description` must either both be provided, or both omitted. Omit both when you only want to change `segment_ids`.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: task
+                    id: '1'
+                    title: Refund request (updated)
+                    description: Handles refund requests end to end
+                    state: live
+                    created_at: '2026-01-24T10:01:20Z'
+                    updated_at: '2026-01-24T10:05:00Z'
+                    segment_ids:
+                    - 12
+              schema:
+                "$ref": "#/components/schemas/fin_task"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Title and description must be sent together:
+                  value:
+                    type: error.list
+                    request_id: 2859da57-c83f-405c-8166-240a312442a3
+                    errors:
+                    - code: parameter_invalid
+                      message: Both title and description must be provided together
+                segment_ids must contain integers:
+                  value:
+                    type: error.list
+                    request_id: e9a30c47-1b6d-4d52-8f0a-7c5e2b9d1a36
+                    errors:
+                    - code: parameter_invalid
+                      message: segment_ids must contain integers
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              examples:
+                Task not found:
+                  value:
+                    type: error.list
+                    request_id: e20c89d2-29c6-4abb-aa3d-c860e1cec1ca
+                    errors:
+                    - code: not_found
+                      message: Task not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: f230e3a7-00a9-456b-bf1c-2ad4b7dc49f6
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_fin_task_request"
+            examples:
+              successful:
+                summary: successful
+                value:
+                  title: Refund request (updated)
+                  description: Handles refund requests end to end
+                  segment_ids:
+                  - 12
+    delete:
+      summary: Delete a Fin Task
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        description: The unique identifier of a given Fin Task
+        example: '1'
+        required: true
+        schema:
+          type: string
+      tags:
+      - Fin Tasks
+      operationId: deleteFinTask
+      description: You can delete a Fin Task by passing in its id. This deactivates the task, if live, before deleting it.
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              examples:
+                Successful:
+                  value:
+                    message: Task deleted successfully
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: A confirmation that the Fin Task was deleted.
+                    example: Task deleted successfully
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              examples:
+                Task not found:
+                  value:
+                    type: error.list
+                    request_id: e20c89d2-29c6-4abb-aa3d-c860e1cec1ca
+                    errors:
+                    - code: not_found
+                      message: Task not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
   "/procedures/{conversation_id}/collect_agent_input":
     post:
       summary: Submit human input to a Fin Procedure HITL step
@@ -39388,6 +39970,15 @@ components:
           description: The URL of the article. For multilingual articles, this will
             be the URL of the default language's content.
           example: http://intercom.test/help/en/articles/3-default-language
+        url_redirects:
+          type: array
+          nullable: true
+          description: URLs that redirect to this article. Null when the article has
+            no content yet.
+          items:
+            type: string
+          example:
+          - /help/old-article-slug
         parent_ids:
           type: array
           description: The ids of the article's parent collections or sections. An
@@ -40455,7 +41046,9 @@ components:
           type: object
           description: The attributes to set on the ticket for the new type. Attributes
             matching by name and type are transferred automatically from the old type;
-            values provided here override the transferred values.
+            values provided here override the transferred values. HTML markup sent
+            in a string attribute's value is stripped to its text before the ticket
+            is stored.
           example:
             _default_title_: example
             _default_description_: having a problem
@@ -43711,6 +44304,14 @@ components:
           type: string
           description: The id representing the conversation.
           example: '1295'
+        call_ids:
+          type: array
+          description: The ids of the calls associated with this conversation. Empty
+            when the conversation has no calls.
+          items:
+            type: string
+          example:
+          - '4567'
         title:
           type: string
           nullable: true
@@ -43860,6 +44461,14 @@ components:
           type: string
           description: The id representing the conversation.
           example: '1295'
+        call_ids:
+          type: array
+          description: The ids of the calls associated with this conversation. Empty
+            when the conversation has no calls.
+          items:
+            type: string
+          example:
+          - '4567'
         title:
           type: string
           nullable: true
@@ -44522,6 +45131,13 @@ components:
           format: date-time
           description: The time the user was notified with the conversation part.
           example: 1663597260
+        user_ip:
+          type: string
+          nullable: true
+          description: The IP address of the end user who authored this conversation
+            part, when available. Null otherwise, including for parts not authored
+            by an end user.
+          example: 203.0.113.42
         assigned_to:
           "$ref": "#/components/schemas/reference"
           nullable: true
@@ -44566,6 +45182,84 @@ components:
           type: boolean
           description: Whether or not the conversation part has been redacted.
           example: false
+        receipts:
+          type: object
+          nullable: true
+          description: What happened to this part for each recipient it was sent to.
+            Null when delivery receipts have not been recorded for this part.
+          properties:
+            overall_state:
+              type: string
+              description: The state of the part across all recipients. The worst
+                recipient state wins, except `partially_sent`, which means some
+                recipients have it and others do not.
+              enum:
+              - failed_to_send
+              - sending
+              - sent
+              - seen
+              - partially_sent
+              example: sent
+            recipients:
+              type: array
+              description: One entry per recipient the part was sent to, in send order.
+              items:
+                type: object
+                properties:
+                  participant_id:
+                    type: string
+                    description: The id of the recipient, a contact id or an admin id.
+                    example: 6762f0dd1bb69f9f2193bb83
+                  participant_type:
+                    type: string
+                    description: Whether the recipient is a contact (`user`) or a teammate
+                      (`admin`).
+                    enum:
+                    - user
+                    - admin
+                    example: user
+                  state:
+                    type: string
+                    description: The delivery state for this recipient.
+                    enum:
+                    - sending
+                    - sent
+                    - seen
+                    - failed_to_send
+                    example: sent
+                  channel:
+                    type: string
+                    description: The channel the part was sent on.
+                    example: email
+                  state_updated_at:
+                    type: integer
+                    format: date-time
+                    description: The time the state last changed, as a UTC Unix timestamp.
+                    example: 1663597223
+                  error_code:
+                    type: string
+                    nullable: true
+                    description: The reason Intercom could not send to this recipient,
+                      when it could not. Null otherwise.
+                    enum:
+                    - email_address_ignored
+                    - user_suppressed
+                    - user_marked_as_spam
+                    - user_mailbox_full_suppressed
+                    - user_bounced
+                    - user_not_contactable
+                    - banned_domain
+                    - reply_to_sender_only
+                    - suppress_cc_emails
+                    - unverified_cc_recipient
+                    - null
+                    example: user_bounced
+                  address:
+                    type: string
+                    nullable: true
+                    description: The email address the part was sent to, for contact
+                      recipients. Null for teammates or when it is not known.
+                    example: joe@example.com
         email_message_metadata:
           "$ref": "#/components/schemas/email_message_metadata"
           nullable: true
@@ -44788,6 +45482,13 @@ components:
           type: string
           description: How the conversation was initiated.
           example: operator_initiated
+        user_ip:
+          type: string
+          nullable: true
+          description: The IP address of the end user who opened this conversation,
+            when available. Null otherwise, including when the conversation was not
+            opened by an end user.
+          example: 203.0.113.42
         recipients:
           type: array
           nullable: true
@@ -45184,6 +45885,7 @@ components:
           type: string
           description: The content of the article in HTML. For multilingual articles, this
             will be the body of the default language's content. Mutually exclusive with `body_markdown`.
+            Empty `<p>` tags are kept as blank paragraphs instead of being dropped.
           example: "<p>This is the body in html</p>"
         body_markdown:
           type: string
@@ -45239,6 +45941,15 @@ components:
           nullable: true
           description: The ID of the folder to place this article in, or null to leave it without a folder.
           example: 6
+        url_redirects:
+          type: array
+          description: URLs that should redirect to this article. Accepts up to 100
+            entries. Absolute URLs must match the help center's domain. A URL that
+            already redirects to another article is moved to this article.
+          items:
+            type: string
+          example:
+          - /help/old-article-slug
         audience_ids:
           type: array
           nullable: true
@@ -50701,6 +51412,112 @@ components:
       - user_id
       - csat
       - created_at_ms
+    fin_task:
+      title: Fin Task
+      type: object
+      x-tags:
+      - Fin Tasks
+      description: A Fin Task is an AI agent workflow that Fin can run.
+      properties:
+        type:
+          type: string
+          description: Always task.
+          example: task
+        id:
+          type: string
+          description: The unique identifier for the Fin Task.
+          example: '1'
+        title:
+          type: string
+          description: The title of the Fin Task.
+          example: Refund request
+        description:
+          type: string
+          description: The description of the Fin Task.
+          example: Handles refund requests end to end
+        state:
+          type: string
+          enum:
+          - live
+          - draft
+          description: Whether the Fin Task is live or still a draft.
+          example: live
+        created_at:
+          type: string
+          format: date-time
+          description: The time the Fin Task was created, as an ISO 8601 timestamp.
+          example: '2026-01-24T10:01:20Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: The last time the Fin Task was updated, as an ISO 8601 timestamp.
+          example: '2026-01-24T10:01:20Z'
+        segment_ids:
+          type: array
+          description: The ids of the audience segments the Fin Task is available to. Empty when it has none.
+          items:
+            type: integer
+          example:
+          - 12
+    fin_task_list:
+      title: Fin Task List
+      type: object
+      description: A list of Fin Task objects.
+      properties:
+        type:
+          type: string
+          description: Always list.
+          enum:
+          - list
+          example: list
+        data:
+          type: array
+          description: A list of Fin Task objects.
+          items:
+            "$ref": "#/components/schemas/fin_task"
+        total_count:
+          type: integer
+          description: The total number of Fin Tasks.
+          example: 1
+    create_fin_task_request:
+      title: Create Fin Task Request Payload
+      type: object
+      description: You can create a new Fin Task.
+      required:
+      - title
+      properties:
+        title:
+          type: string
+          description: The title of the Fin Task. Cannot exceed 255 characters.
+          example: Refund request
+        description:
+          type: string
+          description: The description of the Fin Task.
+          example: Handles refund requests end to end
+        activate:
+          type: boolean
+          description: Set to true to make the Fin Task live immediately. Defaults to false (draft).
+          example: false
+    update_fin_task_request:
+      title: Update Fin Task Request Payload
+      type: object
+      description: You can update the title and description of an existing Fin Task, and set the audience segments it is available to. `title` and `description` must either both be provided, or both omitted. Omit both when you only want to change `segment_ids`.
+      properties:
+        title:
+          type: string
+          description: The title of the Fin Task. Cannot exceed 255 characters. Must be sent together with `description`.
+          example: Refund request (updated)
+        description:
+          type: string
+          description: The description of the Fin Task. Must be sent together with `title`.
+          example: Handles refund requests end to end
+        segment_ids:
+          type: array
+          description: The ids of the audience segments the Fin Task is available to. This replaces the task's current segments, so send an empty array to remove them all. Each id must be an integer.
+          items:
+            type: integer
+          example:
+          - 12
     file_attribute:
       title: File
       type: object
@@ -53337,8 +54154,8 @@ components:
       x-tags:
       - Tags
       description: A tag allows you to label your contacts, companies, conversations,
-        tickets, articles, internal articles and content snippets, and list them using
-        that tag.
+        tickets, articles, internal articles, content snippets and external pages,
+        and list them using that tag.
       properties:
         type:
           type: string
@@ -53356,12 +54173,12 @@ components:
           type: integer
           format: timestamp
           nullable: true
-          description: The time when the tag was applied to the object. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet, when listing the tags on a contact, or when it is returned as part of an external page. `null` when the tag has just been removed from an article, internal article, content snippet or external page. Removing a tag from a contact, conversation or ticket returns the original value.
+          description: The time when the tag was applied to the object. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, content snippet, or external page, when listing the tags on a contact, or when it is returned as part of an external page. `null` when the tag has just been removed from an article, internal article, content snippet or external page. Removing a tag from a contact, conversation or ticket returns the original value.
           example: 1663597223
         applied_by:
           type: object
           nullable: true
-          description: The admin who applied the tag. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, or content snippet, when listing the tags on a contact, or when it is returned as part of an external page. `null` when the tag has just been removed from an article, internal article, content snippet or external page. Removing a tag from a contact, conversation or ticket returns the original value. When no admin is recorded, `type` is `nobody_admin` and `id` is `null`.
+          description: The admin who applied the tag. Only present when the tag is returned as part of a tagging operation on a contact, conversation, ticket, article, internal article, content snippet, or external page, when listing the tags on a contact, or when it is returned as part of an external page. `null` when the tag has just been removed from an article, internal article, content snippet or external page. Removing a tag from a contact, conversation or ticket returns the original value. When no admin is recorded, `type` is `nobody_admin` and `id` is `null`.
           allOf:
             - "$ref": "#/components/schemas/reference"
     tag_basic:
@@ -54212,6 +55029,10 @@ components:
         For example, if the ticket type has an attribute called `priority` of type
         `list`, the key should be `priority` and the value of the attribute should
         be the guid of the list item (e.g. `de1825a0-0164-4070-8ca6-13e22462fa7e`).
+        HTML markup sent in a string attribute's value is stripped to its text before
+        the ticket is stored. For a `files` attribute, pass an array of upload
+        ids; for a `relationship` attribute, pass an array of related object
+        ids as strings.
       additionalProperties:
         anyOf:
         - type: string
@@ -54219,6 +55040,11 @@ components:
         - type: number
         - type: boolean
         - type: array
+          items:
+            type: integer
+        - type: array
+          items:
+            type: string
       example:
         _default_title_: Found a bug
         _default_description_: The button is not working
@@ -54732,6 +55558,7 @@ components:
           type: string
           description: The content of the article in HTML. For multilingual articles, this
             will be the body of the default language's content. Mutually exclusive with `body_markdown`.
+            Empty `<p>` tags are kept as blank paragraphs instead of being dropped.
           example: "<p>This is the body in html</p>"
         body_markdown:
           type: string
@@ -54782,6 +55609,17 @@ components:
           nullable: true
           description: The ID of the folder to place this article in, or null to remove it from its folder.
           example: 6
+        url_redirects:
+          type: array
+          description: URLs that should redirect to this article. Accepts up to 100
+            entries. Absolute URLs must match the help center's domain. On update the list
+            replaces the existing redirects, so send an empty array to remove them
+            all; omit the field to leave them unchanged. A URL that already redirects
+            to another article is moved to this article.
+          items:
+            type: string
+          example:
+          - /help/old-article-slug
         audience_ids:
           type: array
           nullable: true
@@ -55282,7 +56120,8 @@ components:
       properties:
         ticket_attributes:
           type: object
-          description: The attributes set on the ticket.
+          description: The attributes set on the ticket. HTML markup sent in a string
+            attribute's value is stripped to its text before the ticket is stored.
           example:
             _default_title_: example
             _default_description_: having a problem
@@ -56029,8 +56868,9 @@ components:
           example: 'aws_connect'
         vendor_internal_id:
           type: string
-          description: Optional vendor-supplied identifier for linking the Fin Voice session to records in the vendor's own systems. Stored as-is and returned on every lookup.
+          description: Optional vendor-supplied identifier for linking the Fin Voice session to records in the vendor's own systems. Stored as-is and returned on every lookup. Cannot exceed 191 characters.
           nullable: true
+          maxLength: 191
           example: 'vendor-internal-abc-123'
         data:
           type: object
@@ -56239,6 +57079,8 @@ tags:
     - `csat_requested` - Fired when Fin asks the user to rate the conversation (submit the choice with `POST /fin/csat`)
 
     All webhook requests include an `X-Fin-Agent-API-Webhook-Signature` header for request validation.
+- name: Fin Tasks
+  description: Everything about your Fin Tasks, the AI agent workflows that Fin can run.
 - name: Help Center
   description: Everything about your Help Center
 - name: Identity Verification Secrets
