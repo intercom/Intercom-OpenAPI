@@ -1174,8 +1174,8 @@ paths:
       - name: reassign_conversations_admin_id
         in: query
         required: true
-        description: The unique identifier of a human admin with Inbox access to
-          reassign the removed admin's conversation replies to. Pass `0` to leave
+        description: The ID of an admin with Inbox access, or a team, to reassign
+          the removed admin's conversation replies to. Pass `0` to leave
           conversations unassigned.
         example: 456
         schema:
@@ -1203,9 +1203,10 @@ paths:
         You can remove a single admin (teammate) from your workspace.
         Requires the `remove_admins` OAuth scope.
 
-        This removes the admin's access to the workspace and reassigns their
-        work — auto-messages, ownership, article authorship, and conversation
-        replies — to the admins named by the `reassign_*` parameters.
+        This removes the admin's access to the workspace. In most cases their
+        work is reassigned to the IDs given in the `reassign_*` parameters. In
+        workspaces with more than one seat type, no reassignment happens if the
+        admin has no seat, a Collaborator seat or a Lite seat.
       responses:
         '200':
           description: Successful response
@@ -1235,7 +1236,9 @@ paths:
                     enum: ['true']
                     example: 'true'
         '404':
-          description: Admin not found
+          description: Admin not found. A `reassign_conversations_admin_id` that is
+            missing, or doesn't match an admin or team, returns `404` with the
+            code `not_found` and the message "Resource Not Found".
           content:
             application/json:
               examples:
@@ -1249,9 +1252,9 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '405':
-          description: Method Not Allowed. Returned when `admin_id`, or one of
-            the `reassign_*_admin_id` parameters, refers to a bot or a team rather
-            than a human admin.
+          description: Method Not Allowed. Returned when `admin_id`,
+            `reassign_messages_admin_id`, `reassign_owner_admin_id` or
+            `reassign_articles_author_id` refers to a bot. A team ID in any of these four parameters returns `404`.
           content:
             application/json:
               examples:
@@ -1266,7 +1269,8 @@ paths:
                 "$ref": "#/components/schemas/error"
         '403':
           description: Forbidden. Returned when `reassign_conversations_admin_id`
-            refers to an admin without Inbox access for the workspace.
+            refers to an admin without Inbox access for the workspace. This
+            includes teammates with a Lite seat.
           content:
             application/json:
               examples:
@@ -17603,8 +17607,10 @@ paths:
       - Tags
       - Conversations
       operationId: attachTagToConversation
-      description: You can tag a specific conversation. This will return a tag object
-        for the tag that was added to the conversation.
+      description: |
+        You can tag a specific conversation. This will return a tag object for the tag that was added to the conversation.
+
+        If the conversation is a ticket, the access token must include the `write_tickets` scope. Without it, the request returns a `401` with the error code `token_unauthorized`.
       responses:
         '200':
           description: successful
@@ -17706,8 +17712,10 @@ paths:
       - Tags
       - Conversations
       operationId: detachTagFromConversation
-      description: You can remove tag from a specific conversation. This will return
-        a tag object for the tag that was removed from the conversation.
+      description: |
+        You can remove tag from a specific conversation. This will return a tag object for the tag that was removed from the conversation.
+
+        If the conversation is a ticket, the access token must include the `write_tickets` scope. Without it, the request returns a `401` with the error code `token_unauthorized`.
       responses:
         '200':
           description: successful
@@ -17835,6 +17843,8 @@ paths:
           You can use pagination to limit the number of results returned. The default is `20` results per page.
           See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.
         {% /admonition %}
+
+        Tickets are only included in the results if the access token has the `read_tickets` scope. Without it, tickets are left out and no error is returned.
       responses:
         '200':
           description: successful
@@ -18267,6 +18277,8 @@ paths:
         {% /admonition %}
 
         For AI agent conversation metadata, please note that you need to have the agent enabled in your workspace, which is a [paid feature](https://www.intercom.com/help/en/articles/8205718-fin-resolutions#h_97f8c2e671).
+
+        If the conversation is a ticket, the access token must include the `read_tickets` scope. Without it, the request returns a `401` with the error code `token_unauthorized`.
       responses:
         '200':
           description: conversation found
@@ -18936,6 +18948,8 @@ paths:
         - Your workspace settings (Settings → Data → Conversations)
         {% /admonition %}
 
+        If the conversation is a ticket, the access token must include the `write_tickets` scope. Without it, the request returns a `401` with the error code `token_unauthorized`.
+
       responses:
         '200':
           description: update a conversation with an association to a custom object
@@ -19252,6 +19266,8 @@ paths:
         {% /admonition %}
 
         For more info, see [this help center article](https://www.intercom.com/help/en/articles/13885146-deleting-a-conversation).
+
+        If the conversation is a ticket, the access token must include the `write_tickets` scope. Without it, the request returns a `401` with the error code `token_unauthorized`.
       responses:
         '200':
           description: successful
@@ -19437,6 +19453,9 @@ paths:
         | !~       | String                         | Doesn't Contain                                              |
         | ^        | String                         | Starts With                                                  |
         | $        | String                         | Ends With                                                    |
+
+        Tickets are only included in the results if the access token has the `read_tickets` scope. Without it, tickets are left out and no error is returned.
+
         ### Sorting
 
         Results are sorted by `updated_at`, newest first. To sort differently, add a `sort` object to the request body with a `field` and an `order` of `ascending` or `descending`. `field` is required whenever `sort` is sent, and must be one of the fields in the table above, other than `type`, `state`, `source.subject`, `source.body`, `source.author.id`, `source.author.type`, `source.author.name`, `source.author.email`, `conversation_rating.remark`, `ai_agent.rating_remark` and `ai_agent.source_title`, which can't be sorted. A missing `field`, or one that isn't searchable, returns a `400` error with the code `invalid_field`.
@@ -19689,6 +19708,8 @@ paths:
         {% admonition type="info" name="Managing a conversation" %}
         To close, open, snooze or assign a conversation, use [Manage a conversation](/docs/references/preview/rest-api/api.intercom.io/conversations/manageconversation).
         {% /admonition %}
+
+        If the conversation is a ticket, the access token must include the `write_tickets` scope. Without it, the request returns a `401` with the error code `token_unauthorized`.
       responses:
         '200':
           description: User last conversation reply
@@ -20211,6 +20232,8 @@ paths:
         {% admonition type="info" name="Sending messages" %}
         To send a comment, note or quick reply, use [Reply to a conversation](/docs/references/preview/rest-api/api.intercom.io/conversations/replyconversation).
         {% /admonition %}
+
+        If the conversation is a ticket, the access token must include the `write_tickets` scope. Without it, the request returns a `401` with the error code `token_unauthorized`.
       responses:
         '200':
           description: Assign a conversation
@@ -20725,6 +20748,8 @@ paths:
         {% admonition type="warning" name="Experimental" %}
           This is an experimental endpoint. It requires a valid HMAC secret for authentication in addition to the standard bearer token.
         {% /admonition %}
+
+        If the conversation is a ticket, the access token must include the `write_tickets` scope. Without it, the request returns a `401` with the error code `token_unauthorized`.
       responses:
         '200':
           description: Conversation part updated
@@ -20865,6 +20890,8 @@ paths:
         If you add a contact via the email parameter and there is no user/lead found on that workspace with he given email, then we will create a new contact with `role` set to `lead`.
         {% /admonition %}
 
+        If the conversation is a ticket, the access token must include the `write_tickets` scope. Without it, the request returns a `401` with the error code `token_unauthorized`.
+
       responses:
         '200':
           description: Attach a contact to a conversation
@@ -20983,6 +21010,8 @@ paths:
         {% admonition type="warning" name="Removing the last participant" %}
         You cannot remove the last remaining contact from a conversation.
         {% /admonition %}
+
+        If the conversation is a ticket, the access token must include the `write_tickets` scope. Without it, the request returns a `401` with the error code `token_unauthorized`.
 
       responses:
         '200':
@@ -21462,6 +21491,8 @@ paths:
         If you are redacting a conversation part, it must have a `body`. If you are redacting a source message, it must have been created by a contact. We will return a `conversation_part_not_redactable` error if these criteria are not met.
         {% /admonition %}
 
+        If the conversation is a ticket, the access token must include the `write_tickets` scope. Without it, the request returns a `401` with the error code `token_unauthorized`.
+
       responses:
         '200':
           description: Redact a conversation part
@@ -21622,8 +21653,9 @@ paths:
         The secondary conversation is closed and linked to the primary, which
         becomes the surviving thread. Returns the primary conversation on success.
 
-        Requires `write_conversations` OAuth scope. When the secondary is a ticket,
-        `write_tickets` scope is also required.
+        Requires `write_conversations` OAuth scope. When either conversation is a ticket,
+        the `read_tickets` and `write_tickets` scopes are also required. Without them,
+        the request returns a `401` with the error code `token_unauthorized`.
       responses:
         '200':
           description: Conversation merged
@@ -34167,6 +34199,8 @@ paths:
         {% /admonition %}
 
         Deleting a ticket permanently removes it from the inbox. All sensitive data is deleted, including admin and user replies, ticket attributes, uploads, and related content. The ticket will still appear in reporting, though some data may be incomplete due to the deletion.
+
+        Requires the `write_conversations` OAuth scope. If the ID refers to a ticket, the access token must also include the `write_tickets` scope. Without it, the request returns a `401` with the error code `token_unauthorized`.
       responses:
         '200':
           description: successful
