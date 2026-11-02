@@ -2385,9 +2385,8 @@ paths:
       - name: reassign_replies_teams
         in: query
         required: false
-        description: For teams that will have no members once this admin is
-          removed, the admin to reassign each team's conversations to. Emptied
-          teams that aren't listed are reassigned to the workspace's Operator.
+        description: A list of teams and the admin each team's conversation replies
+          should be reassigned to.
         schema:
           type: array
           items:
@@ -2409,7 +2408,7 @@ paths:
         This removes the admin's access to the workspace. In most cases their
         work is reassigned to the IDs given in the `reassign_*` parameters. In
         workspaces with more than one seat type, no reassignment happens if the
-        admin has no seat or a Collaborator seat.
+        admin has no seat, a Collaborator seat or a Lite seat.
       responses:
         '200':
           description: Successful response
@@ -2471,7 +2470,7 @@ paths:
         '403':
           description: Forbidden. Returned when `reassign_conversations_admin_id`
             refers to an admin without Inbox access for the workspace. This
-            includes bots and teammates with a Lite seat.
+            includes teammates with a Lite seat.
           content:
             application/json:
               examples:
