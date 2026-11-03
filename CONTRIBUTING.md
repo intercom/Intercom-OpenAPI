@@ -22,8 +22,16 @@ If you're making changes to the OpenAPI spec, you can use the Fern CLI to valida
 
 #### Installation
 
+First-time setup on a new machine — configure pnpm's global bin directory:
+
 ```bash
-npm install -g fern-api
+pnpm setup
+```
+
+Then install the Fern CLI:
+
+```bash
+pnpm add -g fern-api@5.65.3
 ```
 
 #### Common Commands

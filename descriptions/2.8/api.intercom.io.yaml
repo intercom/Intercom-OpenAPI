@@ -1933,9 +1933,7 @@ paths:
       description: |
         Delete a single company.
 
-        This endpoint does not permanently remove the company. It archives the company record and detaches any contacts attached to it; the contacts themselves are not deleted. A `company.deleted` webhook is sent once archival completes.
-
-        The endpoint returns `200` with `"deleted": true` as soon as the request is accepted — archival is processed asynchronously.
+        The company record is kept in your workspace, but all contacts are detached. The contacts themselves are not deleted. Detaching contacts is permanent and can't be reversed. A `company.deleted` webhook is sent when the company is deleted. These changes may take some time to be reflected in your workspace.
 
         {% admonition type="warning" %}
         Third-party integrations that sync companies into Intercom (for example, Salesforce or Chargebee) will recreate any company deleted through this endpoint on their next sync. To prevent recreation, remove or filter the company at the source integration before deleting it via the API.
@@ -3894,10 +3892,23 @@ paths:
 
         ### Searching for Timestamp Fields
 
-        All timestamp fields (created_at, updated_at etc.) are indexed as Dates for Contact Search queries; Datetime queries are not currently supported. This means you can only query for timestamp fields by day - not hour, minute or second. The day a timestamp falls on is determined using your workspace's timezone, so the same query can return different results across workspaces in different timezones. Because timestamps are stored in UTC, filtering by a value the API returned may not match the originating contact when your workspace is not set to UTC.
-        For example, on a workspace set to UTC, if you search for all Contacts with a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM UTC), that will be interpreted as 1577836800 (January 1st, 2020 12:00 AM UTC). The search results will then include Contacts created from January 2nd, 2020 12:00 AM UTC onwards. On a workspace in another timezone, the day boundaries fall on that timezone's midnight instead.
-        If you'd like to get contacts created on January 1st, 2020 you should search with a created_at value equal (=) to 1577836800 (January 1st, 2020 12:00 AM UTC).
-        This behaviour applies only to timestamps used in search queries. The search results will still contain the full UNIX timestamp and be sorted accordingly.
+        Timestamp fields (`created_at`, `updated_at` etc.) and Date custom attributes are matched by calendar day. Sub-day precision (hour, minute, second) is not supported.
+
+        The day boundary uses **your workspace's timezone**, so the same query can return different results on two workspaces in different timezones.
+
+        Because the value is truncated to a day:
+
+        * `=` matches the whole day.
+        * `>` matches from the start of the *next* day, not from the instant you passed.
+        * `<` matches everything before the start of that day.
+
+        The `!=`, `>=`, `<=`, `IN` and `NIN` operators are not supported on Date fields and return an error.
+
+        **Example**, on a workspace set to UTC. Searching for `created_at` greater than `1577869200` (January 1st, 2020 9:00 AM UTC) truncates that value to `1577836800` (January 1st, 2020 12:00 AM UTC). Because `>` starts at the next day, the results begin from January 2nd, 2020 12:00 AM UTC - not from 9:00 AM on January 1st. On a workspace in another timezone, the boundaries fall on that timezone's midnight instead.
+
+        To get contacts created on January 1st, 2020, search for `created_at` equal to `1577836800`.
+
+        Only search queries behave this way. Responses still carry the full UNIX timestamp, and sorting uses the full value.
 
         ### Accepted Fields
 
@@ -3950,24 +3961,26 @@ paths:
 
         ### Accepted Operators
 
-        {% admonition type="warning" name="Searching based on `created_at`" %}
-          You cannot use the `<=` or `>=` operators to search by `created_at`.
+        {% admonition type="warning" name="Operators not supported on Date fields" %}
+          Date fields (`created_at`, `updated_at`, and any Date custom attribute) do not support the `!=`, `>=`, or `<=` operators. Using them returns an error.
         {% /admonition %}
 
-        The table below shows the operators you can use to define how you want to search for the value.  The operator should be put in as a string (`"="`). The operator has to be compatible with the field's type (eg. you cannot search with `>` for a given string value as it's only compatible for integer's and dates).
+        The table below shows the operators you can use to define how you want to search for the value. The operator should be put in as a string (`"="`). Which operators are valid depends on the field's type - see the "Valid Types" column below. Searching by `tag_id` supports only the `=` and `!=` operators.
 
-        | Operator | Valid Types                      | Description                                                      |
-        | :------- | :------------------------------- | :--------------------------------------------------------------- |
-        | =        | All                              | Equals                                                           |
-        | !=       | All                              | Doesn't Equal                                                    |
-        | IN       | All                              | In<br>Shortcut for `OR` queries<br>Values must be in Array       |
-        | NIN      | All                              | Not In<br>Shortcut for `OR !` queries<br>Values must be in Array |
-        | >        | Integer<br>Date (UNIX Timestamp) | Greater than                                                     |
-        | <       | Integer<br>Date (UNIX Timestamp) | Lower than                                                       |
-        | ~        | String                           | Contains                                                         |
-        | !~       | String                           | Doesn't Contain                                                  |
-        | ^        | String                           | Starts With                                                      |
-        | $        | String                           | Ends With                                                        |
+        | Operator | Valid Types                        | Description                                                            |
+        | :------- | :---------------------------------- | :----------------------------------------------------------------------|
+        | =        | All                                  | Equals                                                                  |
+        | !=       | All except Date                      | Doesn't Equal                                                           |
+        | IN       | All except Date and tag_id           | In<br>Shortcut for `OR` queries<br>Values must be in Array              |
+        | NIN      | All except Date and tag_id           | Not In<br>Shortcut for `OR !` queries<br>Values must be in Array        |
+        | >        | Integer<br>Date             | Greater than<br>On Date fields, matches from the start of the next day |
+        | <        | Integer<br>Date             | Lower than<br>On Date fields, matches before the start of the day      |
+        | >=       | Integer                     | Greater than or equal to<br>Not supported on Date fields               |
+        | <=       | Integer                     | Lower than or equal to<br>Not supported on Date fields                 |
+        | ~        | String                               | Contains                                                                |
+        | !~       | String                               | Doesn't Contain                                                         |
+        | ^        | String                               | Starts With                                                             |
+        | $        | String                               | Ends With                                                               |
       responses:
         '200':
           description: successful
@@ -4034,7 +4047,7 @@ paths:
           Contacts that have been merged (via POST /contacts/merge) will not appear in list results. Only the target contact from the merge remains accessible.
         {% /admonition %}
         {% admonition type="warning" name="Pagination" %}
-          You can use pagination to limit the number of results returned. The default is `50` results per page.
+          You can use pagination to limit the number of results returned. The default is `10` results per page, with a maximum of `150`.
           See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.
         {% /admonition %}
       responses:
@@ -6088,7 +6101,7 @@ paths:
                     - type: user
                       id: 6657a9f76abd01639cc9e9f3
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_participants_response"
         '404':
           description: Not found
           content:
@@ -6193,7 +6206,7 @@ paths:
                     - type: user
                       id: 6657aa036abd01639cc9e9ff
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_participants_response"
         '404':
           description: Contact not found
           content:
@@ -6267,26 +6280,18 @@ paths:
                 summary: Detach a contact from a group conversation
                 value:
                   admin_id: 991266986
-                  customer:
-                    intercom_user_id: 6657a9fc6abd01639cc9e9f7
               conversation_not_found:
                 summary: Conversation not found
                 value:
                   admin_id: 991266989
-                  customer:
-                    intercom_user_id: 6657aa046abd01639cc9ea00
               contact_not_found:
                 summary: Contact not found
                 value:
                   admin_id: 991266992
-                  customer:
-                    intercom_user_id: 6657aa0b6abd01639cc9ea08
               last_customer:
                 summary: Last customer
                 value:
                   admin_id: 991266995
-                  customer:
-                    intercom_user_id: 6657aa136abd01639cc9ea10
   "/conversations/redact":
     post:
       summary: Redact a conversation part
@@ -10064,6 +10069,34 @@ components:
                 "$ref": "#/components/schemas/customer_request"
             required:
             - email
+    conversation_participants_response:
+      title: Conversation Participants Response
+      type: object
+      description: The participants of the conversation, returned after attaching
+        or detaching a contact
+      properties:
+        customers:
+          type: array
+          description: The conversation participants after the change
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: The role of the participant. Can be "user" or "lead"
+                example: 'user'
+              id:
+                type: string
+                description: The unique identifier for the participant
+                example: '6762f1a61bb69f9f2193bbd8'
+            required:
+            - type
+            - id
+          example:
+          - type: user
+            id: '6762f1a61bb69f9f2193bbd8'
+      required:
+      - customers
     close_conversation_request:
       title: Close Conversation Request
       type: object
@@ -11409,8 +11442,10 @@ components:
         assigned_to:
           "$ref": "#/components/schemas/reference"
           nullable: true
-          description: The id of the admin that was assigned the conversation by this
-            conversation_part (null if there has been no change in assignment.)
+          description: The assignee this conversation_part assigned the conversation to, as
+            a reference whose `type` is `admin`, `team` or `bot`. When the part unassigned
+            the conversation, `type` is `nobody_admin` and `id` is `null`. Null when the
+            part did not change the assignment, or when the assignee has since been deleted.
         author:
           "$ref": "#/components/schemas/conversation_part_author"
         attachments:
@@ -11446,12 +11481,13 @@ components:
         name:
           type: string
           nullable: true
-          description: The name of the author
+          description: The name of the author. `null` if the author is a contact that has since been archived or deleted.
           example: Operator
         email:
           type: string
           format: email
-          description: The email of the author
+          nullable: true
+          description: The email of the author. `null` if the author is a contact that has since been archived or deleted.
           example: operator+abcd1234@intercom.io
     conversation_parts:
       title: Conversation Parts
@@ -13871,13 +13907,20 @@ components:
           - IN
           - NIN
           - "<"
+          - "<="
           - ">"
+          - ">="
           - "~"
           - "!~"
           - "^"
           - "$"
-          description: The accepted operators you can use to define how you want to
-            search for the value.
+          description: |-
+            The accepted operators you can use to define how you want to search for the value. Operator support depends on the field's data type. The breakdown below is for Contacts search; the other search endpoints that share this schema accept a different set per field:
+            - `string` fields: `=`, `!=`, `IN`, `NIN`, `~`, `!~`, `^`, `$`
+            - `tag_id`: `=` and `!=` only. Every other operator returns an error.
+            - `boolean` fields: `=`, `!=`, `IN`, `NIN`
+            - `integer` fields: `=`, `!=`, `IN`, `NIN`, `<`, `>`, `<=`, `>=`
+            - `date` fields (all standard timestamp attributes and date custom attributes): `=`, `<`, `>` only. `!=`, `<=`, `>=`, `IN`, and `NIN` are not supported and return an error.
           example: ">"
         value:
           oneOf:
@@ -14320,8 +14363,10 @@ components:
         state:
           type: string
           description: Whether the article will be `published` or will be a `draft`.
-            Defaults to draft. For multilingual articles, this will be the state of
-            the default language's content.
+            Omitting this field leaves the publish state unchanged, so a draft stays
+            a draft and an edit to a published article goes live immediately unless
+            that article already has a pending draft. For multilingual articles, this
+            will be the state of the default language's content.
           enum:
           - published
           - draft

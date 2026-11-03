@@ -1,25 +1,4 @@
 paths:
-  '/data_attributes':
-    post:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateDataAttributeRequest'
-  '/data_attributes/{id}':
-    put:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateDataAttributeRequest'
-  '/articles':
-    post:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateArticleRequestBody'
   '/articles/{id}':
     put: null
   '/articles/{article_id}/versions':
@@ -45,27 +24,6 @@ paths:
     get: null
   '/download/reporting_data/{job_identifier}':
     get: null
-  '/companies':
-    post:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateOrUpdateCompanyRequestBody'
-  '/phone_call_redirects':
-    post:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePhoneSwitchRequestBody'
-  '/ticket_types':
-    post:
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateTicketTypeRequestBody'
   '/contacts/{id}/companies':
     post:
       requestBody:
@@ -122,6 +80,8 @@ components:
       properties:
         metadata:
           additionalProperties: true
+    create_data_event_summaries_request:
+      anyOf: null
     create_ticket_request:
       x-fern-type-name: CreateTicketRequestBody
       properties:
@@ -135,10 +95,16 @@ components:
       x-fern-type-name: MergeConversationsRequestBody
     reply_conversation_request:
       x-fern-type-name: ReplyConversationRequestBody
-    update_article_request:
+    stage_article_draft_request_body:
       x-fern-type-name: UpdateArticleRequestBody
+    publish_article_draft_request:
+      x-fern-type-name: PublishArticleDraftRequestBody
+    create_conversation_attribute_option_request:
+      x-fern-type-name: CreateConversationAttributeOptionRequestBody
     update_ticket_type_request:
       x-fern-type-name: UpdateTicketTypeRequestBody
+    update_company_request:
+      x-fern-type-name: UpdateCompanyRequestBody
     single_filter_search_request:
       properties:
         operator:
