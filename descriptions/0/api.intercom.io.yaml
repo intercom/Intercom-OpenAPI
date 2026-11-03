@@ -16459,7 +16459,7 @@ paths:
       - name: bucket_size_minutes
         in: query
         required: false
-        description: Width of each interval in `time_series`, in minutes. Defaults to a width chosen to suit the requested range.
+        description: Width of each interval in `time_series`, in minutes. Defaults to the narrowest whole number of minutes that divides the requested range into 300 intervals or fewer.
         schema:
           type: integer
           minimum: 1
@@ -16472,7 +16472,9 @@ paths:
 
         Metrics from the last 7 days are returned by default. Use `start_ts` and `end_ts` to set the range, which may span at most 14 days. How far back data is available depends on your workspace's data connector log retention.
 
-        Responses are cached briefly, so consecutive calls may return identical data.
+        An execution counts as successful when it completed and the external service returned a 2xx status. An execution that recorded no HTTP status counts as a failure, and appears in `failure_types_distribution` under `unknown`.
+
+        Responses are cached for up to a minute, so consecutive calls may return identical data.
       responses:
         '200':
           description: successful
@@ -16512,7 +16514,7 @@ paths:
                       - error_type: response_mapping_error
                         count: 13
                     time_series:
-                    - bucket_start: 1755000000
+                    - bucket_start: 1754999760
                       execution_count: 12
                       external_latency_avg_ms: 133
                       external_latency_max_ms: 402
@@ -33175,7 +33177,7 @@ components:
           "$ref": "#/components/schemas/data_connector_health_summary"
         time_series:
           type: array
-          description: Intervals covering the requested time range, ordered oldest first. An interval with no executions is omitted rather than returned with zero counts.
+          description: Intervals covering the requested time range, ordered oldest first. Interval boundaries are aligned to multiples of `bucket_size_minutes` from the Unix epoch rather than to `start_ts`, so the first interval may begin before `start_ts`. An interval with no executions is omitted rather than returned with zero counts.
           items:
             "$ref": "#/components/schemas/data_connector_health_time_series_point"
     data_connector_health_summary:
@@ -33191,7 +33193,7 @@ components:
           example: 1420
         success_rate:
           type: number
-          description: The proportion of executions that completed successfully, as a decimal between 0.0 and 1.0.
+          description: The proportion of executions that completed and returned a 2xx status, as a decimal between 0.0 and 1.0.
           example: 0.9754
         overall_status:
           type: string
@@ -33216,7 +33218,7 @@ components:
           - "$ref": "#/components/schemas/data_connector_health_percentiles"
         http_status_distribution:
           type: array
-          description: A breakdown of executions by the HTTP status code returned, ordered by status code ascending.
+          description: A breakdown of executions by the HTTP status code returned, ordered by status code ascending. An execution that recorded no HTTP status is absent, so these counts may add up to less than `total_executions`.
           items:
             "$ref": "#/components/schemas/data_connector_health_status_count"
         failure_types_distribution:
@@ -33286,26 +33288,26 @@ components:
         bucket_start:
           type: integer
           description: Unix timestamp marking the start of this interval.
-          example: 1755000000
+          example: 1754999760
         execution_count:
           type: integer
           description: The number of executions in this interval.
           example: 12
         external_latency_avg_ms:
           type: integer
-          description: The average time, in milliseconds, spent waiting on the external service across executions in this interval.
+          description: The average time, in milliseconds, spent waiting on the external service across executions in this interval. Reported as 0 when no execution in this interval carried the measurement.
           example: 133
         external_latency_max_ms:
           type: integer
-          description: The highest time, in milliseconds, spent waiting on the external service in this interval.
+          description: The highest time, in milliseconds, spent waiting on the external service in this interval. Reported as 0 when no execution in this interval carried the measurement.
           example: 402
         internal_latency_avg_ms:
           type: integer
-          description: The average time, in milliseconds, Intercom spent processing executions in this interval.
+          description: The average time, in milliseconds, Intercom spent processing executions in this interval. Reported as 0 when no execution in this interval carried the measurement.
           example: 21
         internal_latency_max_ms:
           type: integer
-          description: The highest time, in milliseconds, Intercom spent processing an execution in this interval.
+          description: The highest time, in milliseconds, Intercom spent processing an execution in this interval. Reported as 0 when no execution in this interval carried the measurement.
           example: 58
     data_connector_list:
       title: Data Connector List
