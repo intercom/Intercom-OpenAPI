@@ -25637,13 +25637,13 @@ paths:
       - name: end_ts
         in: query
         required: false
-        description: Unix timestamp for the end of the time range (default now).
+        description: Unix timestamp for the end of the time range. Defaults to the current time rounded down to the minute, so the `end_ts` in the response may be up to a minute earlier than the moment you called.
         schema:
           type: integer
       - name: bucket_size_minutes
         in: query
         required: false
-        description: Width of each interval in `time_series`, in minutes. Defaults to the narrowest whole number of minutes that divides the requested range into 300 intervals or fewer.
+        description: Width of each interval in `time_series`, in minutes. Defaults to the narrowest whole number of minutes that divides the requested range into 300 intervals or fewer. The time range divided by this width may not exceed 2000 intervals, so a narrow width needs a shorter range.
         schema:
           type: integer
           minimum: 1
