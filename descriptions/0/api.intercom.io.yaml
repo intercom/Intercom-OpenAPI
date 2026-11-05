@@ -26207,7 +26207,7 @@ paths:
                       message: Resource Not Found
               schema:
                 "$ref": "#/components/schemas/error"
-  "/ecommerce/connectors/{id}/catalog":
+  "/ecommerce/connectors/{import_source_id}/catalog":
     post:
       summary: Upload a product catalog
       parameters:
@@ -26215,7 +26215,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version_preview"
-      - name: id
+      - name: import_source_id
         in: path
         required: true
         description: The unique identifier of the ecommerce connector.
@@ -26243,6 +26243,18 @@ paths:
 
         Part uploads are idempotent — retrying the same `part_number` does not create
         a duplicate. If a response is lost, retry with the same `part_number`.
+
+        ## Limits
+
+        - **Request size:** each request, whether a single-file upload or one part of a multipart
+          upload, can carry a catalog file of up to 99 MB. A larger file is rejected with
+          `422 Unprocessable Content` and the `payload_too_large` error code.
+        - **Part order:** parts must be uploaded in order, starting at `part_number` 1. A part that
+          is out of sequence is rejected with `422` and the `invalid_part_number` error code.
+        - **Session expiry:** a multipart upload session expires 7 days after its first part is
+          uploaded. An expired session cannot be continued or finalized. Start a new upload instead.
+        - **One upload at a time:** a connector accepts one catalog upload at a time. A new upload
+          while another is in progress is rejected with `409 Conflict`.
 
         ## Product object structure
 
@@ -26362,12 +26374,13 @@ paths:
                     a multipart session. Omit entirely for a single-file upload.
                   example: 'false'
                 import_job_id:
-                  type: string
+                  type: integer
+                  format: int64
                   description: |
                     The import job ID returned from the first multipart upload request. Required
                     when uploading subsequent parts (`part_number` ≥ 2) and when finalizing
                     a multipart session (`finalize=true`).
-                  example: 'job_01abc123'
+                  example: 1000000471233
                 part_number:
                   type: integer
                   description: |
@@ -26390,13 +26403,13 @@ paths:
                 value:
                   catalog: "@products_part2.json"
                   finalize: "false"
-                  import_job_id: "job_01abc123"
+                  import_job_id: 1000000471233
                   part_number: 2
               multipart_finalize:
                 summary: "Multipart — Step 3: Finalize"
                 value:
                   finalize: "true"
-                  import_job_id: "job_01abc123"
+                  import_job_id: 1000000471233
       responses:
         '200':
           description: Multipart catalog part uploaded successfully.
@@ -26405,7 +26418,7 @@ paths:
               examples:
                 Part uploaded:
                   value:
-                    import_job_id: 'job_01abc123'
+                    import_job_id: 1000000471233
                     next_part_number: 2
               schema:
                 "$ref": "#/components/schemas/ecommerce_catalog_upload_part_response"
@@ -26416,7 +26429,7 @@ paths:
               examples:
                 Sync started:
                   value:
-                    import_job_id: 'job_01abc123'
+                    import_job_id: 1000000471233
                     status: processing
                     message: Catalog received. Sync has started.
               schema:
@@ -26455,7 +26468,7 @@ paths:
                     request_id: test-uuid-replacement
                     errors:
                     - code: import_source_not_found
-                      message: No connector found with the provided id.
+                      message: No connector found with the provided import_source_id.
                 Feature not available:
                   value:
                     type: error.list
@@ -26490,7 +26503,8 @@ paths:
                     request_id: test-uuid-replacement
                     errors:
                     - code: sync_in_progress
-                      message: A multipart upload is already in progress. Use import_job_id to continue.
+                      message: A multipart upload is already in progress. Use the import_job_id to continue.
+                    import_job_id: 1000000471233
                 Session cannot be finalized:
                   value:
                     type: error.list
@@ -26499,7 +26513,7 @@ paths:
                     - code: upload_session_not_finalizable
                       message: Upload session cannot be finalized in its current state.
               schema:
-                "$ref": "#/components/schemas/error"
+                "$ref": "#/components/schemas/ecommerce_catalog_upload_conflict_error"
         '422':
           description: Unprocessable content.
           content:
@@ -26563,7 +26577,7 @@ paths:
                       message: Failed to store catalog
               schema:
                 "$ref": "#/components/schemas/error"
-  "/ecommerce/connectors/{id}/events":
+  "/ecommerce/connectors/{import_source_id}/events":
     post:
       summary: Submit a product event
       parameters:
@@ -26571,7 +26585,7 @@ paths:
         in: header
         schema:
           "$ref": "#/components/schemas/intercom_version_preview"
-      - name: id
+      - name: import_source_id
         in: path
         required: true
         description: The unique identifier of the ecommerce connector.
@@ -26731,28 +26745,40 @@ paths:
               schema:
                 "$ref": "#/components/schemas/ecommerce_product_event_response"
         '400':
-          description: The event is invalid. All validation errors are returned in `message`, separated by `; `.
+          description: The event is invalid. All validation errors are returned in the `message` of a single error, separated by `; `.
           content:
             application/json:
               examples:
                 Invalid type:
                   value:
-                    type: invalid_event
-                    message: type must be one of product.created, product.updated, product.deleted
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_event
+                      message: type must be one of product.created, product.updated, product.deleted
                 Invalid product:
                   value:
-                    type: invalid_event
-                    message: data.product.title is required; data.product.updated_at must be an ISO 8601 timestamp
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_event
+                      message: data.product.title is required; data.product.updated_at must be an ISO 8601 timestamp
                 Missing product id on delete:
                   value:
-                    type: invalid_event
-                    message: data.product_id is required
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_event
+                      message: data.product_id is required
                 Product too large:
                   value:
-                    type: invalid_event
-                    message: data.product exceeds 60KB
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_event
+                      message: data.product exceeds 60KB
               schema:
-                "$ref": "#/components/schemas/ecommerce_product_event_error"
+                "$ref": "#/components/schemas/error"
         '401':
           "$ref": "#/components/responses/Unauthorized"
         '404':
@@ -26762,14 +26788,20 @@ paths:
               examples:
                 Connector not found:
                   value:
-                    type: import_source_not_found
-                    message: No connector found with the provided import_source_id.
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: import_source_not_found
+                      message: No connector found with the provided import_source_id.
                 Feature not available:
                   value:
-                    type: not_found
-                    message: The events API is not available for this workspace.
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: not_found
+                      message: The events API is not available for this workspace.
               schema:
-                "$ref": "#/components/schemas/ecommerce_product_event_error"
+                "$ref": "#/components/schemas/error"
         '409':
           description: No full catalog has been uploaded to this connector yet.
           content:
@@ -26777,10 +26809,13 @@ paths:
               examples:
                 Catalog not uploaded:
                   value:
-                    type: catalog_not_uploaded
-                    message: Upload a full catalog before sending product events.
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: catalog_not_uploaded
+                      message: Upload a full catalog before sending product events.
               schema:
-                "$ref": "#/components/schemas/ecommerce_product_event_error"
+                "$ref": "#/components/schemas/error"
   "/events":
     post:
       summary: Submit a data event
@@ -50887,17 +50922,36 @@ components:
           example: '5017690'
       required:
       - admin_id
+    ecommerce_catalog_upload_conflict_error:
+      title: Ecommerce Catalog Upload Conflict Error
+      description: |
+        The error list returned with `409 Conflict`. When a multipart upload session is already in
+        progress for the connector, the body also carries the `import_job_id` of that session, so you
+        can continue it.
+      allOf:
+      - "$ref": "#/components/schemas/error"
+      - type: object
+        properties:
+          import_job_id:
+            type: integer
+            format: int64
+            description: |
+              The identifier of the multipart upload session that is already in progress. Only
+              present when the conflict is an existing multipart session. Pass it as `import_job_id`
+              to continue that session.
+            example: 1000000471233
     ecommerce_catalog_upload_part_response:
       title: Ecommerce Catalog Upload Part Response
       type: object
       description: Returned after a multipart catalog part is successfully uploaded.
       properties:
         import_job_id:
-          type: string
+          type: integer
+          format: int64
           description: |
             The unique identifier for the active upload session. Pass this as `import_job_id`
             in subsequent part uploads and in the finalization request.
-          example: 'job_01abc123'
+          example: 1000000471233
         next_part_number:
           type: integer
           description: The part number to use in the next upload request.
@@ -50908,9 +50962,10 @@ components:
       description: Returned when a catalog upload is accepted and sync has started.
       properties:
         import_job_id:
-          type: string
+          type: integer
+          format: int64
           description: The unique identifier for the import job.
-          example: 'job_01abc123'
+          example: 1000000471233
         status:
           type: string
           description: The current status of the catalog sync.
@@ -51119,24 +51174,6 @@ components:
             sku: 'TSHIRT-BLU-L'
             vendor: 'Acme Apparel'
           nullable: true
-    ecommerce_product_event_error:
-      title: Ecommerce Product Event Error
-      type: object
-      description: Returned when a product event is rejected.
-      properties:
-        type:
-          type: string
-          description: The error code.
-          enum:
-          - invalid_event
-          - import_source_not_found
-          - not_found
-          - catalog_not_uploaded
-          example: invalid_event
-        message:
-          type: string
-          description: A human-readable description of the error. For `invalid_event`, every validation error is listed, separated by `; `.
-          example: data.product.id is required
     ecommerce_product_event_product:
       title: Ecommerce Product Event Product
       description: |
@@ -51200,7 +51237,7 @@ components:
         event_id:
           type: integer
           description: The unique identifier for the queued event.
-          example: 81273
+          example: 1000000471233
     email_address_header:
       title: Email Address Header
       type: object
