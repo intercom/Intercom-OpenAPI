@@ -21746,6 +21746,180 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/error"
+  "/conversations/{conversation_id}/rating":
+    post:
+      summary: Rate a conversation
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: conversation_id
+        in: path
+        required: true
+        description: The unique identifier for the conversation.
+        example: '215471234567890'
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: rateConversation
+      description: |
+        Limited availability: this endpoint is enabled per workspace. Contact Intercom to request access.
+
+        Record a contact's CSAT rating, and an optional remark, on the latest rating request Intercom sent for a conversation. The rating counts in your CSAT reports for the teammate, Fin or workflow that was rated.
+
+        Only the contact the request was sent to can answer. Pass their Intercom ID as `intercom_user_id`.
+
+        Sending the same rating and remark again returns the current rating without changing it, so it is safe to retry. A different `rating` replaces the earlier one while the rating request still accepts answers. A `remark` can be added to a rating that has none. Once a remark is set, the rating and the remark can no longer be changed.
+
+        Requires the `write_conversations` permission.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/rate_conversation_request"
+            examples:
+              successful:
+                summary: successful
+                value:
+                  intercom_user_id: 6541f0a2c3d4e5f607182930
+                  rating: 4
+                  remark: Fast and friendly
+      responses:
+        '200':
+          description: Rating recorded
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: conversation_rating
+                    conversation_id: '215471234567890'
+                    rating: 4
+                    remark: Fast and friendly
+                    created_at: 1793664000
+                    updated_at: 1793664120
+                    customer:
+                      type: user
+                      id: 6541f0a2c3d4e5f607182930
+                    teammate:
+                      type: admin
+                      id: '12345'
+              schema:
+                "$ref": "#/components/schemas/rated_conversation"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Resource not available:
+                  value:
+                    type: error.list
+                    request_id: 7a80b950-b392-499f-85db-ea7c6c424d37
+                    errors:
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
+                Missing parameter:
+                  value:
+                    type: error.list
+                    request_id: 5f0c2a8e-3d71-4b96-a1e4-9c6b7d2f8e13
+                    errors:
+                    - code: parameter_not_found
+                      message: rating parameter is required
+                Invalid parameter type:
+                  value:
+                    type: error.list
+                    request_id: 0e4b9d1c-6a85-4f32-b7d0-2c8e5a1f9b64
+                    errors:
+                    - code: parameter_invalid
+                      message: rating must be a integer
+                Rating out of range:
+                  value:
+                    type: error.list
+                    request_id: c3a1e7f5-82d4-4b09-9e6a-1d5b0f7c2a48
+                    errors:
+                    - code: parameter_invalid
+                      message: rating must be an integer from 1 to 5
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 7d3e1f0a-5b2c-4a96-8c41-0e9f6b2d7a35
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Different contact:
+                  value:
+                    type: error.list
+                    request_id: 9b1c2d3e-4f50-4a61-8b72-c3d4e5f60718
+                    errors:
+                    - code: forbidden
+                      message: The rating request for this conversation was sent to a different contact
+                Conversation access restricted:
+                  value:
+                    type: error.list
+                    request_id: 2c8a4e6b-9f1d-4b73-a5e0-6d1c3f8b9a47
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access this conversation
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              examples:
+                Conversation not found:
+                  value:
+                    type: error.list
+                    request_id: 4a5b6c7d-8e9f-4a0b-9c1d-2e3f4a5b6c7d
+                    errors:
+                    - code: conversation_not_found
+                      message: Conversation not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Rating not accepted
+          content:
+            application/json:
+              examples:
+                No rating request:
+                  value:
+                    type: error.list
+                    request_id: 6e2f8a1b-0c47-4d93-8b5a-7f1e3c9d0a26
+                    errors:
+                    - code: rating_request_not_found
+                      message: No rating request has been sent for this conversation
+                Rating window closed:
+                  value:
+                    type: error.list
+                    request_id: 1d7c4b9a-5e30-4f68-a2b1-8c0e6d3f7a95
+                    errors:
+                    - code: rating_window_closed
+                      message: The rating window for this conversation has closed
+                Rating locked:
+                  value:
+                    type: error.list
+                    request_id: 8f3a6c2d-1b94-4e07-9d5c-0a7b2e4f1c63
+                    errors:
+                    - code: rating_locked
+                      message: This rating can no longer be changed because a remark has already been submitted
+              schema:
+                "$ref": "#/components/schemas/error"
   "/conversations/redact":
     post:
       summary: Redact a conversation part
@@ -46452,6 +46626,95 @@ components:
           type: integer
           description: First response time of assigned team in seconds.
           example: 2310
+    rate_conversation_request:
+      title: Rate conversation request
+      type: object
+      required:
+      - intercom_user_id
+      - rating
+      properties:
+        intercom_user_id:
+          type: string
+          description: The unique identifier for the contact the rating request was sent to.
+          example: 6541f0a2c3d4e5f607182930
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: The rating, from 1 to 5.
+          example: 4
+        remark:
+          type: string
+          description: Free text from the contact to go with the rating.
+          example: Fast and friendly
+    rated_conversation:
+      title: Rated conversation
+      type: object
+      x-tags:
+      - Conversations
+      description: The CSAT rating recorded on a conversation.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `conversation_rating`.
+          enum:
+          - conversation_rating
+          example: conversation_rating
+        conversation_id:
+          type: string
+          description: The unique identifier for the conversation.
+          example: '215471234567890'
+        rating:
+          type: integer
+          description: The rating, from 1 to 5.
+          example: 4
+        remark:
+          type: string
+          nullable: true
+          description: The free text left with the rating.
+          example: Fast and friendly
+        created_at:
+          type: integer
+          format: date-time
+          description: The time the rating request was created, as a UNIX timestamp.
+          example: 1793664000
+        updated_at:
+          type: integer
+          format: date-time
+          description: The time the rating or remark last changed, as a UNIX timestamp.
+          example: 1793664120
+        customer:
+          type: object
+          description: The contact who answered.
+          properties:
+            type:
+              type: string
+              description: The type of contact.
+              enum:
+              - user
+              - lead
+              - visitor
+              example: user
+            id:
+              type: string
+              description: The unique identifier for the contact.
+              example: 6541f0a2c3d4e5f607182930
+        teammate:
+          type: object
+          description: Who was rated.
+          properties:
+            type:
+              type: string
+              description: "`admin` for a teammate, `bot` for Fin, or `workflow` for a workflow."
+              enum:
+              - admin
+              - bot
+              - workflow
+              example: admin
+            id:
+              type: string
+              description: The unique identifier for the teammate, Fin or workflow.
+              example: '12345'
     conversation_source:
       title: Conversation source
       type: object
