@@ -14308,6 +14308,123 @@ paths:
                       message: Requested resource is not available in current API version.
               schema:
                 "$ref": "#/components/schemas/error"
+  "/conversations/stream/token":
+    post:
+      summary: Create a conversation stream token
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      tags:
+      - Conversations
+      operationId: createConversationStreamToken
+      description: |
+        Issue a token that a contact's client uses to subscribe to a realtime stream of that contact's conversation events.
+
+        Tokens are short-lived, so call this endpoint again before `expires_at` to get a fresh one. Use the `revoke` link in the response to end every active token for the contact.
+
+        Requires the `read_conversations` permission.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_conversation_stream_token_request"
+            examples:
+              successful:
+                summary: successful
+                value:
+                  external_id: contact-1234
+      responses:
+        '200':
+          description: Token issued
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    type: conversation_stream_token
+                    expires_at: 1731241200
+                    stream:
+                      provider: ably
+                      url: main.realtime.ably.net
+                      channel: conversation_stream:abc123:6710a1b2c3d4e5f6a7b8c9d0
+                      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleGFtcGxlIjoidG9rZW4ifQ.c2lnbmF0dXJl
+                    links:
+                      self:
+                        href: https://api.intercom.io/conversations/stream/token
+                        method: POST
+                      revoke:
+                        href: https://api.intercom.io/conversations/stream/token?external_id=contact-1234
+                        method: DELETE
+              schema:
+                "$ref": "#/components/schemas/conversation_stream_token"
+        '400':
+          description: "`external_id` is missing"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 7d3e1f0a-5b2c-4a96-8c41-0e9f6b2d7a35
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: The access token is limited to the conversations of the teammate who installed the app
+        '404':
+          description: The contact was not found, or the conversation stream is not available for the workspace
+    delete:
+      summary: Revoke conversation stream tokens
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: external_id
+        in: query
+        required: true
+        description: The external ID of the contact whose tokens to revoke.
+        example: contact-1234
+        schema:
+          type: string
+      tags:
+      - Conversations
+      operationId: revokeConversationStreamTokens
+      description: |
+        Revoke every active conversation stream token for a contact. Call this when the contact signs out or you suspect a token has been exposed.
+
+        Requires the `read_conversations` permission.
+      responses:
+        '204':
+          description: Tokens revoked
+        '400':
+          description: "`external_id` is missing"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 2c8a4e6b-9f1d-4b73-a5e0-6d1c3f8b9a47
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: The access token is limited to the conversations of the teammate who installed the app
+        '404':
+          description: The contact was not found, or the conversation stream is not available for the workspace
+        '502':
+          description: The realtime provider did not confirm the revocation. Retry the request.
   "/conversations/attributes":
     get:
       summary: List all conversation attributes
@@ -27948,6 +28065,82 @@ components:
           format: date-time
           description: The time when the conversation was deleted.
           example: 1734537745
+    create_conversation_stream_token_request:
+      title: Create conversation stream token request
+      type: object
+      required:
+      - external_id
+      properties:
+        external_id:
+          type: string
+          description: The external ID of the contact to issue a token for.
+          example: contact-1234
+    conversation_stream_token:
+      title: Conversation stream token
+      type: object
+      x-tags:
+      - Conversations
+      description: A token that lets a contact's client subscribe to a realtime stream of their conversation events.
+      properties:
+        type:
+          type: string
+          description: String representing the object's type. Always has the value `conversation_stream_token`.
+          enum:
+          - conversation_stream_token
+          example: conversation_stream_token
+        expires_at:
+          type: integer
+          format: date-time
+          description: The time the token expires, as a UNIX timestamp.
+          example: 1731241200
+        stream:
+          type: object
+          description: What the client needs to connect to the stream.
+          properties:
+            provider:
+              type: string
+              description: The realtime provider that delivers the stream.
+              example: ably
+            url:
+              type: string
+              description: The host to connect to.
+              example: main.realtime.ably.net
+            channel:
+              type: string
+              description: The channel to subscribe to.
+              example: conversation_stream:abc123:6710a1b2c3d4e5f6a7b8c9d0
+            token:
+              type: string
+              description: The token to connect with.
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleGFtcGxlIjoidG9rZW4ifQ.c2lnbmF0dXJl
+        links:
+          type: object
+          description: The requests you can make with this token.
+          properties:
+            self:
+              type: object
+              description: The request that issues a new token for the contact.
+              properties:
+                href:
+                  type: string
+                  description: The URL to request.
+                  example: https://api.intercom.io/conversations/stream/token
+                method:
+                  type: string
+                  description: The HTTP method to use.
+                  example: POST
+            revoke:
+              type: object
+              description: The request that revokes every active token for the contact.
+              properties:
+                href:
+                  type: string
+                  description: The URL to request.
+                  example: https://api.intercom.io/conversations/stream/token?external_id=contact-1234
+                method:
+                  type: string
+                  description: The HTTP method to use.
+                  example: DELETE
     deleted_conversation_list:
       title: Conversations
       type: object
