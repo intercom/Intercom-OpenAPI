@@ -9596,9 +9596,7 @@ paths:
         Deleting a company is permanent and can't be reversed. The company record is removed from your workspace, along with its notes, tags and external references. Its contacts are detached and its conversations are unlinked from it; the contacts and conversations themselves are not deleted.
         {% /admonition %}
 
-        The response returns `"deleted": true` as soon as the request is accepted; the company is deleted in the background. From then on, [Retrieve a company by ID](/docs/references/preview/rest-api/api.intercom.io/companies/retrieveacompanybyid) and a second delete of the same company return a `404` with code `company_not_found`. A `company.deleted` webhook is sent once the deletion finishes, so it arrives some time after the response.
-
-        Workspaces under a legal hold can't delete companies; the request returns a `422` with code `legal_hold`.
+        The response returns `"deleted": true` as soon as the request is accepted; the company is deleted in the background. A `company.deleted` webhook is sent once the deletion finishes, so it arrives some time after the response.
 
         {% admonition type="warning" %}
         Third-party integrations that sync companies into Intercom (for example, Salesforce or Chargebee) will recreate any company deleted through this endpoint on their next sync. To prevent recreation, remove or filter the company at the source integration before deleting it via the API.
