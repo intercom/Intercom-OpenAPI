@@ -9589,9 +9589,11 @@ paths:
       description: |
         Delete a single company.
 
-        The company record is kept in your workspace, but all contacts are detached. The contacts themselves are not deleted. Detaching contacts is permanent and can't be reversed. These changes may take some time to be reflected in your workspace.
+        {% admonition type="warning" name="Permanent deletion" %}
+        Deleting a company is permanent and can't be reversed. The company record is removed from your workspace, along with its notes, tags and external references. Its contacts are detached and its conversations are unlinked from it; the contacts and conversations themselves are not deleted.
+        {% /admonition %}
 
-        The response returns `"deleted": true` as soon as the request is accepted; the contacts are detached in the background. A `company.deleted` webhook is sent after that work finishes, so it arrives some time after the response. No webhook is sent for a company that has no contacts attached, because there is nothing to detach.
+        The response returns `"deleted": true` as soon as the request is accepted; the company is deleted in the background. A `company.deleted` webhook is sent once the deletion finishes, so it arrives some time after the response.
 
         {% admonition type="warning" %}
         Third-party integrations that sync companies into Intercom (for example, Salesforce or Chargebee) will recreate any company deleted through this endpoint on their next sync. To prevent recreation, remove or filter the company at the source integration before deleting it via the API.
@@ -9611,6 +9613,20 @@ paths:
                     deleted: true
               schema:
                 "$ref": "#/components/schemas/deleted_company_object"
+        '422':
+          description: Workspace under legal hold
+          content:
+            application/json:
+              examples:
+                Workspace under legal hold:
+                  value:
+                    type: error.list
+                    request_id: 2f6a8e3c-5b1d-4c7a-9e0f-3d8b6a1c4e72
+                    errors:
+                    - code: legal_hold
+                      message: App is under legal hold, company deletion is not allowed
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Company Not Found
           content:
@@ -11669,7 +11685,9 @@ paths:
       - Companies
       operationId: BulkDeleteCompanies
       description: |
-        You can bulk delete companies by submitting an array of companies, each identified by its Intercom company `id`. Deleting a company detaches all of its associated contacts but keeps the company record itself — the same archival behaviour as the single [Delete a company](/docs/references/preview/rest-api/api.intercom.io/companies/deletecompany) endpoint.
+        You can bulk delete companies by submitting an array of companies, each identified by its Intercom company `id`. Each company is permanently deleted, the same as with the single [Delete a company](/docs/references/preview/rest-api/api.intercom.io/companies/deletecompany) endpoint. This can't be reversed.
+
+        If the workspace is under a legal hold, each item is rejected and the job's `state` ends as `completed_with_errors`.
 
         The endpoint creates an async job that processes the deletes in the background. Use the returned job ID with `GET /companies/bulk/{id}` to check the job status.
 
