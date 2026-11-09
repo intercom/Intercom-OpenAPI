@@ -1090,6 +1090,101 @@ paths:
                       message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+  "/admins/find_by_email":
+    get:
+      summary: Find an admin by email
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: email
+        in: query
+        required: true
+        description: The email address of the admin. Matching ignores case.
+        example: admin9@email.com
+        schema:
+          type: string
+      tags:
+      - Admins
+      operationId: findAdminByEmail
+      description: |
+        You can find an admin in your workspace by their email address. The response is the same as retrieving the admin by id.
+
+        Requires the `read_admins` OAuth scope.
+      responses:
+        '200':
+          description: Admin found
+          content:
+            application/json:
+              examples:
+                Admin found:
+                  value:
+                    type: admin
+                    id: '991267468'
+                    name: Ciaran9 Lee
+                    email: admin9@email.com
+                    away_mode_enabled: false
+                    away_mode_reassign: false
+                    has_inbox_seat: true
+                    away_status_reason_id: null
+                    team_ids:
+                    - 814865
+                    - 991267903
+                    team_priority_level:
+                      primary_team_ids:
+                      - 814865
+              schema:
+                "$ref": "#/components/schemas/admin"
+        '400':
+          description: Email missing
+          content:
+            application/json:
+              examples:
+                Email missing:
+                  value:
+                    type: error.list
+                    request_id: 7c2e9a41-3b5d-4f8e-a1c6-0d9b8e7f6a52
+                    errors:
+                    - code: parameter_not_found
+                      message: 'Please provide the following parameters: email'
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Admin not found
+          content:
+            application/json:
+              examples:
+                Admin not found:
+                  value:
+                    type: error.list
+                    request_id: 2f8d4b6a-9e1c-4a7f-b3d5-6c0e8a9b1f24
+                    errors:
+                    - code: admin_not_found
+                      message: Admin not found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 9a1b3c5d-7e2f-4a6b-8c0d-1e3f5a7b9c2d
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
   "/admins/{id}":
     get:
       summary: Retrieve an admin
