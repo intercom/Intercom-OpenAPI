@@ -29754,7 +29754,7 @@ paths:
 
         You can also send this request with `PATCH`; it behaves the same as `PUT`.
 
-        `title`, `body`, `state`, `deliver_silently` and `cover_image_url` keep their current values when you leave them out. `labels` and `newsfeed_assignments` do not: leaving either out clears it, so send the full list on every update. Leaving `reactions` out disables reactions, although the list in the response does not change.
+        Every field you leave out keeps its current value, including `labels`, `newsfeed_assignments` and `reactions`. A list you do send replaces the current one: send an empty `labels` or `newsfeed_assignments` list to clear it, and an empty `reactions` list to turn reactions off.
 
         Requires the `read_write_news_scope` OAuth scope.
       responses:
@@ -54602,8 +54602,8 @@ components:
         reactions:
           type: array
           description: Ordered list of emoji reactions to the news item. When empty,
-            reactions are disabled. An update that leaves out `reactions` also disables
-            them but leaves this list as it was.
+            reactions are disabled. An update that leaves out `reactions` keeps the
+            current reactions.
           items:
             type: string
             description: The emoji reaction to the news item.
@@ -54699,10 +54699,9 @@ components:
       - title
       - sender_id
     update_news_item_request:
-      description: The body of a request that updates an existing news item. Leaving
-        `labels` or `newsfeed_assignments` out clears them, and leaving `reactions`
-        out disables reactions; every other optional field keeps its current value
-        when left out.
+      description: The body of a request that updates an existing news item. Every
+        optional field you leave out keeps its current value, including `labels`,
+        `newsfeed_assignments` and `reactions`.
       type: object
       title: Update News Item Request
       properties:
@@ -54735,7 +54734,7 @@ components:
         labels:
           type: array
           description: Label names displayed to users to categorize the news item.
-            Send the full list; the labels you leave out are removed.
+            A list you send replaces the current labels. Leave the field out to keep them.
           items:
             type: string
           example:
@@ -54763,7 +54762,8 @@ components:
         newsfeed_assignments:
           type: array
           description: A list of newsfeed_assignments to assign to the specified newsfeed.
-            Send the full list; the assignments you leave out are removed.
+            A list you send replaces the current assignments. Leave the field out to keep
+            them.
           items:
             "$ref": "#/components/schemas/newsfeed_assignment"
       required:
