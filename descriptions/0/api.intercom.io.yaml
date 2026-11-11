@@ -26985,7 +26985,7 @@ paths:
                 "$ref": "#/components/schemas/error"
   "/ecommerce/connectors/{import_source_id}/events":
     post:
-      summary: Submit a product event
+      summary: Submit an ecommerce event
       parameters:
       - name: Intercom-Version
         in: header
@@ -27002,13 +27002,17 @@ paths:
       - Ecommerce Connectors
       operationId: submitEcommerceProductEvent
       description: |
-        Send a single product change to an ecommerce connector. Use product events to keep
-        Fin's product knowledge current between full catalog uploads. Each request carries
-        one event.
+        Send a single product or order change to an ecommerce connector. Use product events to
+        keep Fin's product knowledge current between full catalog uploads, and order events to
+        tell Fin about the orders your store receives. Each request carries one event.
+
+        Requires the `write_content` OAuth scope. Each connector accepts up to 600 requests per
+        minute.
 
         A full catalog must be uploaded with
         [Upload a product catalog](/docs/references/preview/rest-api/api.intercom.io/ecommerce-connectors/uploadecommercecatalog)
-        before you send events. Until then, this endpoint returns `409 Conflict`.
+        before you send product events. Until then, product events return `409 Conflict`. Order
+        events do not need a catalog.
 
         ## Event types
 
@@ -27017,6 +27021,9 @@ paths:
         | `product.created` | `product` | Adds the product, or updates it if a product with the same `id` already exists. |
         | `product.updated` | `product` | Updates the product with the same `id`, or adds it if it does not exist yet. |
         | `product.deleted` | `product_id` | Removes the product from Fin's knowledge. |
+        | `order.created` | `order` | A customer placed an order. |
+        | `order.updated` | `order` | An order changed, including when it is cancelled or refunded. |
+        | `order.deleted` | `order_id`, `updated_at` | An order was deleted. |
 
         For `product.created` and `product.updated`, send the full product object, not only the
         fields that changed. It uses the same fields as a catalog product
@@ -27028,10 +27035,31 @@ paths:
 
         `occurred_at` is required on every event and must be an ISO 8601 timestamp.
 
+        ## Order events
+
+        For `order.created` and `order.updated`, send the full order object in `data.order`. These fields are
+        required: `id`, `currency_code`, `total_price` (zero or more), `ordered_at`, `updated_at`
+        (both ISO 8601 timestamps) and `line_items`. Each line item needs a `product_id`, and an
+        order can have up to 500 line items. The serialized order must be 60 KB or smaller.
+
+        To connect an order to a Fin conversation, send the conversation's ID as
+        `fin_conversation_id`. `customer.email` and `status` are optional. `status` must be one of
+        `pending`, `authorized`, `partially_paid`, `paid`, `partially_refunded`, `refunded` or
+        `voided`. Any other value returns `400`.
+
+        For `order.deleted`, send only `data.order_id` and `data.updated_at` (an ISO 8601
+        timestamp). Send the time the order was deleted.
+
+        To report a refund, send an `order.updated` event with `status` set to `refunded` or
+        `partially_refunded`. To report a cancellation, send an `order.updated` event with `status`
+        set to `voided`, or `refunded` if the payment was returned.
+
         ## Processing
 
-        The endpoint returns `202 Accepted` with an `event_id` once the event is queued.
+        Product events return `202 Accepted` with an `event_id` once the event is queued.
         Processing is asynchronous, so the change may take a short time to reach Fin.
+
+        Order events return `202 Accepted` with the `order_id` once the order is accepted.
       requestBody:
         content:
           application/json:
@@ -27139,15 +27167,66 @@ paths:
                   occurred_at: '2026-10-20T08:00:00Z'
                   data:
                     product_id: 'tent-2p-ultralight'
+              order_created:
+                summary: Order created
+                value:
+                  type: order.created
+                  occurred_at: '2026-10-21T10:15:00Z'
+                  data:
+                    order:
+                      id: 'ORD-10492'
+                      status: 'paid'
+                      currency_code: 'USD'
+                      total_price: 349.0
+                      ordered_at: '2026-10-21T10:14:52Z'
+                      updated_at: '2026-10-21T10:14:52Z'
+                      customer:
+                        email: 'alex@example.com'
+                      fin_conversation_id: '215470000012345'
+                      line_items:
+                      - product_id: 'tent-2p-ultralight'
+                        variant_id: 'tent-2p-ultralight-green'
+                        quantity: 1
+                        price: 349.0
+              order_updated:
+                summary: Order updated
+                value:
+                  type: order.updated
+                  occurred_at: '2026-10-24T16:40:00Z'
+                  data:
+                    order:
+                      id: 'ORD-10492'
+                      status: 'refunded'
+                      currency_code: 'USD'
+                      total_price: 349.0
+                      ordered_at: '2026-10-21T10:14:52Z'
+                      updated_at: '2026-10-24T16:39:30Z'
+                      fin_conversation_id: '215470000012345'
+                      line_items:
+                      - product_id: 'tent-2p-ultralight'
+                        variant_id: 'tent-2p-ultralight-green'
+                        quantity: 1
+                        price: 349.0
+              order_deleted:
+                summary: Order deleted
+                value:
+                  type: order.deleted
+                  occurred_at: '2026-10-25T09:00:05Z'
+                  data:
+                    order_id: 'ORD-10492'
+                    updated_at: '2026-10-25T09:00:00Z'
       responses:
         '202':
           description: Event accepted and queued for processing.
           content:
             application/json:
               examples:
-                Event accepted:
+                Product event accepted:
                   value:
                     event_id: 81273
+                Order event accepted:
+                  value:
+                    order_id: 'ORD-10492'
               schema:
                 "$ref": "#/components/schemas/ecommerce_product_event_response"
         '400':
@@ -27161,7 +27240,7 @@ paths:
                     request_id: test-uuid-replacement
                     errors:
                     - code: invalid_event
-                      message: type must be one of product.created, product.updated, product.deleted
+                      message: type must be one of product.created, product.updated, product.deleted, order.created, order.updated, order.deleted
                 Invalid product:
                   value:
                     type: error.list
@@ -27183,10 +27262,45 @@ paths:
                     errors:
                     - code: invalid_event
                       message: data.product exceeds 60KB
+                Invalid order:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_event
+                      message: data.order.currency_code is required; data.order.total_price must be a non-negative number
+                Invalid order line items:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_event
+                      message: data.order.line_items must be a list of up to 500 items, each with a product_id
+                Order too large:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: invalid_event
+                      message: data.order exceeds 60KB
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
           "$ref": "#/components/responses/Unauthorized"
+        '403':
+          description: Forbidden.
+          content:
+            application/json:
+              examples:
+                Order events disabled:
+                  value:
+                    type: error.list
+                    request_id: test-uuid-replacement
+                    errors:
+                    - code: order_events_disabled
+                      message: Order events are not enabled for this workspace.
+              schema:
+                "$ref": "#/components/schemas/error"
         '404':
           description: Not found.
           content:
@@ -51768,10 +51882,101 @@ components:
             format: date-time
             description: When the product was last changed in your store, as an ISO 8601 timestamp.
             example: '2026-10-15T14:05:00Z'
+    ecommerce_order_event_line_item:
+      title: Ecommerce Order Event Line Item
+      type: object
+      description: A product in an order.
+      required:
+      - product_id
+      properties:
+        product_id:
+          type: string
+          description: The `id` of the product, as sent in your catalog.
+          example: 'tent-2p-ultralight'
+        variant_id:
+          type: string
+          description: The `id` of the product variant that was ordered.
+          example: 'tent-2p-ultralight-green'
+          nullable: true
+        quantity:
+          type: integer
+          description: How many units were ordered.
+          example: 1
+        price:
+          type: number
+          description: The price of one unit, in the order's currency.
+          example: 349.0
+    ecommerce_order_event_order:
+      title: Ecommerce Order Event Order
+      type: object
+      description: |
+        The full order sent in an `order.*` event. The serialized order must be 60 KB or smaller.
+      required:
+      - id
+      - currency_code
+      - total_price
+      - ordered_at
+      - updated_at
+      - line_items
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the order in your store.
+          example: 'ORD-10492'
+        status:
+          type: string
+          enum:
+          - pending
+          - authorized
+          - partially_paid
+          - paid
+          - partially_refunded
+          - refunded
+          - voided
+          description: The order's payment status in your store.
+          example: 'paid'
+        currency_code:
+          type: string
+          description: The three-letter ISO 4217 currency code of the order.
+          example: 'USD'
+        total_price:
+          type: number
+          description: The total of the order. Must be zero or more.
+          example: 349.0
+        ordered_at:
+          type: string
+          format: date-time
+          description: When the customer placed the order, as an ISO 8601 timestamp.
+          example: '2026-10-21T10:14:52Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: When the order was last changed in your store, as an ISO 8601 timestamp.
+          example: '2026-10-21T10:14:52Z'
+        customer:
+          type: object
+          description: The customer who placed the order.
+          properties:
+            email:
+              type: string
+              description: The customer's email address.
+              example: 'alex@example.com'
+              nullable: true
+        fin_conversation_id:
+          type: string
+          description: The ID of the Fin conversation that led to this order, if there was one.
+          example: '215470000012345'
+          nullable: true
+        line_items:
+          type: array
+          description: The products in the order. Up to 500 items.
+          maxItems: 500
+          items:
+            "$ref": "#/components/schemas/ecommerce_order_event_line_item"
     ecommerce_product_event_request:
       title: Ecommerce Product Event Request
       type: object
-      description: A single product event.
+      description: A single product or order event.
       required:
       - type
       - occurred_at
@@ -51779,11 +51984,14 @@ components:
       properties:
         type:
           type: string
-          description: The kind of product change.
+          description: The kind of change.
           enum:
           - product.created
           - product.updated
           - product.deleted
+          - order.created
+          - order.updated
+          - order.deleted
           example: product.updated
         occurred_at:
           type: string
@@ -51792,7 +52000,7 @@ components:
           example: '2026-10-15T14:05:00Z'
         data:
           type: object
-          description: The event payload. Send `product` for `product.created` and `product.updated`, and `product_id` for `product.deleted`.
+          description: The event payload. Send `product` for `product.created` and `product.updated`, `product_id` for `product.deleted`, `order` for `order.created` and `order.updated`, and `order_id` and `updated_at` for `order.deleted`.
           properties:
             product:
               "$ref": "#/components/schemas/ecommerce_product_event_product"
@@ -51800,14 +52008,29 @@ components:
               type: string
               description: The `id` of the product to delete. Required for `product.deleted`.
               example: 'tent-2p-ultralight'
+            order:
+              "$ref": "#/components/schemas/ecommerce_order_event_order"
+            order_id:
+              type: string
+              description: The `id` of the order to delete. Required for `order.deleted`.
+              example: 'ORD-10492'
+            updated_at:
+              type: string
+              format: date-time
+              description: When the order was deleted, as an ISO 8601 timestamp. Required for `order.deleted`.
+              example: '2026-10-25T09:00:00Z'
     ecommerce_product_event_response:
       title: Ecommerce Product Event Response
       type: object
-      description: Returned when a product event is accepted and queued.
+      description: Returned when an event is accepted. Product events return `event_id`. Order events return `order_id`.
       properties:
+        order_id:
+          type: string
+          description: The `id` of the accepted order. Returned for order events.
+          example: 'ORD-10492'
         event_id:
           type: integer
-          description: The unique identifier for the queued event.
+          description: The unique identifier for the queued event. Returned for product events.
           example: 1000000471233
     email_address_header:
       title: Email Address Header
