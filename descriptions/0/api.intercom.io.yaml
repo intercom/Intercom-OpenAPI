@@ -31663,6 +31663,123 @@ paths:
                       message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+    delete:
+      summary: Delete a call recording
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        required: true
+        description: The id of the call
+        schema:
+          type: string
+      tags:
+      - Calls
+      operationId: deleteCallRecording
+      description: |
+        Permanently deletes every recording and transcript of the call, including the part of the call handled by Fin. Afterwards, the call's `recording_url` and `fin_recording_url` are `null`. Deleting a recording that was already deleted returns the same successful response.
+
+        Requires the `write_conversations` OAuth scope. Set `Intercom-Version: Preview`.
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              examples:
+                successful:
+                  value:
+                    id: '123'
+                    object: call
+                    deleted: true
+              schema:
+                "$ref": "#/components/schemas/deleted_call_recording_object"
+        '404':
+          description: Call or recording not found
+          content:
+            application/json:
+              examples:
+                Recording not found:
+                  value:
+                    type: error.list
+                    request_id: 7c1e9a42-5b3d-4f86-a0e2-d94b6c18f5a3
+                    errors:
+                    - code: call_recording_not_found
+                      message: Recording Not Found
+                Call not found:
+                  value:
+                    type: error.list
+                    request_id: 3e8b5d27-9a14-4c6f-b2d0-61f7a4c9e835
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Conversation access restricted:
+                  value:
+                    type: error.list
+                    request_id: 5a2f7c91-4e6b-4d38-9f1a-c8b3e0d7a264
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access this conversation
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Recording deletion is temporarily unavailable
+          content:
+            application/json:
+              examples:
+                Temporarily unavailable:
+                  value:
+                    type: error.list
+                    request_id: 9d4c2b78-1f5e-4a93-b6c0-e27a8f3d5b19
+                    errors:
+                    - code: conflict
+                      message: Recording deletion is temporarily unavailable, please retry later.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Recording deletion is unavailable for the workspace
+          content:
+            application/json:
+              examples:
+                Deletion unavailable:
+                  value:
+                    type: error.list
+                    request_id: 2b6e8f13-7c4a-4d59-a1e3-f05d9c7b4a82
+                    errors:
+                    - code: legal_hold
+                      message: Recording deletion is currently unavailable.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e097e446-9ae6-44a8-8e13-2bf3008b87ef
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: a3e5b8e2-1234-5678-9abc-def012345678
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
   "/calls/{id}/transcript":
     get:
       summary: Get call transcript by call id
@@ -51578,6 +51695,25 @@ components:
         deleted:
           type: boolean
           description: Whether the news item was deleted successfully or not.
+          example: true
+    deleted_call_recording_object:
+      title: Deleted Call Recording Object
+      type: object
+      description: Response returned when a call's recordings are deleted
+      properties:
+        id:
+          type: string
+          description: The id of the call which you provided in the URL.
+          example: '123'
+        object:
+          type: string
+          description: The type of object whose recordings were deleted - call.
+          enum:
+          - call
+          example: call
+        deleted:
+          type: boolean
+          description: Whether the call's recordings were deleted successfully or not.
           example: true
     deleted_note_object:
       title: Deleted Note Object
