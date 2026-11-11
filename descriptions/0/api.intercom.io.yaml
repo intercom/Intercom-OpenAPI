@@ -796,9 +796,9 @@ paths:
       - AI Content
       operationId: createApiTemplateSource
       description: |
-        You can create an API template source to import a knowledge base through its vendor's REST API. Send a template that describes the vendor's API, values for the template's variables, and a token for the vendor's API.
+        You can create an API template source to import a knowledge base through its vendor's REST API. Send a template that describes the vendor's API and a token for the vendor's API.
 
-        Intercom checks the template and the variables, then checks the token by requesting the template's tree from the vendor. If any check fails, the source isn't created and the API returns a `422` error that names each failing field. Otherwise, the source is created and its first sync starts. The imported content is filed in a folder named after the template.
+        Intercom checks the template, then checks the token by requesting the template's tree from the vendor. If any check fails, the source isn't created and the API returns a `422` error that names each failing field. Otherwise, the source is created and its first sync starts. The imported content is filed in a folder named after the template.
 
         If the first sync can't start, the source is still created. Its `latest_sync` is then `null` or has the status `failed`, and you can start a sync with `POST /ai/api_template_sources/{id}/sync`.
 
@@ -818,13 +818,11 @@ paths:
                     template:
                       name: Example Docs
                       base_url: https://api.example.com/v1
-                      variables:
-                      - space_id
                       auth:
                         header: Authorization
                         value: 'Bearer {token}'
                       tree:
-                        path: "/spaces/{space_id}/pages"
+                        path: "/spaces/help-center/pages"
                         query: {}
                         nodes:
                         - pages
@@ -835,7 +833,7 @@ paths:
                         content_if:
                         - type: document
                       item:
-                        path: "/spaces/{space_id}/pages/{page_id}"
+                        path: "/spaces/help-center/pages/{page_id}"
                         query: {}
                         node_values:
                           page_id:
@@ -854,8 +852,6 @@ paths:
                         - item
                         - updatedAt
                       body_format: html
-                    variables:
-                      space_id: help-center
                     created_at: 1734537259
                     latest_sync:
                       id: '1287'
@@ -902,11 +898,13 @@ paths:
                 "$ref": "#/components/schemas/error"
         '422':
           description: |
-            The template, the variables or the token failed a check, and the source wasn't created. The response can list several errors.
+            The template or the token failed a check, and the source wasn't created. The response can list several errors.
 
-            Each error's `field` names the request field that failed, such as `template.base_url`, `variables.space_id` or `auth_token`. A missing value has the code `parameter_not_found`, and any other failure has the code `parameter_invalid`.
+            Each error's `field` names the request field that failed, such as `template.base_url`, `template.tree.paging` or `auth_token`. A missing value has the code `parameter_not_found`, and any other failure has the code `parameter_invalid`.
 
-            When a template check fails, the message names the check: `<field> fails the <check> check`. The checks are listed in the API Template schema. A tree response over 25 MB fails on `template.tree` with the message `<name>'s tree response is too large: over the 25 MB cap`, where `<name>` is the template's name.
+            When a template check fails, the message names the check: `<field> fails the <check> check`. The checks are listed in the API Template schema. A template without `mapping.updated_at`, or with `null` there, fails on `template.mapping.updated_at` with the message `mapping.updated_at is required`. Sending `variables`, at the top level or in the template, fails on `variables` or `template.variables` with the message `variables is no longer supported: write each value into the template itself`.
+
+            A tree response over 25 MB fails on `template.tree` with the message `<name>'s tree response is too large: over the 25 MB cap`, where `<name>` is the template's name. If the tree has no `paging` and its response says it has more, as described under `tree.paging`, the request fails on `template.tree.paging` with the message `<name>'s first page says more pages exist: declare paging to read them all`.
 
             If the vendor answers the token check with `401` or `403`, the error is on `auth_token` with the message `<name> rejected the token`. If it answers with anything other than success, `401` or `403`, such as a `404` on `tree.path`, a redirect, a `429`, a `5xx` or a timeout, the error is on `auth_token` with the message `<name> could not be reached to check the token`. The check isn't retried.
           content:
@@ -936,23 +934,32 @@ paths:
                     - code: parameter_not_found
                       field: template
                       message: An API template object is required
-                Missing variable:
+                Missing updated_at mapping:
                   value:
                     type: error.list
                     request_id: 8ae61f5d-5d4a-4469-8a63-5f945047d176
                     errors:
                     - code: parameter_not_found
-                      field: variables.space_id
-                      message: space_id is required
-                Invalid variable value:
+                      field: template.mapping.updated_at
+                      message: mapping.updated_at is required
+                Variables sent:
                   value:
                     type: error.list
                     request_id: 8e6ae348-d9da-41a7-bf01-693dd7accede
                     errors:
                     - code: parameter_invalid
-                      field: variables.space_id
-                      message: "space_id may only use letters, digits, '.', '_' and
-                        '-', and can't be only dots"
+                      field: variables
+                      message: "variables is no longer supported: write each value
+                        into the template itself"
+                Paging not declared:
+                  value:
+                    type: error.list
+                    request_id: 4f0c2d7e-93a1-4b8e-a6d2-51c7e0b9f3a4
+                    errors:
+                    - code: parameter_not_found
+                      field: template.tree.paging
+                      message: "Example Docs's first page says more pages exist:
+                        declare paging to read them all"
                 Missing token:
                   value:
                     type: error.list
@@ -1011,13 +1018,11 @@ paths:
                   template:
                     name: Example Docs
                     base_url: https://api.example.com/v1
-                    variables:
-                    - space_id
                     auth:
                       header: Authorization
                       value: 'Bearer {token}'
                     tree:
-                      path: "/spaces/{space_id}/pages"
+                      path: "/spaces/help-center/pages"
                       query: {}
                       nodes:
                       - pages
@@ -1028,7 +1033,7 @@ paths:
                       content_if:
                       - type: document
                     item:
-                      path: "/spaces/{space_id}/pages/{page_id}"
+                      path: "/spaces/help-center/pages/{page_id}"
                       query: {}
                       node_values:
                         page_id:
@@ -1047,8 +1052,6 @@ paths:
                       - item
                       - updatedAt
                     body_format: html
-                  variables:
-                    space_id: help-center
                   auth_token: vendor-api-token
   "/ai/api_template_sources/{id}":
     parameters:
@@ -1063,7 +1066,7 @@ paths:
       summary: Retrieve an API template source
       operationId: getApiTemplateSource
       description: |
-        You can retrieve an API template source, with its template, its variables and the status of its latest sync. The source's token is never returned.
+        You can retrieve an API template source, with its template and the status of its latest sync. The source's token is never returned.
 
         OAuth tokens must have the `read_write_ai_content` scope.
       parameters:
@@ -1086,13 +1089,11 @@ paths:
                     template:
                       name: Example Docs
                       base_url: https://api.example.com/v1
-                      variables:
-                      - space_id
                       auth:
                         header: Authorization
                         value: 'Bearer {token}'
                       tree:
-                        path: "/spaces/{space_id}/pages"
+                        path: "/spaces/help-center/pages"
                         query: {}
                         nodes:
                         - pages
@@ -1103,7 +1104,7 @@ paths:
                         content_if:
                         - type: document
                       item:
-                        path: "/spaces/{space_id}/pages/{page_id}"
+                        path: "/spaces/help-center/pages/{page_id}"
                         query: {}
                         node_values:
                           page_id:
@@ -1122,8 +1123,6 @@ paths:
                         - item
                         - updatedAt
                       body_format: html
-                    variables:
-                      space_id: help-center
                     created_at: 1734537259
                     latest_sync:
                       id: '1287'
@@ -1205,13 +1204,11 @@ paths:
                     template:
                       name: Example Docs
                       base_url: https://api.example.com/v1
-                      variables:
-                      - space_id
                       auth:
                         header: Authorization
                         value: 'Bearer {token}'
                       tree:
-                        path: "/spaces/{space_id}/pages"
+                        path: "/spaces/help-center/pages"
                         query: {}
                         nodes:
                         - pages
@@ -1222,7 +1219,7 @@ paths:
                         content_if:
                         - type: document
                       item:
-                        path: "/spaces/{space_id}/pages/{page_id}"
+                        path: "/spaces/help-center/pages/{page_id}"
                         query: {}
                         node_values:
                           page_id:
@@ -1241,8 +1238,6 @@ paths:
                         - item
                         - updatedAt
                       body_format: html
-                    variables:
-                      space_id: help-center
                     created_at: 1734537259
                     latest_sync:
                       id: '1311'
@@ -36828,15 +36823,15 @@ components:
       x-tags:
       - AI Content
       description: |
-        An API template describes how to read a knowledge base through its vendor's REST API. Intercom requests the `tree`, a list of the knowledge base's nodes, such as folders and pages. For each node that is content, it then requests the `item`, such as the page's body. `mapping` says which fields of the node and the item become the imported content. If the vendor lists one level at a time, `tree.child_calls` lists each node's child nodes, and `paging` follows a list across its pages.
+        An API template describes how to read a knowledge base through its vendor's REST API. Intercom requests the `tree`, a list of the knowledge base's nodes, such as folders and pages. For each node that is content, it can then request the `item`, such as the page's body. `mapping` says which fields of the node and the item become the imported content. If the vendor lists one level at a time, `tree.child_calls` lists each node's child nodes, and `paging` follows a list across its pages.
 
-        A placeholder such as `{space_id}` in `base_url`, a path or a query value is filled from `variables`. In the item request and in a child call, it can also be filled from that call's `node_values`. Values filled into `base_url` or a path are URL-encoded. `{token}` stands for the source's token. It can only be used in `auth.value` or as an entire query value.
+        Write each value, such as a space or project ID, into the template itself. A placeholder such as `{page_id}` in the path or a query value of the item request or a child call is filled from that call's `node_values`. A value filled into a path is URL-encoded. `base_url` and the tree call can't use placeholders. `{token}` stands for the source's token. It can only be used in `auth.value` or as an entire query value.
 
-        When a template check fails, creating the source returns a `422` error whose message is `<name> fails the <check> check`, where `<name>` is the failing field below; see the create endpoint for the error shape. Each field below names its checks in brackets. Top-level keys other than the ones below are ignored and not stored.
+        When a template check fails, creating the source returns a `422` error whose message is `<name> fails the <check> check`, where `<name>` is the failing field below; see the create endpoint for the error shape. Each field below names its checks in brackets. A field that is left out or `null` and has a default takes that default. Top-level keys other than the ones below are ignored and not stored, except `variables`, which fails the create request.
 
         A sync lists the whole tree before it fetches any item: every page of the tree call, then each child call once for every node the call before it listed, with every page of each. Nothing is imported until the whole tree is listed, so if a listing request fails, the content from earlier syncs is kept. A `404` on the first page of the tree call means the knowledge base is gone: the sync fails, and Intercom stops syncing the source automatically until a sync you start with `POST /ai/api_template_sources/{id}/sync` succeeds. A `404` on a later page or on a child call is handled like any other failed request.
 
-        If a request fails for a reason that can pass, such as a `5xx`, a timeout or a `404` on a later page, Intercom tries the sync again later, a few times at most. The sync's `status` stays `in_progress` until a try succeeds or the last one fails. A sync fails without another try if, in one try, a listing response is over 25 MB, the listing responses add up to more than 100 MB, the listing finds more than 50,000 nodes, or more than 100,000 requests are sent, retries included.
+        If a request fails for a reason that can pass, such as a `5xx`, a timeout or a `404` on a later page, Intercom tries the sync again later, a few times at most. The sync's `status` stays `in_progress` until a try succeeds or the last one fails. A sync fails without another try if a call without `paging` gets a response that says it has more, as described under `tree.paging`, or if, in one try, a listing response is over 25 MB, the listing responses add up to more than 100 MB, the listing finds more than 50,000 nodes, or more than 100,000 requests are sent, retries included.
 
         A node's level counts both kinds of nesting: the tree call's nodes are at level 1, and a node's child nodes, from `tree.children` or a child call, are one level below it. Nodes more than 12 levels deep aren't imported. An item whose response is over 10 MB, or that the vendor returns as not found, is skipped. A redirect isn't followed and fails the sync.
 
@@ -36854,21 +36849,16 @@ components:
             with malformed percent-encoding, also fails `not_https`. It must have
             no query or fragment (`query_or_fragment`) and no user name or password
             (`userinfo`), and can't be on an Intercom domain (`intercom_host`). It
-            can use placeholders from `variables` (`undeclared_placeholder`).
+            can't use placeholders (`undeclared_placeholder`).
           example: https://api.example.com/v1
-        variables:
-          type: array
-          description: The names of the template's variables. Each name may only use
-            letters, digits and underscores (`invalid`), and can't look like a credential,
-            such as `api_key`, `token` or `secret` (`credential_name`). Use an empty
-            list if the template has no variables.
-          items:
-            type: string
-          example:
-          - space_id
         auth:
           type: object
-          description: How the token is sent to the vendor. It must be an object (`invalid`).
+          description: The request header that carries the token. It must be an object
+            (`invalid`). If it's left out, the token is sent as `Authorization` with
+            the value `Bearer {token}`, unless a query value in any call is `{token}`.
+            In that case no header is sent, and every call, including each child call
+            and the item, must have a query value of `{token}` (`missing_token` on
+            that call's `query`).
           properties:
             header:
               type: string
@@ -36892,23 +36882,23 @@ components:
         tree:
           type: object
           description: The request that lists the knowledge base's nodes. It must be
-            an object (`invalid`) with `path`, `nodes` and `content_if` (`missing_keys`).
-            Its path and query values can only use placeholders from `variables`
-            (`undeclared_placeholder`).
+            an object (`invalid`) with `path` and `nodes` (`missing_keys`).
           properties:
             path:
               type: string
               description: The request path, relative to `base_url`. It can't be an
                 absolute URL, contain `//` or have a `:` in its first segment (`not_relative`),
-                can't contain `?` or `#` (`query_or_fragment`), and must be a valid
-                URL path (`invalid`). Use `query` for query parameters.
-              example: "/spaces/{space_id}/pages"
+                can't contain `?` or `#` (`query_or_fragment`), must be a valid URL
+                path (`invalid`), and can't use placeholders (`undeclared_placeholder`).
+                Use `query` for query parameters.
+              example: "/spaces/help-center/pages"
             query:
               type: object
               description: The query parameters to send. Values must be strings (`invalid`).
-                A value of exactly `{token}` is replaced with the source's token. A
-                parameter whose name looks like a credential, such as `api_key` or
-                `access_token`, must have the value `{token}` (`literal_credential`).
+                A value of exactly `{token}` is replaced with the source's token, and
+                no other placeholder can be used (`undeclared_placeholder`). A parameter
+                whose name looks like a credential, such as `api_key` or `access_token`,
+                must have the value `{token}` (`literal_credential`).
               additionalProperties:
                 type: string
               example:
@@ -36934,6 +36924,7 @@ components:
                 is an object of keys and values, and a node matches it when the node
                 has each of those values at those keys. A node is imported when it
                 matches any condition. It must be a non-empty list of objects (`invalid`).
+                If it's left out, every node is content.
               items:
                 type: object
                 additionalProperties: true
@@ -36957,42 +36948,81 @@ components:
             paging:
               type: object
               description: How to request every page of the tree call, for a vendor
-                that pages its lists. Intercom sends the page number in `param`, starting
-                at 1, and stops after a page that lists no nodes or once the page number
-                reaches the page count in the response. A page that lists nodes but has
-                no page count fails the sync. Without `paging`, the request is sent once.
-                When the source is created, the token check sends the tree request once,
-                without the page number. It must be an object with `style`, `param`
-                and `page_count`, each of the form below (`invalid`).
+                that pages its lists. Intercom stops after a page that lists no nodes,
+                or once `style` says the page was the last. Without `paging`, the request
+                is sent once, and a response that says it has more fails the sync without
+                another try. A response says it has more if, at its top level or under
+                `meta`, `total` or `total_count` is an integer larger than the number
+                of entries it lists, `total_pages` or `page_count` is an integer larger
+                than 1, `has_more`, `hasMore`, `has_next_page` or `hasNextPage` is `true`,
+                or `next_cursor`, `nextCursor`, `next_page_token` or `nextPageToken`
+                isn't blank. When the source is created, the token check sends the tree
+                request once, without `param`. If the tree has no `paging` and that
+                response says it has more, the source isn't created; see the create
+                endpoint. It must be an object with `style`, `param` and the key its
+                `style` needs, each of the form below (`invalid`).
               properties:
                 style:
                   type: string
-                  description: How the vendor numbers its pages. `page_number` means
-                    the pages are numbered from 1.
+                  description: How the vendor pages its lists. With `page_number`, `param`
+                    carries the page number, starting at 1, and the last page is the
+                    one whose number is at least `page_count`. With `offset`, `param`
+                    carries the number of entries already listed, starting at 0, and
+                    the last page is the one that brings that number to at least `total`.
+                    With `cursor`, the first request has no `param`, each later request
+                    sends the value at `next_cursor` in the response before it, and the
+                    last page is the one whose `next_cursor` is blank or missing.
                   enum:
                   - page_number
+                  - offset
+                  - cursor
                   example: page_number
                 param:
                   type: string
                   description: The name of the query parameter that carries the page
-                    number. It may only use letters, digits, underscores, `.`, `-`,
-                    `[` and `]`. It replaces a parameter of the same name in `query`.
+                    number, offset or cursor. It may only use letters, digits, underscores,
+                    `.`, `-`, `[` and `]`. When it's sent, it replaces a parameter of
+                    the same name in `query`.
                   example: page
                 page_count:
                   type: array
-                  description: The keys to follow in each page's response to reach the
-                    number of pages, which must be an integer. It must be a non-empty
-                    list.
+                  description: Required with the `page_number` style. The keys to follow
+                    in each page's response to reach the number of pages. It must be
+                    a non-empty list. A page that lists nodes but has no integer there
+                    fails the sync.
                   items:
                     oneOf:
                     - type: string
                     - type: integer
                   example:
                   - total_pages
+                total:
+                  type: array
+                  description: Required with the `offset` style. The keys to follow in
+                    each page's response to reach the total number of entries. It must
+                    be a non-empty list. A page that lists nodes but has no integer
+                    there fails the sync.
+                  items:
+                    oneOf:
+                    - type: string
+                    - type: integer
+                  example:
+                  - total
+                next_cursor:
+                  type: array
+                  description: Required with the `cursor` style. The keys to follow in
+                    each page's response to reach the cursor for the next page. It must
+                    be a non-empty list.
+                  items:
+                    oneOf:
+                    - type: string
+                    - type: integer
+                  example:
+                  - meta
+                  - next_cursor
               required:
               - style
               - param
-              - page_count
             child_calls:
               type: array
               description: The requests that list child nodes, for a vendor that lists
@@ -37009,18 +37039,17 @@ components:
               items:
                 type: object
                 description: A child call. It must be an object (`invalid`) with `path`
-                  and `nodes` (`missing_keys`). Its path and query values can use placeholders
-                  from `variables` and its `node_values` (`undeclared_placeholder`).
+                  and `nodes` (`missing_keys`).
                 properties:
                   path:
                     type: string
                     description: The request path, relative to `base_url`. It has the
-                      same checks as `tree.path`.
-                    example: "/spaces/{space_id}/pages/{page_id}/children"
+                      same checks as `tree.path`, but can use placeholders from `node_values`.
+                    example: "/spaces/help-center/pages/{page_id}/children"
                   query:
                     type: object
                     description: The query parameters to send. It has the same checks
-                      as `tree.query`.
+                      as `tree.query`, but its values can use placeholders from `node_values`.
                     additionalProperties:
                       type: string
                     example:
@@ -37054,37 +37083,64 @@ components:
                     type: object
                     description: How to request every page of this call. It has the same
                       form and checks as `tree.paging`, and is followed the same way.
+                      Without it, a response that says it has more fails the sync, as
+                      for the tree.
                     properties:
                       style:
                         type: string
-                        description: How the vendor numbers its pages, as in `tree.paging`.
+                        description: How the vendor pages its lists, as in `tree.paging`.
                         enum:
                         - page_number
+                        - offset
+                        - cursor
                         example: page_number
                       param:
                         type: string
                         description: The query parameter that carries the page number,
-                          as in `tree.paging`.
+                          offset or cursor, as in `tree.paging`.
                         example: page
                       page_count:
                         type: array
-                        description: The keys to follow in each page's response to reach
-                          the number of pages, as in `tree.paging`.
+                        description: Required with the `page_number` style. The keys to
+                          follow in each page's response to reach the number of pages,
+                          as in `tree.paging`.
                         items:
                           oneOf:
                           - type: string
                           - type: integer
                         example:
                         - total_pages
+                      total:
+                        type: array
+                        description: Required with the `offset` style. The keys to follow
+                          in each page's response to reach the total number of entries,
+                          as in `tree.paging`.
+                        items:
+                          oneOf:
+                          - type: string
+                          - type: integer
+                        example:
+                        - total
+                      next_cursor:
+                        type: array
+                        description: Required with the `cursor` style. The keys to follow
+                          in each page's response to reach the cursor for the next page,
+                          as in `tree.paging`.
+                        items:
+                          oneOf:
+                          - type: string
+                          - type: integer
+                        example:
+                        - meta
+                        - next_cursor
                     required:
                     - style
                     - param
-                    - page_count
                 required:
                 - path
                 - nodes
               example:
-              - path: "/spaces/{space_id}/pages/{page_id}/children"
+              - path: "/spaces/help-center/pages/{page_id}/children"
                 node_values:
                   page_id:
                   - id
@@ -37098,23 +37154,23 @@ components:
           required:
           - path
           - nodes
-          - content_if
         item:
           type: object
           description: The request that fetches a content node's item, made once for
             each node that matches `tree.content_if`. It must be an object (`invalid`)
-            with a `path` (`missing_keys`). Its path and query values can use placeholders
-            from `variables` and `node_values` (`undeclared_placeholder`).
+            with a `path` (`missing_keys`). Leave it out if the tree's nodes hold everything
+            `mapping` reads. No item is then requested, and `mapping` can only read
+            from `node`.
           properties:
             path:
               type: string
               description: The request path, relative to `base_url`. It has the same
-                checks as `tree.path`.
-              example: "/spaces/{space_id}/pages/{page_id}"
+                checks as `tree.path`, but can use placeholders from `node_values`.
+              example: "/spaces/help-center/pages/{page_id}"
             query:
               type: object
               description: The query parameters to send. It has the same checks as
-                `tree.query`.
+                `tree.query`, but its values can use placeholders from `node_values`.
               additionalProperties:
                 type: string
               example: {}
@@ -37141,8 +37197,9 @@ components:
           description: Where each field of the imported content comes from. Each value
             is a list that starts with `node` or `item`, followed by the keys to follow
             in it. An integer key indexes into a list. It must be an object (`invalid`)
-            with `id`, `title`, `body` and `updated_at` (`missing_keys`), and each
-            value must have this form (`invalid`).
+            with `id`, `title` and `body` (`missing_keys`), and each value must have
+            this form (`invalid`). A value can only start with `item` if the template
+            has an `item` (`missing_item`).
           properties:
             id:
               type: array
@@ -37180,7 +37237,7 @@ components:
               type: array
               description: When the content was last updated, as a date and time such
                 as `2024-12-18T15:47:39Z`. A value that can't be read as a date is
-                ignored.
+                ignored. Creating a source fails without it; see the create endpoint.
               items:
                 oneOf:
                 - type: string
@@ -37209,7 +37266,7 @@ components:
           type: string
           description: The format of the body (`unknown`). HTML is sanitized, Markdown
             is converted to HTML without any front matter, and plain text keeps its
-            line breaks.
+            line breaks. If it's left out, it's `html`.
           enum:
           - html
           - markdown
@@ -37218,12 +37275,8 @@ components:
       required:
       - name
       - base_url
-      - variables
-      - auth
       - tree
-      - item
       - mapping
-      - body_format
     api_template_source:
       title: API Template Source
       type: object
@@ -37231,7 +37284,8 @@ components:
       - AI Content
       description: A content source that imports a knowledge base through its vendor's
         REST API, as its API template describes. The template is returned as it
-        was stored. The source's token is never returned.
+        was stored, without defaults for the fields it left out. The source's token
+        is never returned.
       nullable: false
       properties:
         type:
@@ -37249,14 +37303,6 @@ components:
           example: '494'
         template:
           "$ref": "#/components/schemas/api_template"
-        variables:
-          type: object
-          description: The values for the template's variables. Only the variables
-            the template declares are kept, as strings.
-          additionalProperties:
-            type: string
-          example:
-            space_id: help-center
         created_at:
           type: integer
           format: date-time
@@ -37300,7 +37346,6 @@ components:
       - type
       - id
       - template
-      - variables
       - created_at
       - latest_sync
     app:
@@ -43520,18 +43565,10 @@ components:
       properties:
         template:
           "$ref": "#/components/schemas/api_template"
-        variables:
-          type: object
-          description: A value for each variable the template declares. A value may
-            only use letters, digits, `.`, `_` and `-`, and can't be only dots. Keys
-            the template doesn't declare are ignored.
-          additionalProperties:
-            type: string
-          example:
-            space_id: help-center
         auth_token:
           type: string
-          description: The token for the vendor's API, sent as `auth.value` describes.
+          description: The token for the vendor's API, sent as the template's `auth`
+            and `{token}` query values describe.
             It may only use printable ASCII characters. Intercom checks it with the
             vendor before creating the source. It's stored with the source and is
             never returned.
