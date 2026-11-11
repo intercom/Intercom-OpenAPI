@@ -27022,9 +27022,8 @@ paths:
         | `product.updated` | `product` | Updates the product with the same `id`, or adds it if it does not exist yet. |
         | `product.deleted` | `product_id` | Removes the product from Fin's knowledge. |
         | `order.created` | `order` | A customer placed an order. |
-        | `order.updated` | `order` | An order changed. |
-        | `order.cancelled` | `order` | An order was cancelled. |
-        | `order.refunded` | `order` | An order was refunded. |
+        | `order.updated` | `order` | An order changed, including when it is cancelled or refunded. |
+        | `order.deleted` | `order_id`, `updated_at` | An order was deleted. |
 
         For `product.created` and `product.updated`, send the full product object, not only the
         fields that changed. It uses the same fields as a catalog product
@@ -27038,13 +27037,19 @@ paths:
 
         ## Order events
 
-        For every `order.*` event, send the full order object in `data.order`. These fields are
+        For `order.created` and `order.updated`, send the full order object in `data.order`. These fields are
         required: `id`, `currency_code`, `total_price` (zero or more), `ordered_at`, `updated_at`
         (both ISO 8601 timestamps) and `line_items`. Each line item needs a `product_id`, and an
         order can have up to 500 line items. The serialized order must be 60 KB or smaller.
 
         To connect an order to a Fin conversation, send the conversation's ID as
         `fin_conversation_id`. `customer.email` and `status` are optional.
+
+        For `order.deleted`, send only `data.order_id` and `data.updated_at` (an ISO 8601
+        timestamp). Send the time the order was deleted.
+
+        To report a cancellation or a refund, send an `order.updated` event with the order's new
+        `status`, such as `cancelled` or `refunded`.
 
         ## Processing
 
@@ -27180,10 +27185,10 @@ paths:
                         variant_id: 'tent-2p-ultralight-green'
                         quantity: 1
                         price: 349.0
-              order_refunded:
-                summary: Order refunded
+              order_updated:
+                summary: Order updated
                 value:
-                  type: order.refunded
+                  type: order.updated
                   occurred_at: '2026-10-24T16:40:00Z'
                   data:
                     order:
@@ -27199,6 +27204,14 @@ paths:
                         variant_id: 'tent-2p-ultralight-green'
                         quantity: 1
                         price: 349.0
+              order_deleted:
+                summary: Order deleted
+                value:
+                  type: order.deleted
+                  occurred_at: '2026-10-25T09:00:05Z'
+                  data:
+                    order_id: 'ORD-10492'
+                    updated_at: '2026-10-25T09:00:00Z'
       responses:
         '202':
           description: Event accepted and queued for processing.
@@ -27224,7 +27237,7 @@ paths:
                     request_id: test-uuid-replacement
                     errors:
                     - code: invalid_event
-                      message: type must be one of product.created, product.updated, product.deleted, order.created, order.updated, order.cancelled, order.refunded
+                      message: type must be one of product.created, product.updated, product.deleted, order.created, order.updated, order.deleted
                 Invalid product:
                   value:
                     type: error.list
@@ -51968,8 +51981,7 @@ components:
           - product.deleted
           - order.created
           - order.updated
-          - order.cancelled
-          - order.refunded
+          - order.deleted
           example: product.updated
         occurred_at:
           type: string
@@ -51978,7 +51990,7 @@ components:
           example: '2026-10-15T14:05:00Z'
         data:
           type: object
-          description: The event payload. Send `product` for `product.created` and `product.updated`, `product_id` for `product.deleted`, and `order` for every `order.*` event.
+          description: The event payload. Send `product` for `product.created` and `product.updated`, `product_id` for `product.deleted`, `order` for `order.created` and `order.updated`, and `order_id` and `updated_at` for `order.deleted`.
           properties:
             product:
               "$ref": "#/components/schemas/ecommerce_product_event_product"
@@ -51988,6 +52000,15 @@ components:
               example: 'tent-2p-ultralight'
             order:
               "$ref": "#/components/schemas/ecommerce_order_event_order"
+            order_id:
+              type: string
+              description: The `id` of the order to delete. Required for `order.deleted`.
+              example: 'ORD-10492'
+            updated_at:
+              type: string
+              format: date-time
+              description: When the order was deleted, as an ISO 8601 timestamp. Required for `order.deleted`.
+              example: '2026-10-25T09:00:00Z'
     ecommerce_product_event_response:
       title: Ecommerce Product Event Response
       type: object
