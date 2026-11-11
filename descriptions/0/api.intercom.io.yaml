@@ -27043,13 +27043,16 @@ paths:
         order can have up to 500 line items. The serialized order must be 60 KB or smaller.
 
         To connect an order to a Fin conversation, send the conversation's ID as
-        `fin_conversation_id`. `customer.email` and `status` are optional.
+        `fin_conversation_id`. `customer.email` and `status` are optional. `status` must be one of
+        `pending`, `authorized`, `partially_paid`, `paid`, `partially_refunded`, `refunded` or
+        `voided`. Any other value returns `400`.
 
         For `order.deleted`, send only `data.order_id` and `data.updated_at` (an ISO 8601
         timestamp). Send the time the order was deleted.
 
-        To report a cancellation or a refund, send an `order.updated` event with the order's new
-        `status`, such as `cancelled` or `refunded`.
+        To report a refund, send an `order.updated` event with `status` set to `refunded` or
+        `partially_refunded`. To report a cancellation, send an `order.updated` event with `status`
+        set to `voided`, or `refunded` if the payment was returned.
 
         ## Processing
 
@@ -51922,9 +51925,16 @@ components:
           example: 'ORD-10492'
         status:
           type: string
-          description: The order's status in your store, for example `paid` or `refunded`.
+          enum:
+          - pending
+          - authorized
+          - partially_paid
+          - paid
+          - partially_refunded
+          - refunded
+          - voided
+          description: The order's payment status in your store.
           example: 'paid'
-          nullable: true
         currency_code:
           type: string
           description: The three-letter ISO 4217 currency code of the order.
