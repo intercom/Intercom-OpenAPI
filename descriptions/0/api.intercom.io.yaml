@@ -29831,6 +29831,138 @@ paths:
                       message: "Team not found"
               schema:
                 "$ref": "#/components/schemas/error"
+  "/teams/{team_id}/office_hours":
+    get:
+      summary: Retrieve team office hours
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: team_id
+        in: path
+        required: true
+        description: The unique identifier of the team. Use `GET /teams` to list available team IDs.
+        example: '42'
+        schema:
+          type: string
+      tags:
+      - Teams
+      operationId: retrieveTeamOfficeHours
+      description: |
+        You can retrieve the team's linked office hours schedule, or the workspace default if the team has no schedule of its own.
+
+        The team must belong to your workspace. An unknown, malformed, or other-workspace team id returns a `404` error. If the team has no linked schedule and the workspace has no default, the endpoint returns a `404` error.
+
+        Requires either the `read_all` or `read_write_office_hours` OAuth scope and permission to manage workload management. Set `Intercom-Version: Preview`.
+      responses:
+        '200':
+          description: Team office hours schedule
+          content:
+            application/json:
+              examples:
+                Office hours schedule:
+                  value:
+                    type: office_hours_schedule
+                    id: '123'
+                    name: Standard Support Hours
+                    time_zone_name: America/New_York
+                    time_intervals:
+                    - start_minute: 540
+                      end_minute: 1020
+                      day_of_week: 0
+                    twenty_four_seven: false
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_schedule"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          "$ref": "#/components/responses/TeamOfficeHoursForbidden"
+        '404':
+          "$ref": "#/components/responses/TeamOfficeHoursNotFound"
+    put:
+      summary: Update team office hours
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: team_id
+        in: path
+        required: true
+        description: The unique identifier of the team. Use `GET /teams` to list available team IDs.
+        example: '42'
+        schema:
+          type: string
+      tags:
+      - Teams
+      operationId: updateTeamOfficeHours
+      description: |
+        You can assign an office hours schedule to a team or set `office_hours_schedule_id` to `null` to remove the team's own schedule so it uses the workspace default. The field is required, even when its value is `null`.
+
+        The team and any non-null schedule must belong to your workspace. An unknown, malformed, or other-workspace team id returns a `404` error. An unknown, invalid, or other-workspace schedule id returns a `422` error. Sending the current value, including `null` for a team already using the workspace default, changes nothing.
+
+        Returns the same schedule object as `GET /teams/{team_id}/office_hours`. If removing the assignment leaves the team without a schedule and the workspace has no default, the assignment is removed but the response is a `404` error.
+
+        Requires the `read_write_office_hours` OAuth scope and permission to manage workload management. Set `Intercom-Version: Preview`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_office_hours_assignment_request"
+            examples:
+              Assign a schedule:
+                value:
+                  office_hours_schedule_id: '123'
+              Use the workspace default:
+                value:
+                  office_hours_schedule_id: null
+      responses:
+        '200':
+          description: Team office hours schedule
+          content:
+            application/json:
+              examples:
+                Office hours schedule:
+                  value:
+                    type: office_hours_schedule
+                    id: '123'
+                    name: Standard Support Hours
+                    time_zone_name: America/New_York
+                    time_intervals:
+                    - start_minute: 540
+                      end_minute: 1020
+                      day_of_week: 0
+                    twenty_four_seven: false
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_schedule"
+        '400':
+          "$ref": "#/components/responses/OfficeHoursScheduleIdMissing"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          "$ref": "#/components/responses/TeamOfficeHoursForbidden"
+        '404':
+          "$ref": "#/components/responses/TeamOfficeHoursNotFound"
+        '422':
+          description: Invalid office hours schedule
+          content:
+            application/json:
+              examples:
+                Unknown invalid or other-workspace schedule:
+                  value:
+                    type: error.list
+                    request_id: 55555555-5555-4555-8555-555555555555
+                    errors:
+                    - code: parameter_invalid
+                      message: Office hours schedule not found
+              schema:
+                "$ref": "#/components/schemas/error"
   "/news/news_items":
     get:
       summary: List all news items
@@ -39508,8 +39640,8 @@ components:
     update_office_hours_assignment_request:
       type: object
       title: Update Office Hours Assignment Request
-      description: Assign a schedule or remove a teammate's own schedule
-        so they inherit office hours.
+      description: Assign a schedule to a team or teammate, or remove the assignment
+        to use inherited office hours.
       required:
       - office_hours_schedule_id
       properties:
@@ -39517,7 +39649,7 @@ components:
           type: string
           nullable: true
           description: The id of an office hours schedule in your workspace. Set to
-            null to remove a teammate's own schedule. Required even when null.
+            null to remove the team's or teammate's own schedule. Required even when null.
           example: '123'
     bulk_update_admin_office_hours_request:
       type: object
@@ -59430,7 +59562,7 @@ components:
             Missing office_hours_schedule_id:
               value:
                 type: error.list
-                request_id: your-request-id
+                request_id: 11111111-1111-4111-8111-111111111111
                 errors:
                 - code: parameter_missing
                   message: 'param is missing or the value is empty or invalid: office_hours_schedule_id'
@@ -59455,6 +59587,41 @@ components:
                 errors:
                 - code: action_forbidden
                   message: Teammate is not accessible
+          schema:
+            "$ref": "#/components/schemas/error"
+    TeamOfficeHoursForbidden:
+      description: Permission to manage workload management is required
+      content:
+        application/json:
+          examples:
+            Missing workload management permission:
+              value:
+                type: error.list
+                request_id: 22222222-2222-4222-8222-222222222222
+                errors:
+                - code: action_forbidden
+                  message: Teammate lacks permission to manage team office hours
+          schema:
+            "$ref": "#/components/schemas/error"
+    TeamOfficeHoursNotFound:
+      description: Team or office hours schedule not found
+      content:
+        application/json:
+          examples:
+            Unknown malformed or other-workspace team:
+              value:
+                type: error.list
+                request_id: 33333333-3333-4333-8333-333333333333
+                errors:
+                - code: team_not_found
+                  message: Team not found
+            No linked schedule or workspace default:
+              value:
+                type: error.list
+                request_id: 44444444-4444-4444-8444-444444444444
+                errors:
+                - code: office_hours_schedule_not_found
+                  message: Office hours schedule not found
           schema:
             "$ref": "#/components/schemas/error"
     Unauthorized:
