@@ -3635,7 +3635,7 @@ paths:
         `https://api.intercom.io/articles`.\n\n> \U0001F4D8 How are the articles sorted
         and ordered?\n>\n> Articles will be returned in descending order on the `updated_at`
         attribute. This means if you need to iterate through results then we'll show
-        the most recently updated articles first.\n\nRequires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.\n"
+        the most recently updated articles first.\n\nRequires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.\n"
       responses:
         '200':
           description: successful
@@ -3726,7 +3726,7 @@ paths:
         \U0001F4D8 Tags are managed separately\n>\n> Tags are returned in article responses
         but cannot be set in the request body. To add or remove an article's tags,
         use the `POST /articles/{article_id}/tags` and `DELETE /articles/{article_id}/tags/{id}`
-        endpoints.\n\nRequires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.\n"
+        endpoints.\n\nRequires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.\n"
       responses:
         '200':
           description: article created
@@ -3946,7 +3946,7 @@ paths:
       description: |
         You can fetch the details of a single article by making a GET request to `https://api.intercom.io/articles/<id>`.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Article found
@@ -4047,7 +4047,7 @@ paths:
         request to `https://api.intercom.io/articles/<id>`.\n\n> \U0001F4D8 Tags are managed separately\n>\n> Tags are returned in article responses
         but cannot be set in the request body. To add or remove an article's tags,
         use the `POST /articles/{article_id}/tags` and `DELETE /articles/{article_id}/tags/{id}`
-        endpoints.\n\nRequires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.\n"
+        endpoints.\n\nRequires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.\n"
       responses:
         '200':
           description: successful
@@ -4334,7 +4334,7 @@ paths:
         has no staged draft. An article ID that doesn't exist returns a `404` with
         the standard error body.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Article draft found
@@ -4423,7 +4423,7 @@ paths:
         `parent_id`, `folder_id`, `audience_ids`, the AI availability fields or the
         scheduling fields, is still validated but not applied, so the live article is left untouched.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Draft staged
@@ -4541,7 +4541,7 @@ paths:
         `{ "errors": [{ "message": "...", "status": 422 }] }`, with no `type`,
         `request_id` or `code`. The other `422` errors use the standard error format.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Draft published
@@ -4688,7 +4688,7 @@ paths:
         A `404` has an empty response body, whether the article or its content
         isn't found.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Versions found
@@ -4789,7 +4789,7 @@ paths:
         A `404` has an empty response body, whether the article, its content or
         the version isn't found.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Version found
@@ -4858,7 +4858,7 @@ paths:
         and the authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       requestBody:
         content:
           application/json:
@@ -4977,7 +4977,7 @@ paths:
         The authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Tag removed
@@ -5105,7 +5105,7 @@ paths:
 
         If no articles match the search, `data` is an empty array rather than an object.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Search successful
@@ -7406,7 +7406,7 @@ paths:
       description: |
         You can fetch a list of all collections by making a GET request to `https://api.intercom.io/help_center/collections`.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Successful
@@ -7497,7 +7497,7 @@ paths:
       description: |
         You can create a new collection by making a POST request to `https://api.intercom.io/help_center/collections`.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: collection created
@@ -7597,7 +7597,7 @@ paths:
       description: |
         You can fetch the details of a single collection by making a GET request to `https://api.intercom.io/help_center/collections/<id>`.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Collection found
@@ -7670,7 +7670,7 @@ paths:
 
         `help_center_id` is checked but never applied. It must match the help center of the collection's articles and sub-collections, or the request returns a `400`. A collection with no content rejects any `help_center_id`, so leave it out. Moving a collection to another help center isn't supported.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: successful
@@ -7846,7 +7846,7 @@ paths:
       description: |
         You can fetch the details of a single Help Center by making a GET request to `https://api.intercom.io/help_center/help_centers/<id>`.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Help Center found
@@ -7911,7 +7911,7 @@ paths:
       description: |
         You can list all Help Centers by making a GET request to `https://api.intercom.io/help_center/help_centers`.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Help Centers found
