@@ -2557,7 +2557,7 @@ paths:
         A draft exists only when a published article has unpublished changes staged
         on top of it. Returns `404` when the article has no staged draft.
 
-        Requires the `read_articles_scope` OAuth scope.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Article draft found
@@ -2619,7 +2619,7 @@ paths:
         Non-versioned fields like AI availability are ignored, leaving the live
         values untouched.
 
-        Requires the `read_write_articles_scope` OAuth scope.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Draft staged
@@ -2705,7 +2705,7 @@ paths:
         omitting it returns `422`. Returns `422` when there is no staged draft to
         publish, or when a requested locale has no pending changes.
 
-        Requires the `read_write_articles_scope` OAuth scope.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Draft published
@@ -2805,7 +2805,7 @@ paths:
         and the authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_articles_scope` OAuth scope.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope.
       requestBody:
         content:
           application/json:
@@ -2917,7 +2917,7 @@ paths:
         The authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_articles_scope` OAuth scope.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Tag removed
@@ -3019,7 +3019,7 @@ paths:
         `GET /articles/{article_id}/versions/{id}` to retrieve a single version
         with its full content.
 
-        Requires the `read_articles_scope` OAuth scope.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Versions found
@@ -3117,7 +3117,7 @@ paths:
         `https://api.intercom.io/articles/<article_id>/versions/<id>`. Returns
         the version's full content; the live article remains untouched.
 
-        Requires the `read_articles_scope` OAuth scope.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Version found
