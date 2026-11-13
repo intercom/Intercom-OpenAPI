@@ -17482,9 +17482,11 @@ paths:
         is created and when a contact becomes available to be messaged through the
         API. A 404 Not Found error will be returned in this case.\n\nThis will return
         the Message model that has been created.\n\n> \U0001F6A7 Retrieving Associated
-        Conversations\n>\n> As this is a message, there will be no conversation present
+        Conversations\n>\n> For in-app and email messages, there will be no conversation present
         until the contact responds. Once they do, you will have to search for a contact's
-        conversations with the id of the message.\n\n{% admonition type=\"warning\" name=\"Messages from contacts\" %}\n`from` should be an admin. A request with a user or lead as `from` is not rejected: it creates a conversation initiated by that contact, as the Create a conversation endpoint (`POST /conversations`) does, and the `to`, `cc` and `bcc` fields are ignored. To create a conversation initiated by a contact, use `POST /conversations`.\n{% /admonition %}\n"
+        conversations with the id of the message.\n>\n> For `whatsapp` messages, the
+        conversation is created when the message is sent, and its id is returned as
+        `conversation_id`.\n\n{% admonition type=\"warning\" name=\"Messages from contacts\" %}\n`from` should be an admin. A request with a user or lead as `from` is not rejected: it creates a conversation initiated by that contact, as the Create a conversation endpoint (`POST /conversations`) does, and the `to`, `cc` and `bcc` fields are ignored. To create a conversation initiated by a contact, use `POST /conversations`.\n{% /admonition %}\n"
       responses:
         '200':
           description: admin message created
@@ -17522,10 +17524,26 @@ paths:
                       email: admin299@email.com
                       away_mode_enabled: false
                       away_mode_reassign: false
+                admin whatsapp message created:
+                  value:
+                    type: admin_message
+                    id: '20'
+                    created_at: 1734537790
+                    body: Hi Username 123, your account is still active.
+                    message_type: whatsapp
+                    conversation_id: '615'
+                    owner:
+                      type: admin
+                      id: '991267817'
+                      name: Ciaran300 Lee
+                      email: admin300@email.com
+                      away_mode_enabled: false
+                      away_mode_reassign: false
+                    whatsapp_message_id: wamid.abc123
               schema:
                 "$ref": "#/components/schemas/message"
         '400':
-          description: No body supplied for email message
+          description: Invalid request
           content:
             application/json:
               examples:
@@ -17536,6 +17554,90 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: Body is required
+                WhatsApp not enabled for workspace:
+                  value:
+                    type: error.list
+                    request_id: 4e1b7c92-3a5d-4f08-b6e2-9d7a0c3f5b18
+                    errors:
+                    - code: parameter_invalid
+                      message: This app is not allowed to send WhatsApp messages
+                WhatsApp template missing:
+                  value:
+                    type: error.list
+                    request_id: a7d3e5f1-2b64-4c9a-8e17-5f0b3d9c6a24
+                    errors:
+                    - code: parameter_invalid
+                      message: template is required for WhatsApp messages
+                WhatsApp components missing:
+                  value:
+                    type: error.list
+                    request_id: 6c2f9a8d-7e13-4b5c-a0d4-1e8b7f3c2d95
+                    errors:
+                    - code: parameter_invalid
+                      message: Components must be provided for WhatsApp messages
+                WhatsApp integration not found:
+                  value:
+                    type: error.list
+                    request_id: d9e4b1a6-5c37-4f2e-9b80-3a6d2c7e1f43
+                    errors:
+                    - code: parameter_invalid
+                      message: No WhatsApp integration found for this app
+                WhatsApp sender number invalid:
+                  value:
+                    type: error.list
+                    request_id: 2f8a6d3c-1b95-4e7a-8c42-7d0e5b9a3f61
+                    errors:
+                    - code: parameter_invalid
+                      message: Sender WhatsApp number format is invalid
+                WhatsApp sender number not registered:
+                  value:
+                    type: error.list
+                    request_id: b3c7e9f2-6a14-4d8b-9e05-2c1f8a4d7b36
+                    errors:
+                    - code: parameter_invalid
+                      message: Sender WhatsApp number is not registered in this workspace
+                WhatsApp template not found:
+                  value:
+                    type: error.list
+                    request_id: 5e0d2a7b-9c63-4f1e-a8b4-6d3c9e2f0a57
+                    errors:
+                    - code: parameter_invalid
+                      message: template 'order_update' does not exist
+                WhatsApp recipient phone missing:
+                  value:
+                    type: error.list
+                    request_id: 8a4f1c6e-3d27-4b9a-b5e1-0f7c2a8d4e69
+                    errors:
+                    - code: parameter_invalid
+                      message: WhatsApp message payload must include phone.
+                WhatsApp recipient phone invalid:
+                  value:
+                    type: error.list
+                    request_id: c1e6a3d8-4f52-4a7b-9d03-8b5e1c7f2a94
+                    errors:
+                    - code: parameter_invalid
+                      message: Recipient does not have a valid phone number.
+                WhatsApp template not available in locale:
+                  value:
+                    type: error.list
+                    request_id: 7b9d2e4f-8a16-4c3e-b7a5-1d0f6c3e9b28
+                    errors:
+                    - code: parameter_invalid
+                      message: 'template ''order_update'' is not available in locale ''fr'' (available: en, es)'
+                WhatsApp template locale ambiguous:
+                  value:
+                    type: error.list
+                    request_id: e5a8c0b3-2d79-4f6a-8c14-9e3b7d1a5f02
+                    errors:
+                    - code: parameter_invalid
+                      message: 'template ''order_update'' exists in multiple regional variants (en_GB, en_US); pass an explicit locale'
+                WhatsApp multiple recipients:
+                  value:
+                    type: error.list
+                    request_id: 3d6f8b1a-7e42-4c9d-a2b5-4f0e8c6d3a71
+                    errors:
+                    - code: data_invalid
+                      message: To field must not contains an array of recipients.
                 No body supplied for email message:
                   value:
                     type: error.list
@@ -17574,7 +17676,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/error"
         '403':
-          description: API plan restricted
+          description: Forbidden
           content:
             application/json:
               examples:
@@ -17585,6 +17687,34 @@ paths:
                     errors:
                     - code: api_plan_restricted
                       message: Active subscription needed.
+                WhatsApp recipient blocked:
+                  value:
+                    type: error.list
+                    request_id: 9c3e7a1f-5b28-4d6e-8f04-2a9d6c1b7e53
+                    errors:
+                    - code: whatsapp_recipient_blocked
+                      message: The recipient associated with this phone number has been blocked.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              examples:
+                WhatsApp message not sent:
+                  value:
+                    type: error.list
+                    request_id: f2b8d4a6-1c73-4e9f-b0a5-7d3e9c2f6a18
+                    errors:
+                    - code: server_error
+                      message: 'Failed to send WhatsApp message: (#131026) Message undeliverable'
+                WhatsApp conversation not created:
+                  value:
+                    type: error.list
+                    request_id: 6a1d9f3c-8e54-4b2a-9c07-3f5b1e8d4a26
+                    errors:
+                    - code: server_error
+                      message: Failed to create WhatsApp conversation - no conversation returned
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -29748,13 +29878,15 @@ components:
           example: Hello there
         template:
           type: string
-          description: The style of the outgoing message. Possible values `plain`
-            or `personal`.
+          description: For `email` messages, the style of the outgoing message. Possible
+            values `plain` or `personal`. For `whatsapp` messages, the name of the
+            WhatsApp message template to send. A template that doesn't exist returns
+            a `400` error.
           example: plain
         from:
           type: object
-          description: The sender of the message. If not provided, the default sender
-            will be used.
+          description: The sender of the message. Required. A request without `from`
+            returns a `400` error.
           properties:
             type:
               type: string
@@ -29766,6 +29898,13 @@ components:
               type: integer
               description: The identifier for the admin which is given by Intercom.
               example: 394051
+            whatsapp_number:
+              type: string
+              description: For `whatsapp` messages, the WhatsApp number of your workspace
+                to send from, in international format. If you leave it out, a WhatsApp
+                number in your workspace that has the template is used. A number that
+                isn't valid, or isn't registered in your workspace, returns a `400` error.
+              example: "+14155550123"
           required:
           - type
           - id
@@ -29773,7 +29912,8 @@ components:
           oneOf:
             - $ref: '#/components/schemas/recipient'
             - type: array
-              description: The recipients of the message.
+              description: The recipients of the message. Not accepted for `whatsapp`
+                messages, which take a single recipient. An array returns a `400` error.
               items:
                 $ref: '#/components/schemas/recipient'
               example:
@@ -29810,6 +29950,8 @@ components:
           type: boolean
           description: Whether a conversation should be opened in the inbox for the
             message without the contact replying. Defaults to false if not provided.
+            For `whatsapp` messages, a conversation is always opened and this field
+            is ignored.
           default: false
           example: true
       anyOf:
