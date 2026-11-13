@@ -21517,6 +21517,12 @@ paths:
                     errors:
                     - code: parameter_invalid
                       message: rating must be an integer from 1 to 5
+                Remark too long:
+                  value:
+                    type: error.list
+                    errors:
+                    - code: parameter_invalid
+                      message: remark must be at most 65535 bytes
               schema:
                 "$ref": "#/components/schemas/error"
         '401':
@@ -40871,7 +40877,8 @@ components:
           example: 4
         remark:
           type: string
-          description: Free text from the contact to go with the rating.
+          description: |-
+            Free text from the contact to go with the rating. It can be at most 65535 bytes. The limit counts bytes, not characters, so text with multi-byte characters has a lower character limit.
           example: Fast and friendly
     rated_conversation:
       title: Rated conversation
