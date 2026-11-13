@@ -28854,6 +28854,7 @@ paths:
                       visible_to: "everyone"
                       visible_to_team_ids: []
                       available_on: ["inbox", "messenger"]
+                      actions: []
                     - type: macro
                       id: "456"
                       name: "Welcome Message"
@@ -28864,6 +28865,7 @@ paths:
                       visible_to: "specific_teams"
                       visible_to_team_ids: ["789", "101"]
                       available_on: ["inbox"]
+                      actions: []
                     pages:
                       type: pages
                       per_page: 50
@@ -28884,6 +28886,7 @@ paths:
                       visible_to: "everyone"
                       visible_to_team_ids: []
                       available_on: ["inbox", "messenger"]
+                      actions: []
                     - type: macro
                       id: "101"
                       name: "Product Inquiry Response"
@@ -28894,6 +28897,7 @@ paths:
                       visible_to: "everyone"
                       visible_to_team_ids: []
                       available_on: ["inbox", "messenger"]
+                      actions: []
                     pages:
                       type: pages
                       per_page: 50
@@ -28914,6 +28918,7 @@ paths:
                       visible_to: "everyone"
                       visible_to_team_ids: []
                       available_on: ["inbox"]
+                      actions: []
                     pages:
                       type: pages
                       per_page: 50
@@ -28933,6 +28938,7 @@ paths:
                       visible_to: "specific_teams"
                       visible_to_team_ids: ["security_team"]
                       available_on: ["inbox"]
+                      actions: []
                     pages:
                       type: pages
                       per_page: 50
@@ -28961,6 +28967,7 @@ paths:
                       visible_to: "everyone"
                       visible_to_team_ids: []
                       available_on: ["inbox"]
+                      actions: []
                     # Note: When returning 30+ macros, body rendering may be skipped for performance
                     pages:
                       type: pages
@@ -29010,6 +29017,240 @@ paths:
                     errors:
                     - code: forbidden
                       message: You do not have the required scope (read_conversations) to access this resource
+              schema:
+                "$ref": "#/components/schemas/error"
+    post:
+      summary: Create a macro
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      tags:
+      - Macros
+      operationId: createMacro
+      description: |
+        You can create a macro in your workspace, choose who can see it, and add actions that run on the conversation when a teammate uses it.
+
+        Send the content as either `body` or `blocks`, not both. `body` takes the same HTML that [Retrieve a macro](/docs/references/preview/rest-api/api.intercom.io/macros/getmacro) returns, including `<attribute key="..." default="..."/>` placeholders, so you can copy a macro by sending its `body` back unchanged. If the HTML holds content that a macro can't store as written, such as a horizontal rule, the request fails with an `unsupported_html` error and no macro is created.
+
+        The access token must belong to a teammate who can manage and create macros. OAuth tokens must have the `read_write_macros` scope.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/create_macro_request"
+            examples:
+              blocks_with_actions:
+                summary: Team macro from blocks, with actions
+                value:
+                  name: Password reset
+                  visible_to: specific_teams
+                  visible_to_team_ids: ["123456"]
+                  blocks:
+                  - type: paragraph
+                    text: 'Hi {{first_name | fallback: "there"}}, you can reset your password from the sign-in page.'
+                  actions:
+                  - type: add-tag-to-conversation
+                    data:
+                      tag_id: "7890"
+                  - type: snooze-conversation
+                    data:
+                      snoozed_until: hours
+                      selected_hours: 4
+              html_body:
+                summary: Macro from an HTML body
+                value:
+                  name: Order shipped
+                  body: "<p>Hi <attribute key=\"first_name\" default=\"there\"/>, your order is on its way.</p>"
+      responses:
+        '201':
+          description: Macro created
+          content:
+            application/json:
+              examples:
+                Macro created:
+                  value:
+                    type: macro
+                    id: "4567"
+                    name: Password reset
+                    body: "<p>Hi <attribute key=\"first_name\" default=\"there\"/>, you can reset your password from the sign-in page.</p>"
+                    body_text: "Hi {{first_name | fallback: \"there\"}}, you can reset your password from the sign-in page."
+                    created_at: "2026-11-02T10:15:00.000Z"
+                    updated_at: "2026-11-02T10:15:00.000Z"
+                    visible_to: specific_teams
+                    visible_to_team_ids: ["123456"]
+                    available_on: ["inbox"]
+                    actions:
+                    - type: add-tag-to-conversation
+                      data:
+                        tag_id: "7890"
+                    - type: snooze-conversation
+                      data:
+                        snoozed_until: hours
+                        selected_hours: 4
+              schema:
+                "$ref": "#/components/schemas/macro"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Both body and blocks:
+                  value:
+                    type: error.list
+                    request_id: 3f6b2c1e-8a4d-4e7b-9c05-1d2e3f4a5b6c
+                    errors:
+                    - code: parameter_invalid
+                      message: Provide either body or blocks, not both
+                Body too large:
+                  value:
+                    type: error.list
+                    request_id: 7a1c9e2b-4d3f-4b8a-a6e5-0f1e2d3c4b5a
+                    errors:
+                    - code: parameter_invalid
+                      message: body must be at most 20480 bytes
+                Unsupported HTML:
+                  value:
+                    type: error.list
+                    request_id: 9e8d7c6b-5a4f-4e3d-b2c1-a0b9c8d7e6f5
+                    errors:
+                    - code: unsupported_html
+                      message: Nested lists and multiple blocks inside a list item are not supported in macros
+                Name too long:
+                  value:
+                    type: error.list
+                    request_id: 2b3c4d5e-6f70-4812-9a3b-c4d5e6f70819
+                    errors:
+                    - code: parameter_invalid
+                      message: Name too long
+                Content too large:
+                  value:
+                    type: error.list
+                    request_id: 5d6e7f80-9a1b-4c2d-8e3f-40516273849a
+                    errors:
+                    - code: parameter_invalid
+                      message: Body too large
+                Invalid visible_to:
+                  value:
+                    type: error.list
+                    request_id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d
+                    errors:
+                    - code: parameter_invalid
+                      message: visible_to must be one of everyone, specific_teams
+                Missing team IDs:
+                  value:
+                    type: error.list
+                    request_id: 6c7d8e9f-0a1b-4c2d-9e3f-4a5b6c7d8e9f
+                    errors:
+                    - code: parameter_invalid
+                      message: visible_to_team_ids is required when visible_to is specific_teams
+                Team from another workspace:
+                  value:
+                    type: error.list
+                    request_id: 8f9e0d1c-2b3a-4c5d-8e6f-7a8b9c0d1e2f
+                    errors:
+                    - code: parameter_invalid
+                      message: visible_to_team_ids must belong to this workspace
+                Unsupported action type:
+                  value:
+                    type: error.list
+                    request_id: 0d1e2f3a-4b5c-4d6e-9f7a-8b9c0d1e2f3a
+                    errors:
+                    - code: parameter_invalid
+                      message: action type 'reply-to-conversation' is not supported
+                Unsupported action data key:
+                  value:
+                    type: error.list
+                    request_id: 4e5f6a7b-8c9d-4e0f-a1b2-c3d4e5f6a7b8
+                    errors:
+                    - code: parameter_invalid
+                      message: add-tag-to-conversation does not support data.name
+                ID not in workspace:
+                  value:
+                    type: error.list
+                    request_id: b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e
+                    errors:
+                    - code: parameter_invalid
+                      message: add-tag-to-conversation references an id that does not exist in this workspace
+                Missing snooze timestamp:
+                  value:
+                    type: error.list
+                    request_id: c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f
+                    errors:
+                    - code: parameter_invalid
+                      message: snooze-conversation requires custom_snoozed_until when snoozed_until is custom_timer
+                Unsupported API version:
+                  value:
+                    type: error.list
+                    request_id: d3e4f5a6-b7c8-4d9e-8f0a-2b3c4d5e6f7a
+                    errors:
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: e4f5a6b7-c8d9-4e0f-9a1b-3c4d5e6f7a8b
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: f5a6b7c8-d9e0-4f1a-8b2c-4d5e6f7a8b9c
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              examples:
+                Teammate can't create macros:
+                  value:
+                    type: error.list
+                    request_id: a6b7c8d9-e0f1-4a2b-9c3d-5e6f7a8b9c0d
+                    errors:
+                    - code: forbidden
+                      message: You don't have permission to create macros
+                Team macros not available:
+                  value:
+                    type: error.list
+                    request_id: b7c8d9e0-f1a2-4b3c-8d4e-6f7a8b9c0d1e
+                    errors:
+                    - code: forbidden
+                      message: You don't have permission to create team macros
+                Token not linked to a teammate:
+                  value:
+                    type: error.list
+                    request_id: c8d9e0f1-a2b3-4c4d-9e5f-7a8b9c0d1e2f
+                    errors:
+                    - code: forbidden
+                      message: Creating macros requires an OAuth access token
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              examples:
+                Invalid block type:
+                  value:
+                    type: error.list
+                    request_id: d9e0f1a2-b3c4-4d5e-8f6a-8b9c0d1e2f3a
+                    errors:
+                    - code: data_invalid
+                      message: Invalid block Invalid block type
               schema:
                 "$ref": "#/components/schemas/error"
   "/macros/{id}":
@@ -29114,6 +29355,13 @@ paths:
                     visible_to: "specific_teams"
                     visible_to_team_ids: ["support_team_1", "support_team_2"]
                     available_on: ["inbox", "messenger"]
+                    actions:
+                    - type: assign-conversation
+                      data:
+                        assignee_id: "456"
+                    - type: add-tag-to-conversation
+                      data:
+                        tag_id: "7890"
                 sales_macro:
                   summary: Sales team macro for product inquiries
                   value:
@@ -29127,6 +29375,7 @@ paths:
                     visible_to: "specific_teams"
                     visible_to_team_ids: ["sales_team_us", "sales_team_eu"]
                     available_on: ["messenger"]
+                    actions: []
                 technical_support:
                   summary: Technical support macro with nested attributes
                   value:
@@ -29140,6 +29389,7 @@ paths:
                     visible_to: "everyone"
                     visible_to_team_ids: []
                     available_on: ["inbox"]
+                    actions: []
                 simple_greeting:
                   summary: Simple macro without placeholders
                   value:
@@ -29153,6 +29403,7 @@ paths:
                     visible_to: "everyone"
                     visible_to_team_ids: []
                     available_on: ["inbox", "messenger"]
+                    actions: []
               schema:
                 "$ref": "#/components/schemas/macro"
         '401':
@@ -48966,6 +49217,53 @@ components:
       - locale
       - source_id
       - external_id
+    create_macro_request:
+      title: Create Macro Request
+      type: object
+      description: The macro to create. Send either `body` or `blocks`, not both.
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          maxLength: 140
+          description: The name of the macro.
+          example: Password reset
+        body:
+          type: string
+          description: The content of the macro as HTML, in the format the macro's `body` field returns. Write placeholders as `<attribute key="first_name" default="there"/>`. Up to 20,480 bytes.
+          example: "<p>Hi <attribute key=\"first_name\" default=\"there\"/>, your order is on its way.</p>"
+        blocks:
+          type: array
+          description: The content of the macro as blocks. Up to 64 KB once serialized.
+          items:
+            "$ref": "#/components/schemas/macro_block"
+          example:
+          - type: paragraph
+            text: 'Hi {{first_name | fallback: "there"}}, you can reset your password from the sign-in page.'
+        visible_to:
+          type: string
+          description: Who can view the macro.
+          enum:
+          - everyone
+          - specific_teams
+          default: everyone
+          example: specific_teams
+        visible_to_team_ids:
+          type: array
+          description: The team IDs that can view the macro. Required when `visible_to` is `specific_teams`. Each team must belong to your workspace.
+          items:
+            type: string
+          example: ["123456"]
+        actions:
+          type: array
+          description: The actions applied to the conversation when a teammate uses the macro.
+          items:
+            "$ref": "#/components/schemas/macro_action"
+          example:
+          - type: add-tag-to-conversation
+            data:
+              tag_id: "7890"
     create_message_request:
       description: You can create a message
       type: object
@@ -55168,6 +55466,212 @@ components:
               - inbox
               - messenger
           example: ["inbox", "messenger"]
+        actions:
+          type: array
+          description: The actions applied to the conversation when a teammate uses the macro.
+          items:
+            "$ref": "#/components/schemas/macro_action"
+          example:
+          - type: add-tag-to-conversation
+            data:
+              tag_id: "7890"
+    macro_action:
+      title: Macro Action
+      type: object
+      x-tags:
+        - Macros
+      description: |
+        An action applied to the conversation when a teammate uses the macro. `data` can only hold the keys listed for the action's `type`:
+
+        | `type` | `data` keys |
+        |---|---|
+        | `assign-conversation` | `assignee_id` |
+        | `assign-conversation-to-owner` | none |
+        | `change-conversation-priority` | `priority` |
+        | `add-tag-to-conversation` | `tag_id` |
+        | `set-conversation-data-attribute` | `attribute_identifier` and `value` |
+        | `close-conversation` | none |
+        | `open-conversation` | none |
+        | `snooze-conversation` | `snoozed_until`, plus the keys that value takes |
+        | `send-workflow` | `workflow_instance_id` |
+        | `workflow-connector-action` | `workflow_connector_action_id` |
+        | `add-conversation-topic` | `topic_id` |
+        | `set-ticket-custom-state` | `ticket_custom_state_id` |
+
+        Send IDs as strings. Every ID must belong to your workspace.
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          description: The action to apply.
+          enum:
+          - assign-conversation
+          - assign-conversation-to-owner
+          - change-conversation-priority
+          - add-tag-to-conversation
+          - set-conversation-data-attribute
+          - close-conversation
+          - open-conversation
+          - snooze-conversation
+          - send-workflow
+          - workflow-connector-action
+          - add-conversation-topic
+          - set-ticket-custom-state
+          example: add-tag-to-conversation
+        data:
+          type: object
+          description: The settings for the action. Send `{}` for an action that takes none.
+          properties:
+            assignee_id:
+              type: string
+              description: The unique identifier for the teammate or team to assign the conversation to, or `"0"` to unassign it.
+              example: "123"
+            priority:
+              type: boolean
+              description: Whether to mark the conversation as priority.
+              example: true
+            tag_id:
+              type: string
+              description: The unique identifier for the tag to add.
+              example: "7890"
+            attribute_identifier:
+              type: string
+              description: The unique identifier for the conversation data attribute to set. The attribute must be editable by teammates.
+              example: "15"
+            value:
+              description: The value to set the conversation data attribute to.
+              example: Billing
+            snoozed_until:
+              type: string
+              description: When the conversation is snoozed until. `custom_timer` requires `custom_snoozed_until`. `relative` takes `selected_days`, `selected_hours` and `selected_minutes`, and `hours` takes `selected_hours`; for these two, the total must be between 1 minute and 500 days.
+              enum:
+              - later_today
+              - tomorrow
+              - monday
+              - next_week
+              - next_month
+              - custom_timer
+              - relative
+              - hours
+              example: hours
+            custom_snoozed_until:
+              type: string
+              description: The time to snooze until, as a future ISO 8601 timestamp. Only allowed when `snoozed_until` is `custom_timer`.
+              example: "2026-12-01T09:00:00Z"
+            author_timezone:
+              type: string
+              description: The time zone used to work out the snooze time.
+              example: Europe/Dublin
+            selected_days:
+              type: integer
+              minimum: 0
+              description: The number of days to snooze for, counted from when a teammate applies the macro. Only allowed when `snoozed_until` is `relative`.
+              example: 1
+            selected_hours:
+              type: integer
+              minimum: 0
+              description: The number of hours to snooze for, counted from when a teammate applies the macro. Only allowed when `snoozed_until` is `relative` or `hours`.
+              example: 4
+            selected_minutes:
+              type: integer
+              minimum: 0
+              description: The number of minutes to snooze for, counted from when a teammate applies the macro. Only allowed when `snoozed_until` is `relative`.
+              example: 30
+            workflow_instance_id:
+              type: string
+              description: The unique identifier for the workflow to send.
+              example: "2345"
+            workflow_connector_action_id:
+              type: string
+              description: The unique identifier for the workflow connector action to run.
+              example: "3456"
+            topic_id:
+              type: string
+              description: The unique identifier for the conversation topic to add.
+              example: "4567"
+            ticket_custom_state_id:
+              type: string
+              description: The unique identifier for the ticket state to set.
+              example: "5678"
+          example:
+            tag_id: "7890"
+    macro_block:
+      title: Macro Block
+      type: object
+      x-tags:
+        - Macros
+      description: |
+        A block of macro content. Each `type` takes its own fields:
+
+        - `paragraph`, `heading` and `subheading`: `text`, and optionally `align`.
+        - `unorderedList` and `orderedList`: `items`.
+        - `code`: `text`.
+        - `button`: `text` and `linkUrl`.
+        - `image`: `url`, and optionally `width`, `height` and `linkUrl`.
+        - `video`: `provider` and `id`.
+
+        Paragraph and list text can include the inline tags `<b>`, `<i>`, `<u>`, `<s>`, `<code>`, `<a href="...">` and `<br>`, and placeholders such as `{{first_name | fallback: "there"}}`. A malformed placeholder returns a `422`.
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          description: The type of block.
+          enum:
+          - paragraph
+          - heading
+          - subheading
+          - unorderedList
+          - orderedList
+          - code
+          - button
+          - image
+          - video
+          example: paragraph
+        text:
+          type: string
+          description: The text of the block.
+          example: Thanks for getting in touch.
+        align:
+          type: string
+          description: The alignment of the block's text.
+          enum:
+          - left
+          - center
+          - right
+          - justify
+          example: left
+        items:
+          type: array
+          description: The items of the list.
+          items:
+            type: string
+          example: ["Sign out", "Clear your cache", "Sign back in"]
+        linkUrl:
+          type: string
+          description: The URL the button or image links to.
+          example: https://help.example.org/contact
+        url:
+          type: string
+          description: The URL of the image. Images from some hosts aren't accepted.
+          example: https://images.example.org/reset-password.png
+        width:
+          type: integer
+          description: The width of the image in pixels.
+          example: 600
+        height:
+          type: integer
+          description: The height of the image in pixels.
+          example: 400
+        provider:
+          type: string
+          description: The video provider, such as `youtube`, `vimeo`, `wistia` or `loom`.
+          example: youtube
+        id:
+          type: string
+          description: The unique identifier for the video at its provider.
+          example: a1B2c3D4e5F
     macro_list:
       title: Macro List
       type: object
