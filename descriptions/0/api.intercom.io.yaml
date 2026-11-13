@@ -32284,11 +32284,18 @@ paths:
         description: The id of the call
         schema:
           type: string
+      - name: include_transcripts
+        in: query
+        description: By default, the call's transcripts are deleted too. Pass `false` to keep them.
+        required: false
+        schema:
+          type: boolean
+          default: true
       tags:
       - Calls
       operationId: deleteCallRecording
       description: |
-        Permanently deletes every recording and transcript of the call, including the part of the call handled by Fin. Afterwards, the call's `recording_url` and `fin_recording_url` are `null`. Deleting a recording that was already deleted returns the same successful response.
+        Permanently deletes every recording of the call, including the part of the call handled by Fin, and the call's transcripts unless `include_transcripts` is `false`. Afterwards, the call's `recording_url` and `fin_recording_url` are `null`. Deleting a recording that was already deleted returns the same successful response.
 
         Requires the `write_conversations` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
