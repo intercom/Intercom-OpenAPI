@@ -25885,7 +25885,7 @@ paths:
       - name: include_bodies
         in: query
         required: false
-        description: Include request/response bodies in the response (default false).
+        description: Include request/response bodies in the response (default false). Ignored for third-party apps (apps owned by another workspace), which never receive bodies.
         schema:
           type: string
           enum:
@@ -26029,7 +26029,7 @@ paths:
       operationId: showDataConnectorExecutionResult
       description: |
         Retrieve details for a specific data connector execution result.
-        Includes the request/response bodies and sanitised request URL when they are available.
+        Includes the sanitised request URL, and the request/response bodies when they are available. Bodies are omitted when the request comes from a third-party app (an app owned by another workspace).
 
         OAuth tokens must have the `read_workflow_connector_execution_result` or `read_write_data_connectors` scope.
       responses:

@@ -16854,7 +16854,7 @@ paths:
       - name: include_bodies
         in: query
         required: false
-        description: Include request/response bodies in the response (default false).
+        description: Include request/response bodies in the response (default false). Ignored for third-party apps (apps owned by another workspace), which never receive bodies.
         schema:
           type: string
           enum:
@@ -16983,7 +16983,7 @@ paths:
       operationId: showDataConnectorExecutionResult
       description: |
         Retrieve details for a specific data connector execution result.
-        Always includes request/response bodies and the sanitised request URL.
+        Includes the sanitised request URL, and the request/response bodies unless the request comes from a third-party app (an app owned by another workspace).
       responses:
         '200':
           description: successful
