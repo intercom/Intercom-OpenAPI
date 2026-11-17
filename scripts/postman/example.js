@@ -24,6 +24,9 @@ module.exports = class Example {
       return this.value(prop.items.oneOf[0]);
     } else if (prop.type === 'array' && prop.items.properties) {
       return [this.value(prop.items)];
+    } else if (prop.type === 'array') {
+      // A sampled element is not accepted: attachment_urls: [""] is an undownloadable URL.
+      return [];
     } else if (prop.oneOf) {
       return this.value(prop.oneOf[0]);
     } else if (prop.type === 'string' && prop.enum) {

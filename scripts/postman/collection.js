@@ -303,6 +303,13 @@ module.exports = class Collection {
     });
   }
 
+  serialize(key, value) {
+    if (value === undefined || value === null) {
+      return '';
+    }
+    return typeof value === 'string' ? value : JSON.stringify(value);
+  }
+
   fetchExample(param) {
     if (param.value) {
       return String(param.value);

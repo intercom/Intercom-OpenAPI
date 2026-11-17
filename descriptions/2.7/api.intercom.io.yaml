@@ -1930,7 +1930,14 @@ paths:
       tags:
       - Companies
       operationId: deleteCompany
-      description: You can delete a single company.
+      description: |
+        Delete a single company.
+
+        The company record is kept in your workspace, but all contacts are detached. The contacts themselves are not deleted. Detaching contacts is permanent and can't be reversed. A `company.deleted` webhook is sent when the company is deleted. These changes may take some time to be reflected in your workspace.
+
+        {% admonition type="warning" %}
+        Third-party integrations that sync companies into Intercom (for example, Salesforce or Chargebee) will recreate any company deleted through this endpoint on their next sync. To prevent recreation, remove or filter the company at the source integration before deleting it via the API.
+        {% /admonition %}
       responses:
         '200':
           description: Successful
@@ -2862,6 +2869,8 @@ paths:
 
           1.Opt-out subscription types that the user has opted-out from.
           2.Opt-in subscription types that the user has opted-in to receiving.
+
+        **Note:** This endpoint only returns subscriptions where the contact has explicitly configured their preference. Subscriptions that are in the default state — where the contact has not made an explicit opt-in or opt-out choice — are not included in the response.
       responses:
         '200':
           description: Successful
@@ -3883,10 +3892,23 @@ paths:
 
         ### Searching for Timestamp Fields
 
-        All timestamp fields (created_at, updated_at etc.) are indexed as Dates for Contact Search queries; Datetime queries are not currently supported. This means you can only query for timestamp fields by day - not hour, minute or second.
-        For example, if you search for all Contacts with a created_at value greater (>) than 1577869200 (the UNIX timestamp for January 1st, 2020 9:00 AM), that will be interpreted as 1577836800 (January 1st, 2020 12:00 AM). The search results will then include Contacts created from January 2nd, 2020 12:00 AM onwards.
-        If you'd like to get contacts created on January 1st, 2020 you should search with a created_at value equal (=) to 1577836800 (January 1st, 2020 12:00 AM).
-        This behaviour applies only to timestamps used in search queries. The search results will still contain the full UNIX timestamp and be sorted accordingly.
+        Timestamp fields (`created_at`, `updated_at` etc.) and Date custom attributes are matched by calendar day. Sub-day precision (hour, minute, second) is not supported.
+
+        The day boundary uses **your workspace's timezone**, so the same query can return different results on two workspaces in different timezones.
+
+        Because the value is truncated to a day:
+
+        * `=` matches the whole day.
+        * `>` matches from the start of the *next* day, not from the instant you passed.
+        * `<` matches everything before the start of that day.
+
+        The `!=`, `>=`, `<=`, `IN` and `NIN` operators are not supported on Date fields and return an error.
+
+        **Example**, on a workspace set to UTC. Searching for `created_at` greater than `1577869200` (January 1st, 2020 9:00 AM UTC) truncates that value to `1577836800` (January 1st, 2020 12:00 AM UTC). Because `>` starts at the next day, the results begin from January 2nd, 2020 12:00 AM UTC - not from 9:00 AM on January 1st. On a workspace in another timezone, the boundaries fall on that timezone's midnight instead.
+
+        To get contacts created on January 1st, 2020, search for `created_at` equal to `1577836800`.
+
+        Only search queries behave this way. Responses still carry the full UNIX timestamp, and sorting uses the full value.
 
         ### Accepted Fields
 
@@ -3939,24 +3961,26 @@ paths:
 
         ### Accepted Operators
 
-        {% admonition type="warning" name="Searching based on `created_at`" %}
-          You cannot use the `<=` or `>=` operators to search by `created_at`.
+        {% admonition type="warning" name="Operators not supported on Date fields" %}
+          Date fields (`created_at`, `updated_at`, and any Date custom attribute) do not support the `!=`, `>=`, or `<=` operators. Using them returns an error.
         {% /admonition %}
 
-        The table below shows the operators you can use to define how you want to search for the value.  The operator should be put in as a string (`"="`). The operator has to be compatible with the field's type (eg. you cannot search with `>` for a given string value as it's only compatible for integer's and dates).
+        The table below shows the operators you can use to define how you want to search for the value. The operator should be put in as a string (`"="`). Which operators are valid depends on the field's type - see the "Valid Types" column below. Searching by `tag_id` supports only the `=` and `!=` operators.
 
-        | Operator | Valid Types                      | Description                                                      |
-        | :------- | :------------------------------- | :--------------------------------------------------------------- |
-        | =        | All                              | Equals                                                           |
-        | !=       | All                              | Doesn't Equal                                                    |
-        | IN       | All                              | In<br>Shortcut for `OR` queries<br>Values must be in Array       |
-        | NIN      | All                              | Not In<br>Shortcut for `OR !` queries<br>Values must be in Array |
-        | >        | Integer<br>Date (UNIX Timestamp) | Greater than                                                     |
-        | <       | Integer<br>Date (UNIX Timestamp) | Lower than                                                       |
-        | ~        | String                           | Contains                                                         |
-        | !~       | String                           | Doesn't Contain                                                  |
-        | ^        | String                           | Starts With                                                      |
-        | $        | String                           | Ends With                                                        |
+        | Operator | Valid Types                        | Description                                                            |
+        | :------- | :---------------------------------- | :----------------------------------------------------------------------|
+        | =        | All                                  | Equals                                                                  |
+        | !=       | All except Date                      | Doesn't Equal                                                           |
+        | IN       | All except Date and tag_id           | In<br>Shortcut for `OR` queries<br>Values must be in Array              |
+        | NIN      | All except Date and tag_id           | Not In<br>Shortcut for `OR !` queries<br>Values must be in Array        |
+        | >        | Integer<br>Date             | Greater than<br>On Date fields, matches from the start of the next day |
+        | <        | Integer<br>Date             | Lower than<br>On Date fields, matches before the start of the day      |
+        | >=       | Integer                     | Greater than or equal to<br>Not supported on Date fields               |
+        | <=       | Integer                     | Lower than or equal to<br>Not supported on Date fields                 |
+        | ~        | String                               | Contains                                                                |
+        | !~       | String                               | Doesn't Contain                                                         |
+        | ^        | String                               | Starts With                                                             |
+        | $        | String                               | Ends With                                                               |
       responses:
         '200':
           description: successful
@@ -4023,7 +4047,7 @@ paths:
           Contacts that have been merged (via POST /contacts/merge) will not appear in list results. Only the target contact from the merge remains accessible.
         {% /admonition %}
         {% admonition type="warning" name="Pagination" %}
-          You can use pagination to limit the number of results returned. The default is `50` results per page.
+          You can use pagination to limit the number of results returned. The default is `10` results per page, with a maximum of `150`.
           See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details on how to use the `starting_after` param.
         {% /admonition %}
       responses:
@@ -4182,8 +4206,7 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-              - "$ref": "#/components/schemas/create_contact_request"
+              "$ref": "#/components/schemas/create_contact_request"
             examples:
               successful:
                 summary: successful
@@ -4842,6 +4865,10 @@ paths:
         If you want to reply to a coveration or take an action such as assign, unassign, open, close or snooze, take a look at the reply and manage endpoints.
         {% /admonition %}
 
+        {% admonition type="danger" name="Breaking change: duplicate custom attribute names" %}
+        The `PUT /conversations/{id}` endpoint now returns a `400 INVALID_PARAMETER` error when the request includes `custom_attributes` and your workspace contains multiple non-archived conversation custom attributes with the same name. Previously, the update would silently apply to a non-deterministic attribute. To resolve, rename or archive the duplicate attribute in your workspace settings, then retry the request.
+        {% /admonition %}
+
       responses:
         '200':
           description: conversation found
@@ -5191,8 +5218,14 @@ paths:
       tags:
       - Conversations
       operationId: replyConversation
-      description: You can reply to a conversation with a message from an admin or
-        on behalf of a contact, or with a note for admins.
+      description: |-
+        You can reply to a conversation with a message from an admin or on behalf of a contact, or with a note for admins.
+
+        {% admonition type="warning" name="Bot replies to inbound email" %}
+        By default, bot or Operator replies to an inbound email conversation aren't sent to your customer. The reply is stored as an unnotifiable bot comment, and no `seen` receipt is generated until an email is actually delivered.
+
+        To send these replies as outbound emails, reach out to your accounts team to enable the email-reply feature flag for your workspace.
+        {% /admonition %}
       responses:
         '200':
           description: User last conversation reply
@@ -6067,7 +6100,7 @@ paths:
                     - type: user
                       id: 6657a89e6abd0160d35d1ef2
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_participants_response"
         '404':
           description: Not found
           content:
@@ -6154,10 +6187,10 @@ paths:
       - Conversations
       operationId: detachContactFromConversation
       description: |+
-        You can add participants who are contacts to a conversation, on behalf of either another contact or an admin.
+        You can remove participants who are contacts from a group conversation, on behalf of an admin.
 
-        {% admonition type="warning" name="Contacts without an email" %}
-        If you add a contact via the email parameter and there is no user/lead found on that workspace with he given email, then we will create a new contact with `role` set to `lead`.
+        {% admonition type="warning" name="Removing the last participant" %}
+        You cannot remove the last remaining contact from a conversation.
         {% /admonition %}
 
       responses:
@@ -6172,7 +6205,7 @@ paths:
                     - type: user
                       id: 6657a8ab6abd0160d35d1efe
               schema:
-                "$ref": "#/components/schemas/conversation"
+                "$ref": "#/components/schemas/conversation_participants_response"
         '404':
           description: Contact not found
           content:
@@ -6246,26 +6279,18 @@ paths:
                 summary: Detach a contact from a group conversation
                 value:
                   admin_id: 991266472
-                  customer:
-                    intercom_user_id: 6657a8a46abd0160d35d1ef6
               conversation_not_found:
                 summary: Conversation not found
                 value:
                   admin_id: 991266475
-                  customer:
-                    intercom_user_id: 6657a8ac6abd0160d35d1eff
               contact_not_found:
                 summary: Contact not found
                 value:
                   admin_id: 991266478
-                  customer:
-                    intercom_user_id: 6657a8b56abd0160d35d1f07
               last_customer:
                 summary: Last customer
                 value:
                   admin_id: 991266481
-                  customer:
-                    intercom_user_id: 6657a8bd6abd0160d35d1f0f
   "/conversations/redact":
     post:
       summary: Redact a conversation part
@@ -7326,7 +7351,8 @@ paths:
       description: "When a job has a status of complete, and thus a filled download_url,
         you can download your data by hitting that provided URL, formatted like so:
         https://api.intercom.io/download/content/data/xyz1234.\n\nYour exported message
-        data will be streamed continuously back down to you in a gzipped CSV format.\n\n>
+        data is returned as a ZIP archive containing one CSV file per data group. The
+        response is sent with the header `Content-Encoding: zip`.\n\n>
         \U0001F4D8 Octet header required\n>\n> You will have to specify the header
         Accept: `application/octet-stream` when hitting this endpoint.\n"
       responses:
@@ -9189,6 +9215,7 @@ components:
           type: string
           enum:
           - admin_assignment_limit_change
+          - admin_avatar_change
           - admin_away_mode_change
           - admin_deletion
           - admin_deprovisioned
@@ -9229,6 +9256,7 @@ components:
           - campaign_deletion
           - campaign_state_change
           - conversation_part_deletion
+          - conversation_pdf_export
           - conversation_topic_change
           - conversation_topic_creation
           - conversation_topic_deletion
@@ -10017,6 +10045,34 @@ components:
                 "$ref": "#/components/schemas/customer_request"
             required:
             - email
+    conversation_participants_response:
+      title: Conversation Participants Response
+      type: object
+      description: The participants of the conversation, returned after attaching
+        or detaching a contact
+      properties:
+        customers:
+          type: array
+          description: The conversation participants after the change
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: The role of the participant. Can be "user" or "lead"
+                example: 'user'
+              id:
+                type: string
+                description: The unique identifier for the participant
+                example: '6762f1a61bb69f9f2193bbd8'
+            required:
+            - type
+            - id
+          example:
+          - type: user
+            id: '6762f1a61bb69f9f2193bbd8'
+      required:
+      - customers
     close_conversation_request:
       title: Close Conversation Request
       type: object
@@ -10427,51 +10483,51 @@ components:
         created_at:
           type: integer
           format: date-time
-          description: "(UNIX timestamp) The time when the contact was created."
+          description: "(Unix timestamp in seconds) The time when the contact was created."
           example: 1571672154
         updated_at:
           type: integer
           format: date-time
-          description: "(UNIX timestamp) The time when the contact was last updated."
+          description: "(Unix timestamp in seconds) The time when the contact was last updated."
           example: 1571672154
         signed_up_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time specified for when a contact signed
+          description: "(Unix timestamp in seconds) The time specified for when a contact signed
             up."
           example: 1571672154
         last_seen_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact was last seen (either
+          description: "(Unix timestamp in seconds) The time when the contact was last seen (either
             where the Intercom Messenger was installed or when specified manually)."
           example: 1571672154
         last_replied_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact last messaged in."
+          description: "(Unix timestamp in seconds) The time when the contact last messaged in."
           example: 1571672154
         last_contacted_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact was last messaged."
+          description: "(Unix timestamp in seconds) The time when the contact was last messaged."
           example: 1571672154
         last_email_opened_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact last opened an
+          description: "(Unix timestamp in seconds) The time when the contact last opened an
             email."
           example: 1571672154
         last_email_clicked_at:
           type: integer
           format: date-time
           nullable: true
-          description: "(UNIX timestamp) The time when the contact last clicked a
+          description: "(Unix timestamp in seconds) The time when the contact last clicked a
             link in an email."
           example: 1571672154
         language_override:
@@ -10529,7 +10585,7 @@ components:
           type: integer
           nullable: true
           format: date-time
-          description: "(UNIX timestamp) The time when the contact was last seen on
+          description: "(Unix timestamp in seconds) The time when the contact was last seen on
             an Android device."
           example: 1571672154
         ios_app_name:
@@ -10561,7 +10617,7 @@ components:
           type: integer
           nullable: true
           format: date-time
-          description: "(UNIX timestamp) The last time the contact used the iOS app."
+          description: "(Unix timestamp in seconds) The last time the contact used the iOS app."
           example: 1571672154
         custom_attributes:
           type: object
@@ -11362,8 +11418,10 @@ components:
         assigned_to:
           "$ref": "#/components/schemas/reference"
           nullable: true
-          description: The id of the admin that was assigned the conversation by this
-            conversation_part (null if there has been no change in assignment.)
+          description: The assignee this conversation_part assigned the conversation to, as
+            a reference whose `type` is `admin`, `team` or `bot`. When the part unassigned
+            the conversation, `type` is `nobody_admin` and `id` is `null`. Null when the
+            part did not change the assignment, or when the assignee has since been deleted.
         author:
           "$ref": "#/components/schemas/conversation_part_author"
         attachments:
@@ -11399,12 +11457,13 @@ components:
         name:
           type: string
           nullable: true
-          description: The name of the author
+          description: The name of the author. `null` if the author is a contact that has since been archived or deleted.
           example: Operator
         email:
           type: string
           format: email
-          description: The email of the author
+          nullable: true
+          description: The email of the author. `null` if the author is a contact that has since been archived or deleted.
           example: operator+abcd1234@intercom.io
     conversation_parts:
       title: Conversation Parts
@@ -11806,14 +11865,14 @@ components:
           type: integer
           format: date-time
           nullable: true
-          description: The time specified for when a contact signed up
+          description: (Unix timestamp in seconds) The time specified for when a contact signed up.
           example: 1571672154
         last_seen_at:
           type: integer
           format: date-time
           nullable: true
-          description: The time when the contact was last seen (either where the Intercom
-            Messenger was installed or when specified manually)
+          description: (Unix timestamp in seconds) The time when the contact was last seen
+            (either where the Intercom Messenger was installed or when specified manually).
           example: 1571672154
         owner_id:
           type: integer
@@ -12637,43 +12696,44 @@ components:
         first_reply:
           type: integer
           description: The first time a user replied to this message if the content
-            was able to receive replies.
+            was able to receive replies. Only events within the export job's requested date range are counted.
         first_completion:
           type: integer
           description: The first time a user completed this message if the content
-            was able to be completed e.g. Tours, Surveys.
+            was able to be completed e.g. Tours, Surveys. Only events within the export job's requested date range are counted.
         first_series_completion:
           type: integer
           description: The first time the series this message was a part of was completed
-            by the user.
+            by the user. Only events within the export job's requested date range are counted.
         first_series_disengagement:
           type: integer
           description: The first time the series this message was a part of was disengaged
-            by the user.
+            by the user. Only events within the export job's requested date range are counted.
         first_series_exit:
           type: integer
           description: The first time the series this message was a part of was exited
-            by the user.
+            by the user. Only events within the export job's requested date range are counted.
         first_goal_success:
           type: integer
           description: The first time the user met this messages associated goal if
-            one exists.
+            one exists. Only events within the export job's requested date range are counted.
         first_open:
           type: integer
-          description: The first time the user opened this message.
+          description: The first time the user opened this message. Only events within
+            the export job's requested date range are counted.
         first_click:
           type: integer
           description: The first time the series the user clicked on a link within
-            this message.
+            this message. Only events within the export job's requested date range are counted.
         first_dismisall:
           type: integer
-          description: The first time the series the user dismissed this message.
+          description: The first time the series the user dismissed this message. Only events within the export job's requested date range are counted.
         first_unsubscribe:
           type: integer
-          description: The first time the user unsubscribed from this message.
+          description: The first time the user unsubscribed from this message. Only events within the export job's requested date range are counted.
         first_hard_bounce:
           type: integer
-          description: The first time this message hard bounced for this user
+          description: The first time this message hard bounced for this user. Only events within the export job's requested date range are counted.
     deleted_article_object:
       title: Deleted Article Object
       type: object
@@ -13095,6 +13155,9 @@ components:
       description: Merge contact data.
       type: object
       title: Merge contact data
+      required:
+      - from
+      - into
       properties:
         from:
           type: string
@@ -13820,18 +13883,26 @@ components:
           - IN
           - NIN
           - "<"
+          - "<="
           - ">"
+          - ">="
           - "~"
           - "!~"
           - "^"
           - "$"
-          description: The accepted operators you can use to define how you want to
-            search for the value.
+          description: |-
+            The accepted operators you can use to define how you want to search for the value. Operator support depends on the field's data type. The breakdown below is for Contacts search; the other search endpoints that share this schema accept a different set per field:
+            - `string` fields: `=`, `!=`, `IN`, `NIN`, `~`, `!~`, `^`, `$`
+            - `tag_id`: `=` and `!=` only. Every other operator returns an error.
+            - `boolean` fields: `=`, `!=`, `IN`, `NIN`
+            - `integer` fields: `=`, `!=`, `IN`, `NIN`, `<`, `>`, `<=`, `>=`
+            - `date` fields (all standard timestamp attributes and date custom attributes): `=`, `<`, `>` only. `!=`, `<=`, `>=`, `IN`, and `NIN` are not supported and return an error.
           example: ">"
         value:
           oneOf:
           - type: string
           - type: integer
+          - type: boolean
           - type: array
             items:
               type: string
@@ -14245,8 +14316,10 @@ components:
         state:
           type: string
           description: Whether the article will be `published` or will be a `draft`.
-            Defaults to draft. For multilingual articles, this will be the state of
-            the default language's content.
+            Omitting this field leaves the publish state unchanged, so a draft stays
+            a draft and an edit to a published article goes live immediately unless
+            that article already has a pending draft. For multilingual articles, this
+            will be the state of the default language's content.
           enum:
           - published
           - draft
@@ -14314,14 +14387,14 @@ components:
           type: integer
           format: date-time
           nullable: true
-          description: The time specified for when a contact signed up
+          description: (Unix timestamp in seconds) The time specified for when a contact signed up.
           example: 1571672154
         last_seen_at:
           type: integer
           format: date-time
           nullable: true
-          description: The time when the contact was last seen (either where the Intercom
-            Messenger was installed or when specified manually)
+          description: (Unix timestamp in seconds) The time when the contact was last seen
+            (either where the Intercom Messenger was installed or when specified manually).
           example: 1571672154
         owner_id:
           type: integer
