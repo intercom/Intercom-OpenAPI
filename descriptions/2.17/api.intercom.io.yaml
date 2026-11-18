@@ -18635,7 +18635,7 @@ paths:
       - name: include_monitors
         in: query
         required: false
-        description: If set to true, the response will include a `monitor_evaluations` array on each conversation with the latest QA monitor evaluation for each monitor that has evaluated it.
+        description: If set to true, the response will include a `monitor_evaluations` array on each conversation with the latest QA monitor evaluation for each monitor that has evaluated it. The array is empty when the teammate the access token belongs to doesn't have permission to view QA scorecards and monitors in Intercom.
         example: true
         schema:
           type: boolean
@@ -18643,7 +18643,7 @@ paths:
       - name: include_scorecards
         in: query
         required: false
-        description: If set to true, the response will include a `scorecards` array on each conversation with any QA scorecard results.
+        description: If set to true, the response will include a `scorecards` array on each conversation with any QA scorecard results. The array is empty when the teammate the access token belongs to doesn't have permission to view QA scorecards and monitors in Intercom.
         example: true
         schema:
           type: boolean
@@ -18975,7 +18975,7 @@ paths:
       - name: include_scorecards
         in: query
         required: false
-        description: If set to true, the response will include a `scorecards` array with any QA scorecard results for this conversation.
+        description: If set to true, the response will include a `scorecards` array with any QA scorecard results for this conversation. The array is empty when the teammate the access token belongs to doesn't have permission to view QA scorecards and monitors in Intercom.
         example: true
         schema:
           type: boolean
@@ -19624,7 +19624,7 @@ paths:
       - name: include_monitors
         in: query
         required: false
-        description: If set to true, the response will include a `monitor_evaluations` array on each conversation with the latest QA monitor evaluation for each monitor that has evaluated it.
+        description: If set to true, the response will include a `monitor_evaluations` array on each conversation with the latest QA monitor evaluation for each monitor that has evaluated it. The array is empty when the teammate the access token belongs to doesn't have permission to view QA scorecards and monitors in Intercom.
         example: true
         schema:
           type: boolean
@@ -19632,7 +19632,7 @@ paths:
       - name: include_scorecards
         in: query
         required: false
-        description: If set to true, the response will include a `scorecards` array on each conversation with any QA scorecard results.
+        description: If set to true, the response will include a `scorecards` array on each conversation with any QA scorecard results. The array is empty when the teammate the access token belongs to doesn't have permission to view QA scorecards and monitors in Intercom.
         example: true
         schema:
           type: boolean
@@ -40268,7 +40268,7 @@ components:
           - needs_fix
           - wont_fix
           - fix_complete
-          description: The status of the review of this scorecard, as shown in the QA reviews list in Intercom. `unreviewed` while the review is waiting for a reviewer's verdict; `submitted` once the review has been submitted; `passed_review`, `needs_fix`, `wont_fix` or `fix_complete` when a teammate set a specific outcome. Null when no review exists for this scorecard.
+          description: The status of the review of this scorecard, as shown in the QA reviews list in Intercom. `unreviewed` while the review is waiting for a reviewer's verdict; `submitted` once the review has been submitted; `passed_review`, `needs_fix`, `wont_fix` or `fix_complete` when a teammate set a specific outcome. Null when no review exists for this scorecard or the teammate the access token belongs to can't view it.
           example: submitted
         submitted_by:
           "$ref": "#/components/schemas/conversation_scorecard_submitted_by"
@@ -40276,7 +40276,7 @@ components:
           "$ref": "#/components/schemas/conversation_scorecard_revised_by"
         notes:
           type: array
-          description: The notes teammates left on the QA review linked to this scorecard entry. Empty when the scorecard has no linked review.
+          description: The notes teammates left on the QA review linked to this scorecard entry. Empty when the scorecard has no linked review or the teammate the access token belongs to can't view it.
           example:
           - id: '9001'
             created_at: 1734537900
@@ -40298,7 +40298,7 @@ components:
       nullable: true
       x-tags:
       - Conversations
-      description: Who the review of this scorecard is assigned to. `ai` when it is assigned to Fin; `admin` when it is assigned to a teammate. Null when no review exists for this scorecard or the review is unassigned.
+      description: Who the review of this scorecard is assigned to. `ai` when it is assigned to Fin; `admin` when it is assigned to a teammate. Null when no review exists for this scorecard, the review is unassigned, or the teammate the access token belongs to can't view the review.
       properties:
         type:
           type: string
@@ -40318,7 +40318,7 @@ components:
       nullable: true
       x-tags:
       - Conversations
-      description: Who last submitted the review of this scorecard, which can differ from the `reviewer` it is assigned to. `ai` when Fin submitted it; `admin` when a teammate did. Null while the review is unreviewed or when no review exists for this scorecard.
+      description: Who last submitted the review of this scorecard, which can differ from the `reviewer` it is assigned to. `ai` when Fin submitted it; `admin` when a teammate did. Null while the review is unreviewed, when no review exists for this scorecard, or when the teammate the access token belongs to can't view the review.
       properties:
         type:
           type: string
@@ -40338,7 +40338,7 @@ components:
       nullable: true
       x-tags:
       - Conversations
-      description: Who last changed the review of this scorecard after it was submitted. `ai` when Fin made the change; `admin` when a teammate did. Null while the review is unreviewed, when it has not been changed since it was submitted, or when no review exists for this scorecard.
+      description: Who last changed the review of this scorecard after it was submitted. `ai` when Fin made the change; `admin` when a teammate did. Null while the review is unreviewed, when it has not been changed since it was submitted, when no review exists for this scorecard, or when the teammate the access token belongs to can't view the review.
       properties:
         type:
           type: string
