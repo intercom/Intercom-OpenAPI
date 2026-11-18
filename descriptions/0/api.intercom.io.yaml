@@ -32732,11 +32732,13 @@ paths:
                     - type: tag
                       id: '102'
                       name: Manual tag 1
+                      archived: false
                 single tag:
                   value:
                     type: tag
                     id: '102'
                     name: Manual tag 1
+                    archived: false
               schema:
                 anyOf:
                 - "$ref": "#/components/schemas/tag_list"
@@ -32829,6 +32831,7 @@ paths:
                     type: tag
                     id: '105'
                     name: test
+                    archived: false
                     users: []
                     companies: []
                 Companies tagged:
@@ -32836,6 +32839,7 @@ paths:
                     type: tag
                     id: '105'
                     name: test
+                    archived: false
                     users: []
                     companies:
                     - id: '6329e838deab40166d1a5400'
@@ -32975,8 +32979,9 @@ paths:
                     type: tag
                     id: '113'
                     name: Manual tag
+                    archived: false
               schema:
-                "$ref": "#/components/schemas/tag_basic"
+                "$ref": "#/components/schemas/tag"
         '404':
           description: Tag not found
           content:
@@ -57020,6 +57025,10 @@ components:
           type: string
           description: The name of the tag
           example: Test tag
+        archived:
+          type: boolean
+          description: Whether the tag is archived.
+          example: false
         applied_at:
           type: integer
           format: timestamp
@@ -57060,6 +57069,10 @@ components:
         - "$ref": "#/components/schemas/tag_basic"
         - type: object
           properties:
+            archived:
+              type: boolean
+              description: Whether the tag is archived.
+              example: false
             users:
               type: array
               nullable: true
