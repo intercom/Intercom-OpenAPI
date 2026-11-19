@@ -637,6 +637,21 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden. Returned when the access token acts as a teammate
+            who lacks the permission to access all teammates and team details.
+          content:
+            application/json:
+              examples:
+                Teammate lacks permission:
+                  value:
+                    type: error.list
+                    request_id: 52609d5a-89ae-4a95-aaae-c25f81ac8806
+                    errors:
+                    - code: action_forbidden
+                      message: Teammate lacks permission to access all teammates and team details
+              schema:
+                "$ref": "#/components/schemas/error"
   "/admins/activity_logs/search":
     post:
       summary: Search activity logs
