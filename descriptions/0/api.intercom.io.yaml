@@ -33091,6 +33091,136 @@ paths:
                       message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+    put:
+      summary: Archive or unarchive a tag
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        description: The unique identifier of a given tag
+        example: '123'
+        required: true
+        schema:
+          type: string
+      tags:
+      - Tags
+      operationId: updateTag
+      description: |
+        You can archive or unarchive a tag by passing in its id. Archived tags are still returned by `GET /tags`, with `archived` set to `true`.
+
+        You can't archive a tag that is still in use elsewhere in your workspace, such as in a segment or rule; the request returns a 400 that lists them. Unarchiving always succeeds. Archiving a tag that is already archived, or unarchiving one that isn't, returns the tag unchanged.
+
+        Requires the `write_tags` or `write_users_companies` OAuth scope.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_tag_request"
+            examples:
+              archive_tag:
+                summary: Archive a tag
+                value:
+                  archived: true
+              unarchive_tag:
+                summary: Unarchive a tag
+                value:
+                  archived: false
+      responses:
+        '200':
+          description: Tag updated
+          content:
+            application/json:
+              examples:
+                Tag archived:
+                  value:
+                    type: tag
+                    id: '113'
+                    name: Manual tag
+                    archived: true
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing archived:
+                  value:
+                    type: error.list
+                    request_id: 3f6b2e1a-8c4d-4f7e-9a2b-5d1c0e8f7a63
+                    errors:
+                    - code: parameter_not_found
+                      message: archived is required
+                Invalid archived:
+                  value:
+                    type: error.list
+                    request_id: 7a2d9c4e-1b3f-4e8a-b6d5-0c9f2e1a4b87
+                    errors:
+                    - code: parameter_invalid
+                      message: archived must be a boolean
+                Tag has dependent objects:
+                  value:
+                    type: error.list
+                    request_id: c4e8a1f2-6d3b-4a9e-8f7c-2b5d0e9a1c36
+                    errors:
+                    - code: tag_has_dependent_objects
+                      message: 'Unable to delete Tag with dependent objects. Segments:
+                        Seg 1.'
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Tag not found
+          content:
+            application/json:
+              examples:
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 9b1e5d3a-2c7f-4b8e-a4d6-1f0c3e9b2a75
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Tag is being applied
+          content:
+            application/json:
+              examples:
+                Tagging in progress:
+                  value:
+                    type: error.list
+                    request_id: 2e7c4a9f-5b1d-4c3e-9a8f-6d0b2e1c7f49
+                    errors:
+                    - code: conflict
+                      message: An ongoing import or bulk operation is using this
+                        tag. Please wait for it to complete before archiving.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 5d9a2c7e-3f1b-4e6a-8c4d-0b7e2f9a1c58
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 8f3c1e6a-4d2b-4a7e-9b5c-1e0d3f8a2c64
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
   "/teams":
     get:
       summary: List all teams
@@ -49389,6 +49519,18 @@ components:
           example:
             order_number: ORDER-12345
             total_amount: 99.99
+    update_tag_request:
+      description: You can archive or unarchive a tag.
+      type: object
+      title: Update Tag Request Payload
+      properties:
+        archived:
+          type: boolean
+          description: Set to `true` to archive the tag, or `false` to unarchive
+            it.
+          example: true
+      required:
+      - archived
     create_or_update_tag_request:
       description: You can create or update an existing tag, and optionally apply
         it to a list of contact or company ids.
