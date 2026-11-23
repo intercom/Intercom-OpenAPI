@@ -39760,6 +39760,141 @@ paths:
                       message: This HITL request has already been fulfilled
               schema:
                 "$ref": "#/components/schemas/error"
+  "/procedures/{procedure_id}/proactive_trigger":
+    post:
+      summary: Trigger a Fin Procedure for a user
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: procedure_id
+        in: path
+        required: true
+        description: The ID of the procedure to trigger.
+        example: '12345'
+        schema:
+          type: string
+      tags:
+      - Procedures
+      operationId: triggerProcedure
+      description: |
+        Start a Fin Procedure on a new conversation for an existing user. Fin sends the user the procedure's opening message and the procedure runs from there.
+
+        The procedure must have an API trigger. Identify the user by the `user_id` you assigned to them in Intercom. The user must already exist; this endpoint does not create users.
+
+        If you send a `locale` that Fin does not support for your workspace, the conversation uses your workspace's default language.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/trigger_procedure_request"
+            examples:
+              Trigger for a user:
+                value:
+                  user:
+                    id: user-456
+              Trigger with locale and context:
+                value:
+                  user:
+                    id: user-456
+                  locale: fr
+                  context:
+                    order_id: ord-789
+                    plan: premium
+      responses:
+        '200':
+          description: The procedure was triggered.
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    status: triggered
+                    conversation_id: '192837465'
+                    procedure_id: '12345'
+              schema:
+                "$ref": "#/components/schemas/trigger_procedure_response"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Missing user:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: user parameter is required
+                Missing user ID:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: user.id is required
+                Invalid context:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: context must be an object
+                Not available in this API version:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                User not found:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+                Procedure not found:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: not_found
+                      message: Procedure not found
+                No API trigger:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: not_found
+                      message: Procedure does not have a api trigger
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                Procedure cannot be triggered:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unprocessable_entity
+                      message: Id matches both a procedure and a Fin skill
+              schema:
+                "$ref": "#/components/schemas/error"
 components:
   schemas:
     office_hours_time_interval:
@@ -44139,6 +44274,65 @@ components:
       required:
       - step_id
       - attribute_values
+    trigger_procedure_request:
+      title: Trigger Procedure Request
+      type: object
+      x-tags:
+      - Procedures
+      description: Request body for triggering a Fin Procedure for a user.
+      properties:
+        user:
+          type: object
+          description: The user to start the procedure for.
+          properties:
+            id:
+              type: string
+              description: The `user_id` you assigned to the user in Intercom.
+              example: user-456
+          required:
+          - id
+        locale:
+          type: string
+          description: The language for the conversation, such as `fr`. If omitted,
+            or if Fin does not support it for your workspace, your workspace's default
+            language is used.
+          example: fr
+        context:
+          type: object
+          description: Data about why you are triggering the procedure, made available
+            to the procedure as it runs. Send an object of any shape.
+          additionalProperties: true
+          example:
+            order_id: ord-789
+            plan: premium
+      required:
+      - user
+    trigger_procedure_response:
+      title: Trigger Procedure Response
+      type: object
+      x-tags:
+      - Procedures
+      description: The result of triggering a Fin Procedure.
+      properties:
+        status:
+          type: string
+          description: Always `triggered`.
+          enum:
+          - triggered
+          example: triggered
+        conversation_id:
+          type: string
+          description: The ID of the conversation the procedure runs on.
+          example: '192837465'
+        procedure_id:
+          type: string
+          description: The procedure ID from the request path.
+          example: '12345'
+        fin_skill_id:
+          type: string
+          description: The ID of the Fin skill that ran. Returned only when the procedure
+            ran as a Fin skill.
+          example: '67890'
     company:
       title: Company
       type: object
@@ -60219,7 +60413,7 @@ tags:
     OAuth token with the `read_write_office_hours` scope.
 - name: Procedures
   description: |
-    Submit human-collected input to Fin Procedures via the HITL (Human in the Loop) API.
+    Trigger Fin Procedures for your users, and submit human-collected input to Fin Procedures via the HITL (Human in the Loop) API.
 
     &nbsp;
 
