@@ -39760,6 +39760,153 @@ paths:
                       message: This HITL request has already been fulfilled
               schema:
                 "$ref": "#/components/schemas/error"
+  "/procedures/{procedure_id}/proactive_trigger":
+    post:
+      summary: Proactively trigger a procedure for a user
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: procedure_id
+        in: path
+        required: true
+        description: The ID of the procedure, or of the Fin skill, to trigger.
+        example: '12345'
+        schema:
+          type: string
+      tags:
+      - Procedures
+      operationId: proactiveTriggerProcedure
+      description: |
+        Start a new Fin conversation with a user and run the given procedure in it, without waiting for the user to write in first.
+
+        The procedure must have an API trigger configured; otherwise the request returns a 404. The user must already exist in your workspace, identified by their `user_id`; this endpoint does not create users.
+
+        {% admonition type="info" name="Authentication" %}
+        This endpoint requires an OAuth token with the `write_conversations` scope.
+        {% /admonition %}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - user
+              properties:
+                user:
+                  type: object
+                  description: The user to start the conversation with.
+                  required:
+                  - id
+                  properties:
+                    id:
+                      type: string
+                      description: The `user_id` you assigned to the contact (their external ID), not the Intercom contact ID.
+                      example: user-8261
+                locale:
+                  type: string
+                  description: The locale Fin should use in the conversation. A locale Fin can't serve for your workspace falls back to the workspace default instead of failing the request.
+                  example: fr
+                context:
+                  type: object
+                  description: Optional key-value data that is passed to the procedure when it starts.
+                  additionalProperties: true
+                  example:
+                    order_id: ORD-1029
+            examples:
+              Trigger with locale and context:
+                value:
+                  user:
+                    id: user-8261
+                  locale: fr
+                  context:
+                    order_id: ORD-1029
+      responses:
+        '200':
+          description: Procedure triggered
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    status: triggered
+                    conversation_id: '215473853299345'
+                    procedure_id: '12345'
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Always `triggered`.
+                    example: triggered
+                  conversation_id:
+                    type: string
+                    description: The ID of the conversation the procedure was started in.
+                    example: '215473853299345'
+                  procedure_id:
+                    type: string
+                    description: The `procedure_id` from the request path.
+                    example: '12345'
+                  fin_skill_id:
+                    type: string
+                    description: The ID of the Fin skill that was triggered. Present only when `procedure_id` identifies a Fin skill.
+                    example: '67890'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing user id:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: user.id is required
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          description: The procedure or Fin skill was not found or has no API trigger,
+            or no user has the given `user.id`.
+          content:
+            application/json:
+              examples:
+                No API trigger:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: not_found
+                      message: Procedure does not have a api trigger
+                User not found:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: The procedure can't be triggered for this user, for example
+            because the user is outside the Fin skill's audience or can't be contacted
+            on the configured channel.
+          content:
+            application/json:
+              examples:
+                Outside audience:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unprocessable_entity
+                      message: User is not in the Fin skill's audience
+              schema:
+                "$ref": "#/components/schemas/error"
 components:
   schemas:
     office_hours_time_interval:
@@ -60219,7 +60366,7 @@ tags:
     OAuth token with the `read_write_office_hours` scope.
 - name: Procedures
   description: |
-    Submit human-collected input to Fin Procedures via the HITL (Human in the Loop) API.
+    Proactively trigger Fin Procedures for a user, and submit human-collected input to Fin Procedures via the HITL (Human in the Loop) API.
 
     &nbsp;
 
