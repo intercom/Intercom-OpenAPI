@@ -813,6 +813,21 @@ paths:
                       message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden. Returned when the access token acts as a teammate
+            who lacks the permission to access all teammates and team details.
+          content:
+            application/json:
+              examples:
+                Teammate lacks permission:
+                  value:
+                    type: error.list
+                    request_id: 52609d5a-89ae-4a95-aaae-c25f81ac8806
+                    errors:
+                    - code: action_forbidden
+                      message: Teammate lacks permission to access all teammates and team details
+              schema:
+                "$ref": "#/components/schemas/error"
   "/admins/activity_logs/search":
     post:
       summary: Search activity logs
@@ -954,6 +969,21 @@ paths:
                     errors:
                     - code: token_unauthorized
                       message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden. Returned when the access token acts as a teammate
+            who lacks the permission to access all teammates and team details.
+          content:
+            application/json:
+              examples:
+                Teammate lacks permission:
+                  value:
+                    type: error.list
+                    request_id: 52609d5a-89ae-4a95-aaae-c25f81ac8806
+                    errors:
+                    - code: action_forbidden
+                      message: Teammate lacks permission to access all teammates and team details
               schema:
                 "$ref": "#/components/schemas/error"
   "/admins/activity_log_event_types":
@@ -3816,7 +3846,7 @@ paths:
         `https://api.intercom.io/articles`.\n\n> \U0001F4D8 How are the articles sorted
         and ordered?\n>\n> Articles will be returned in descending order on the `updated_at`
         attribute. This means if you need to iterate through results then we'll show
-        the most recently updated articles first.\n\nRequires the `read_articles_scope` OAuth scope.\n"
+        the most recently updated articles first.\n\nRequires the `read_articles_scope` or `create_update_articles` OAuth scope.\n"
       responses:
         '200':
           description: successful
@@ -3907,7 +3937,7 @@ paths:
         \U0001F4D8 Tags are managed separately\n>\n> Tags are returned in article responses
         but cannot be set in the request body. To add or remove an article's tags,
         use the `POST /articles/{article_id}/tags` and `DELETE /articles/{article_id}/tags/{id}`
-        endpoints.\n\nRequires the `read_write_articles_scope` OAuth scope.\n"
+        endpoints.\n\nRequires the `read_write_articles_scope` or `create_update_articles` OAuth scope.\n"
       responses:
         '200':
           description: article created
@@ -4109,7 +4139,7 @@ paths:
       description: |
         You can fetch the details of a single article by making a GET request to `https://api.intercom.io/articles/<id>`.
 
-        Requires the `read_articles_scope` OAuth scope.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Article found
@@ -4210,7 +4240,7 @@ paths:
         request to `https://api.intercom.io/articles/<id>`.\n\n> \U0001F4D8 Tags are managed separately\n>\n> Tags are returned in article responses
         but cannot be set in the request body. To add or remove an article's tags,
         use the `POST /articles/{article_id}/tags` and `DELETE /articles/{article_id}/tags/{id}`
-        endpoints.\n\nRequires the `read_write_articles_scope` OAuth scope.\n"
+        endpoints.\n\nRequires the `read_write_articles_scope` or `create_update_articles` OAuth scope.\n"
       responses:
         '200':
           description: successful
@@ -4494,7 +4524,7 @@ paths:
         has no staged draft. An article ID that doesn't exist returns a `404` with
         the standard error body.
 
-        Requires the `read_articles_scope` OAuth scope.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Article draft found
@@ -4585,7 +4615,7 @@ paths:
         scheduling, state and placement notes on the request schema's other fields
         do not apply to this endpoint, because those fields are not applied.
 
-        Requires the `read_write_articles_scope` OAuth scope.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Draft staged
@@ -4703,7 +4733,7 @@ paths:
         `{ "errors": [{ "message": "...", "status": 422 }] }`, with no `type`,
         `request_id` or `code`. The other `422` errors use the standard error format.
 
-        Requires the `read_write_articles_scope` OAuth scope.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Draft published
@@ -4824,7 +4854,7 @@ paths:
         and the authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_articles_scope` OAuth scope.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope.
       requestBody:
         content:
           application/json:
@@ -4943,7 +4973,7 @@ paths:
         The authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_articles_scope` OAuth scope.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Tag removed
@@ -5048,7 +5078,7 @@ paths:
         A `404` has an empty response body, whether the article or its content
         isn't found.
 
-        Requires the `read_articles_scope` OAuth scope.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Versions found
@@ -5149,7 +5179,7 @@ paths:
         A `404` has an empty response body, whether the article, its content or
         the version isn't found.
 
-        Requires the `read_articles_scope` OAuth scope.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Version found
@@ -5258,7 +5288,7 @@ paths:
 
         If no articles match the search, `data` is an empty array rather than an object.
 
-        Requires the `read_articles_scope` OAuth scope.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Search successful
@@ -8509,7 +8539,7 @@ paths:
       description: |
         You can fetch a list of all collections by making a GET request to `https://api.intercom.io/help_center/collections`.
 
-        Requires the `read_articles_scope` OAuth scope.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -8600,7 +8630,7 @@ paths:
       description: |
         You can create a new collection by making a POST request to `https://api.intercom.io/help_center/collections`.
 
-        Requires the `read_write_articles_scope` OAuth scope.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: collection created
@@ -8700,7 +8730,7 @@ paths:
       description: |
         You can fetch the details of a single collection by making a GET request to `https://api.intercom.io/help_center/collections/<id>`.
 
-        Requires the `read_articles_scope` OAuth scope.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Collection found
@@ -8773,7 +8803,7 @@ paths:
 
         `help_center_id` is checked but never applied. It must match the help center of the collection's articles and sub-collections, or the request returns a `400`. A collection with no content rejects any `help_center_id`, so leave it out. Moving a collection to another help center isn't supported.
 
-        Requires the `read_write_articles_scope` OAuth scope.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: successful
@@ -8949,7 +8979,7 @@ paths:
       description: |
         You can fetch the details of a single Help Center by making a GET request to `https://api.intercom.io/help_center/help_centers/<id>`.
 
-        Requires the `read_articles_scope` OAuth scope.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Help Center found
@@ -9014,7 +9044,7 @@ paths:
       description: |
         You can list all Help Centers by making a GET request to `https://api.intercom.io/help_center/help_centers`.
 
-        Requires the `read_articles_scope` OAuth scope.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope.
       responses:
         '200':
           description: Help Centers found
@@ -11869,7 +11899,7 @@ paths:
           See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details.
         {% /admonition %}
 
-        Requires the `write_users_companies` OAuth scope. A token with only read scopes cannot call this endpoint.
+        Requires the `read_users_companies` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -15698,8 +15728,7 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-              - "$ref": "#/components/schemas/create_contact_request"
+              "$ref": "#/components/schemas/create_contact_request"
             examples:
               successful:
                 summary: successful
@@ -20065,8 +20094,8 @@ paths:
       - Conversations
       operationId: deleteConversation
       description: |
-        {% admonition type="warning" name="Irreversible operation" %}
-        Deleting a conversation is permanent and cannot be reversed.
+        {% admonition type="warning" name="Irreversible after the recovery window" %}
+        With `retain_metrics=false`, deleting a conversation is permanent and cannot be reversed. With the default `retain_metrics=true`, the conversation's data is retained for 7 days before being permanently deleted, and recovering it during that window isn't available through the API.
         {% /admonition %}
 
         You can delete a single conversation. The behavior depends on the `retain_metrics` parameter:
@@ -25886,7 +25915,7 @@ paths:
       - name: include_bodies
         in: query
         required: false
-        description: Include request/response bodies in the response (default false).
+        description: Include request/response bodies in the response (default false). Ignored for third-party apps (apps owned by another workspace), which never receive bodies.
         schema:
           type: string
           enum:
@@ -25899,7 +25928,7 @@ paths:
         Retrieve paginated execution logs for a specific data connector.
         Results from the last hour are returned by default. Use `start_ts` and `end_ts` to customize the time range.
 
-        Request/response bodies are excluded by default. Use `include_bodies=true` to include them.
+        Request/response bodies are excluded by default. Use `include_bodies=true` to include them. Apps owned by another workspace never receive them.
 
         OAuth tokens must have the `read_workflow_connector_execution_result` or `read_write_data_connectors` scope.
       responses:
@@ -26030,7 +26059,7 @@ paths:
       operationId: showDataConnectorExecutionResult
       description: |
         Retrieve details for a specific data connector execution result.
-        Includes the request/response bodies and sanitised request URL when they are available.
+        Includes the sanitised request URL, and the request/response bodies when they are available. Bodies are omitted when the request comes from a third-party app (an app owned by another workspace).
 
         OAuth tokens must have the `read_workflow_connector_execution_result` or `read_write_data_connectors` scope.
       responses:
@@ -28113,9 +28142,11 @@ paths:
         is created and when a contact becomes available to be messaged through the
         API. A 404 Not Found error will be returned in this case.\n\nThis will return
         the Message model that has been created.\n\n> \U0001F6A7 Retrieving Associated
-        Conversations\n>\n> As this is a message, there will be no conversation present
+        Conversations\n>\n> For in-app and email messages, there will be no conversation present
         until the contact responds. Once they do, you will have to search for a contact's
-        conversations with the id of the message.\n\n{% admonition type=\"warning\" name=\"Messages from contacts\" %}\n`from` should be an admin. A request with a user or lead as `from` is not rejected: it creates a conversation initiated by that contact, as the Create a conversation endpoint (`POST /conversations`) does, and the `to`, `cc` and `bcc` fields are ignored. To create a conversation initiated by a contact, use `POST /conversations`.\n{% /admonition %}\n"
+        conversations with the id of the message.\n>\n> For `whatsapp` messages, the
+        conversation is created when the message is sent, and its id is returned as
+        `conversation_id`.\n\n{% admonition type=\"warning\" name=\"Messages from contacts\" %}\n`from` should be an admin. A request with a user or lead as `from` is not rejected: it creates a conversation initiated by that contact, as the Create a conversation endpoint (`POST /conversations`) does, and the `to`, `cc` and `bcc` fields are ignored. To create a conversation initiated by a contact, use `POST /conversations`.\n{% /admonition %}\n"
       responses:
         '200':
           description: admin message created
@@ -28153,6 +28184,22 @@ paths:
                       email: admin299@email.com
                       away_mode_enabled: false
                       away_mode_reassign: false
+                admin whatsapp message created:
+                  value:
+                    type: admin_message
+                    id: '20'
+                    created_at: 1734537790
+                    body: Hi Username 123, your account is still active.
+                    message_type: whatsapp
+                    conversation_id: '615'
+                    owner:
+                      type: admin
+                      id: '991267817'
+                      name: Ciaran300 Lee
+                      email: admin300@email.com
+                      away_mode_enabled: false
+                      away_mode_reassign: false
+                    whatsapp_message_id: wamid.abc123
               schema:
                 "$ref": "#/components/schemas/message"
         '400':
@@ -28181,6 +28228,90 @@ paths:
                     errors:
                     - code: data_invalid
                       message: "Field 'to' is required"
+                WhatsApp not enabled for workspace:
+                  value:
+                    type: error.list
+                    request_id: 4e1b7c92-3a5d-4f08-b6e2-9d7a0c3f5b18
+                    errors:
+                    - code: parameter_invalid
+                      message: This app is not allowed to send WhatsApp messages
+                WhatsApp template missing:
+                  value:
+                    type: error.list
+                    request_id: a7d3e5f1-2b64-4c9a-8e17-5f0b3d9c6a24
+                    errors:
+                    - code: parameter_invalid
+                      message: template is required for WhatsApp messages
+                WhatsApp components missing:
+                  value:
+                    type: error.list
+                    request_id: 6c2f9a8d-7e13-4b5c-a0d4-1e8b7f3c2d95
+                    errors:
+                    - code: parameter_invalid
+                      message: Components must be provided for WhatsApp messages
+                WhatsApp integration not found:
+                  value:
+                    type: error.list
+                    request_id: d9e4b1a6-5c37-4f2e-9b80-3a6d2c7e1f43
+                    errors:
+                    - code: parameter_invalid
+                      message: No WhatsApp integration found for this app
+                WhatsApp sender number invalid:
+                  value:
+                    type: error.list
+                    request_id: 2f8a6d3c-1b95-4e7a-8c42-7d0e5b9a3f61
+                    errors:
+                    - code: parameter_invalid
+                      message: Sender WhatsApp number format is invalid
+                WhatsApp sender number not registered:
+                  value:
+                    type: error.list
+                    request_id: b3c7e9f2-6a14-4d8b-9e05-2c1f8a4d7b36
+                    errors:
+                    - code: parameter_invalid
+                      message: Sender WhatsApp number is not registered in this workspace
+                WhatsApp template not found:
+                  value:
+                    type: error.list
+                    request_id: 5e0d2a7b-9c63-4f1e-a8b4-6d3c9e2f0a57
+                    errors:
+                    - code: parameter_invalid
+                      message: template 'order_update' does not exist
+                WhatsApp recipient phone missing:
+                  value:
+                    type: error.list
+                    request_id: 8a4f1c6e-3d27-4b9a-b5e1-0f7c2a8d4e69
+                    errors:
+                    - code: parameter_invalid
+                      message: WhatsApp message payload must include phone.
+                WhatsApp recipient phone invalid:
+                  value:
+                    type: error.list
+                    request_id: c1e6a3d8-4f52-4a7b-9d03-8b5e1c7f2a94
+                    errors:
+                    - code: parameter_invalid
+                      message: Recipient does not have a valid phone number.
+                WhatsApp template not available in locale:
+                  value:
+                    type: error.list
+                    request_id: 7b9d2e4f-8a16-4c3e-b7a5-1d0f6c3e9b28
+                    errors:
+                    - code: parameter_invalid
+                      message: 'template ''order_update'' is not available in locale ''fr'' (available: en, es)'
+                WhatsApp template locale ambiguous:
+                  value:
+                    type: error.list
+                    request_id: e5a8c0b3-2d79-4f6a-8c14-9e3b7d1a5f02
+                    errors:
+                    - code: parameter_invalid
+                      message: 'template ''order_update'' exists in multiple regional variants (en_GB, en_US); pass an explicit locale'
+                WhatsApp multiple recipients:
+                  value:
+                    type: error.list
+                    request_id: 3d6f8b1a-7e42-4c9d-a2b5-4f0e8c6d3a71
+                    errors:
+                    - code: data_invalid
+                      message: To field must not contains an array of recipients.
                 Too many recipients:
                   value:
                     type: error.list
@@ -28265,6 +28396,13 @@ paths:
                     errors:
                     - code: action_forbidden
                       message: One or more users have hard bounced and cannot be messaged via email
+                WhatsApp recipient blocked:
+                  value:
+                    type: error.list
+                    request_id: 9c3e7a1f-5b28-4d6e-8f04-2a9d6c1b7e53
+                    errors:
+                    - code: whatsapp_recipient_blocked
+                      message: The recipient associated with this phone number has been blocked.
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -28279,6 +28417,27 @@ paths:
                     errors:
                     - code: not_found
                       message: User Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              examples:
+                WhatsApp message not sent:
+                  value:
+                    type: error.list
+                    request_id: f2b8d4a6-1c73-4e9f-b0a5-7d3e9c2f6a18
+                    errors:
+                    - code: server_error
+                      message: 'Failed to send WhatsApp message: (#131026) Message undeliverable'
+                WhatsApp conversation not created:
+                  value:
+                    type: error.list
+                    request_id: 6a1d9f3c-8e54-4b2a-9c07-3f5b1e8d4a26
+                    errors:
+                    - code: server_error
+                      message: Failed to create WhatsApp conversation - no conversation returned
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -44160,13 +44319,15 @@ components:
           example: Hello there
         template:
           type: string
-          description: The style of the outgoing message. Possible values `plain`
-            or `personal`.
+          description: For `email` messages, the style of the outgoing message. Possible
+            values `plain` or `personal`. For `whatsapp` messages, the name of the
+            WhatsApp message template to send. A template that doesn't exist returns
+            a `400` error.
           example: plain
         from:
           type: object
-          description: The sender of the message. If not provided, the default sender
-            will be used.
+          description: The sender of the message. Required. A request without `from`
+            returns a `400` error.
           properties:
             type:
               type: string
@@ -44178,6 +44339,13 @@ components:
               type: integer
               description: The identifier for the admin which is given by Intercom.
               example: 394051
+            whatsapp_number:
+              type: string
+              description: For `whatsapp` messages, the WhatsApp number of your workspace
+                to send from, in international format. If you leave it out, a WhatsApp
+                number in your workspace that has the template is used. A number that
+                isn't valid, or isn't registered in your workspace, returns a `400` error.
+              example: "+14155550123"
           required:
           - type
           - id
@@ -44185,7 +44353,8 @@ components:
           oneOf:
             - $ref: '#/components/schemas/recipient'
             - type: array
-              description: The recipients of the message.
+              description: The recipients of the message. Not accepted for `whatsapp`
+                messages, which take a single recipient. An array returns a `400` error.
               items:
                 $ref: '#/components/schemas/recipient'
               example:
@@ -44197,7 +44366,8 @@ components:
               title: WhatsApp recipient
               description: The recipient of a `whatsapp` message, identified by phone
                 number. Required form for `whatsapp` messages. A contact is
-                created for the number if there isn't one.
+                created for the number if there isn't one. Only `phone` and `name`
+                are used. Other keys are ignored.
               properties:
                 phone:
                   type: string
@@ -44238,6 +44408,8 @@ components:
           type: boolean
           description: Whether a conversation should be opened in the inbox for the
             message without the contact replying. Defaults to false if not provided.
+            For `whatsapp` messages, a conversation is always opened and this field
+            is ignored.
           default: false
           example: true
         components:

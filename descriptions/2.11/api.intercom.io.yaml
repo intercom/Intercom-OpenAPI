@@ -247,6 +247,21 @@ paths:
                       message: Access Token Invalid
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden. Returned when the access token acts as a teammate
+            who lacks the permission to access all teammates and team details.
+          content:
+            application/json:
+              examples:
+                Teammate lacks permission:
+                  value:
+                    type: error.list
+                    request_id: 52609d5a-89ae-4a95-aaae-c25f81ac8806
+                    errors:
+                    - code: action_forbidden
+                      message: Teammate lacks permission to access all teammates and team details
+              schema:
+                "$ref": "#/components/schemas/error"
   "/admins":
     get:
       summary: List all admins
@@ -7459,7 +7474,8 @@ paths:
       description: "When a job has a status of complete, and thus a filled download_url,
         you can download your data by hitting that provided URL, formatted like so:
         https://api.intercom.io/download/content/data/xyz1234.\n\nYour exported message
-        data will be streamed continuously back down to you in a gzipped CSV format.\n\n>
+        data is returned as a ZIP archive containing one CSV file per data group. The
+        response is sent with the header `Content-Encoding: zip`.\n\n>
         \U0001F4D8 Octet header required\n>\n> You will have to specify the header
         Accept: `application/octet-stream` when hitting this endpoint.\n"
       responses:
@@ -14666,7 +14682,6 @@ components:
               enum:
               - lead
               - user
-              - contact
               description: The role associated to the contact - user or lead.
               example: user
             id:

@@ -131,6 +131,10 @@ paths:
                     away_mode_enabled: true
                     away_mode_reassign: true
                     has_inbox_seat: true
+                    available_channels:
+                    - email
+                    - messenger
+                    - chat
                     away_status_reason_id: 12345
                     team_ids:
                     - 991267903
@@ -448,6 +452,21 @@ paths:
                       message: Not authorized to access resource
               schema:
                 "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden. Returned when the access token acts as a teammate
+            who lacks the permission to access all teammates and team details.
+          content:
+            application/json:
+              examples:
+                Teammate lacks permission:
+                  value:
+                    type: error.list
+                    request_id: 52609d5a-89ae-4a95-aaae-c25f81ac8806
+                    errors:
+                    - code: action_forbidden
+                      message: Teammate lacks permission to access all teammates and team details
+              schema:
+                "$ref": "#/components/schemas/error"
   "/admins/activity_logs/search":
     post:
       summary: Search activity logs
@@ -589,6 +608,21 @@ paths:
                     errors:
                     - code: token_unauthorized
                       message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+        '403':
+          description: Forbidden. Returned when the access token acts as a teammate
+            who lacks the permission to access all teammates and team details.
+          content:
+            application/json:
+              examples:
+                Teammate lacks permission:
+                  value:
+                    type: error.list
+                    request_id: 52609d5a-89ae-4a95-aaae-c25f81ac8806
+                    errors:
+                    - code: action_forbidden
+                      message: Teammate lacks permission to access all teammates and team details
               schema:
                 "$ref": "#/components/schemas/error"
   "/admins/activity_log_event_types":
@@ -1066,6 +1100,10 @@ paths:
                       away_mode_enabled: false
                       away_mode_reassign: false
                       has_inbox_seat: true
+                      available_channels:
+                      - email
+                      - messenger
+                      - chat
                       team_ids: []
               schema:
                 "$ref": "#/components/schemas/admin_list"
@@ -1088,6 +1126,352 @@ paths:
                     errors:
                     - code: token_unauthorized
                       message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/admins/office_hours":
+    get:
+      summary: List teammate office hours
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: per_page
+        in: query
+        description: The number of assignments to return per page. Must be a positive
+          integer. Values above 50 are reduced to 50.
+        example: 20
+        schema:
+          type: integer
+          minimum: 1
+          default: 20
+      - name: starting_after
+        in: query
+        description: The cursor from `pages.next.starting_after` in the previous response.
+          Omit it to retrieve the first page.
+        example: your-cursor-from-response
+        schema:
+          type: string
+      tags:
+      - Admins
+      operationId: listAdminOfficeHours
+      description: |
+        You can list teammates who have their own office hours schedule. Teammates who inherit office hours are not included. Results include only teammates you can access.
+
+        Use `pages.next.starting_after` to retrieve the next page. `pages.next` is omitted on the last page.
+
+        Requires either the `read_all` or `read_write_office_hours` OAuth scope and permission to access reporting. Set `Intercom-Version: Preview`.
+      responses:
+        '200':
+          description: Teammate office hours assignments
+          content:
+            application/json:
+              examples:
+                Assignments with another page:
+                  value:
+                    type: list
+                    data:
+                    - type: admin_office_hours
+                      admin_id: '456'
+                      office_hours_schedule_id: '123'
+                    pages:
+                      type: pages
+                      per_page: 1
+                      next:
+                        starting_after: your-cursor-from-response
+                Last page:
+                  value:
+                    type: list
+                    data:
+                    - type: admin_office_hours
+                      admin_id: '789'
+                      office_hours_schedule_id: '123'
+                    pages:
+                      type: pages
+                      per_page: 1
+              schema:
+                "$ref": "#/components/schemas/admin_office_hours_paginated_list"
+        '400':
+          description: Invalid pagination parameter
+          content:
+            application/json:
+              examples:
+                Invalid per_page:
+                  value:
+                    type: error.list
+                    request_id: your-request-id
+                    errors:
+                    - code: invalid_per_page
+                      message: per_page must be a positive integer
+                Invalid starting_after:
+                  value:
+                    type: error.list
+                    request_id: your-request-id
+                    errors:
+                    - code: client_error
+                      message: Invalid starting_after param. Please try again using a starting_after value from a paginated response
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          "$ref": "#/components/responses/AdminOfficeHoursForbidden"
+    put:
+      summary: Update teammate office hours in bulk
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      tags:
+      - Admins
+      operationId: bulkUpdateAdminOfficeHours
+      description: |
+        You can assign or clear office hours schedules for up to 50 teammates in one request. Send a non-empty `assignments` array, with each teammate listed at most once. Each teammate and each non-null schedule must belong to your workspace, and each teammate must be accessible to you.
+
+        Set `office_hours_schedule_id` to `null` to remove a teammate's own schedule so they inherit office hours. Sending the current value, including `null` for a teammate who already inherits, is a no-op that changes nothing.
+
+        The update is all-or-nothing: if any assignment is invalid or cannot be saved, none of the assignments are changed. Errors for invalid entries identify them by their zero-based index. The response contains the submitted teammates in request order, including unchanged assignments, and has no pagination.
+
+        Requires the `read_write_office_hours` OAuth scope and permission to access reporting. Set `Intercom-Version: Preview`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/bulk_update_admin_office_hours_request"
+            examples:
+              Assign and clear schedules:
+                value:
+                  assignments:
+                  - admin_id: '456'
+                    office_hours_schedule_id: '123'
+                  - admin_id: '789'
+                    office_hours_schedule_id: null
+      responses:
+        '200':
+          description: Office hours assignments for the submitted teammates
+          content:
+            application/json:
+              examples:
+                Updated assignments:
+                  value:
+                    type: list
+                    data:
+                    - type: admin_office_hours
+                      admin_id: '456'
+                      office_hours_schedule_id: '123'
+                    - type: admin_office_hours
+                      admin_id: '789'
+                      office_hours_schedule_id: null
+              schema:
+                "$ref": "#/components/schemas/admin_office_hours_list"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          "$ref": "#/components/responses/AdminOfficeHoursForbidden"
+        '422':
+          description: Invalid assignments. No assignments are changed.
+          content:
+            application/json:
+              examples:
+                Missing empty or oversized assignments:
+                  value:
+                    type: error.list
+                    request_id: your-request-id
+                    errors:
+                    - code: parameter_invalid
+                      message: assignments must be a non-empty array of at most 50 entries
+                Teammate not in workspace:
+                  value:
+                    type: error.list
+                    request_id: your-request-id
+                    errors:
+                    - code: parameter_invalid
+                      message: 'Invalid assignments: assignments[0]: teammate must belong to the workspace'
+                Inaccessible teammate:
+                  value:
+                    type: error.list
+                    request_id: your-request-id
+                    errors:
+                    - code: parameter_invalid
+                      message: 'Invalid assignments: assignments[0]: teammate is not accessible'
+                Missing invalid or other-workspace schedule:
+                  value:
+                    type: error.list
+                    request_id: your-request-id
+                    errors:
+                    - code: parameter_invalid
+                      message: 'Invalid assignments: assignments[0]: office hours schedule must be null or belong to the workspace'
+                Duplicate teammate:
+                  value:
+                    type: error.list
+                    request_id: your-request-id
+                    errors:
+                    - code: parameter_invalid
+                      message: 'Invalid assignments: assignments[1]: teammate is listed more than once'
+                Multiple invalid entries:
+                  value:
+                    type: error.list
+                    request_id: your-request-id
+                    errors:
+                    - code: parameter_invalid
+                      message: 'Invalid assignments: assignments[0]: teammate must belong to the workspace; assignments[1]: office hours schedule must be null or belong to the workspace'
+                Assignment could not be saved:
+                  value:
+                    type: error.list
+                    request_id: your-request-id
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid teammate office hours assignment
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/admins/{id}/office_hours":
+    get:
+      summary: Retrieve teammate office hours
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the teammate.
+        example: '456'
+        schema:
+          type: string
+      tags:
+      - Admins
+      operationId: retrieveAdminOfficeHours
+      description: |
+        You can retrieve a teammate's own office hours schedule assignment. An `office_hours_schedule_id` of `null` means the teammate has no schedule of their own and inherits office hours instead. This endpoint does not return the inherited schedule.
+
+        The teammate must belong to your workspace and be accessible to you. An unknown, malformed, or other-workspace teammate id returns a `422` error, not a `404`.
+
+        Requires either the `read_all` or `read_write_office_hours` OAuth scope and permission to access reporting. Set `Intercom-Version: Preview`.
+      responses:
+        '200':
+          description: Teammate office hours assignment
+          content:
+            application/json:
+              examples:
+                Assigned schedule:
+                  value:
+                    type: admin_office_hours
+                    admin_id: '456'
+                    office_hours_schedule_id: '123'
+                Inherited office hours:
+                  value:
+                    type: admin_office_hours
+                    admin_id: '456'
+                    office_hours_schedule_id: null
+              schema:
+                "$ref": "#/components/schemas/admin_office_hours"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          "$ref": "#/components/responses/AdminOfficeHoursForbidden"
+        '422':
+          description: Teammate does not belong to the workspace
+          content:
+            application/json:
+              examples:
+                Unknown malformed or other-workspace teammate:
+                  value:
+                    type: error.list
+                    request_id: your-request-id
+                    errors:
+                    - code: parameter_invalid
+                      message: Teammate must belong to the workspace
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Update teammate office hours
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: id
+        in: path
+        required: true
+        description: The unique identifier of the teammate.
+        example: '456'
+        schema:
+          type: string
+      tags:
+      - Admins
+      operationId: updateAdminOfficeHours
+      description: |
+        You can assign an office hours schedule to a teammate or set `office_hours_schedule_id` to `null` to remove their own schedule so they inherit office hours. The field is required, even when its value is `null`.
+
+        The teammate and any non-null schedule must belong to your workspace, and the teammate must be accessible to you. Sending the current value, including `null` for a teammate who already inherits, is a no-op that changes nothing. Returns the same assignment object as `GET /admins/{id}/office_hours`.
+
+        Requires the `read_write_office_hours` OAuth scope and permission to access reporting. Set `Intercom-Version: Preview`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_office_hours_assignment_request"
+            examples:
+              Assign a schedule:
+                value:
+                  office_hours_schedule_id: '123'
+              Inherit office hours:
+                value:
+                  office_hours_schedule_id: null
+      responses:
+        '200':
+          description: Teammate office hours assignment
+          content:
+            application/json:
+              examples:
+                Assigned schedule:
+                  value:
+                    type: admin_office_hours
+                    admin_id: '456'
+                    office_hours_schedule_id: '123'
+                Inherited office hours:
+                  value:
+                    type: admin_office_hours
+                    admin_id: '456'
+                    office_hours_schedule_id: null
+              schema:
+                "$ref": "#/components/schemas/admin_office_hours"
+        '400':
+          "$ref": "#/components/responses/OfficeHoursScheduleIdMissing"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          "$ref": "#/components/responses/AdminOfficeHoursForbidden"
+        '422':
+          description: Invalid teammate or office hours schedule assignment
+          content:
+            application/json:
+              examples:
+                Unknown malformed or other-workspace teammate:
+                  value:
+                    type: error.list
+                    request_id: your-request-id
+                    errors:
+                    - code: parameter_invalid
+                      message: Teammate must belong to the workspace
+                Unknown invalid or other-workspace schedule:
+                  value:
+                    type: error.list
+                    request_id: your-request-id
+                    errors:
+                    - code: parameter_invalid
+                      message: Office hours schedule must belong to the workspace
+                Assignment could not be saved:
+                  value:
+                    type: error.list
+                    request_id: your-request-id
+                    errors:
+                    - code: parameter_invalid
+                      message: Invalid teammate office hours assignment
               schema:
                 "$ref": "#/components/schemas/error"
   "/admins/find_by_email":
@@ -1127,6 +1511,10 @@ paths:
                     away_mode_enabled: false
                     away_mode_reassign: false
                     has_inbox_seat: true
+                    available_channels:
+                    - email
+                    - messenger
+                    - chat
                     away_status_reason_id: null
                     team_ids:
                     - 814865
@@ -1222,6 +1610,10 @@ paths:
                     away_mode_enabled: false
                     away_mode_reassign: false
                     has_inbox_seat: true
+                    available_channels:
+                    - email
+                    - messenger
+                    - chat
                     away_status_reason_id: null
                     team_ids:
                     - 814865
@@ -3284,7 +3676,7 @@ paths:
         `https://api.intercom.io/articles`.\n\n> \U0001F4D8 How are the articles sorted
         and ordered?\n>\n> Articles will be returned in descending order on the `updated_at`
         attribute. This means if you need to iterate through results then we'll show
-        the most recently updated articles first.\n\nRequires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.\n"
+        the most recently updated articles first.\n\nRequires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.\n"
       responses:
         '200':
           description: successful
@@ -3375,7 +3767,7 @@ paths:
         \U0001F4D8 Tags are managed separately\n>\n> Tags are returned in article responses
         but cannot be set in the request body. To add or remove an article's tags,
         use the `POST /articles/{article_id}/tags` and `DELETE /articles/{article_id}/tags/{id}`
-        endpoints.\n\nRequires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.\n"
+        endpoints.\n\nRequires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.\n"
       responses:
         '200':
           description: article created
@@ -3595,7 +3987,7 @@ paths:
       description: |
         You can fetch the details of a single article by making a GET request to `https://api.intercom.io/articles/<id>`.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Article found
@@ -3696,7 +4088,7 @@ paths:
         request to `https://api.intercom.io/articles/<id>`.\n\n> \U0001F4D8 Tags are managed separately\n>\n> Tags are returned in article responses
         but cannot be set in the request body. To add or remove an article's tags,
         use the `POST /articles/{article_id}/tags` and `DELETE /articles/{article_id}/tags/{id}`
-        endpoints.\n\nRequires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.\n"
+        endpoints.\n\nRequires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.\n"
       responses:
         '200':
           description: successful
@@ -3983,7 +4375,7 @@ paths:
         has no staged draft. An article ID that doesn't exist returns a `404` with
         the standard error body.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Article draft found
@@ -4072,7 +4464,7 @@ paths:
         `parent_id`, `folder_id`, `audience_ids`, the AI availability fields or the
         scheduling fields, is still validated but not applied, so the live article is left untouched.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Draft staged
@@ -4190,7 +4582,7 @@ paths:
         `{ "errors": [{ "message": "...", "status": 422 }] }`, with no `type`,
         `request_id` or `code`. The other `422` errors use the standard error format.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Draft published
@@ -4337,7 +4729,7 @@ paths:
         A `404` has an empty response body, whether the article or its content
         isn't found.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Versions found
@@ -4438,7 +4830,7 @@ paths:
         A `404` has an empty response body, whether the article, its content or
         the version isn't found.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Version found
@@ -4507,7 +4899,7 @@ paths:
         and the authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       requestBody:
         content:
           application/json:
@@ -4626,7 +5018,7 @@ paths:
         The authenticating teammate must have the `manage_knowledge_base_content`
         permission.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Tag removed
@@ -4754,7 +5146,7 @@ paths:
 
         If no articles match the search, `data` is an empty array rather than an object.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Search successful
@@ -7055,7 +7447,7 @@ paths:
       description: |
         You can fetch a list of all collections by making a GET request to `https://api.intercom.io/help_center/collections`.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Successful
@@ -7146,7 +7538,7 @@ paths:
       description: |
         You can create a new collection by making a POST request to `https://api.intercom.io/help_center/collections`.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: collection created
@@ -7246,7 +7638,7 @@ paths:
       description: |
         You can fetch the details of a single collection by making a GET request to `https://api.intercom.io/help_center/collections/<id>`.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Collection found
@@ -7319,7 +7711,7 @@ paths:
 
         `help_center_id` is checked but never applied. It must match the help center of the collection's articles and sub-collections, or the request returns a `400`. A collection with no content rejects any `help_center_id`, so leave it out. Moving a collection to another help center isn't supported.
 
-        Requires the `read_write_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_write_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: successful
@@ -7495,7 +7887,7 @@ paths:
       description: |
         You can fetch the details of a single Help Center by making a GET request to `https://api.intercom.io/help_center/help_centers/<id>`.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Help Center found
@@ -7560,7 +7952,7 @@ paths:
       description: |
         You can list all Help Centers by making a GET request to `https://api.intercom.io/help_center/help_centers`.
 
-        Requires the `read_articles_scope` OAuth scope. Set `Intercom-Version: Preview`.
+        Requires the `read_articles_scope` or `create_update_articles` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
         '200':
           description: Help Centers found
@@ -10486,7 +10878,7 @@ paths:
           See the [pagination section](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis/pagination/#pagination-for-list-apis) for more details.
         {% /admonition %}
 
-        Requires the `write_users_companies` OAuth scope. A token with only read scopes cannot call this endpoint.
+        Requires the `read_users_companies` or `write_users_companies` OAuth scope.
       responses:
         '200':
           description: Successful
@@ -14847,8 +15239,7 @@ paths:
         content:
           application/json:
             schema:
-              oneOf:
-              - "$ref": "#/components/schemas/create_contact_request"
+              "$ref": "#/components/schemas/create_contact_request"
             examples:
               successful:
                 summary: successful
@@ -19632,8 +20023,8 @@ paths:
       - Conversations
       operationId: deleteConversation
       description: |
-        {% admonition type="warning" name="Irreversible operation" %}
-        Deleting a conversation is permanent and cannot be reversed.
+        {% admonition type="warning" name="Irreversible after the recovery window" %}
+        With `retain_metrics=false`, deleting a conversation is permanent and cannot be reversed. With the default `retain_metrics=true`, the conversation's data is retained for 7 days before being permanently deleted, and recovering it during that window isn't available through the API.
         {% /admonition %}
 
         You can delete a single conversation. The behavior depends on the `retain_metrics` parameter:
@@ -25804,7 +26195,7 @@ paths:
       - name: include_bodies
         in: query
         required: false
-        description: Include request/response bodies in the response (default false).
+        description: Include request/response bodies in the response (default false). Ignored for third-party apps (apps owned by another workspace), which never receive bodies.
         schema:
           type: string
           enum:
@@ -25817,7 +26208,7 @@ paths:
         Retrieve paginated execution logs for a specific data connector.
         Results from the last hour are returned by default. Use `start_ts` and `end_ts` to customize the time range.
 
-        Request/response bodies are excluded by default. Use `include_bodies=true` to include them.
+        Request/response bodies are excluded by default. Use `include_bodies=true` to include them. Apps owned by another workspace never receive them.
 
         OAuth tokens must have the `read_workflow_connector_execution_result` or `read_write_data_connectors` scope.
       responses:
@@ -25948,7 +26339,7 @@ paths:
       operationId: showDataConnectorExecutionResult
       description: |
         Retrieve details for a specific data connector execution result.
-        Includes the request/response bodies and sanitised request URL when they are available.
+        Includes the sanitised request URL, and the request/response bodies when they are available. Bodies are omitted when the request comes from a third-party app (an app owned by another workspace).
 
         OAuth tokens must have the `read_workflow_connector_execution_result` or `read_write_data_connectors` scope.
       responses:
@@ -28864,9 +29255,11 @@ paths:
         is created and when a contact becomes available to be messaged through the
         API. A 404 Not Found error will be returned in this case.\n\nThis will return
         the Message model that has been created.\n\n> \U0001F6A7 Retrieving Associated
-        Conversations\n>\n> As this is a message, there will be no conversation present
+        Conversations\n>\n> For in-app and email messages, there will be no conversation present
         until the contact responds. Once they do, you will have to search for a contact's
-        conversations with the id of the message.\n\n{% admonition type=\"warning\" name=\"Messages from contacts\" %}\n`from` should be an admin. A request with a user or lead as `from` is not rejected: it creates a conversation initiated by that contact, as the Create a conversation endpoint (`POST /conversations`) does, and the `to`, `cc` and `bcc` fields are ignored. To create a conversation initiated by a contact, use `POST /conversations`.\n{% /admonition %}\n"
+        conversations with the id of the message.\n>\n> For `whatsapp` messages, the
+        conversation is created when the message is sent, and its id is returned as
+        `conversation_id`.\n\n{% admonition type=\"warning\" name=\"Messages from contacts\" %}\n`from` should be an admin. A request with a user or lead as `from` is not rejected: it creates a conversation initiated by that contact, as the Create a conversation endpoint (`POST /conversations`) does, and the `to`, `cc` and `bcc` fields are ignored. To create a conversation initiated by a contact, use `POST /conversations`.\n{% /admonition %}\n"
       responses:
         '200':
           description: admin message created
@@ -28904,6 +29297,22 @@ paths:
                       email: admin299@email.com
                       away_mode_enabled: false
                       away_mode_reassign: false
+                admin whatsapp message created:
+                  value:
+                    type: admin_message
+                    id: '20'
+                    created_at: 1734537790
+                    body: Hi Username 123, your account is still active.
+                    message_type: whatsapp
+                    conversation_id: '615'
+                    owner:
+                      type: admin
+                      id: '991267817'
+                      name: Ciaran300 Lee
+                      email: admin300@email.com
+                      away_mode_enabled: false
+                      away_mode_reassign: false
+                    whatsapp_message_id: wamid.abc123
               schema:
                 "$ref": "#/components/schemas/message"
         '400':
@@ -28939,6 +29348,139 @@ paths:
                     errors:
                     - code: data_invalid
                       message: "Field 'to' is required"
+                WhatsApp not enabled for workspace:
+                  value:
+                    type: error.list
+                    request_id: 4e1b7c92-3a5d-4f08-b6e2-9d7a0c3f5b18
+                    errors:
+                    - code: parameter_invalid
+                      message: This app is not allowed to send WhatsApp messages
+                WhatsApp template missing:
+                  value:
+                    type: error.list
+                    request_id: a7d3e5f1-2b64-4c9a-8e17-5f0b3d9c6a24
+                    errors:
+                    - code: parameter_invalid
+                      message: template is required for WhatsApp messages
+                WhatsApp components missing:
+                  value:
+                    type: error.list
+                    request_id: 6c2f9a8d-7e13-4b5c-a0d4-1e8b7f3c2d95
+                    errors:
+                    - code: parameter_invalid
+                      message: Components must be provided for WhatsApp messages
+                WhatsApp integration not found:
+                  value:
+                    type: error.list
+                    request_id: d9e4b1a6-5c37-4f2e-9b80-3a6d2c7e1f43
+                    errors:
+                    - code: parameter_invalid
+                      message: No WhatsApp integration found for this app
+                WhatsApp sender number invalid:
+                  value:
+                    type: error.list
+                    request_id: 2f8a6d3c-1b95-4e7a-8c42-7d0e5b9a3f61
+                    errors:
+                    - code: parameter_invalid
+                      message: Sender WhatsApp number format is invalid
+                WhatsApp sender number not registered:
+                  value:
+                    type: error.list
+                    request_id: b3c7e9f2-6a14-4d8b-9e05-2c1f8a4d7b36
+                    errors:
+                    - code: parameter_invalid
+                      message: Sender WhatsApp number is not registered in this workspace
+                WhatsApp template not found:
+                  value:
+                    type: error.list
+                    request_id: 5e0d2a7b-9c63-4f1e-a8b4-6d3c9e2f0a57
+                    errors:
+                    - code: parameter_invalid
+                      message: template 'order_update' does not exist
+                WhatsApp recipient phone missing:
+                  value:
+                    type: error.list
+                    request_id: 8a4f1c6e-3d27-4b9a-b5e1-0f7c2a8d4e69
+                    errors:
+                    - code: parameter_invalid
+                      message: WhatsApp message payload must include phone.
+                WhatsApp recipient phone invalid:
+                  value:
+                    type: error.list
+                    request_id: c1e6a3d8-4f52-4a7b-9d03-8b5e1c7f2a94
+                    errors:
+                    - code: parameter_invalid
+                      message: Recipient does not have a valid phone number.
+                WhatsApp template not available in locale:
+                  value:
+                    type: error.list
+                    request_id: 7b9d2e4f-8a16-4c3e-b7a5-1d0f6c3e9b28
+                    errors:
+                    - code: parameter_invalid
+                      message: 'template ''order_update'' is not available in locale ''fr'' (available: en, es)'
+                WhatsApp template locale ambiguous:
+                  value:
+                    type: error.list
+                    request_id: e5a8c0b3-2d79-4f6a-8c14-9e3b7d1a5f02
+                    errors:
+                    - code: parameter_invalid
+                      message: 'template ''order_update'' exists in multiple regional variants (en_GB, en_US); pass an explicit locale'
+                WhatsApp multiple recipients:
+                  value:
+                    type: error.list
+                    request_id: 3d6f8b1a-7e42-4c9d-a2b5-4f0e8c6d3a71
+                    errors:
+                    - code: data_invalid
+                      message: To field must not contains an array of recipients.
+                WhatsApp not enabled in workspace settings:
+                  value:
+                    type: error.list
+                    request_id: 0e7c4a19-6b3d-4f82-a5c1-8d2f9b6e3a47
+                    errors:
+                    - code: parameter_invalid
+                      message: Your workspace does not have WhatsApp enabled.
+                WhatsApp recipient has no send address:
+                  value:
+                    type: error.list
+                    request_id: 4b8e2d6a-1f95-4c3b-9a07-6e1d8c5f2b93
+                    errors:
+                    - code: parameter_invalid
+                      message: The recipient has no phone number or WhatsApp ID to send to.
+                WhatsApp template send limit reached:
+                  value:
+                    type: error.list
+                    request_id: 2a7f5c3e-8d14-4e6b-b9a2-5c0e7d3f1b68
+                    errors:
+                    - code: parameter_invalid
+                      message: You've reached your WhatsApp message template send limit for this month.
+                WhatsApp template not found for locale:
+                  value:
+                    type: error.list
+                    request_id: 6f1b9e4d-3c57-4a2e-8d06-1b7a4f9c2e85
+                    errors:
+                    - code: parameter_invalid
+                      message: Message template 'order_update' (en) not found
+                WhatsApp authentication template without phone:
+                  value:
+                    type: error.list
+                    request_id: c8e3a7d1-5b26-4f9c-a1e4-7d0b3f6a9c52
+                    errors:
+                    - code: parameter_invalid
+                      message: Authentication template requires a phone number
+                WhatsApp template button parameter missing:
+                  value:
+                    type: error.list
+                    request_id: 3e9d1b5f-2a68-4c7e-b0d3-8f4a6c2e1d79
+                    errors:
+                    - code: parameter_invalid
+                      message: This template's link button needs a value. Add the button variable to the template, then try again.
+                WhatsApp template variables not configured:
+                  value:
+                    type: error.list
+                    request_id: 7a2c6e0b-9f43-4d1a-8e57-3b5d1f8c4a26
+                    errors:
+                    - code: parameter_invalid
+                      message: This template's variables aren't fully configured. Map each variable to an attribute, then try again.
                 Too many recipients:
                   value:
                     type: error.list
@@ -29023,6 +29565,13 @@ paths:
                     errors:
                     - code: action_forbidden
                       message: One or more users have hard bounced and cannot be messaged via email
+                WhatsApp recipient blocked:
+                  value:
+                    type: error.list
+                    request_id: 9c3e7a1f-5b28-4d6e-8f04-2a9d6c1b7e53
+                    errors:
+                    - code: whatsapp_recipient_blocked
+                      message: The recipient associated with this phone number has been blocked.
               schema:
                 "$ref": "#/components/schemas/error"
         '404':
@@ -29037,6 +29586,27 @@ paths:
                     errors:
                     - code: not_found
                       message: User Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              examples:
+                WhatsApp message not sent:
+                  value:
+                    type: error.list
+                    request_id: f2b8d4a6-1c73-4e9f-b0a5-7d3e9c2f6a18
+                    errors:
+                    - code: server_error
+                      message: 'Failed to send WhatsApp message: (#131026) Message undeliverable'
+                WhatsApp conversation not created:
+                  value:
+                    type: error.list
+                    request_id: 6a1d9f3c-8e54-4b2a-9c07-3f5b1e8d4a26
+                    errors:
+                    - code: server_error
+                      message: Failed to create WhatsApp conversation - no conversation returned
               schema:
                 "$ref": "#/components/schemas/error"
       requestBody:
@@ -29478,6 +30048,138 @@ paths:
                     errors:
                     - code: team_not_found
                       message: "Team not found"
+              schema:
+                "$ref": "#/components/schemas/error"
+  "/teams/{team_id}/office_hours":
+    get:
+      summary: Retrieve team office hours
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: team_id
+        in: path
+        required: true
+        description: The unique identifier of the team. Use `GET /teams` to list available team IDs.
+        example: '42'
+        schema:
+          type: string
+      tags:
+      - Teams
+      operationId: retrieveTeamOfficeHours
+      description: |
+        You can retrieve the team's linked office hours schedule, or the workspace default if the team has no schedule of its own.
+
+        The team must belong to your workspace. An unknown, malformed, or other-workspace team id returns a `404` error. If the team has no linked schedule and the workspace has no default, the endpoint returns a `404` error.
+
+        Requires either the `read_all` or `read_write_office_hours` OAuth scope and permission to manage workload management. Set `Intercom-Version: Preview`.
+      responses:
+        '200':
+          description: Team office hours schedule
+          content:
+            application/json:
+              examples:
+                Office hours schedule:
+                  value:
+                    type: office_hours_schedule
+                    id: '123'
+                    name: Standard Support Hours
+                    time_zone_name: America/New_York
+                    time_intervals:
+                    - start_minute: 540
+                      end_minute: 1020
+                      day_of_week: 0
+                    twenty_four_seven: false
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_schedule"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          "$ref": "#/components/responses/TeamOfficeHoursForbidden"
+        '404':
+          "$ref": "#/components/responses/TeamOfficeHoursNotFound"
+    put:
+      summary: Update team office hours
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version_preview"
+      - name: team_id
+        in: path
+        required: true
+        description: The unique identifier of the team. Use `GET /teams` to list available team IDs.
+        example: '42'
+        schema:
+          type: string
+      tags:
+      - Teams
+      operationId: updateTeamOfficeHours
+      description: |
+        You can assign an office hours schedule to a team or set `office_hours_schedule_id` to `null` to remove the team's own schedule so it uses the workspace default. The field is required, even when its value is `null`.
+
+        The team and any non-null schedule must belong to your workspace. An unknown, malformed, or other-workspace team id returns a `404` error. An unknown, invalid, or other-workspace schedule id returns a `422` error. Sending the current value, including `null` for a team already using the workspace default, changes nothing.
+
+        Returns the same schedule object as `GET /teams/{team_id}/office_hours`. If removing the assignment leaves the team without a schedule and the workspace has no default, the assignment is removed but the response is a `404` error.
+
+        Requires the `read_write_office_hours` OAuth scope and permission to manage workload management. Set `Intercom-Version: Preview`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_office_hours_assignment_request"
+            examples:
+              Assign a schedule:
+                value:
+                  office_hours_schedule_id: '123'
+              Use the workspace default:
+                value:
+                  office_hours_schedule_id: null
+      responses:
+        '200':
+          description: Team office hours schedule
+          content:
+            application/json:
+              examples:
+                Office hours schedule:
+                  value:
+                    type: office_hours_schedule
+                    id: '123'
+                    name: Standard Support Hours
+                    time_zone_name: America/New_York
+                    time_intervals:
+                    - start_minute: 540
+                      end_minute: 1020
+                      day_of_week: 0
+                    twenty_four_seven: false
+                    created_at: 1717200000
+                    updated_at: 1717200000
+              schema:
+                "$ref": "#/components/schemas/office_hours_schedule"
+        '400':
+          "$ref": "#/components/responses/OfficeHoursScheduleIdMissing"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '403':
+          "$ref": "#/components/responses/TeamOfficeHoursForbidden"
+        '404':
+          "$ref": "#/components/responses/TeamOfficeHoursNotFound"
+        '422':
+          description: Invalid office hours schedule
+          content:
+            application/json:
+              examples:
+                Unknown invalid or other-workspace schedule:
+                  value:
+                    type: error.list
+                    request_id: 55555555-5555-4555-8555-555555555555
+                    errors:
+                    - code: parameter_invalid
+                      message: Office hours schedule not found
               schema:
                 "$ref": "#/components/schemas/error"
   "/news/news_items":
@@ -31671,11 +32373,18 @@ paths:
         description: The id of the call
         schema:
           type: string
+      - name: include_transcripts
+        in: query
+        description: By default, the call's transcripts are deleted too. Pass `false` to keep them.
+        required: false
+        schema:
+          type: boolean
+          default: true
       tags:
       - Calls
       operationId: deleteCallRecording
       description: |
-        Permanently deletes every recording and transcript of the call, including the part of the call handled by Fin. Afterwards, the call's `recording_url` and `fin_recording_url` are `null`. Deleting a recording that was already deleted returns the same successful response.
+        Permanently deletes every recording of the call, including the part of the call handled by Fin, and the call's transcripts unless `include_transcripts` is `false`. Afterwards, the call's `recording_url` and `fin_recording_url` are `null`. Deleting a recording that was already deleted returns the same successful response.
 
         Requires the `write_conversations` OAuth scope. Set `Intercom-Version: Preview`.
       responses:
@@ -32071,11 +32780,13 @@ paths:
                     - type: tag
                       id: '102'
                       name: Manual tag 1
+                      archived: false
                 single tag:
                   value:
                     type: tag
                     id: '102'
                     name: Manual tag 1
+                    archived: false
               schema:
                 anyOf:
                 - "$ref": "#/components/schemas/tag_list"
@@ -32168,6 +32879,7 @@ paths:
                     type: tag
                     id: '105'
                     name: test
+                    archived: false
                     users: []
                     companies: []
                 Companies tagged:
@@ -32175,6 +32887,7 @@ paths:
                     type: tag
                     id: '105'
                     name: test
+                    archived: false
                     users: []
                     companies:
                     - id: '6329e838deab40166d1a5400'
@@ -32314,8 +33027,9 @@ paths:
                     type: tag
                     id: '113'
                     name: Manual tag
+                    archived: false
               schema:
-                "$ref": "#/components/schemas/tag_basic"
+                "$ref": "#/components/schemas/tag"
         '404':
           description: Tag not found
           content:
@@ -32420,6 +33134,136 @@ paths:
                   value:
                     type: error.list
                     request_id: 1b8e4790-ad35-42f6-8c01-9e5d73a2bf64
+                    errors:
+                    - code: token_unauthorized
+                      message: Not authorized to access resource
+              schema:
+                "$ref": "#/components/schemas/error"
+    put:
+      summary: Archive or unarchive a tag
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: id
+        in: path
+        description: The unique identifier of a given tag
+        example: '123'
+        required: true
+        schema:
+          type: string
+      tags:
+      - Tags
+      operationId: updateTag
+      description: |
+        You can archive or unarchive a tag by passing in its id. Archived tags are still returned by `GET /tags`, with `archived` set to `true`.
+
+        You can't archive a tag that is still in use elsewhere in your workspace, such as in a segment or rule; the request returns a 400 that lists them. Unarchiving always succeeds. Archiving a tag that is already archived, or unarchiving one that isn't, returns the tag unchanged.
+
+        Requires the `write_tags` or `write_users_companies` OAuth scope.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/update_tag_request"
+            examples:
+              archive_tag:
+                summary: Archive a tag
+                value:
+                  archived: true
+              unarchive_tag:
+                summary: Unarchive a tag
+                value:
+                  archived: false
+      responses:
+        '200':
+          description: Tag updated
+          content:
+            application/json:
+              examples:
+                Tag archived:
+                  value:
+                    type: tag
+                    id: '113'
+                    name: Manual tag
+                    archived: true
+              schema:
+                "$ref": "#/components/schemas/tag"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                Missing archived:
+                  value:
+                    type: error.list
+                    request_id: 3f6b2e1a-8c4d-4f7e-9a2b-5d1c0e8f7a63
+                    errors:
+                    - code: parameter_not_found
+                      message: archived is required
+                Invalid archived:
+                  value:
+                    type: error.list
+                    request_id: 7a2d9c4e-1b3f-4e8a-b6d5-0c9f2e1a4b87
+                    errors:
+                    - code: parameter_invalid
+                      message: archived must be a boolean
+                Tag has dependent objects:
+                  value:
+                    type: error.list
+                    request_id: c4e8a1f2-6d3b-4a9e-8f7c-2b5d0e9a1c36
+                    errors:
+                    - code: tag_has_dependent_objects
+                      message: 'Unable to delete Tag with dependent objects. Segments:
+                        Seg 1.'
+              schema:
+                "$ref": "#/components/schemas/error"
+        '404':
+          description: Tag not found
+          content:
+            application/json:
+              examples:
+                Tag not found:
+                  value:
+                    type: error.list
+                    request_id: 9b1e5d3a-2c7f-4b8e-a4d6-1f0c3e9b2a75
+                    errors:
+                    - code: not_found
+                      message: Resource Not Found
+              schema:
+                "$ref": "#/components/schemas/error"
+        '409':
+          description: Tag is being applied
+          content:
+            application/json:
+              examples:
+                Tagging in progress:
+                  value:
+                    type: error.list
+                    request_id: 2e7c4a9f-5b1d-4c3e-9a8f-6d0b2e1c7f49
+                    errors:
+                    - code: conflict
+                      message: An ongoing import or bulk operation is using this
+                        tag. Please wait for it to complete before archiving.
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                Unauthorized:
+                  value:
+                    type: error.list
+                    request_id: 5d9a2c7e-3f1b-4e6a-8c4d-0b7e2f9a1c58
+                    errors:
+                    - code: unauthorized
+                      message: Access Token Invalid
+                Token lacks required scope:
+                  value:
+                    type: error.list
+                    request_id: 8f3c1e6a-4d2b-4a7e-9b5c-1e0d3f8a2c64
                     errors:
                     - code: token_unauthorized
                       message: Not authorized to access resource
@@ -38957,6 +39801,141 @@ paths:
                       message: This HITL request has already been fulfilled
               schema:
                 "$ref": "#/components/schemas/error"
+  "/procedures/{procedure_id}/proactive_trigger":
+    post:
+      summary: Trigger a Fin Procedure for a user
+      parameters:
+      - name: Intercom-Version
+        in: header
+        schema:
+          "$ref": "#/components/schemas/intercom_version"
+      - name: procedure_id
+        in: path
+        required: true
+        description: The ID of the procedure to trigger.
+        example: '12345'
+        schema:
+          type: string
+      tags:
+      - Procedures
+      operationId: triggerProcedure
+      description: |
+        Start a Fin Procedure on a new conversation for an existing user. Fin sends the user the procedure's opening message and the procedure runs from there.
+
+        The procedure must have an API trigger. Identify the user by the `user_id` you assigned to them in Intercom. The user must already exist; this endpoint does not create users.
+
+        If you send a `locale` that Fin does not support for your workspace, the conversation uses your workspace's default language.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/trigger_procedure_request"
+            examples:
+              Trigger for a user:
+                value:
+                  user:
+                    id: user-456
+              Trigger with locale and context:
+                value:
+                  user:
+                    id: user-456
+                  locale: fr
+                  context:
+                    order_id: ord-789
+                    plan: premium
+      responses:
+        '200':
+          description: The procedure was triggered.
+          content:
+            application/json:
+              examples:
+                Successful response:
+                  value:
+                    status: triggered
+                    conversation_id: '192837465'
+                    procedure_id: '12345'
+              schema:
+                "$ref": "#/components/schemas/trigger_procedure_response"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                Missing user:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: user parameter is required
+                Missing user ID:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: user.id is required
+                Invalid context:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: bad_request
+                      message: context must be an object
+                Not available in this API version:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: intercom_version_invalid
+                      message: Requested resource is not available in current API version
+              schema:
+                "$ref": "#/components/schemas/error"
+        '401':
+          "$ref": "#/components/responses/Unauthorized"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              examples:
+                User not found:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: not_found
+                      message: User Not Found
+                Procedure not found:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: not_found
+                      message: Procedure not found
+                No API trigger:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: not_found
+                      message: Procedure does not have a api trigger
+              schema:
+                "$ref": "#/components/schemas/error"
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              examples:
+                Procedure cannot be triggered:
+                  value:
+                    type: error.list
+                    request_id: b68959ea-6328-4f70-83cb-e7913dba1542
+                    errors:
+                    - code: unprocessable_entity
+                      message: Id matches both a procedure and a Fin skill
+              schema:
+                "$ref": "#/components/schemas/error"
 components:
   schemas:
     office_hours_time_interval:
@@ -39042,6 +40021,167 @@ components:
           description: An array of office hours schedules.
           items:
             "$ref": "#/components/schemas/office_hours_schedule"
+    admin_office_hours:
+      type: object
+      title: Teammate Office Hours
+      x-tags:
+      - Admins
+      description: A teammate's own office hours schedule assignment. A null schedule
+        id means the teammate inherits office hours instead of having their own schedule.
+      required:
+      - type
+      - admin_id
+      - office_hours_schedule_id
+      properties:
+        type:
+          type: string
+          enum:
+          - admin_office_hours
+          description: The type of the object, always `admin_office_hours`.
+          example: admin_office_hours
+        admin_id:
+          type: string
+          description: The unique identifier of the teammate.
+          example: '456'
+        office_hours_schedule_id:
+          type: string
+          nullable: true
+          description: The teammate's own office hours schedule id, or null if they
+            inherit office hours. This is not the id of the inherited schedule.
+          example: '123'
+    admin_office_hours_list:
+      type: object
+      title: Teammate Office Hours List
+      description: Office hours assignments for the submitted teammates, in request order.
+      required:
+      - type
+      - data
+      properties:
+        type:
+          type: string
+          enum:
+          - list
+          description: The type of the object, always `list`.
+          example: list
+        data:
+          type: array
+          description: The teammates' office hours assignments.
+          example:
+          - type: admin_office_hours
+            admin_id: '456'
+            office_hours_schedule_id: '123'
+          items:
+            "$ref": "#/components/schemas/admin_office_hours"
+    admin_office_hours_paginated_list:
+      type: object
+      title: Paginated Teammate Office Hours List
+      description: A page of accessible teammates who have their own office hours schedule.
+      required:
+      - type
+      - data
+      - pages
+      properties:
+        type:
+          type: string
+          enum:
+          - list
+          description: The type of the object, always `list`.
+          example: list
+        data:
+          type: array
+          description: Teammates who have their own office hours schedule. Teammates
+            who inherit office hours are not included.
+          example:
+          - type: admin_office_hours
+            admin_id: '456'
+            office_hours_schedule_id: '123'
+          items:
+            "$ref": "#/components/schemas/admin_office_hours"
+        pages:
+          type: object
+          description: Cursor-based pagination. `next` is omitted on the last page.
+          example:
+            type: pages
+            per_page: 20
+            next:
+              starting_after: your-cursor-from-response
+          required:
+          - type
+          - per_page
+          properties:
+            type:
+              type: string
+              enum:
+              - pages
+              description: The type of the object, always `pages`.
+              example: pages
+            per_page:
+              type: integer
+              minimum: 1
+              maximum: 50
+              description: The number of assignments requested per page, capped at 50.
+              example: 20
+            next:
+              type: object
+              description: The cursor for the next page. Omitted on the last page.
+              example:
+                starting_after: your-cursor-from-response
+              required:
+              - starting_after
+              properties:
+                starting_after:
+                  type: string
+                  description: Pass this cursor as `starting_after` in the next request.
+                  example: your-cursor-from-response
+    update_office_hours_assignment_request:
+      type: object
+      title: Update Office Hours Assignment Request
+      description: Assign a schedule to a team or teammate, or remove the assignment
+        to use inherited office hours.
+      required:
+      - office_hours_schedule_id
+      properties:
+        office_hours_schedule_id:
+          type: string
+          nullable: true
+          description: The id of an office hours schedule in your workspace. Set to
+            null to remove the team's or teammate's own schedule. Required even when null.
+          example: '123'
+    bulk_update_admin_office_hours_request:
+      type: object
+      title: Bulk Update Teammate Office Hours Request
+      description: Assign or clear office hours schedules for up to 50 teammates.
+        All assignments are applied together or none are changed.
+      required:
+      - assignments
+      properties:
+        assignments:
+          type: array
+          minItems: 1
+          maxItems: 50
+          description: The teammates and their new schedule ids. Each teammate must
+            belong to your workspace, be accessible to you, and appear at most once.
+          example:
+          - admin_id: '456'
+            office_hours_schedule_id: '123'
+          - admin_id: '789'
+            office_hours_schedule_id: null
+          items:
+            type: object
+            required:
+            - admin_id
+            - office_hours_schedule_id
+            properties:
+              admin_id:
+                type: string
+                description: The unique identifier of the teammate in your workspace.
+                example: '456'
+              office_hours_schedule_id:
+                type: string
+                nullable: true
+                description: The id of an office hours schedule in your workspace,
+                  or null to remove the teammate's own schedule so they inherit office hours.
+                example: '123'
     office_hours_exception:
       type: object
       title: Office Hours Exception
@@ -39887,6 +41027,18 @@ components:
           nullable: true
           description: The unique identifier of the away status reason. Not returned by List all admins.
           example: 12345
+        available_channels:
+          type: array
+          description: |
+            The channels this admin is currently available on for conversation routing. Possible values include email, messenger, chat, sms, phone. New values may be added; ignore values you do not recognise.
+
+            An empty list `[]` means the admin is available on no channel. Returned by List all admins, Retrieve an admin, Find an admin by email and Set an admin to away.
+          example:
+          - email
+          - messenger
+          - chat
+          items:
+            type: string
         has_inbox_seat:
           type: boolean
           description: Identifies if this admin has a paid inbox seat to restrict/allow
@@ -43373,6 +44525,65 @@ components:
       required:
       - step_id
       - attribute_values
+    trigger_procedure_request:
+      title: Trigger Procedure Request
+      type: object
+      x-tags:
+      - Procedures
+      description: Request body for triggering a Fin Procedure for a user.
+      properties:
+        user:
+          type: object
+          description: The user to start the procedure for.
+          properties:
+            id:
+              type: string
+              description: The `user_id` you assigned to the user in Intercom.
+              example: user-456
+          required:
+          - id
+        locale:
+          type: string
+          description: The language for the conversation, such as `fr`. If omitted,
+            or if Fin does not support it for your workspace, your workspace's default
+            language is used.
+          example: fr
+        context:
+          type: object
+          description: Data about why you are triggering the procedure, made available
+            to the procedure as it runs. Send an object of any shape.
+          additionalProperties: true
+          example:
+            order_id: ord-789
+            plan: premium
+      required:
+      - user
+    trigger_procedure_response:
+      title: Trigger Procedure Response
+      type: object
+      x-tags:
+      - Procedures
+      description: The result of triggering a Fin Procedure.
+      properties:
+        status:
+          type: string
+          description: Always `triggered`.
+          enum:
+          - triggered
+          example: triggered
+        conversation_id:
+          type: string
+          description: The ID of the conversation the procedure runs on.
+          example: '192837465'
+        procedure_id:
+          type: string
+          description: The procedure ID from the request path.
+          example: '12345'
+        fin_skill_id:
+          type: string
+          description: The ID of the Fin skill that ran. Returned only when the procedure
+            ran as a Fin skill.
+          example: '67890'
     company:
       title: Company
       type: object
@@ -45997,7 +47208,9 @@ components:
                 type: object
                 properties:
                   value:
-                    description: The value of the attribute.
+                    description: The value of the attribute. Rich-text values are returned
+                      as plain text, with line breaks inside a paragraph rendered as newlines
+                      (`\n`).
                     anyOf:
                     - type: string
                       nullable: true
@@ -47254,7 +48467,9 @@ components:
       title: Conversation source
       type: object
       description: The first message or event that started this conversation. Describes
-        the origin and who initiated it.
+        the origin and who initiated it. For a conversation started without an opening
+        message, this shows the conversation's first message, or is null until there
+        is one.
       properties:
         type:
           type: string
@@ -48410,13 +49625,15 @@ components:
           example: Hello there
         template:
           type: string
-          description: The style of the outgoing message. Possible values `plain`
-            or `personal`.
+          description: For `email` messages, the style of the outgoing message. Possible
+            values `plain` or `personal`. For `whatsapp` messages, the name of the
+            WhatsApp message template to send. A template that doesn't exist returns
+            a `400` error.
           example: plain
         from:
           type: object
-          description: The sender of the message. If not provided, the default sender
-            will be used.
+          description: The sender of the message. Required. A request without `from`
+            returns a `400` error.
           properties:
             type:
               type: string
@@ -48428,6 +49645,13 @@ components:
               type: integer
               description: The identifier for the admin which is given by Intercom.
               example: 394051
+            whatsapp_number:
+              type: string
+              description: For `whatsapp` messages, the WhatsApp number of your workspace
+                to send from, in international format. If you leave it out, a WhatsApp
+                number in your workspace that has the template is used. A number that
+                isn't valid, or isn't registered in your workspace, returns a `400` error.
+              example: "+14155550123"
           required:
           - type
           - id
@@ -48435,7 +49659,8 @@ components:
           oneOf:
             - $ref: '#/components/schemas/recipient'
             - type: array
-              description: The recipients of the message.
+              description: The recipients of the message. Not accepted for `whatsapp`
+                messages, which take a single recipient. An array returns a `400` error.
               items:
                 $ref: '#/components/schemas/recipient'
               example:
@@ -48447,7 +49672,8 @@ components:
               title: WhatsApp recipient
               description: The recipient of a `whatsapp` message, identified by phone
                 number. Required form for `whatsapp` messages. A contact is
-                created for the number if there isn't one.
+                created for the number if there isn't one. Only `phone` and `name`
+                are used. Other keys are ignored.
               properties:
                 phone:
                   type: string
@@ -48488,6 +49714,8 @@ components:
           type: boolean
           description: Whether a conversation should be opened in the inbox for the
             message without the contact replying. Defaults to false if not provided.
+            For `whatsapp` messages, a conversation is always opened and this field
+            is ignored.
           default: false
           example: true
         components:
@@ -48735,6 +49963,18 @@ components:
           example:
             order_number: ORDER-12345
             total_amount: 99.99
+    update_tag_request:
+      description: You can archive or unarchive a tag.
+      type: object
+      title: Update Tag Request Payload
+      properties:
+        archived:
+          type: boolean
+          description: Set to `true` to archive the tag, or `false` to unarchive
+            it.
+          example: true
+      required:
+      - archived
     create_or_update_tag_request:
       description: You can create or update an existing tag, and optionally apply
         it to a list of contact or company ids.
@@ -49325,7 +50565,8 @@ components:
         pairs. For relationship attributes the value is a list of custom object
         instance models. System-defined attributes such as "AI Topic and Subtopic",
         "CX Score rating", "CX Score explanation" and "CX Score reasons" may also be
-        included.
+        included. Rich-text values are returned as plain text, with line breaks inside
+        a paragraph rendered as newlines (`\n`).
       properties:
         "AI Topic and Subtopic":
           type: array
@@ -56370,6 +57611,10 @@ components:
           type: string
           description: The name of the tag
           example: Test tag
+        archived:
+          type: boolean
+          description: Whether the tag is archived.
+          example: false
         applied_at:
           type: integer
           format: timestamp
@@ -56410,6 +57655,10 @@ components:
         - "$ref": "#/components/schemas/tag_basic"
         - type: object
           properties:
+            archived:
+              type: boolean
+              description: Whether the tag is archived.
+              example: false
             users:
               type: array
               nullable: true
@@ -56856,7 +58105,9 @@ components:
       type: object
       description: An object containing the different attributes associated to the
         ticket as key-value pairs. For the default title and description attributes,
-        the keys are `_default_title_` and `_default_description_`.
+        the keys are `_default_title_` and `_default_description_`. Rich-text values,
+        such as `_default_description_`, are returned as plain text, with line breaks
+        inside a paragraph rendered as newlines (`\n`).
       additionalProperties:
         anyOf:
         - type: string
@@ -58574,7 +59825,9 @@ components:
           example: messenger
         custom_attributes:
           type: object
-          description: The custom attributes which are set for the visitor.
+          description: The custom attributes which are set for the visitor. A key
+            that doesn't match an existing data attribute creates a new one with
+            `messenger_writable` set to `false`, so the Messenger can't update it.
           additionalProperties:
             anyOf:
             - type: string
@@ -59100,6 +60353,76 @@ components:
       type: http
       scheme: bearer
   responses:
+    OfficeHoursScheduleIdMissing:
+      description: The required office_hours_schedule_id field is missing
+      content:
+        application/json:
+          examples:
+            Missing office_hours_schedule_id:
+              value:
+                type: error.list
+                request_id: 11111111-1111-4111-8111-111111111111
+                errors:
+                - code: parameter_missing
+                  message: 'param is missing or the value is empty or invalid: office_hours_schedule_id'
+          schema:
+            "$ref": "#/components/schemas/error"
+    AdminOfficeHoursForbidden:
+      description: Reporting permission is required and the teammate must be accessible
+      content:
+        application/json:
+          examples:
+            Missing reporting permission:
+              value:
+                type: error.list
+                request_id: your-request-id
+                errors:
+                - code: action_forbidden
+                  message: Teammate lacks permission to access reporting
+            Inaccessible teammate:
+              value:
+                type: error.list
+                request_id: your-request-id
+                errors:
+                - code: action_forbidden
+                  message: Teammate is not accessible
+          schema:
+            "$ref": "#/components/schemas/error"
+    TeamOfficeHoursForbidden:
+      description: Permission to manage workload management is required
+      content:
+        application/json:
+          examples:
+            Missing workload management permission:
+              value:
+                type: error.list
+                request_id: 22222222-2222-4222-8222-222222222222
+                errors:
+                - code: action_forbidden
+                  message: Teammate lacks permission to manage team office hours
+          schema:
+            "$ref": "#/components/schemas/error"
+    TeamOfficeHoursNotFound:
+      description: Team or office hours schedule not found
+      content:
+        application/json:
+          examples:
+            Unknown malformed or other-workspace team:
+              value:
+                type: error.list
+                request_id: 33333333-3333-4333-8333-333333333333
+                errors:
+                - code: team_not_found
+                  message: Team not found
+            No linked schedule or workspace default:
+              value:
+                type: error.list
+                request_id: 44444444-4444-4444-8444-444444444444
+                errors:
+                - code: office_hours_schedule_not_found
+                  message: Office hours schedule not found
+          schema:
+            "$ref": "#/components/schemas/error"
     Unauthorized:
       description: Unauthorized
       content:
@@ -59333,7 +60656,7 @@ tags:
     OAuth token with the `read_write_office_hours` scope.
 - name: Procedures
   description: |
-    Submit human-collected input to Fin Procedures via the HITL (Human in the Loop) API.
+    Trigger Fin Procedures for your users, and submit human-collected input to Fin Procedures via the HITL (Human in the Loop) API.
 
     &nbsp;
 
