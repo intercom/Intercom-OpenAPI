@@ -41570,7 +41570,7 @@ components:
       x-tags:
       - AI Content
       description: |
-        An API template describes how to read a knowledge base through its vendor's REST API. Intercom requests the `tree`, a list of the knowledge base's nodes, such as folders and pages. For each node that is content, it can then request the `item`, such as the page's body. `mapping` says which fields of the node and the item become the imported content. If the vendor lists one level at a time, `tree.child_calls` lists each node's child nodes. When the tree request or a child call has `paging`, Intercom requests every page of that call's list in turn.
+        An API template describes how to read a knowledge base through its vendor's REST API. Intercom requests the `tree`, a list of the knowledge base's nodes, such as folders and pages. For each node that is content, it can then request the `item`, such as the page's body. `mapping` says which fields of the node and the item become the imported content. Each piece of content is imported as an internal article, so the source's audience rules apply to it. If the vendor lists one level at a time, `tree.child_calls` lists each node's child nodes. When the tree request or a child call has `paging`, Intercom requests every page of that call's list in turn.
 
         Write each value, such as a space or project ID, into the template itself. A placeholder such as `{page_id}` in the path or a query value of the item request or a child call is filled from that call's `node_values`. A value filled into a path is URL-encoded. `base_url` and the tree call can't use placeholders. `{token}` stands for the source's token. It can only be used in `auth.value` or as an entire query value.
 
@@ -41578,7 +41578,7 @@ components:
 
         A sync lists the whole tree before it fetches any item: every page of the tree call, then each child call once for every node the call before it listed, with every page of each. Nothing is imported until the whole tree is listed, so if a listing request fails, the content from earlier syncs is kept. A `404` on the first page of the tree call means the knowledge base is gone: the sync fails, and Intercom stops syncing the source automatically until a sync you start with `POST /ai/api_template_sources/{id}/sync` succeeds. A `404` on a later page or on a child call is handled like any other failed request.
 
-        When a request fails with a status other than `401`, `403` or `429`, or times out, Intercom tries the sync again later, a few times at most. That includes a `400`, a `5xx`, and a `404` on a later page of the tree call or on a child call, but not a `404` on the tree call's first request, described above, or on an item, which is skipped. The sync's `status` stays `in_progress` until a try succeeds or the last one fails. A sync fails without another try if a call without `paging` gets a response that says it has more, as described under `tree.paging`, or if, in one try, a listing response is over 25 MB, the listing responses add up to more than 100 MB, the listing finds more than 50,000 nodes, or more than 100,000 requests are sent, retries included.
+        When a request fails with a status other than `401`, `403` or `429`, or times out, Intercom tries the sync again later, a few times at most. That includes a `400`, a `5xx`, and a `404` on a later page of the tree call or on a child call, but not a `404` on the tree call's first request, described above, or on an item, which is skipped. The sync's `status` stays `in_progress` until a try succeeds or the last one fails. A sync fails without another try if a call without `paging` gets a response that says it has more, as described under `tree.paging`, or if, in one try, a listing response is over 25 MB, the listing responses add up to more than 100 MB, the item responses add up to more than 500 MB, the listing finds more than 50,000 nodes, or more than 100,000 requests are sent, retries included.
 
         A node's level counts both kinds of nesting: the tree call's nodes are at level 1, and a node's child nodes, from `tree.children` or a child call, are one level below it. Nodes more than 12 levels deep aren't imported. An item whose response is over 10 MB, or that the vendor returns as not found, is skipped. A redirect isn't followed and fails the sync.
 
@@ -41973,7 +41973,10 @@ components:
               - title
             body:
               type: array
-              description: The body, in `body_format`.
+              description: The body, in `body_format`. If it starts with a heading
+                that repeats the title, the heading is dropped, as the article shows
+                its title. Content whose body has no text and no image once sanitized
+                isn't imported.
               items:
                 oneOf:
                 - type: string
@@ -42014,7 +42017,9 @@ components:
           type: string
           description: The format of the body (`unknown`). HTML is sanitized, Markdown
             is converted to HTML without any front matter, and plain text keeps its
-            line breaks. If it's left out, it's `html`.
+            line breaks. After conversion, `script`, `style`, `noscript`, `template`,
+            `title`, `meta`, `link` and `base` elements are dropped with their contents.
+            If it's left out, it's `html`.
           enum:
           - html
           - markdown
