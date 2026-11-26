@@ -60117,8 +60117,11 @@ components:
           description: How long the most recent AI Agent (Fin) part of the call lasted, in seconds, returned as a string. Null until the call is matched and that part has ended, or when the call has no AI Agent part.
           example: '45'
         data:
-          type: object
-          description: The metadata object supplied when the call was registered, returned verbatim. Empty object when none was supplied.
+          oneOf:
+          - type: object
+          - type: string
+            example: 'abc123'
+          description: The customer-defined data supplied when the call was registered, returned unchanged as an object or a string. Empty object when none was supplied.
           example:
             masterContactID: 'abc123'
             DNIS: '+18005551212'
@@ -60162,9 +60165,12 @@ components:
           maxLength: 191
           example: 'vendor-internal-abc-123'
         data:
-          type: object
-          description: Additional metadata about the call
-          nullable: true
+          oneOf:
+          - type: object
+            nullable: true
+          - type: string
+            example: 'abc123'
+          description: Customer-defined data about the call, as an object or a string. Stored as sent and returned unchanged in the register and collect responses.
           example:
             key: value
   securitySchemes:
